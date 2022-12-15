@@ -1,0 +1,42 @@
+﻿@page "/fetchdata"
+@using GlobalBan.WebCore.Shared.Models
+@inject HttpClient Http
+
+<PageTitle>Bans</PageTitle>
+
+
+@if (_bans == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Bans</th>
+                <th>Reputation</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ban in _bans)
+            {
+                <tr>Missing at sign below
+                   <td>ban.UserNames</td>
+                   <td>ban.Infractions.Count</td>
+                   <td>ban.Reputation</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<InfractionRequestModel>? _bans;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _bans = await Http.GetFromJsonAsync<List<InfractionRequestModel>>("/api/Ban");
+    }
+}
