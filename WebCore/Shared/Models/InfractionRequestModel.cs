@@ -1,6 +1,6 @@
-﻿using GlobalBan.WebCore.Shared.Enums;
+﻿using GlobalInfraction.WebCore.Shared.Enums;
 
-namespace GlobalBan.WebCore.Shared.Models;
+namespace GlobalInfraction.WebCore.Shared.Models;
 
 public class InfractionRequestModel
 {

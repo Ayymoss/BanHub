@@ -1,4 +1,4 @@
-using GlobalBan.WebCore.Server.Context;
+using GlobalInfraction.WebCore.Server.Context;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

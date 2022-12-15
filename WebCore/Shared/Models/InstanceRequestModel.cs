@@ -1,4 +1,4 @@
-﻿namespace GlobalBan.WebCore.Shared.Models;
+﻿namespace GlobalInfraction.WebCore.Shared.Models;
 
 public class InstanceRequestModel
 {

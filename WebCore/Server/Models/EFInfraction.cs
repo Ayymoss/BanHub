@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using GlobalBan.WebCore.Shared.Enums;
+using GlobalInfraction.WebCore.Shared.Enums;
 
-namespace GlobalBan.WebCore.Server.Models;
+namespace GlobalInfraction.WebCore.Server.Models;
 
 public class EFInfraction
 {

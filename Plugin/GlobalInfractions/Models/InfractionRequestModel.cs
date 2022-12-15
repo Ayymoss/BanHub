@@ -1,6 +1,6 @@
-﻿using GlobalBans.Enums;
+﻿using GlobalInfractions.Enums;
 
-namespace GlobalBans.Models;
+namespace GlobalInfractions.Models;
 
 public class InfractionRequestModel
 {

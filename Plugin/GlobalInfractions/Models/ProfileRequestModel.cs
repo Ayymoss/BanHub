@@ -1,5 +1,5 @@
 ﻿
-namespace GlobalBans.Models;
+namespace GlobalInfractions.Models;
 
 public class ProfileRequestModel
 {

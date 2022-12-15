@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace GlobalBan.WebCore.Server.Models;
+namespace GlobalInfraction.WebCore.Server.Models;
 
 public class EFInstance
 {

@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>GlobalBan.WebCore.Client</RootNamespace>
+    <RootNamespace>GlobalInfraction.WebCore.Client</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

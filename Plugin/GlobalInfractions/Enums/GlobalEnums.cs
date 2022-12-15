@@ -1,4 +1,4 @@
-﻿namespace GlobalBans.Enums;
+﻿namespace GlobalInfractions.Enums;
 
 public enum InfractionType
 {

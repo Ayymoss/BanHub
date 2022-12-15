@@ -1,12 +1,12 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
-using GlobalBans.Models;
+using GlobalInfractions.Models;
 using SharedLibraryCore;
 using SharedLibraryCore.Database.Models;
 using SharedLibraryCore.Interfaces;
 
-namespace GlobalBans;
+namespace GlobalInfractions;
 
 public class Plugin : IPlugin
 {

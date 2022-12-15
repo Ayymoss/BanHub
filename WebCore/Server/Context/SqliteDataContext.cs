@@ -1,8 +1,7 @@
-﻿using GlobalBan.WebCore.Server.Models;
-using GlobalBan.WebCore.Shared;
+﻿using GlobalInfraction.WebCore.Server.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace GlobalBan.WebCore.Server.Context;
+namespace GlobalInfraction.WebCore.Server.Context;
 
 public class SqliteDataContext : DbContext
 {

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace GlobalBan.WebCore.Server.Models;
+namespace GlobalInfraction.WebCore.Server.Models;
 
 public class EFProfileMeta
 {

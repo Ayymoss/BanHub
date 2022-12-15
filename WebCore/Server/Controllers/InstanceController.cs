@@ -1,10 +1,10 @@
-﻿using GlobalBan.WebCore.Server.Context;
-using GlobalBan.WebCore.Server.Models;
-using GlobalBan.WebCore.Shared.Models;
+﻿using GlobalInfraction.WebCore.Server.Context;
+using GlobalInfraction.WebCore.Server.Models;
+using GlobalInfraction.WebCore.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace GlobalBan.WebCore.Server.Controllers;
+namespace GlobalInfraction.WebCore.Server.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
