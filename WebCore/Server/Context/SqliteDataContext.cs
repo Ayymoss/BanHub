@@ -13,4 +13,13 @@ public class SqliteDataContext : DbContext
     public DbSet<EFProfile> Profiles { get; set; }
     public DbSet<EFProfileMeta> ProfileMetas { get; set; }
     public DbSet<EFInfraction> Infractions { get; set; }
+    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<EFInstance>().ToTable("EFInstances");
+        modelBuilder.Entity<EFProfile>().ToTable("EFProfiles");
+        modelBuilder.Entity<EFProfileMeta>().ToTable("EFProfileMetas");
+        modelBuilder.Entity<EFInfraction>().ToTable("EFInfractions");
+        base.OnModelCreating(modelBuilder);
+    }
 }

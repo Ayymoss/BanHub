@@ -12,19 +12,20 @@ public class ProfileRequestModel
     /// The player's game tied GUID
     /// </summary>
     public string ProfileGame { get; init; } = null!;
-
-    /// <summary>
-    /// Unique profile identifier for comparing profiles
-    /// </summary>
-    public string ProfileIdentifier { get; init; } = null!;
-
+    
     /// <summary>
     /// The player's reputation
     /// </summary>
-    public int Reputation { get; }
-
+    public int? Reputation { get; init; }
+    
     /// <summary>
-    /// The player's list of names and IP addresses
+    /// The player's meta
     /// </summary>
-    public virtual ProfileMetaRequestModel ProfileMeta { get; set; } = null!;
+    public virtual ProfileMetaRequestModel? ProfileMeta { get; set; }
+    
+    /// <summary>
+    /// The player's list of infractions
+    /// </summary>
+    public virtual ICollection<InfractionRequestModel>? Infractions { get; set; } 
 }
+

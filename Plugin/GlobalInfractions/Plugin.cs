@@ -1,6 +1,5 @@
-﻿using System.Net;
-using System.Net.Http.Json;
-using System.Text;
+﻿using System.Collections.Concurrent;
+using GlobalInfractions.Enums;
 using GlobalInfractions.Models;
 using SharedLibraryCore;
 using SharedLibraryCore.Database.Models;
@@ -14,17 +13,25 @@ public class Plugin : IPlugin
     public string Name => PluginName;
     public float Version => 20221213f;
     public string Author => "Amos";
+    
+    // Configuration??
 
-    public bool Enabled { get; set; }
+    public readonly InfractionManager InfractionManager;
+    public static IManager Manager = null!;
+
+    public Plugin(IServiceProvider serviceProvider)
+    {
+        InfractionManager = new InfractionManager(serviceProvider);
+    }
+
+    public bool Active { get; set; }
 
     public async Task OnEventAsync(GameEvent gameEvent, Server server)
     {
-        if (!Enabled) return;
-
         switch (gameEvent.Type)
         {
             case GameEvent.EventType.Join:
-                await UpdateClient(gameEvent.Origin);
+                await InfractionManager.UpdateProfile(gameEvent.Origin);
                 break;
             case GameEvent.EventType.Disconnect:
                 break;
@@ -33,6 +40,8 @@ public class Plugin : IPlugin
             case GameEvent.EventType.WarnClear:
                 break;
             case GameEvent.EventType.Kick:
+                Console.WriteLine($"DATA: {gameEvent.Data}");
+                await InfractionManager.NewInfraction(InfractionType.Kick, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
                 break;
             case GameEvent.EventType.TempBan:
                 break;
@@ -43,75 +52,13 @@ public class Plugin : IPlugin
         }
     }
 
-    private async Task UpdateClient(EFClient client)
-    {
-        var httpClient = new HttpClient();
 
-        var userRequest = new ProfileRequestModel
-        {
-            ProfileGuid = client.GuidString,
-            ProfileGame = client.GameName.ToString(),
-            ProfileIdentifier =
-                Convert.ToBase64String(Encoding.UTF8.GetBytes(string.Concat(client.GuidString, client.GameName.ToString()))),
-            ProfileMeta = new ProfileMetaRequestModel
-            {
-                UserName = client.CleanedName,
-                IpAddress = client.IPAddressString
-            }
-        };
-        var postResponse = await httpClient.PostAsJsonAsync("http://localhost:5001/api/Profile", userRequest);
-        Console.WriteLine($"[{PluginName}] {client.CleanedName} : {postResponse.StatusCode} - {postResponse.ReasonPhrase}");
-    }
-
-    private async Task<bool> UpdateInstance(IManager manager)
-    {
-        var instanceGuid = manager.GetApplicationSettings().Configuration().Id;
-        var instanceName = manager.GetApplicationSettings().Configuration().WebfrontCustomBranding;
-        var instanceIp = await Utilities.GetExternalIP();
-        var apiKey = Guid.Parse("92B3064E-F51D-49F7-9337-C409669B7FDC"); // TODO: Change this.
-
-        Console.WriteLine($"[{PluginName}] Updating instance {instanceName} ({instanceGuid}) - {instanceIp}");
-
-        var model = new InstanceRequestModel
-        {
-            InstanceGuid = Guid.Parse(instanceGuid),
-            InstanceName = instanceName,
-            InstanceIp = instanceIp,
-            ApiKey = apiKey
-        };
-
-        var httpClient = new HttpClient();
-        var postServerResponse = await httpClient.PostAsJsonAsync("http://localhost:5000/api/Instance", model);
-        var enabled = false;
-
-        switch (postServerResponse.StatusCode)
-        {
-            case HttpStatusCode.Accepted:
-                enabled = true;
-                break;
-            case HttpStatusCode.OK:
-                enabled = false;
-                break;
-        }
-
-        if (!enabled)
-        {
-            Console.WriteLine($"[{PluginName}] Global Bans plugin is disabled");
-            Console.WriteLine($"[{PluginName}] To activate your access. Please visit <DISCORD>");
-        }
-        else
-        {
-            Console.WriteLine($"[{PluginName}] Global Bans plugin is enabled");
-            Console.WriteLine($"[{PluginName}] Infractions will be reported to the Global Bans list.");
-        }
-
-        return enabled;
-    }
 
     public async Task OnLoadAsync(IManager manager)
     {
+        Manager = manager;
         Console.WriteLine($"[{PluginName}] Global Bans plugin started");
-        Enabled = await UpdateInstance(manager);
+        Active = await InfractionManager.UpdateInstance();
         Console.WriteLine($"[{PluginName}] Global Bans plugin loaded");
     }
 

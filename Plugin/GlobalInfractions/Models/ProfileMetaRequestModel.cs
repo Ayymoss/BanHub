@@ -15,5 +15,5 @@ public class ProfileMetaRequestModel
     /// <summary>
     /// The last time the player's name changed
     /// </summary>
-    public DateTimeOffset Changed { get; }
+    public DateTimeOffset Changed { get; set; }
 }

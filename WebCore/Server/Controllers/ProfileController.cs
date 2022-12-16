@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using GlobalInfraction.WebCore.Server.Context;
 using GlobalInfraction.WebCore.Server.Models;
+using GlobalInfraction.WebCore.Shared.Enums;
 using GlobalInfraction.WebCore.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,11 +19,14 @@ public class ProfileController : Controller
         _context = context;
     }
 
+    // TODO: test this method. It's returning http "The response ended prematurely."
     [HttpPost]
-    public async Task<ActionResult<string>> CreateOrUpdate([FromBody] ProfileRequestModel request)
+    public async Task<ActionResult<ProfileRequestModel>> CreateOrUpdate([FromBody] ProfileRequestModel request)
     {
-        var user = await _context.Profiles.FirstOrDefaultAsync(user => user.ProfileIdentifier == request.ProfileIdentifier);
+        var user = await _context.Profiles.FirstOrDefaultAsync(user =>
+            user.ProfileGame == request.ProfileGame && user.ProfileGuid == request.ProfileGuid);
 
+        // Check if user exists
         if (user is not null)
         {
             var userName = user.ProfileMetas.FirstOrDefault(identity => identity.UserName == request.ProfileMeta.UserName);
@@ -39,19 +43,38 @@ public class ProfileController : Controller
                 };
                 user.ProfileMetas.Add(meta);
             }
+
             user.LastConnected = DateTimeOffset.UtcNow;
-            
+
             _context.Profiles.Update(user);
             await _context.SaveChangesAsync();
-            return Ok($"User updated {request.ProfileIdentifier}");
+            
+            return new ProfileRequestModel
+            {
+                ProfileGuid = user.ProfileGuid,
+                ProfileGame = user.ProfileGame,
+                ProfileMeta = request.ProfileMeta,
+                Reputation = user.Reputation,
+                Infractions = user.Infractions
+                    .Where(x => x.Profile.ProfileGuid == user.ProfileGuid && x.Profile.ProfileGame == user.ProfileGame)
+                    .Select(infraction => new InfractionRequestModel
+                    {
+                        InfractionType = infraction.InfractionType,
+                        InfractionScope = infraction.InfractionScope,
+                        InfractionGuid = infraction.InfractionGuid,
+                        AdminGuid = infraction.AdminGuid,
+                        AdminUserName = infraction.AdminUserName,
+                        Reason = infraction.Reason,
+                        Evidence = infraction.Evidence,
+                    }).ToList()
+            };
         }
 
-        // TODO: test this method. It's returning http "The response ended prematurely."
-        _context.Profiles.Add(new EFProfile
+        // Create the user
+        var newProfile = new EFProfile
         {
             ProfileGuid = request.ProfileGuid,
             ProfileGame = request.ProfileGame,
-            ProfileIdentifier = Convert.ToBase64String(Encoding.UTF8.GetBytes(string.Concat(request.ProfileGuid, request.ProfileGame))),
             Reputation = 10,
             ProfileMetas = new List<EFProfileMeta>
             {
@@ -63,11 +86,24 @@ public class ProfileController : Controller
                 }
             },
             Infractions = new List<EFInfraction>()
-        });
+        };
+        _context.Profiles.Add(newProfile);
 
         await _context.SaveChangesAsync();
 
-        return Ok($"User added {request.ProfileGuid}");
+        return new ProfileRequestModel
+        {
+            ProfileGuid = newProfile.ProfileGuid,
+            ProfileGame = newProfile.ProfileGame, 
+            Reputation = newProfile.Reputation,
+            ProfileMeta = newProfile.ProfileMetas.Select(x => new ProfileMetaRequestModel
+            {
+                UserName = x.UserName,
+                IpAddress = x.IpAddress,
+                Changed = x.Changed
+            }).LastOrDefault()!
+           
+        };
     }
 
     [HttpGet]
@@ -80,11 +116,10 @@ public class ProfileController : Controller
             {
                 ProfileGuid = profile.ProfileGuid,
                 ProfileGame = profile.ProfileGame,
-                ProfileIdentifier = profile.ProfileIdentifier,
                 ProfileMeta = new ProfileMetaRequestModel
                 {
                     UserName = profile.ProfileMetas.Last().UserName,
-                    IpAddress = profile.ProfileMetas.Last().IpAddress,
+                    IpAddress = profile.ProfileMetas.Last().IpAddress, //TODO: THIS NEEDS TO BE PRIVILEGED
                     Changed = profile.ProfileMetas.Last().Changed
                 }
             }).ToList();
@@ -92,20 +127,19 @@ public class ProfileController : Controller
         return Ok(profileRequest);
     }
 
-    [HttpGet("{guid}")]
-    public async Task<ActionResult<ProfileRequestModel>> GetUser(string guid)
+    [HttpGet("{guid}&{game}")]
+    public async Task<ActionResult<ProfileRequestModel>> GetUser(string guid, string game)
     {
-        var result = await _context.Profiles.FirstOrDefaultAsync(x => x.ProfileIdentifier == guid);
+        var result = await _context.Profiles.FirstOrDefaultAsync(user => user.ProfileGame == game && user.ProfileGuid == guid);
         if (result is null) return NotFound("No user found");
         return Ok(new ProfileRequestModel
         {
             ProfileGuid = result.ProfileGuid,
             ProfileGame = result.ProfileGame,
-            ProfileIdentifier = result.ProfileIdentifier,
             ProfileMeta = new ProfileMetaRequestModel
             {
                 UserName = result.ProfileMetas.Last().UserName,
-                IpAddress = result.ProfileMetas.Last().IpAddress,
+                IpAddress = result.ProfileMetas.Last().IpAddress, //TODO: THIS NEEDS TO BE PRIVILEGED
                 Changed = result.ProfileMetas.Last().Changed
             }
         });

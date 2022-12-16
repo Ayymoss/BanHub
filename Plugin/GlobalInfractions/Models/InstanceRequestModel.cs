@@ -19,8 +19,4 @@ public class InstanceRequestModel
     /// The IW4MAdmin provided API Key
     /// </summary>
     public Guid ApiKey { get; set; }
-    /// <summary>
-    /// State whether the server can upload bans
-    /// </summary>
-    public bool Active { get; init; }
 }

@@ -15,12 +15,7 @@ public class EFProfile
     /// The player's game tied GUID
     /// </summary>
     public string ProfileGame { get; init; } = null!;
-
-    /// <summary>
-    /// Unique profile identifier for comparing profiles
-    /// </summary>
-    public string ProfileIdentifier { get; init; } = null!;
-
+    
     /// <summary>
     /// The player's reputation
     /// </summary>

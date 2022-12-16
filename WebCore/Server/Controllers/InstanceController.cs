@@ -24,8 +24,8 @@ public class InstanceController : Controller
 
         if (user is not null)
             return user.Active
-                ? Accepted("Instance exists, and is active.")
-                : Ok("Instance exists, but is not active.");
+                ? StatusCode(202, "Instance exists, and is active.")
+                : StatusCode(200, "Instance exists, but is not active.");
 
         _context.Instances.Add(new EFInstance
         {
