@@ -1,6 +1,6 @@
 ﻿namespace GlobalInfraction.WebCore.Shared.Models;
 
-public class InstanceRequestModel
+public class InstanceDto
 {
     /// <summary>
     /// The IW4MAdmin GUID

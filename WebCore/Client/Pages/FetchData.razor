@@ -33,10 +33,10 @@ else
 }
 
 @code {
-    private List<InfractionRequestModel>? _bans;
+    private List<InfractionDto>? _bans;
 
     protected override async Task OnInitializedAsync()
     {
-        _bans = await Http.GetFromJsonAsync<List<InfractionRequestModel>>("/api/Ban");
+        _bans = await Http.GetFromJsonAsync<List<InfractionDto>>("/api/Ban");
     }
 }

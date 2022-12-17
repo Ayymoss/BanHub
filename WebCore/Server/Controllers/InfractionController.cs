@@ -19,19 +19,23 @@ public class InfractionController : Controller
     }
 
     [HttpPost]
-    public async Task<ActionResult<string>> AddInfraction([FromBody] InfractionRequestModel request)
+    public async Task<ActionResult<string>> AddInfraction([FromBody] InfractionDto request)
     {
-        // Get user from database
-        var user = _context.Profiles
+        var user = await _context.Profiles
             .AsTracking()
-            .FirstOrDefault(user => user.ProfileGame == request.Profile.ProfileGame && user.ProfileGuid == request.Profile.ProfileGuid);
-        if (user is null) return StatusCode(404, "User not found");
-        
+            .FirstOrDefaultAsync(user => user.ProfileIdentity == request.Target.ProfileIdentity);
+
+        var admin = await _context.Profiles.FirstOrDefaultAsync(profile => profile.ProfileIdentity == request.Admin.ProfileIdentity);
+        if (user is null || admin is null) return StatusCode(404, "User not found");
+
         var infractionCheck = await _context.Infractions.FirstOrDefaultAsync(x => x.InfractionGuid == request.InfractionGuid);
         if (infractionCheck is not null) return StatusCode(409, "Infraction already exists");
 
-        var instance = await _context.Instances.FirstOrDefaultAsync(x => x.InstanceGuid == request.Instance.InstanceGuid);
+        // TODO: Recursive ban. Find a way to prevent global bans triggering loads of kick infractions.
+
+        var instance = await _context.Instances.FirstOrDefaultAsync(x => x.ApiKey == request.Instance.ApiKey);
         if (instance is null) return StatusCode(404, "Server not found");
+        if (!instance.Active) return StatusCode(401, "Server is not active");
 
         var infractionModel = new EFInfraction
         {
@@ -40,17 +44,16 @@ public class InfractionController : Controller
             InfractionScope = request.InfractionScope,
             InfractionGuid = request.InfractionGuid,
             Submitted = DateTimeOffset.UtcNow,
-            AdminGuid = request.AdminGuid,
-            AdminUserName = request.AdminUserName,
+            AdminId = admin.Id,
             Reason = request.Reason,
             Evidence = request.Evidence,
-            ServerId = instance.Id,
-            UserId = user.Id
+            InstanceId = instance.Id,
+            TargetId = user.Id
         };
 
         _context.Add(infractionModel);
         await _context.SaveChangesAsync();
-        return Ok($"Ban added {request.Profile.ProfileGuid} {infractionModel.InfractionGuid}");
+        return Ok($"Ban added {request.Target.ProfileIdentity} {infractionModel.InfractionGuid}");
     }
 
     //[HttpPatch]

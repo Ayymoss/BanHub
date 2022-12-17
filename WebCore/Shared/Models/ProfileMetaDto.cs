@@ -1,6 +1,6 @@
-﻿namespace GlobalInfractions.Models;
+﻿namespace GlobalInfraction.WebCore.Shared.Models;
 
-public class ProfileMetaRequestModel
+public class ProfileMetaDto
 {
     /// <summary>
     /// The player's name

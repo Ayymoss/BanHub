@@ -1,7 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using Data.Abstractions;
+using Data.Models;
 using GlobalInfractions.Enums;
 using GlobalInfractions.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +16,7 @@ namespace GlobalInfractions;
 
 public class InfractionManager
 {
-    public readonly ConcurrentDictionary<EFClient, ProfileRequestModel> Profiles = new();
+    public readonly ConcurrentDictionary<EFClient, ProfileDto> Profiles = new();
 
     private readonly IMetaServiceV2 _metaService;
     private readonly ITranslationLookup _translationLookup;
@@ -29,63 +31,73 @@ public class InfractionManager
         _context = serviceProvider.GetRequiredService<IDatabaseContextFactory>();
     }
 
-    public async Task<ProfileRequestModel> UpdateProfile(EFClient client)
+    public static string GetIdentity(string guid, string game) => Convert.ToBase64String(Encoding.UTF8.GetBytes($"{guid}:{game}"));
+
+    public async Task UpdateProfile(EFClient client)
     {
         var httpClient = new HttpClient();
 
-        var profile = new ProfileRequestModel
+        var profile = new ProfileDto
         {
-            ProfileGuid = client.GuidString,
-            ProfileGame = client.GameName.ToString(),
-            ProfileMeta = new ProfileMetaRequestModel
+            ProfileIdentity = GetIdentity(client.GuidString, client.GameName.ToString()),
+            ProfileMeta = new ProfileMetaDto
             {
                 UserName = client.CleanedName,
                 IpAddress = client.IPAddressString
-            }
+            },
+            Instance = await GetInstance()
         };
 
-        // TODO: This API call isn't even getting to the server. Why?
-        /*
-         * System.Net.Http.HttpRequestException: An error occurred while sending the request. ---> System.IO.IOException: The response ended prematurely.
-         */
-        var response = await httpClient.PostAsJsonAsync("http://localhost:5001/api/Profile", profile);
-        var profileResult = await response.Content.ReadFromJsonAsync<ProfileRequestModel>();
+        var response = await httpClient.PostAsJsonAsync("http://localhost:5000/api/Profile", profile);
+        var profileResult = await response.Content.ReadFromJsonAsync<ProfileDto>();
 
         if (profileResult is null) throw new Exception("Profile result is null");
 
         Profiles.TryAdd(client, profileResult);
-        Console.WriteLine(profileResult.ProfileGuid);
-        return profileResult;
+        ProcessProfile(profileResult, client);
     }
 
-    public async Task NewInfraction(InfractionType infractionType, EFClient origin, EFClient target,
-        string reason, string? evidence = null)
+    public void ProcessProfile(ProfileDto profile, EFClient client)
     {
-        var infraction = new InfractionRequestModel
+        var globalBan = profile.Infractions?.FirstOrDefault(x => x is
+            {InfractionScope: InfractionScope.Global, InfractionStatus: InfractionStatus.Active});
+        if (globalBan is null || !client.IsIngame) return;
+        var activePenalty = client.ReceivedPenalties.FirstOrDefault(x => x.Active && x.Type == EFPenalty.PenaltyType.Ban);
+        if (activePenalty is not null) return;
+        client.Kick($"GLOBAL: {globalBan.Reason}", Utilities.IW4MAdminClient());
+    }
+    // TODO: Fix recursive call. Global ban from another community will trigger this and then upload a new infraction.
+    
+    public async Task NewInfraction(InfractionType infractionType, EFClient origin, EFClient target,
+        string reason, TimeSpan? duration = null, string? evidence = null)
+    {
+        if (!Plugin.Active) return;
+        
+        var infraction = new InfractionDto
         {
             InfractionType = infractionType,
             InfractionScope = InfractionScope.Local,
-            AdminGuid = origin.GuidString,
-            AdminUserName = origin.CleanedName,
             InfractionGuid = Guid.NewGuid(),
             Evidence = evidence,
             Reason = reason,
+            Duration = duration,
             Instance = await GetInstance(),
-            Profile = Profiles.FirstOrDefault(x => x.Key.GuidString == target.GuidString).Value
+            Admin = Profiles.FirstOrDefault(x => x.Key.GuidString == origin.GuidString).Value,
+            Target = Profiles.FirstOrDefault(x => x.Key.GuidString == target.GuidString).Value
         };
         var httpClient = new HttpClient();
-        var postResponse = await httpClient.PostAsJsonAsync("http://localhost:5001/api/Infraction", infraction);
+        var postResponse = await httpClient.PostAsJsonAsync("http://localhost:5000/api/Infraction", infraction);
         Console.WriteLine($"New infraction: {postResponse.Content.ReadAsStringAsync()}");
     }
 
-    private async Task<InstanceRequestModel> GetInstance()
+    private async Task<InstanceDto> GetInstance()
     {
         var instanceGuid = Plugin.Manager.GetApplicationSettings().Configuration().Id;
         var instanceName = Plugin.Manager.GetApplicationSettings().Configuration().WebfrontCustomBranding;
         var instanceIp = await Utilities.GetExternalIP();
-        var apiKey = Guid.Parse("92B3064E-F51D-49F7-9337-C409669B7FDC");
+        var apiKey = Plugin.Configuration.ApiKey; 
 
-        return new InstanceRequestModel
+        return new InstanceDto
         {
             InstanceGuid = Guid.Parse(instanceGuid),
             InstanceName = instanceName,

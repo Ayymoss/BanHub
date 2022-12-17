@@ -2,7 +2,7 @@
 
 namespace GlobalInfraction.WebCore.Shared.Models;
 
-public class InfractionRequestModel
+public class InfractionDto
 {
     /// <summary>
     /// The type of infraction
@@ -10,24 +10,24 @@ public class InfractionRequestModel
     public InfractionType InfractionType { get; set; }
 
     /// <summary>
+    /// The state of the infraction
+    /// </summary>
+    public InfractionStatus InfractionStatus { get; set; }
+
+    /// <summary>
     /// The scope of the infraction
     /// </summary>
     public InfractionScope InfractionScope { get; set; }
-    
+
     /// <summary>
     /// The unique infraction identifier
     /// </summary>
     public Guid InfractionGuid { get; set; }
 
     /// <summary>
-    /// The admin GUID who issued the infraction
+    /// Duration of a temporary infraction
     /// </summary>
-    public string AdminGuid { get; set; } = null!;
-
-    /// <summary>
-    ///  The admin who issued the infraction
-    /// </summary>
-    public string AdminUserName { get; set; } = null!;
+    public TimeSpan? Duration { get; set; }
 
     /// <summary>
     /// The provided reason for the infraction
@@ -40,12 +40,17 @@ public class InfractionRequestModel
     public string? Evidence { get; set; }
 
     /// <summary>
-    /// Information related to the server the infraction was issued from
+    /// The admin GUID who issued the infraction
     /// </summary>
-    public InstanceRequestModel Instance { get; set; } = null!;
+    public ProfileDto Admin { get; set; } = null!;
 
     /// <summary>
     /// Information related to the player the infraction was issued to
     /// </summary>
-    public ProfileRequestModel Profile { get; set; } = null!;
+    public ProfileDto Target { get; set; } = null!;
+
+    /// <summary>
+    /// Information related to the server the infraction was issued from
+    /// </summary>
+    public InstanceDto Instance { get; set; } = null!;
 }

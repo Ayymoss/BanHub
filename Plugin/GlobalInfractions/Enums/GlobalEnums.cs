@@ -5,6 +5,8 @@ public enum InfractionType
     Warn = 10,
     Mute = 25,
     Kick = 50,
+    Unban = 90,
+    TempBan = 95,
     Ban = 100
 }
 

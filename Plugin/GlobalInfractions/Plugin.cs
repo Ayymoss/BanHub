@@ -13,18 +13,21 @@ public class Plugin : IPlugin
     public string Name => PluginName;
     public float Version => 20221213f;
     public string Author => "Amos";
-    
-    // Configuration??
 
+
+    private readonly IConfigurationHandler<Configuration> _configurationHandler;
+    public static Configuration Configuration = null!;
     public readonly InfractionManager InfractionManager;
     public static IManager Manager = null!;
+    public static bool Active { get; private set; }
 
-    public Plugin(IServiceProvider serviceProvider)
+    public Plugin(IServiceProvider serviceProvider, IConfigurationHandler<Configuration> configurationHandler)
     {
         InfractionManager = new InfractionManager(serviceProvider);
+        _configurationHandler = configurationHandler;
     }
 
-    public bool Active { get; set; }
+    
 
     public async Task OnEventAsync(GameEvent gameEvent, Server server)
     {
@@ -36,30 +39,49 @@ public class Plugin : IPlugin
             case GameEvent.EventType.Disconnect:
                 break;
             case GameEvent.EventType.Warn:
-                break;
-            case GameEvent.EventType.WarnClear:
+                await InfractionManager.NewInfraction(InfractionType.Warn, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
                 break;
             case GameEvent.EventType.Kick:
-                Console.WriteLine($"DATA: {gameEvent.Data}");
                 await InfractionManager.NewInfraction(InfractionType.Kick, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
                 break;
             case GameEvent.EventType.TempBan:
+                await InfractionManager.NewInfraction(InfractionType.TempBan, gameEvent.Origin, gameEvent.Target, gameEvent.Data,
+                    duration: (TimeSpan)gameEvent.Extra);
                 break;
             case GameEvent.EventType.Ban:
+                await InfractionManager.NewInfraction(InfractionType.Ban, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
                 break;
             case GameEvent.EventType.Unban:
+                await InfractionManager.NewInfraction(InfractionType.Unban, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
                 break;
         }
     }
 
 
-
     public async Task OnLoadAsync(IManager manager)
     {
-        Manager = manager;
         Console.WriteLine($"[{PluginName}] Global Bans plugin started");
+        Manager = manager;
+
+        // Check activation status
         Active = await InfractionManager.UpdateInstance();
-        Console.WriteLine($"[{PluginName}] Global Bans plugin loaded");
+
+        // Build configuration
+        await _configurationHandler.BuildAsync();
+        if (_configurationHandler.Configuration() == null)
+        {
+            Console.WriteLine($"[{PluginName}] Configuration not found, creating.");
+            _configurationHandler.Set(new Configuration());
+            await _configurationHandler.Save();
+            await _configurationHandler.BuildAsync();
+        }
+        else
+        {
+            await _configurationHandler.Save();
+        }
+
+        Configuration = _configurationHandler.Configuration();
+        Console.WriteLine($"[{PluginName}] loaded successfully. Version: {Version}");
     }
 
     public Task OnUnloadAsync()

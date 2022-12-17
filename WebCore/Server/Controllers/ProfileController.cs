@@ -19,20 +19,22 @@ public class ProfileController : Controller
         _context = context;
     }
 
-    // TODO: test this method. It's returning http "The response ended prematurely."
     [HttpPost]
-    public async Task<ActionResult<ProfileRequestModel>> CreateOrUpdate([FromBody] ProfileRequestModel request)
+    public async Task<ActionResult<ProfileDto>> CreateOrUpdate([FromBody] ProfileDto request)
     {
-        var user = await _context.Profiles.FirstOrDefaultAsync(user =>
-            user.ProfileGame == request.ProfileGame && user.ProfileGuid == request.ProfileGuid);
+        var user = await _context.Profiles
+            .AsTracking()
+            .Include(context => context.ProfileMetas)
+            .Include(context => context.Infractions)
+            .FirstOrDefaultAsync(user => user.ProfileIdentity == request.ProfileIdentity);
 
         // Check if user exists
         if (user is not null)
         {
-            var userName = user.ProfileMetas.FirstOrDefault(identity => identity.UserName == request.ProfileMeta.UserName);
-            var ipAddress = user.ProfileMetas.FirstOrDefault(identity => identity.IpAddress == request.ProfileMeta.IpAddress);
+            var userName = user.ProfileMetas.FirstOrDefault(profile => profile.UserName == request.ProfileMeta.UserName);
+            var ipAddress = user.ProfileMetas.FirstOrDefault(profile => profile.IpAddress == request.ProfileMeta.IpAddress);
 
-            if (userName is null && ipAddress is null)
+            if (userName is null || ipAddress is null)
             {
                 var meta = new EFProfileMeta
                 {
@@ -48,33 +50,50 @@ public class ProfileController : Controller
 
             _context.Profiles.Update(user);
             await _context.SaveChangesAsync();
-            
-            return new ProfileRequestModel
+
+            return new ProfileDto
             {
-                ProfileGuid = user.ProfileGuid,
-                ProfileGame = user.ProfileGame,
-                ProfileMeta = request.ProfileMeta,
+                ProfileIdentity = user.ProfileIdentity,
+                ProfileMeta = new ProfileMetaDto
+                {
+                    UserName = user.ProfileMetas.Last().UserName,
+                    IpAddress = user.ProfileMetas.Last().IpAddress, //TODO: THIS NEEDS TO BE PRIVILEGED
+                    Changed = user.ProfileMetas.Last().Changed
+                },
                 Reputation = user.Reputation,
                 Infractions = user.Infractions
-                    .Where(x => x.Profile.ProfileGuid == user.ProfileGuid && x.Profile.ProfileGame == user.ProfileGame)
-                    .Select(infraction => new InfractionRequestModel
+                    .Where(x => x.Target.ProfileIdentity == user.ProfileIdentity)
+                    .Select(infraction => new InfractionDto
                     {
                         InfractionType = infraction.InfractionType,
                         InfractionScope = infraction.InfractionScope,
                         InfractionGuid = infraction.InfractionGuid,
-                        AdminGuid = infraction.AdminGuid,
-                        AdminUserName = infraction.AdminUserName,
+                        Admin = new ProfileDto
+                        {
+                            ProfileIdentity = infraction.Admin.ProfileIdentity,
+                            ProfileMeta = new ProfileMetaDto
+                            {
+                                UserName = infraction.Admin.ProfileMetas.Last().UserName,
+                                IpAddress = infraction.Admin.ProfileMetas.Last().IpAddress,
+                                Changed = infraction.Admin.ProfileMetas.Last().Changed
+                            },
+                            Reputation = infraction.Admin.Reputation
+                        },
                         Reason = infraction.Reason,
                         Evidence = infraction.Evidence,
                     }).ToList()
             };
         }
 
+        // Check to see if the instance is authorised to upload
+        var instance = await _context.Instances.FirstOrDefaultAsync(instance => instance.ApiKey == request.Instance.ApiKey);
+        if (instance is null) return StatusCode(400, "Instance not found");
+        if (!instance.Active) return StatusCode(401, "Server is not active");
+
         // Create the user
         var newProfile = new EFProfile
         {
-            ProfileGuid = request.ProfileGuid,
-            ProfileGame = request.ProfileGame,
+            ProfileIdentity = request.ProfileIdentity,
             Reputation = 10,
             ProfileMetas = new List<EFProfileMeta>
             {
@@ -85,38 +104,36 @@ public class ProfileController : Controller
                     Changed = DateTimeOffset.UtcNow
                 }
             },
-            Infractions = new List<EFInfraction>()
+            Infractions = new List<EFInfraction>(),
+            LastConnected = DateTimeOffset.UtcNow
         };
         _context.Profiles.Add(newProfile);
 
         await _context.SaveChangesAsync();
 
-        return new ProfileRequestModel
+        return new ProfileDto
         {
-            ProfileGuid = newProfile.ProfileGuid,
-            ProfileGame = newProfile.ProfileGame, 
+            ProfileIdentity = newProfile.ProfileIdentity,
             Reputation = newProfile.Reputation,
-            ProfileMeta = newProfile.ProfileMetas.Select(x => new ProfileMetaRequestModel
+            ProfileMeta = newProfile.ProfileMetas.Select(x => new ProfileMetaDto
             {
                 UserName = x.UserName,
                 IpAddress = x.IpAddress,
                 Changed = x.Changed
             }).LastOrDefault()!
-           
         };
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProfileRequestModel>>> GetUsers()
+    public async Task<ActionResult<IEnumerable<ProfileDto>>> GetUsers()
     {
         var result = await _context.Profiles.ToListAsync();
 
         var profileRequest = result
-            .Select(profile => new ProfileRequestModel
+            .Select(profile => new ProfileDto
             {
-                ProfileGuid = profile.ProfileGuid,
-                ProfileGame = profile.ProfileGame,
-                ProfileMeta = new ProfileMetaRequestModel
+                ProfileIdentity = profile.ProfileIdentity,
+                ProfileMeta = new ProfileMetaDto
                 {
                     UserName = profile.ProfileMetas.Last().UserName,
                     IpAddress = profile.ProfileMetas.Last().IpAddress, //TODO: THIS NEEDS TO BE PRIVILEGED
@@ -127,21 +144,45 @@ public class ProfileController : Controller
         return Ok(profileRequest);
     }
 
-    [HttpGet("{guid}&{game}")]
-    public async Task<ActionResult<ProfileRequestModel>> GetUser(string guid, string game)
+    [HttpGet("{identity}")]
+    public async Task<ActionResult<ProfileDto>> GetUser(string identity)
     {
-        var result = await _context.Profiles.FirstOrDefaultAsync(user => user.ProfileGame == game && user.ProfileGuid == guid);
-        if (result is null) return NotFound("No user found");
-        return Ok(new ProfileRequestModel
+        var profile = await _context.Profiles
+            .Include(context => context.ProfileMetas)
+            .Include(context => context.Infractions)
+            .FirstOrDefaultAsync(profile => profile.ProfileIdentity == identity);
+        if (profile is null) return NotFound("No user found");
+        return Ok(new ProfileDto
         {
-            ProfileGuid = result.ProfileGuid,
-            ProfileGame = result.ProfileGame,
-            ProfileMeta = new ProfileMetaRequestModel
+            ProfileIdentity = profile.ProfileIdentity,
+            ProfileMeta = new ProfileMetaDto
             {
-                UserName = result.ProfileMetas.Last().UserName,
-                IpAddress = result.ProfileMetas.Last().IpAddress, //TODO: THIS NEEDS TO BE PRIVILEGED
-                Changed = result.ProfileMetas.Last().Changed
-            }
+                UserName = profile.ProfileMetas.Last().UserName,
+                IpAddress = profile.ProfileMetas.Last().IpAddress, //TODO: THIS NEEDS TO BE PRIVILEGED
+                Changed = profile.ProfileMetas.Last().Changed
+            },
+            Infractions = profile.Infractions
+                .Where(inf => inf.Target.ProfileIdentity == profile.ProfileIdentity)
+                .Select(infraction => new InfractionDto
+                {
+                    InfractionType = infraction.InfractionType,
+                    InfractionScope = infraction.InfractionScope,
+                    InfractionGuid = infraction.InfractionGuid,
+                    Admin = new ProfileDto
+                    {
+                        ProfileIdentity = infraction.Admin.ProfileIdentity,
+                        ProfileMeta = new ProfileMetaDto
+                        {
+                            UserName = infraction.Admin.ProfileMetas.Last().UserName,
+                            IpAddress = infraction.Admin.ProfileMetas.Last().IpAddress,
+                            Changed = infraction.Admin.ProfileMetas.Last().Changed
+                        },
+                        Reputation = infraction.Admin.Reputation
+                    },
+                    Reason = infraction.Reason,
+                    Evidence = infraction.Evidence,
+                }).ToList(),
+            Reputation = profile.Reputation
         });
     }
 }

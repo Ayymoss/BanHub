@@ -1,6 +1,6 @@
 ﻿namespace GlobalInfractions.Models;
 
-public class InstanceRequestModel
+public class InstanceDto
 {
     /// <summary>
     /// The IW4MAdmin GUID

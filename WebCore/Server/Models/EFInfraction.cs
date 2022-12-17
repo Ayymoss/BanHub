@@ -34,15 +34,10 @@ public class EFInfraction
     public DateTimeOffset Submitted { get; set; }
 
     /// <summary>
-    /// The admin GUID who issued the infraction
+    /// Duration of a temporary infraction
     /// </summary>
-    public string AdminGuid { get; set; } = null!;
-
-    /// <summary>
-    ///  The admin who issued the infraction
-    /// </summary>
-    public string AdminUserName { get; set; } = null!;
-
+    public TimeSpan? Duration { get; set; }
+    
     /// <summary>
     /// The provided reason for the infraction
     /// </summary>
@@ -53,8 +48,21 @@ public class EFInfraction
     /// </summary>
     public string? Evidence { get; set; }
 
-    public int UserId { get; set; }
-    [ForeignKey(nameof(UserId))] public EFProfile Profile { get; set; } = null!;
-    public int ServerId { get; set; }
-    [ForeignKey(nameof(ServerId))] public EFInstance Instance { get; set; } = null!;
+    /// <summary>
+    /// The admin GUID who issued the infraction
+    /// </summary>
+    public int AdminId { get; set; }
+    [ForeignKey(nameof(AdminId))] public EFProfile Admin { get; set; } = null!;
+    
+    /// <summary>
+    /// The user GUID who received the infraction
+    /// </summary>
+    public int TargetId { get; set; }
+    [ForeignKey(nameof(TargetId))] public EFProfile Target { get; set; } = null!;
+    
+    /// <summary>
+    /// The server reference this infraction
+    /// </summary>
+    public int InstanceId { get; set; }
+    [ForeignKey(nameof(InstanceId))] public EFInstance Instance { get; set; } = null!;
 }
