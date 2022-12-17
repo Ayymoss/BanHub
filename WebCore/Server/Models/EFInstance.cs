@@ -20,6 +20,11 @@ public class EFInstance
     /// The IW4MAdmin name
     /// </summary>
     public string? InstanceName { get; set; }
+    
+    /// <summary>
+    /// The last the the instance has replied
+    /// </summary>
+    public DateTimeOffset Heartbeat { get; set; }
 
     /// <summary>
     /// The IW4MAdmin provided API Key

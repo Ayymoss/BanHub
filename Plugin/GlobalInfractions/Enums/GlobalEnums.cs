@@ -21,3 +21,9 @@ public enum InfractionScope
     Local = 10,
     Global = 20
 }
+
+public enum Action
+{
+    Add,
+    Remove
+}

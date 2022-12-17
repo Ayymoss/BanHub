@@ -13,6 +13,11 @@ public class ProfileDto
     public int? Reputation { get; init; }
 
     /// <summary>
+    /// The last time the player was seen
+    /// </summary>
+    public DateTimeOffset HeartBeat { get; set; }
+    
+    /// <summary>
     /// The player's meta
     /// </summary>
     public virtual ProfileMetaDto ProfileMeta { get; set; } = null!;

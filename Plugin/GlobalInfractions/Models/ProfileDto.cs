@@ -12,6 +12,11 @@ public class ProfileDto
     /// The player's reputation
     /// </summary>
     public int? Reputation { get; init; }
+    
+    /// <summary>
+    /// The last time the player was seen
+    /// </summary>
+    public DateTimeOffset HeartBeat { get; set; }
 
     /// <summary>
     /// The player's meta

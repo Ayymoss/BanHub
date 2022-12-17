@@ -51,8 +51,14 @@ public class EFInfraction
     /// <summary>
     /// The admin GUID who issued the infraction
     /// </summary>
-    public int AdminId { get; set; }
+    public int AdminId { get; set; } // TODO: FIX THIS :( 
     [ForeignKey(nameof(AdminId))] public EFProfile Admin { get; set; } = null!;
+    
+    /* ^^^^^ 
+Unable to determine the relationship represented by navigation 'EFInfraction.Admin' of type 'EFProfile'. 
+Either manually configure the relationship, or ignore this property using the 
+'[NotMapped]' attribute or by using 'EntityTypeBuilder.Ignore' in 'OnModelCreating'.
+     */
     
     /// <summary>
     /// The user GUID who received the infraction

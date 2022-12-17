@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using GlobalInfractions.Configuration;
 using GlobalInfractions.Enums;
 using GlobalInfractions.Models;
 using SharedLibraryCore;
@@ -9,25 +10,24 @@ namespace GlobalInfractions;
 
 public class Plugin : IPlugin
 {
-    public const string PluginName = "Global Bans";
+    public const string PluginName = "Global Infractions";
     public string Name => PluginName;
     public float Version => 20221213f;
     public string Author => "Amos";
 
 
-    private readonly IConfigurationHandler<Configuration> _configurationHandler;
-    public static Configuration Configuration = null!;
-    public readonly InfractionManager InfractionManager;
+    private readonly IConfigurationHandler<ConfigurationModel> _configurationHandler;
+    public static ConfigurationModel Configuration = null!;
+    public static TranslationStrings Translation = null!;
+    public static InfractionManager InfractionManager = null!;
     public static IManager Manager = null!;
     public static bool Active { get; private set; }
 
-    public Plugin(IServiceProvider serviceProvider, IConfigurationHandler<Configuration> configurationHandler)
+    public Plugin(IServiceProvider serviceProvider, IConfigurationHandler<ConfigurationModel> configurationHandler)
     {
         InfractionManager = new InfractionManager(serviceProvider);
         _configurationHandler = configurationHandler;
     }
-
-    
 
     public async Task OnEventAsync(GameEvent gameEvent, Server server)
     {
@@ -57,7 +57,6 @@ public class Plugin : IPlugin
         }
     }
 
-
     public async Task OnLoadAsync(IManager manager)
     {
         Console.WriteLine($"[{PluginName}] Global Bans plugin started");
@@ -71,7 +70,7 @@ public class Plugin : IPlugin
         if (_configurationHandler.Configuration() == null)
         {
             Console.WriteLine($"[{PluginName}] Configuration not found, creating.");
-            _configurationHandler.Set(new Configuration());
+            _configurationHandler.Set(new ConfigurationModel());
             await _configurationHandler.Save();
             await _configurationHandler.BuildAsync();
         }
@@ -81,6 +80,11 @@ public class Plugin : IPlugin
         }
 
         Configuration = _configurationHandler.Configuration();
+        Translation = Configuration.Translations[Configuration.Locale];
+
+        // Start the heartbeat
+        HeartbeatManager.HeartbeatTimer();
+
         Console.WriteLine($"[{PluginName}] loaded successfully. Version: {Version}");
     }
 

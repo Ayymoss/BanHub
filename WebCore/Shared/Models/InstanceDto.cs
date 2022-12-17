@@ -18,6 +18,11 @@ public class InstanceDto
     public string? InstanceName { get; set; }
 
     /// <summary>
+    /// The last the the instance has replied
+    /// </summary>
+    public DateTimeOffset Heartbeat { get; set; }
+    
+    /// <summary>
     /// The IW4MAdmin provided API Key
     /// </summary>
     public Guid ApiKey { get; set; }

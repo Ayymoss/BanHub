@@ -5,12 +5,14 @@ public enum InfractionType
     Warn = 10,
     Mute = 25,
     Kick = 50,
+    Unban = 90,
+    TempBan = 95,
     Ban = 100
 }
 
 public enum InfractionStatus
 {
-    Inactive = 20,
+    Revoked = 20,
     Active = 10
 }
 

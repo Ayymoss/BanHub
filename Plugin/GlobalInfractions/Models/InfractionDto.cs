@@ -22,8 +22,8 @@ public class InfractionDto
     /// <summary>
     /// The unique infraction identifier
     /// </summary>
-    public Guid InfractionGuid { get; set; }
-    
+    public Guid? InfractionGuid { get; set; }
+
     /// <summary>
     /// Duration of a temporary infraction
     /// </summary>

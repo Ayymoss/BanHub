@@ -48,7 +48,8 @@ public class InstanceController : Controller
             InstanceIp = ipAddress,
             InstanceName = request.InstanceName,
             ApiKey = request.ApiKey,
-            Active = false
+            Active = false,
+            Heartbeat = DateTimeOffset.UtcNow
         });
 
         await _context.SaveChangesAsync();

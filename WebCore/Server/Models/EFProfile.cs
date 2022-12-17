@@ -17,10 +17,10 @@ public class EFProfile
     public int Reputation { get; set; } = 10;
 
     /// <summary>
-    /// The player's last connected date
+    /// The last time the player was seen
     /// </summary>
-    public DateTimeOffset LastConnected { get; set; }
-
+    public DateTimeOffset? HeartBeat { get; set; }
+    
     /// <summary>
     /// The player's list of names and IP addresses
     /// </summary>
@@ -51,13 +51,15 @@ Defaults:
     Onboarding process - Server owners download, install then the plugin makes a request to me for acceptance. 
     
     TODO: REPUTATION DECAY
-    TODO: TEMPBAN SUPPORT
     TODO: RECURSIVE CALL ISSUE
     TODO: PRIVILEGED USERS
     TODO: CHANGE TO POSTGRES
     TODO: FRONTEND
     TODO: STOP THE FAT CONTROLLERS!
-    TODO: CLIENT HEARTBEAT TO SEE ONLINE CLIENTS
+    TODO: CLIENT HEARTBEAT TO SEE ONLINE CLIENTS - Get online and offline state correctly
+    TODO: Handle HTTP server disconnects better. We should retry connection if it fails. We should also queue infractions. 
+    
+    TODO: USE AUTOMAPPER FOR OBJECT MAPPING
     
 */
 // Unedited https://forums.mcbans.com/wiki/how-the-system-works/

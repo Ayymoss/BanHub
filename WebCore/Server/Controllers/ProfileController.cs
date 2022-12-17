@@ -46,7 +46,7 @@ public class ProfileController : Controller
                 user.ProfileMetas.Add(meta);
             }
 
-            user.LastConnected = DateTimeOffset.UtcNow;
+            user.HeartBeat = DateTimeOffset.UtcNow;
 
             _context.Profiles.Update(user);
             await _context.SaveChangesAsync();
@@ -61,6 +61,7 @@ public class ProfileController : Controller
                     Changed = user.ProfileMetas.Last().Changed
                 },
                 Reputation = user.Reputation,
+                HeartBeat = DateTimeOffset.UtcNow,
                 Infractions = user.Infractions
                     .Where(x => x.Target.ProfileIdentity == user.ProfileIdentity)
                     .Select(infraction => new InfractionDto
@@ -105,7 +106,7 @@ public class ProfileController : Controller
                 }
             },
             Infractions = new List<EFInfraction>(),
-            LastConnected = DateTimeOffset.UtcNow
+            HeartBeat = DateTimeOffset.UtcNow
         };
         _context.Profiles.Add(newProfile);
 
@@ -115,6 +116,7 @@ public class ProfileController : Controller
         {
             ProfileIdentity = newProfile.ProfileIdentity,
             Reputation = newProfile.Reputation,
+            HeartBeat = DateTimeOffset.UtcNow,
             ProfileMeta = newProfile.ProfileMetas.Select(x => new ProfileMetaDto
             {
                 UserName = x.UserName,
@@ -151,6 +153,7 @@ public class ProfileController : Controller
             .Include(context => context.ProfileMetas)
             .Include(context => context.Infractions)
             .FirstOrDefaultAsync(profile => profile.ProfileIdentity == identity);
+
         if (profile is null) return NotFound("No user found");
         return Ok(new ProfileDto
         {

@@ -68,16 +68,15 @@ public class InfractionManager
     }
     // TODO: Fix recursive call. Global ban from another community will trigger this and then upload a new infraction.
     
-    public async Task NewInfraction(InfractionType infractionType, EFClient origin, EFClient target,
-        string reason, TimeSpan? duration = null, string? evidence = null)
+    public async Task<string> NewInfraction(InfractionType infractionType, EFClient origin, EFClient target,
+        string reason, TimeSpan? duration = null, InfractionScope? scope = null, string? evidence = null)
     {
-        if (!Plugin.Active) return;
+        if (!Plugin.Active) return "Plugin is not active";
         
         var infraction = new InfractionDto
         {
             InfractionType = infractionType,
-            InfractionScope = InfractionScope.Local,
-            InfractionGuid = Guid.NewGuid(),
+            InfractionScope = scope ?? InfractionScope.Local,
             Evidence = evidence,
             Reason = reason,
             Duration = duration,
@@ -87,10 +86,10 @@ public class InfractionManager
         };
         var httpClient = new HttpClient();
         var postResponse = await httpClient.PostAsJsonAsync("http://localhost:5000/api/Infraction", infraction);
-        Console.WriteLine($"New infraction: {postResponse.Content.ReadAsStringAsync()}");
+        return $"New infraction: {postResponse.Content.ReadAsStringAsync()}";
     }
 
-    private async Task<InstanceDto> GetInstance()
+    public async Task<InstanceDto> GetInstance()
     {
         var instanceGuid = Plugin.Manager.GetApplicationSettings().Configuration().Id;
         var instanceName = Plugin.Manager.GetApplicationSettings().Configuration().WebfrontCustomBranding;
@@ -102,7 +101,8 @@ public class InfractionManager
             InstanceGuid = Guid.Parse(instanceGuid),
             InstanceName = instanceName,
             InstanceIp = instanceIp,
-            ApiKey = apiKey
+            ApiKey = apiKey,
+            Heartbeat = DateTimeOffset.UtcNow
         };
     }
 
@@ -111,6 +111,8 @@ public class InfractionManager
         var instance = await GetInstance();
 
         var httpClient = new HttpClient();
+        // TODO: Handle this properly if the host is offline for whatever reason. 
+        // it should retry.
         var postServerResponse = await httpClient.PostAsJsonAsync("http://localhost:5000/api/Instance", instance);
         var enabled = false;
 
