@@ -32,8 +32,8 @@ public class InfractionController : Controller
         // Check if the user has an existing ban and the incoming is an unban
         var infraction = user.Infractions
             .FirstOrDefault(infraction =>
-                infraction.InfractionType == InfractionType.Ban
-                && request.InfractionType == InfractionType.Unban
+                infraction is {InfractionType: InfractionType.Ban, InfractionStatus: InfractionStatus.Active} 
+                && request.InfractionType == InfractionType.Unban 
                 && infraction.Instance.InstanceGuid == request.Instance.InstanceGuid);
 
         if (infraction is not null)

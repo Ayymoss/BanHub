@@ -12,7 +12,7 @@ public class InfractionDto
     /// <summary>
     /// The state of the infraction
     /// </summary>
-    public InfractionStatus InfractionStatus { get; set; }
+    public InfractionStatus? InfractionStatus { get; set; }
 
     /// <summary>
     /// The scope of the infraction

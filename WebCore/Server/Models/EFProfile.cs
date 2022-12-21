@@ -19,7 +19,7 @@ public class EFProfile
     /// <summary>
     /// The last time the player was seen
     /// </summary>
-    public DateTimeOffset? HeartBeat { get; set; }
+    public DateTimeOffset? Heartbeat { get; set; }
     
     /// <summary>
     /// The player's list of names and IP addresses
@@ -58,6 +58,9 @@ Defaults:
     TODO: STOP THE FAT CONTROLLERS!
     TODO: CLIENT HEARTBEAT TO SEE ONLINE CLIENTS - Get online and offline state correctly
     TODO: Handle HTTP server disconnects better. We should retry connection if it fails. We should also queue infractions. 
+    TODO: REMOVE DISCONNECTS FROM PROFILES (Plugin)
+    TODO: CHECK FOR NOTHING IN PROFILES (Plugin)
+    TODO: Check if Active for uploads (Plugin)
     
     TODO: USE AUTOMAPPER FOR OBJECT MAPPING
     

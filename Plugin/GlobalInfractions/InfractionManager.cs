@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 using Data.Abstractions;
 using Data.Models;
 using GlobalInfractions.Enums;
@@ -17,11 +18,13 @@ namespace GlobalInfractions;
 public class InfractionManager
 {
     public readonly ConcurrentDictionary<EFClient, ProfileDto> Profiles = new();
+    public InstanceDto Instance = null!;
 
     private readonly IMetaServiceV2 _metaService;
     private readonly ITranslationLookup _translationLookup;
     private readonly ILogger<InfractionManager> _logger;
     private readonly IDatabaseContextFactory _context;
+    
 
     public InfractionManager(IServiceProvider serviceProvider)
     {
@@ -33,8 +36,22 @@ public class InfractionManager
 
     public static string GetIdentity(string guid, string game) => Convert.ToBase64String(Encoding.UTF8.GetBytes($"{guid}:{game}"));
 
+    public void RemoveFromProfiles(EFClient client)
+    {
+        var remove = Profiles.TryRemove(client, out _);
+        if (remove)
+        {
+            _logger.LogInformation("Removed {Name} from profiles", client.CleanedName);
+            return;
+        }
+
+        _logger.LogError("Failed to remove {Name} from profiles", client.CleanedName);
+    }
+
     public async Task UpdateProfile(EFClient client)
     {
+
+        Console.WriteLine("Updating profile for {0}", client.CleanedName);
         var httpClient = new HttpClient();
 
         var profile = new ProfileDto
@@ -45,16 +62,28 @@ public class InfractionManager
                 UserName = client.CleanedName,
                 IpAddress = client.IPAddressString
             },
-            Instance = await GetInstance()
+            Instance = Instance
         };
 
+        Console.WriteLine($"Request for {client.CleanedName}: {JsonSerializer.Serialize(profile)}");
         var response = await httpClient.PostAsJsonAsync("http://localhost:5000/api/Profile", profile);
+        Console.WriteLine($"Response for {client.CleanedName}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+        
+        if (response.StatusCode is not HttpStatusCode.OK) return;
+        
         var profileResult = await response.Content.ReadFromJsonAsync<ProfileDto>();
+        
+        if (profileResult is null)
+        {
+            _logger.LogWarning("Failed to get profile from API. Are we active? {StatusCode}", response.StatusCode);
+            return;
+        }
 
-        if (profileResult is null) throw new Exception("Profile result is null");
-
+        Console.WriteLine("Trying to add {0}", profileResult.ProfileMeta.UserName);
         Profiles.TryAdd(client, profileResult);
+        // TODO: This needs to be called on user even if not active
         ProcessProfile(profileResult, client);
+        Console.WriteLine("Added profile {0}", client.CleanedName);
     }
 
     public void ProcessProfile(ProfileDto profile, EFClient client)
@@ -67,12 +96,12 @@ public class InfractionManager
         client.Kick($"GLOBAL: {globalBan.Reason}", Utilities.IW4MAdminClient());
     }
     // TODO: Fix recursive call. Global ban from another community will trigger this and then upload a new infraction.
-    
+
     public async Task<string> NewInfraction(InfractionType infractionType, EFClient origin, EFClient target,
         string reason, TimeSpan? duration = null, InfractionScope? scope = null, string? evidence = null)
     {
         if (!Plugin.Active) return "Plugin is not active";
-        
+
         var infraction = new InfractionDto
         {
             InfractionType = infractionType,
@@ -80,23 +109,25 @@ public class InfractionManager
             Evidence = evidence,
             Reason = reason,
             Duration = duration,
-            Instance = await GetInstance(),
+            Instance = Instance,
             Admin = Profiles.FirstOrDefault(x => x.Key.GuidString == origin.GuidString).Value,
             Target = Profiles.FirstOrDefault(x => x.Key.GuidString == target.GuidString).Value
         };
         var httpClient = new HttpClient();
         var postResponse = await httpClient.PostAsJsonAsync("http://localhost:5000/api/Infraction", infraction);
-        return $"New infraction: {postResponse.Content.ReadAsStringAsync()}";
+
+        Console.WriteLine($"STATUS: {postResponse.StatusCode} - JSON: {JsonSerializer.Serialize(infraction)} ");
+        return $"New infraction: {await postResponse.Content.ReadAsStringAsync()}";
     }
 
-    public async Task<InstanceDto> GetInstance()
+    public async Task GetInstance()
     {
         var instanceGuid = Plugin.Manager.GetApplicationSettings().Configuration().Id;
         var instanceName = Plugin.Manager.GetApplicationSettings().Configuration().WebfrontCustomBranding;
         var instanceIp = await Utilities.GetExternalIP();
-        var apiKey = Plugin.Configuration.ApiKey; 
+        var apiKey = Plugin.Configuration.ApiKey;
 
-        return new InstanceDto
+        Instance =  new InstanceDto
         {
             InstanceGuid = Guid.Parse(instanceGuid),
             InstanceName = instanceName,
@@ -108,7 +139,7 @@ public class InfractionManager
 
     public async Task<bool> UpdateInstance()
     {
-        var instance = await GetInstance();
+        var instance = Instance;
 
         var httpClient = new HttpClient();
         // TODO: Handle this properly if the host is offline for whatever reason. 
@@ -124,17 +155,6 @@ public class InfractionManager
             case HttpStatusCode.OK:
                 enabled = false;
                 break;
-        }
-
-        if (!enabled)
-        {
-            Console.WriteLine($"[{Plugin.PluginName}] Global Bans plugin is disabled");
-            Console.WriteLine($"[{Plugin.PluginName}] To activate your access. Please visit <DISCORD>");
-        }
-        else
-        {
-            Console.WriteLine($"[{Plugin.PluginName}] Global Bans plugin is enabled");
-            Console.WriteLine($"[{Plugin.PluginName}] Infractions will be reported to the Global Bans list.");
         }
 
         return enabled;

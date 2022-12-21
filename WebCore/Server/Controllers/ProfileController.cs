@@ -23,11 +23,14 @@ public class ProfileController : Controller
     public async Task<ActionResult<ProfileDto>> CreateOrUpdate([FromBody] ProfileDto request)
     {
         var user = await _context.Profiles
-            .AsTracking()
+            .AsNoTracking()
             .Include(context => context.ProfileMetas)
             .Include(context => context.Infractions)
-            .FirstOrDefaultAsync(user => user.ProfileIdentity == request.ProfileIdentity);
+            .ThenInclude(x => x.Admin)
+            .SingleOrDefaultAsync(user => user.ProfileIdentity == request.ProfileIdentity);
 
+
+        // TODO: This check needs to be changed to reply if the instance doesn't have permission to upload
         // Check if user exists
         if (user is not null)
         {
@@ -46,12 +49,12 @@ public class ProfileController : Controller
                 user.ProfileMetas.Add(meta);
             }
 
-            user.HeartBeat = DateTimeOffset.UtcNow;
+            user.Heartbeat = DateTimeOffset.UtcNow;
 
             _context.Profiles.Update(user);
             await _context.SaveChangesAsync();
 
-            return new ProfileDto
+            var dtoReturn = new ProfileDto
             {
                 ProfileIdentity = user.ProfileIdentity,
                 ProfileMeta = new ProfileMetaDto
@@ -61,9 +64,9 @@ public class ProfileController : Controller
                     Changed = user.ProfileMetas.Last().Changed
                 },
                 Reputation = user.Reputation,
-                HeartBeat = DateTimeOffset.UtcNow,
+                Heartbeat = DateTimeOffset.UtcNow,
                 Infractions = user.Infractions
-                    .Where(x => x.Target.ProfileIdentity == user.ProfileIdentity)
+                    .Where(x => x.Target.ProfileIdentity == user.ProfileIdentity) //TODO This is null!?
                     .Select(infraction => new InfractionDto
                     {
                         InfractionType = infraction.InfractionType,
@@ -84,10 +87,13 @@ public class ProfileController : Controller
                         Evidence = infraction.Evidence,
                     }).ToList()
             };
+
+            return Ok(dtoReturn);
         }
 
         // Check to see if the instance is authorised to upload
-        var instance = await _context.Instances.FirstOrDefaultAsync(instance => instance.ApiKey == request.Instance.ApiKey);
+        var instance = await _context.Instances
+            .SingleOrDefaultAsync(instance => instance.ApiKey == request.Instance!.ApiKey);
         if (instance is null) return StatusCode(400, "Instance not found");
         if (!instance.Active) return StatusCode(401, "Server is not active");
 
@@ -106,24 +112,24 @@ public class ProfileController : Controller
                 }
             },
             Infractions = new List<EFInfraction>(),
-            HeartBeat = DateTimeOffset.UtcNow
+            Heartbeat = DateTimeOffset.UtcNow
         };
         _context.Profiles.Add(newProfile);
 
         await _context.SaveChangesAsync();
 
-        return new ProfileDto
+        return Ok(new ProfileDto
         {
             ProfileIdentity = newProfile.ProfileIdentity,
             Reputation = newProfile.Reputation,
-            HeartBeat = DateTimeOffset.UtcNow,
+            Heartbeat = DateTimeOffset.UtcNow,
             ProfileMeta = newProfile.ProfileMetas.Select(x => new ProfileMetaDto
             {
                 UserName = x.UserName,
                 IpAddress = x.IpAddress,
                 Changed = x.Changed
             }).LastOrDefault()!
-        };
+        });
     }
 
     [HttpGet]

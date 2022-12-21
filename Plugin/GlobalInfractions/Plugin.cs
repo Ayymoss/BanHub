@@ -12,7 +12,7 @@ public class Plugin : IPlugin
 {
     public const string PluginName = "Global Infractions";
     public string Name => PluginName;
-    public float Version => 20221213f;
+    public float Version => 20221218f;
     public string Author => "Amos";
 
 
@@ -20,8 +20,9 @@ public class Plugin : IPlugin
     public static ConfigurationModel Configuration = null!;
     public static TranslationStrings Translation = null!;
     public static InfractionManager InfractionManager = null!;
+    public static readonly HeartbeatManager HeartbeatManager = new();
     public static IManager Manager = null!;
-    public static bool Active { get; private set; }
+    public static bool Active { get; set; }
 
     public Plugin(IServiceProvider serviceProvider, IConfigurationHandler<ConfigurationModel> configurationHandler)
     {
@@ -37,6 +38,7 @@ public class Plugin : IPlugin
                 await InfractionManager.UpdateProfile(gameEvent.Origin);
                 break;
             case GameEvent.EventType.Disconnect:
+                InfractionManager.RemoveFromProfiles(gameEvent.Origin);
                 break;
             case GameEvent.EventType.Warn:
                 await InfractionManager.NewInfraction(InfractionType.Warn, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
@@ -59,11 +61,8 @@ public class Plugin : IPlugin
 
     public async Task OnLoadAsync(IManager manager)
     {
-        Console.WriteLine($"[{PluginName}] Global Bans plugin started");
+        Console.WriteLine($"[{PluginName}] Loading...");
         Manager = manager;
-
-        // Check activation status
-        Active = await InfractionManager.UpdateInstance();
 
         // Build configuration
         await _configurationHandler.BuildAsync();
@@ -82,10 +81,25 @@ public class Plugin : IPlugin
         Configuration = _configurationHandler.Configuration();
         Translation = Configuration.Translations[Configuration.Locale];
 
+        // Check activation status
+        await InfractionManager.GetInstance();
+        Active = await InfractionManager.UpdateInstance();
+
+        if (!Active)
+        {
+            Console.WriteLine($"[{PluginName}] Not activated. Read-only access.");
+            Console.WriteLine($"[{PluginName}] To activate your access. Please visit <DISCORD>");
+        }
+        else
+        {
+            Console.WriteLine($"[{PluginName}] Activated.");
+            Console.WriteLine($"[{PluginName}] Infractions and users will be reported to the API.");
+        }
+
         // Start the heartbeat
         HeartbeatManager.HeartbeatTimer();
 
-        Console.WriteLine($"[{PluginName}] loaded successfully. Version: {Version}");
+        Console.WriteLine($"[{PluginName}] Loaded successfully. Version: {Version}");
     }
 
     public Task OnUnloadAsync()

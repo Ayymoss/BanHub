@@ -21,6 +21,12 @@ builder.WebHost.ConfigureKestrel(options =>
 
 // TODO: Change to PostgreSQL
 builder.Services.AddDbContext<SqliteDataContext>(options => options.UseSqlite("Data Source=GlobalBan.db"));
+builder.Services.AddLogging();
+builder.Host.ConfigureLogging(logging =>
+{
+    logging.ClearProviders();
+    logging.AddConsole();
+});
 
 // Add services to the container.
 

@@ -7,7 +7,7 @@ namespace GlobalInfractions.Configuration;
 public class ConfigurationModel : IBaseConfiguration
 {
     [JsonPropertyName("ApiKeyDoNotChange")]
-    public Guid ApiKey { get; } = Guid.NewGuid();
+    public Guid ApiKey { get; set; } = Guid.NewGuid();
 
     public string Locale { get; set; } = "EN";
     public Dictionary<string, TranslationStrings> Translations { get; set; } = new() {{"EN", new TranslationStrings()}};

@@ -1,5 +1,4 @@
-﻿
-namespace GlobalInfractions.Models;
+﻿namespace GlobalInfractions.Models;
 
 public class ProfileDto
 {
@@ -7,30 +6,29 @@ public class ProfileDto
     /// The player's identity
     /// </summary>
     public string ProfileIdentity { get; init; } = null!;
-    
+
     /// <summary>
     /// The player's reputation
     /// </summary>
     public int? Reputation { get; init; }
-    
+
     /// <summary>
     /// The last time the player was seen
     /// </summary>
-    public DateTimeOffset HeartBeat { get; set; }
+    public DateTimeOffset Heartbeat { get; set; }
 
     /// <summary>
     /// The player's meta
     /// </summary>
     public virtual ProfileMetaDto ProfileMeta { get; set; } = null!;
-    
+
     /// <summary>
     /// The sending server
     /// </summary>
-    public virtual InstanceDto Instance { get; set; } = null!;
-    
+    public virtual InstanceDto? Instance { get; set; }
+
     /// <summary>
     /// The player's list of infractions
     /// </summary>
-    public virtual ICollection<InfractionDto>? Infractions { get; set; } 
+    public virtual ICollection<InfractionDto>? Infractions { get; set; }
 }
-

@@ -37,7 +37,7 @@ public class EFInfraction
     /// Duration of a temporary infraction
     /// </summary>
     public TimeSpan? Duration { get; set; }
-    
+
     /// <summary>
     /// The provided reason for the infraction
     /// </summary>
@@ -51,24 +51,18 @@ public class EFInfraction
     /// <summary>
     /// The admin GUID who issued the infraction
     /// </summary>
-    public int AdminId { get; set; } // TODO: FIX THIS :( 
-    [ForeignKey(nameof(AdminId))] public EFProfile Admin { get; set; } = null!;
-    
-    /* ^^^^^ 
-Unable to determine the relationship represented by navigation 'EFInfraction.Admin' of type 'EFProfile'. 
-Either manually configure the relationship, or ignore this property using the 
-'[NotMapped]' attribute or by using 'EntityTypeBuilder.Ignore' in 'OnModelCreating'.
-     */
+    public int AdminId { get; set; }
+    [ForeignKey(nameof(AdminId))] public virtual EFProfile Admin { get; set; } = null!;
     
     /// <summary>
     /// The user GUID who received the infraction
     /// </summary>
     public int TargetId { get; set; }
-    [ForeignKey(nameof(TargetId))] public EFProfile Target { get; set; } = null!;
-    
+    [ForeignKey(nameof(TargetId))] public virtual EFProfile Target { get; set; } = null!;
+
     /// <summary>
     /// The server reference this infraction
     /// </summary>
     public int InstanceId { get; set; }
-    [ForeignKey(nameof(InstanceId))] public EFInstance Instance { get; set; } = null!;
+    [ForeignKey(nameof(InstanceId))] public virtual EFInstance Instance { get; set; } = null!;
 }

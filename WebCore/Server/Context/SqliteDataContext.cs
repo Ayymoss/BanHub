@@ -21,24 +21,30 @@ public class SqliteDataContext : DbContext
         modelBuilder.Entity<EFProfileMeta>().ToTable("EFProfileMetas");
         modelBuilder.Entity<EFInfraction>().ToTable("EFInfractions");
 
+        modelBuilder.Entity<EFInfraction>()
+            .HasOne(i => i.Admin)
+            .WithOne()
+            .HasForeignKey<EFInfraction>(i => i.AdminId);
+
+        var adminClientMeta = new EFProfileMeta
+        {
+            Id = -1,
+            UserId = -1,
+            UserName = "IW4MAdmin",
+            IpAddress = "0.0.0.0",
+            Changed = DateTimeOffset.UtcNow,
+        };
+
         var adminClient = new EFProfile
         {
+            Id = -1,
             ProfileIdentity = "MDpVS04=",
             Reputation = 0,
-            ProfileMetas = new List<EFProfileMeta>
-            {
-                new()
-                {
-                    UserName = "IW4MAdmin",
-                    IpAddress = "0.0.0.0",
-                    Changed = DateTimeOffset.UtcNow,
-                }
-            },
             Infractions = new List<EFInfraction>()
         };
 
         modelBuilder.Entity<EFProfile>().HasData(adminClient);
-
+        modelBuilder.Entity<EFProfileMeta>().HasData(adminClientMeta);
 
         base.OnModelCreating(modelBuilder);
     }
