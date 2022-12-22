@@ -34,7 +34,7 @@ public class InfractionManager
         _context = serviceProvider.GetRequiredService<IDatabaseContextFactory>();
     }
 
-    public static string GetIdentity(string guid, string game) => Convert.ToBase64String(Encoding.UTF8.GetBytes($"{guid}:{game}"));
+    public static string GetIdentity(string guid, string game) => $"{guid}:{game}";
 
     public void RemoveFromProfiles(EFClient client)
     {

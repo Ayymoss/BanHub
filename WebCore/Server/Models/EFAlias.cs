@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GlobalInfraction.WebCore.Server.Models;
 
-public class EFProfileMeta
+public class EFAlias
 {
     [Key] public int Id { get; set; }
 
@@ -22,6 +22,7 @@ public class EFProfileMeta
     /// </summary>
     public DateTimeOffset Changed { get; set; }
 
-    public int UserId { get; set; }
-    [ForeignKey(nameof(UserId))] public EFProfile Profile { get; set; } = null!;
+    public int ProfileId { get; set; }
+    [ForeignKey(nameof(ProfileId))] public EFProfile Profile { get; set; } = null!;
+
 }

@@ -48,5 +48,7 @@ public class HeartbeatController : Controller
 
         await _context.SaveChangesAsync();
         return Ok();
+        
+      
     }
 }

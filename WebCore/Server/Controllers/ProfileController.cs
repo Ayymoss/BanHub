@@ -1,8 +1,7 @@
-﻿using System.Text;
-using GlobalInfraction.WebCore.Server.Context;
+﻿using GlobalInfraction.WebCore.Server.Context;
 using GlobalInfraction.WebCore.Server.Models;
-using GlobalInfraction.WebCore.Shared.Enums;
 using GlobalInfraction.WebCore.Shared.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,117 +18,66 @@ public class ProfileController : Controller
         _context = context;
     }
 
+    [Authorize(Policy = "InstanceAPIKeyAuth")]
     [HttpPost]
-    public async Task<ActionResult<ProfileDto>> CreateOrUpdate([FromBody] ProfileDto request)
+    public async Task<ActionResult> CreateOrUpdate([FromBody] ProfileDto request)
     {
+        // todo: fluent validation on request
         var user = await _context.Profiles
-            .AsNoTracking()
-            .Include(context => context.ProfileMetas)
-            .Include(context => context.Infractions)
-            .ThenInclude(x => x.Admin)
             .SingleOrDefaultAsync(user => user.ProfileIdentity == request.ProfileIdentity);
 
-
         // TODO: This check needs to be changed to reply if the instance doesn't have permission to upload
-        // Check if user exists
         if (user is not null)
         {
-            var userName = user.ProfileMetas.FirstOrDefault(profile => profile.UserName == request.ProfileMeta.UserName);
-            var ipAddress = user.ProfileMetas.FirstOrDefault(profile => profile.IpAddress == request.ProfileMeta.IpAddress);
+            var existingAlias = await _context.ProfileMetas
+                .AnyAsync(profile =>
+                    profile.UserName == request.ProfileMeta.UserName && profile.IpAddress == request.ProfileMeta.IpAddress);
 
-            if (userName is null || ipAddress is null)
+            if (!existingAlias)
             {
-                var meta = new EFProfileMeta
+                var meta = new EFAlias
                 {
                     UserName = request.ProfileMeta.UserName,
                     IpAddress = request.ProfileMeta.IpAddress,
                     Changed = DateTimeOffset.UtcNow,
-                    UserId = user.Id
+                    ProfileId = user.Id
                 };
-                user.ProfileMetas.Add(meta);
+
+                user.Aliases.Add(meta);
+                user.CurrentAlias = meta;
             }
 
             user.Heartbeat = DateTimeOffset.UtcNow;
 
             _context.Profiles.Update(user);
             await _context.SaveChangesAsync();
-
-            var dtoReturn = new ProfileDto
-            {
-                ProfileIdentity = user.ProfileIdentity,
-                ProfileMeta = new ProfileMetaDto
-                {
-                    UserName = user.ProfileMetas.Last().UserName,
-                    IpAddress = user.ProfileMetas.Last().IpAddress, //TODO: THIS NEEDS TO BE PRIVILEGED
-                    Changed = user.ProfileMetas.Last().Changed
-                },
-                Reputation = user.Reputation,
-                Heartbeat = DateTimeOffset.UtcNow,
-                Infractions = user.Infractions
-                    .Where(x => x.Target.ProfileIdentity == user.ProfileIdentity) //TODO This is null!?
-                    .Select(infraction => new InfractionDto
-                    {
-                        InfractionType = infraction.InfractionType,
-                        InfractionScope = infraction.InfractionScope,
-                        InfractionGuid = infraction.InfractionGuid,
-                        Admin = new ProfileDto
-                        {
-                            ProfileIdentity = infraction.Admin.ProfileIdentity,
-                            ProfileMeta = new ProfileMetaDto
-                            {
-                                UserName = infraction.Admin.ProfileMetas.Last().UserName,
-                                IpAddress = infraction.Admin.ProfileMetas.Last().IpAddress,
-                                Changed = infraction.Admin.ProfileMetas.Last().Changed
-                            },
-                            Reputation = infraction.Admin.Reputation
-                        },
-                        Reason = infraction.Reason,
-                        Evidence = infraction.Evidence,
-                    }).ToList()
-            };
-
-            return Ok(dtoReturn);
+            return StatusCode(StatusCodes.Status204NoContent);
         }
 
-        // Check to see if the instance is authorised to upload
-        var instance = await _context.Instances
-            .SingleOrDefaultAsync(instance => instance.ApiKey == request.Instance!.ApiKey);
-        if (instance is null) return StatusCode(400, "Instance not found");
-        if (!instance.Active) return StatusCode(401, "Server is not active");
+        var alias = new EFAlias
+        {
+            UserName = request.ProfileMeta.UserName,
+            IpAddress = request.ProfileMeta.IpAddress,
+            Changed = DateTimeOffset.UtcNow
+        };
 
         // Create the user
         var newProfile = new EFProfile
         {
             ProfileIdentity = request.ProfileIdentity,
             Reputation = 10,
-            ProfileMetas = new List<EFProfileMeta>
+            Aliases = new List<EFAlias>
             {
-                new()
-                {
-                    UserName = request.ProfileMeta.UserName,
-                    IpAddress = request.ProfileMeta.IpAddress,
-                    Changed = DateTimeOffset.UtcNow
-                }
+                alias
             },
-            Infractions = new List<EFInfraction>(),
+            CurrentAlias = alias,
             Heartbeat = DateTimeOffset.UtcNow
         };
-        _context.Profiles.Add(newProfile);
 
+        _context.Profiles.Add(newProfile);
         await _context.SaveChangesAsync();
 
-        return Ok(new ProfileDto
-        {
-            ProfileIdentity = newProfile.ProfileIdentity,
-            Reputation = newProfile.Reputation,
-            Heartbeat = DateTimeOffset.UtcNow,
-            ProfileMeta = newProfile.ProfileMetas.Select(x => new ProfileMetaDto
-            {
-                UserName = x.UserName,
-                IpAddress = x.IpAddress,
-                Changed = x.Changed
-            }).LastOrDefault()!
-        });
+        return StatusCode(StatusCodes.Status201Created);
     }
 
     [HttpGet]
@@ -143,9 +91,9 @@ public class ProfileController : Controller
                 ProfileIdentity = profile.ProfileIdentity,
                 ProfileMeta = new ProfileMetaDto
                 {
-                    UserName = profile.ProfileMetas.Last().UserName,
-                    IpAddress = profile.ProfileMetas.Last().IpAddress, //TODO: THIS NEEDS TO BE PRIVILEGED
-                    Changed = profile.ProfileMetas.Last().Changed
+                    UserName = profile.Aliases.Last().UserName,
+                    IpAddress = profile.Aliases.Last().IpAddress, //TODO: THIS NEEDS TO BE PRIVILEGED
+                    Changed = profile.Aliases.Last().Changed
                 }
             }).ToList();
 
@@ -155,43 +103,52 @@ public class ProfileController : Controller
     [HttpGet("{identity}")]
     public async Task<ActionResult<ProfileDto>> GetUser(string identity)
     {
-        var profile = await _context.Profiles
-            .Include(context => context.ProfileMetas)
-            .Include(context => context.Infractions)
-            .FirstOrDefaultAsync(profile => profile.ProfileIdentity == identity);
+        var profile = await _context.Profiles.Where(profile => profile.ProfileIdentity == identity)
+            .Select(profile => new
+            {
+                ProfileIdentity = identity,
+                profile.Reputation,
+                ProfileMeta = new ProfileMetaDto
+                {
+                    UserName = profile.CurrentAlias.UserName,
+                    IpAddress = profile.CurrentAlias.IpAddress, //TODO: THIS NEEDS TO BE PRIVILEGED
+                    Changed = profile.CurrentAlias.Changed
+                }
+            }).FirstOrDefaultAsync();
 
-        if (profile is null) return NotFound("No user found");
+        if (profile is null)
+        {
+            return NotFound();
+        }
+
+        var infractions = await _context.Infractions.Where(infraction => infraction.Target.ProfileIdentity == identity)
+            .Select(infraction => new InfractionDto
+            {
+                InfractionType = infraction.InfractionType,
+                InfractionScope = infraction.InfractionScope,
+                InfractionGuid = infraction.InfractionGuid,
+                Admin = new ProfileDto
+                {
+                    ProfileIdentity = infraction.Admin.ProfileIdentity,
+                    ProfileMeta = new ProfileMetaDto
+                    {
+                        UserName = infraction.Admin.CurrentAlias.UserName,
+                        IpAddress = infraction.Admin.CurrentAlias.IpAddress,
+                        Changed = infraction.Admin.CurrentAlias.Changed
+                    },
+                    Reputation = infraction.Admin.Reputation
+                },
+                Reason = infraction.Reason,
+                Evidence = infraction.Evidence,
+            })
+            .ToListAsync();
+
         return Ok(new ProfileDto
         {
             ProfileIdentity = profile.ProfileIdentity,
-            ProfileMeta = new ProfileMetaDto
-            {
-                UserName = profile.ProfileMetas.Last().UserName,
-                IpAddress = profile.ProfileMetas.Last().IpAddress, //TODO: THIS NEEDS TO BE PRIVILEGED
-                Changed = profile.ProfileMetas.Last().Changed
-            },
-            Infractions = profile.Infractions
-                .Where(inf => inf.Target.ProfileIdentity == profile.ProfileIdentity)
-                .Select(infraction => new InfractionDto
-                {
-                    InfractionType = infraction.InfractionType,
-                    InfractionScope = infraction.InfractionScope,
-                    InfractionGuid = infraction.InfractionGuid,
-                    Admin = new ProfileDto
-                    {
-                        ProfileIdentity = infraction.Admin.ProfileIdentity,
-                        ProfileMeta = new ProfileMetaDto
-                        {
-                            UserName = infraction.Admin.ProfileMetas.Last().UserName,
-                            IpAddress = infraction.Admin.ProfileMetas.Last().IpAddress,
-                            Changed = infraction.Admin.ProfileMetas.Last().Changed
-                        },
-                        Reputation = infraction.Admin.Reputation
-                    },
-                    Reason = infraction.Reason,
-                    Evidence = infraction.Evidence,
-                }).ToList(),
-            Reputation = profile.Reputation
+            Reputation = profile.Reputation,
+            ProfileMeta = profile.ProfileMeta,
+            Infractions = infractions
         });
     }
 }

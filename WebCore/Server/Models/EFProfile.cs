@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GlobalInfraction.WebCore.Server.Models;
 
@@ -24,7 +25,13 @@ public class EFProfile
     /// <summary>
     /// The player's list of names and IP addresses
     /// </summary>
-    public virtual ICollection<EFProfileMeta> ProfileMetas { get; set; } = null!;
+    public virtual ICollection<EFAlias> Aliases { get; set; } = null!;
+
+    /// <summary>
+    /// Current profile meta
+    /// </summary>
+    public int CurrentAliasId { get; set; }
+    [ForeignKey(nameof(CurrentAliasId))] public EFAlias CurrentAlias { get; set; } = null!;
 
     /// <summary>
     /// The player's list of infractions

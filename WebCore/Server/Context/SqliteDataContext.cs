@@ -11,14 +11,14 @@ public class SqliteDataContext : DbContext
 
     public DbSet<EFInstance> Instances { get; set; }
     public DbSet<EFProfile> Profiles { get; set; }
-    public DbSet<EFProfileMeta> ProfileMetas { get; set; }
+    public DbSet<EFAlias> ProfileMetas { get; set; }
     public DbSet<EFInfraction> Infractions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<EFInstance>().ToTable("EFInstances");
         modelBuilder.Entity<EFProfile>().ToTable("EFProfiles");
-        modelBuilder.Entity<EFProfileMeta>().ToTable("EFProfileMetas");
+        modelBuilder.Entity<EFAlias>().ToTable("EFProfileMetas");
         modelBuilder.Entity<EFInfraction>().ToTable("EFInfractions");
 
         modelBuilder.Entity<EFInfraction>()
@@ -26,10 +26,10 @@ public class SqliteDataContext : DbContext
             .WithOne()
             .HasForeignKey<EFInfraction>(i => i.AdminId);
 
-        var adminClientMeta = new EFProfileMeta
+        var adminClientMeta = new EFAlias
         {
             Id = -1,
-            UserId = -1,
+            ProfileId = -1,
             UserName = "IW4MAdmin",
             IpAddress = "0.0.0.0",
             Changed = DateTimeOffset.UtcNow,
@@ -44,7 +44,7 @@ public class SqliteDataContext : DbContext
         };
 
         modelBuilder.Entity<EFProfile>().HasData(adminClient);
-        modelBuilder.Entity<EFProfileMeta>().HasData(adminClientMeta);
+        modelBuilder.Entity<EFAlias>().HasData(adminClientMeta);
 
         base.OnModelCreating(modelBuilder);
     }

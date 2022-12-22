@@ -3,19 +3,17 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-#if !DEBUG
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(5000);
-    options.ListenAnyIP(5001, configure => configure.UseHttps());
-});
-#endif
-
 #if DEBUG
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenLocalhost(5000);
     options.ListenLocalhost(5001, configure => configure.UseHttps());
+});
+#else
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5000);
+    options.ListenAnyIP(5001, configure => configure.UseHttps());
 });
 #endif
 
