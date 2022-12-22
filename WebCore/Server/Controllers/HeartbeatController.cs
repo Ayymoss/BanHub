@@ -33,14 +33,14 @@ public class HeartbeatController : Controller
     [HttpPost("Profiles")]
     public async Task<ActionResult> ProfilesHeartbeat([FromBody] List<ProfileDto> request)
     {
-        var dbProfiles = await _context.Profiles
+        var profiles = await _context.Profiles
             .AsTracking()
             .Where(p => request
                 .Select(r => r.ProfileIdentity)
                 .Contains(p.ProfileIdentity))
             .ToListAsync();
 
-        foreach (var profile in dbProfiles)
+        foreach (var profile in profiles)
         {
             profile.Heartbeat = DateTimeOffset.UtcNow;
             _context.Profiles.Update(profile);

@@ -20,7 +20,7 @@ public class ProfileDto
     /// <summary>
     /// The player's meta
     /// </summary>
-    public virtual ProfileMetaDto ProfileMeta { get; set; } = null!;
+    public virtual AliasDto Alias { get; set; } = null!;
 
     /// <summary>
     /// The sending server

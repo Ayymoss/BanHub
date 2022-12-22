@@ -1,4 +1,5 @@
 using GlobalInfraction.WebCore.Server.Context;
+using GlobalInfraction.WebCore.Server.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +21,7 @@ builder.WebHost.ConfigureKestrel(options =>
 // TODO: Change to PostgreSQL
 builder.Services.AddDbContext<SqliteDataContext>(options => options.UseSqlite("Data Source=GlobalBan.db"));
 builder.Services.AddLogging();
+builder.Services.AddSingleton<ProfileService>();
 builder.Host.ConfigureLogging(logging =>
 {
     logging.ClearProviders();

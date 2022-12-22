@@ -57,7 +57,7 @@ public class InfractionManager
         var profile = new ProfileDto
         {
             ProfileIdentity = GetIdentity(client.GuidString, client.GameName.ToString()),
-            ProfileMeta = new ProfileMetaDto
+            Alias = new AliasDto
             {
                 UserName = client.CleanedName,
                 IpAddress = client.IPAddressString
@@ -79,7 +79,7 @@ public class InfractionManager
             return;
         }
 
-        Console.WriteLine("Trying to add {0}", profileResult.ProfileMeta.UserName);
+        Console.WriteLine("Trying to add {0}", profileResult.Alias.UserName);
         Profiles.TryAdd(client, profileResult);
         // TODO: This needs to be called on user even if not active
         ProcessProfile(profileResult, client);

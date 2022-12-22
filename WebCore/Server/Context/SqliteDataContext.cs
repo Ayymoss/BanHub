@@ -18,7 +18,7 @@ public class SqliteDataContext : DbContext
     {
         modelBuilder.Entity<EFInstance>().ToTable("EFInstances");
         modelBuilder.Entity<EFProfile>().ToTable("EFProfiles");
-        modelBuilder.Entity<EFAlias>().ToTable("EFProfileMetas");
+        modelBuilder.Entity<EFAlias>().ToTable("EFAliases");
         modelBuilder.Entity<EFInfraction>().ToTable("EFInfractions");
 
         modelBuilder.Entity<EFInfraction>()
@@ -26,7 +26,15 @@ public class SqliteDataContext : DbContext
             .WithOne()
             .HasForeignKey<EFInfraction>(i => i.AdminId);
 
-        var adminClientMeta = new EFAlias
+        var adminProfile = new EFProfile
+        {
+            Id = -1,
+            ProfileIdentity = "MDpVS04=",
+            Reputation = 0,
+            Infractions = new List<EFInfraction>()
+        };
+
+        var adminAlias = new EFAlias
         {
             Id = -1,
             ProfileId = -1,
@@ -35,16 +43,9 @@ public class SqliteDataContext : DbContext
             Changed = DateTimeOffset.UtcNow,
         };
 
-        var adminClient = new EFProfile
-        {
-            Id = -1,
-            ProfileIdentity = "MDpVS04=",
-            Reputation = 0,
-            Infractions = new List<EFInfraction>()
-        };
 
-        modelBuilder.Entity<EFProfile>().HasData(adminClient);
-        modelBuilder.Entity<EFAlias>().HasData(adminClientMeta);
+        modelBuilder.Entity<EFProfile>().HasData(adminProfile);
+        modelBuilder.Entity<EFAlias>().HasData(adminAlias);
 
         base.OnModelCreating(modelBuilder);
     }

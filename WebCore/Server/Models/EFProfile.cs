@@ -11,7 +11,7 @@ public class EFProfile
     /// The player's identity
     /// </summary>
     public string ProfileIdentity { get; init; } = null!;
-    
+
     /// <summary>
     /// The player's reputation
     /// </summary>
@@ -21,24 +21,23 @@ public class EFProfile
     /// The last time the player was seen
     /// </summary>
     public DateTimeOffset? Heartbeat { get; set; }
-    
+
     /// <summary>
     /// The player's list of names and IP addresses
     /// </summary>
     public virtual ICollection<EFAlias> Aliases { get; set; } = null!;
 
     /// <summary>
-    /// Current profile meta
-    /// </summary>
-    public int CurrentAliasId { get; set; }
-    [ForeignKey(nameof(CurrentAliasId))] public EFAlias CurrentAlias { get; set; } = null!;
-
-    /// <summary>
     /// The player's list of infractions
     /// </summary>
     public virtual ICollection<EFInfraction> Infractions { get; set; } = null!;
-    
-    // TODO: Do I want to track the list of connected instances?
+
+    /// <summary>
+    /// Current profile meta
+    /// </summary>
+    public int CurrentAliasId { get; set; }
+
+    [ForeignKey(nameof(CurrentAliasId))] public EFAlias CurrentAlias { get; set; } = null!;
 }
 
 /*
@@ -70,6 +69,9 @@ Defaults:
     TODO: Check if Active for uploads (Plugin)
     
     TODO: USE AUTOMAPPER FOR OBJECT MAPPING
+    
+    Possible implementations:
+    TODO: Do I want to track the list of connected instances?
     
 */
 // Unedited https://forums.mcbans.com/wiki/how-the-system-works/
