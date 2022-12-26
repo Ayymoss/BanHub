@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using GlobalInfraction.WebCore.Shared.Enums;
 
 namespace GlobalInfraction.WebCore.Server.Models;
 
@@ -11,9 +11,9 @@ public class EFEntity
     [Key] public int Id { get; set; }
 
     /// <summary>
-    /// The player's identity
+    /// The player's identity (Format: GAMEGUID:GAMEID)
     /// </summary>
-    public string ProfileIdentity { get; init; } = null!;
+    public string Identity { get; init; } = null!;
 
     /// <summary>
     /// The player's reputation
@@ -24,6 +24,11 @@ public class EFEntity
     /// The last time the player was seen
     /// </summary>
     public DateTimeOffset HeartBeat { get; set; }
+
+    /// <summary>
+    /// The player's web-login role
+    /// </summary>
+    public WebRole WebRole { get; set; }
 
     /// <summary>
     /// The player's list of names and IP addresses
@@ -39,8 +44,6 @@ public class EFEntity
     /// The lookup for current alias
     /// </summary>
     public virtual EFCurrentAlias CurrentAlias { get; set; } = null!;
-
-
 }
 
 /*
@@ -59,19 +62,18 @@ Defaults:
         
     Onboarding process - Server owners download, install then the plugin makes a request to me for acceptance. 
     
-    TODO: REPUTATION DECAY
+    TODO: REPUTATION DECAY -- Not important
     TODO: RECURSIVE CALL ISSUE
-    TODO: PRIVILEGED USERS
+    TODO: PRIVILEGED USERS -- Half done
     TODO: CHANGE TO POSTGRES
     TODO: FRONTEND
-    TODO: STOP THE FAT CONTROLLERS!
-    TODO: CLIENT HEARTBEAT TO SEE ONLINE CLIENTS - Get online and offline state correctly
     TODO: Handle HTTP server disconnects better. We should retry connection if it fails. We should also queue infractions. 
     TODO: REMOVE DISCONNECTS FROM PROFILES (Plugin)
     TODO: CHECK FOR NOTHING IN PROFILES (Plugin)
-    TODO: Check if Active for uploads (Plugin)
     
     TODO: USE AUTOMAPPER FOR OBJECT MAPPING
+    
+    TODO: Add web-authentication. -- Not important
     
     Possible implementations:
     TODO: Do I want to track the list of connected instances?

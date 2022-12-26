@@ -22,3 +22,10 @@ public enum InfractionScope
     Local = 10,
     Global = 20
 }
+
+public enum WebRole
+{
+    User = 10,
+    Admin = 75,
+    SuperAdmin = 100
+}

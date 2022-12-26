@@ -1,10 +1,16 @@
 ﻿namespace GlobalInfraction.WebCore.Server.Enums;
 
-public class ControllerEnums
+public abstract class ControllerEnums
 {
     public enum ProfileReturnState
     {
         Updated,
-        Created
+        Created,
+        NotFound,
+        BadRequest,
+        Conflict,
+        Accepted,
+        Ok,
+        NotModified
     }
 }

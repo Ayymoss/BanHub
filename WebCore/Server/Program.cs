@@ -1,9 +1,7 @@
-using System.Security.Claims;
 using GlobalInfraction.WebCore.Server.Context;
 using GlobalInfraction.WebCore.Server.Interfaces;
 using GlobalInfraction.WebCore.Server.Middleware;
 using GlobalInfraction.WebCore.Server.Services;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,7 +24,10 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddDbContext<SqliteDataContext>(options => options.UseSqlite("Data Source=GlobalBan.db"));
 builder.Services.AddLogging();
 builder.Services.AddScoped<IEntityService, EntityService>();
-builder.Services.AddSingleton<CustomAuthorization>();
+builder.Services.AddScoped<IHeartBeatService, HeartBeatService>();
+builder.Services.AddScoped<IInfractionService, InfractionService>();
+builder.Services.AddScoped<IInstanceService, InstanceService>();
+builder.Services.AddSingleton<PluginAuthentication>();
 builder.Services.AddTransient<ApiKeyMiddleware>();
 builder.Services.AddSingleton<ApiKeyCache>();
 

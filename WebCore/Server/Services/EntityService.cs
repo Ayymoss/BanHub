@@ -2,7 +2,9 @@
 using GlobalInfraction.WebCore.Server.Enums;
 using GlobalInfraction.WebCore.Server.Interfaces;
 using GlobalInfraction.WebCore.Server.Models;
+using GlobalInfraction.WebCore.Shared.Enums;
 using GlobalInfraction.WebCore.Shared.Models;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace GlobalInfraction.WebCore.Server.Services;
@@ -19,7 +21,7 @@ public class EntityService : IEntityService
     public async Task<EntityDto?> GetUser(string identity)
     {
         // Find profile
-        var entity = await _context.Entities.Where(profile => profile.ProfileIdentity == identity)
+        var entity = await _context.Entities.Where(profile => profile.Identity == identity)
             .Select(profile => new
             {
                 profile.Id,
@@ -32,7 +34,7 @@ public class EntityService : IEntityService
         if (entity is null) return null;
 
         // Get associated infractions
-        var infractions = await _context.Infractions.Where(infraction => infraction.Target.ProfileIdentity == identity)
+        var infractions = await _context.Infractions.Where(infraction => infraction.Target.Identity == identity)
             .Select(infraction => new InfractionDto
             {
                 InfractionType = infraction.InfractionType,
@@ -40,7 +42,7 @@ public class EntityService : IEntityService
                 InfractionGuid = infraction.InfractionGuid,
                 Admin = new EntityDto
                 {
-                    ProfileIdentity = infraction.Admin.ProfileIdentity,
+                    Identity = infraction.Admin.Identity,
                     Alias = new AliasDto
                     {
                         UserName = infraction.Admin.CurrentAlias.Alias.UserName,
@@ -57,7 +59,7 @@ public class EntityService : IEntityService
         // Return Dto
         return new EntityDto
         {
-            ProfileIdentity = entity.ProfileIdentity,
+            Identity = entity.ProfileIdentity,
             Reputation = entity.Reputation,
             Alias = new AliasDto
             {
@@ -69,18 +71,46 @@ public class EntityService : IEntityService
         };
     }
 
+    // TODO: Implement authorisation.
     public async Task<List<EntityDto>> GetUsers()
     {
         var result = await _context.Entities
             .Select(profile => new EntityDto
             {
-                ProfileIdentity = profile.ProfileIdentity,
+                Identity = profile.Identity,
                 Alias = new AliasDto
                 {
                     UserName = profile.CurrentAlias.Alias.UserName,
                     IpAddress = profile.CurrentAlias.Alias.IpAddress, //TODO: THIS NEEDS TO BE PRIVILEGED
                     Changed = profile.CurrentAlias.Alias.Changed
                 },
+                Infractions = profile.Infractions.Select(inf => new InfractionDto
+                {
+                    InfractionType = inf.InfractionType,
+                    InfractionStatus = inf.InfractionStatus,
+                    InfractionScope = inf.InfractionScope,
+                    InfractionGuid = inf.InfractionGuid,
+                    Duration = inf.Duration,
+                    Reason = inf.Reason,
+                    Evidence = inf.Evidence,
+                    Admin = new EntityDto
+                    {
+                        Identity = inf.Admin.Identity,
+                        Alias = new AliasDto
+                        {
+                            UserName = inf.Admin.CurrentAlias.Alias.UserName,
+                            IpAddress = inf.Admin.CurrentAlias.Alias.IpAddress,
+                            Changed = inf.Admin.CurrentAlias.Alias.Changed
+                        },
+                        Reputation = inf.Admin.Reputation
+                    },
+                    Instance = new InstanceDto
+                    {
+                        InstanceGuid = inf.Instance.InstanceGuid,
+                        InstanceIp = inf.Instance.InstanceIp,
+                        InstanceName = inf.Instance.InstanceName
+                    }
+                }).ToList(),
                 HeartBeat = profile.HeartBeat,
                 Reputation = profile.Reputation
             })
@@ -95,7 +125,7 @@ public class EntityService : IEntityService
         var user = await _context.Entities
             .AsTracking()
             .Include(x => x.Aliases)
-            .SingleOrDefaultAsync(user => user.ProfileIdentity == request.ProfileIdentity);
+            .SingleOrDefaultAsync(user => user.Identity == request.Identity);
 
         // TODO: This check needs to be changed to reply if the instance doesn't have permission to upload
         // TODO: Custom service should be done. Needs testing
@@ -145,13 +175,14 @@ public class EntityService : IEntityService
 
         var newProfile = new EFEntity
         {
-            ProfileIdentity = request.ProfileIdentity,
+            Identity = request.Identity,
             Reputation = 10,
             Aliases = new List<EFAlias>
             {
                 alias
             },
-            HeartBeat = DateTimeOffset.UtcNow
+            HeartBeat = DateTimeOffset.UtcNow,
+            WebRole = WebRole.User
         };
 
         var currentAlias = new EFCurrentAlias

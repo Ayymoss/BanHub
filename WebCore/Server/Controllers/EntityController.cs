@@ -17,9 +17,8 @@ public class EntityController : Controller
         _entityService = entityService;
     }
 
-    //[Authorize(Policy = "InstanceAPIKeyAuth")]
-    [HttpPost]
-    public async Task<ActionResult> CreateOrUpdate([FromBody] EntityDto request)
+    [HttpPost, PluginAuthentication]
+    public async Task<ActionResult> CreateOrUpdate([FromQuery] string authToken, [FromBody] EntityDto request)
     {
         return await _entityService.CreateOrUpdate(request) switch
         {
@@ -29,8 +28,8 @@ public class EntityController : Controller
         };
     }
 
-    [HttpGet("All"), /*CustomAuthorization*/]
-    public async Task<ActionResult<IEnumerable<EntityDto>>> GetEntities(/*[FromQuery] string authToken*/)
+    [HttpGet("All"), PluginAuthentication]
+    public async Task<ActionResult<IEnumerable<EntityDto>>> GetEntities([FromQuery] string authToken)
     {
         return Ok(await _entityService.GetUsers());
     }
@@ -39,11 +38,7 @@ public class EntityController : Controller
     public async Task<ActionResult<EntityDto>> GetEntity([FromQuery] string identity)
     {
         var result = await _entityService.GetUser(identity);
-        if (result is null)
-        {
-            return NotFound();
-        }
-
+        if (result is null) return NotFound();
         return Ok(result);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using GlobalInfraction.WebCore.Server.Models;
+using GlobalInfraction.WebCore.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace GlobalInfraction.WebCore.Server.Context;
@@ -41,9 +42,10 @@ public class SqliteDataContext : DbContext
         var adminProfile = new EFEntity
         {
             Id = -1,
-            ProfileIdentity = "0:UKN",
+            Identity = "0:UKN",
             HeartBeat = DateTimeOffset.UtcNow,
             Reputation = 0,
+            WebRole = WebRole.User,
             Infractions = new List<EFInfraction>()
         };
 
@@ -58,6 +60,49 @@ public class SqliteDataContext : DbContext
         modelBuilder.Entity<EFAlias>().HasData(adminAlias);
         modelBuilder.Entity<EFCurrentAlias>().HasData(adminCurrentAlias);
 
+        // TODO: Remove once tested.
+        #region TEMPORARY_SEED_DATA
+        var adminAliasTwo = new EFAlias
+        {
+            Id = -2,
+            EntityId = -1,
+            UserName = "AdminMan",
+            IpAddress = "0.0.0.0",
+            Changed = DateTimeOffset.UtcNow + TimeSpan.FromHours(2)
+        };
+        
+        var instance = new EFInstance
+        {
+            Id = -1,
+            InstanceGuid = Guid.NewGuid(),
+            InstanceIp = "123.123.123.123",
+            InstanceName = "Seed Instance",
+            HeartBeat = DateTimeOffset.UtcNow,
+            ApiKey = Guid.NewGuid(),
+            Active = true
+        };
+        
+        var infraction = new EFInfraction
+        {
+            Id = -1,
+            InfractionType = InfractionType.Warn,
+            InfractionStatus = InfractionStatus.Active,
+            InfractionScope = InfractionScope.Local,
+            InfractionGuid = Guid.NewGuid(),
+            Submitted = DateTimeOffset.UtcNow,
+            Duration = null,
+            Reason = "Seed Infraction",
+            Evidence = "Seed Evidence",
+            AdminId = -1,
+            TargetId = -1,
+            InstanceId = -1
+        };
+        
+        modelBuilder.Entity<EFAlias>().HasData(adminAliasTwo);
+        modelBuilder.Entity<EFInstance>().HasData(instance);
+        modelBuilder.Entity<EFInfraction>().HasData(infraction);
+        #endregion
+        
         base.OnModelCreating(modelBuilder);
     }
 }

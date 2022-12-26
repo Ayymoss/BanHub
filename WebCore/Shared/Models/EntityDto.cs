@@ -5,7 +5,7 @@ public class EntityDto
     /// <summary>
     /// The player's identity
     /// </summary>
-    public string ProfileIdentity { get; init; } = null!;
+    public string Identity { get; init; } = null!;
 
     /// <summary>
     /// The player's reputation
@@ -15,15 +15,15 @@ public class EntityDto
     /// <summary>
     /// The last time the player was seen
     /// </summary>
-    public DateTimeOffset HeartBeat { get; set; }
+    public DateTimeOffset? HeartBeat { get; set; }
 
     /// <summary>
     /// The player's meta
     /// </summary>
-    public virtual AliasDto Alias { get; set; } = null!;
+    public virtual AliasDto? Alias { get; set; } = null!;
 
     /// <summary>
-    /// The sending server
+    /// The associated instance
     /// </summary>
     public virtual InstanceDto? Instance { get; set; }
 

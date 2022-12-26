@@ -17,7 +17,10 @@ public class ApiKeyMiddleware : IMiddleware
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
-        _apiKeyCache.ApiKeys ??= await _dataContext.Instances.Select(x => x.ApiKey).ToListAsync();
+        // TODO: This needs to be updated if a server is made active. Restarting the app is a bit of a pain.
+        _apiKeyCache.ApiKeys ??= await _dataContext.Instances
+            .Where(x => x.Active)
+            .Select(x => x.ApiKey).ToListAsync();
 
         await next(context);
     }

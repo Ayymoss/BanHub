@@ -10,10 +10,10 @@ public class AliasDto
     /// <summary>
     /// The player's IP address
     /// </summary>
-    public string IpAddress { get; set; } = null!;
+    public string? IpAddress { get; set; }
     
     /// <summary>
     /// The last time the player's name changed
     /// </summary>
-    public DateTimeOffset Changed { get; set; }
+    public DateTimeOffset? Changed { get; set; }
 }

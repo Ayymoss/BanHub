@@ -47,7 +47,7 @@ public class InfractionDto
     /// <summary>
     /// Information related to the player the infraction was issued to
     /// </summary>
-    public EntityDto Target { get; set; } = null!;
+    public EntityDto? Target { get; set; }
 
     /// <summary>
     /// Information related to the server the infraction was issued from

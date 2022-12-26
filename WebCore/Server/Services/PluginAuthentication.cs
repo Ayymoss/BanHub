@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Mvc.Filters;
 namespace GlobalInfraction.WebCore.Server.Services;
 
 [AttributeUsage(AttributeTargets.Method)]
-public class CustomAuthorization : Attribute, IAuthorizationFilter
+public class PluginAuthentication : Attribute, IAuthorizationFilter
 {
     /// <summary>  
-    /// This will Authorize User  
+    /// Check if user can be authenticated
     /// </summary>  
     public void OnAuthorization(AuthorizationFilterContext? filterContext)
     {
@@ -33,13 +33,13 @@ public class CustomAuthorization : Attribute, IAuthorizationFilter
             filterContext.HttpContext.Response.Headers.Add("authToken", token);
             filterContext.HttpContext.Response.Headers.Add("AuthStatus", "NotAuthorized");
             filterContext.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-            filterContext.HttpContext.Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = "Not Authorized";
-            filterContext.Result = new JsonResult("NotAuthorized")
+            filterContext.HttpContext.Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = "Unauthorized";
+            filterContext.Result = new JsonResult("Unauthorized")
             {
                 Value = new
                 {
                     Status = "Error",
-                    Message = "Invalid Token"
+                    Message = "Unauthorized"
                 },
             };
         }
@@ -47,19 +47,19 @@ public class CustomAuthorization : Attribute, IAuthorizationFilter
         {
             filterContext.HttpContext.Response.StatusCode = (int)HttpStatusCode.ExpectationFailed;
             filterContext.HttpContext.Response.HttpContext.Features
-                .Get<IHttpResponseFeature>().ReasonPhrase = "Please Provide authToken";
-            filterContext.Result = new JsonResult("Please Provide authToken")
+                .Get<IHttpResponseFeature>().ReasonPhrase = "Authenticated endpoint. Provide token";
+            filterContext.Result = new JsonResult("Authenticated endpoint. Provide token")
             {
                 Value = new
                 {
                     Status = "Error",
-                    Message = "Please Provide authToken"
+                    Message = "Authenticated endpoint. Provide token"
                 },
             };
         }
     }
 
-    public bool IsValidToken(string authToken, ApiKeyCache apiKeyCache)
+    private static bool IsValidToken(string authToken, ApiKeyCache apiKeyCache)
     {
         if (!Guid.TryParse(authToken, out var guid)) return false;
         var exists = apiKeyCache.ApiKeys?.Contains(guid);

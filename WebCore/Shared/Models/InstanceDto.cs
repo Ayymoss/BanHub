@@ -10,7 +10,7 @@ public class InstanceDto
     /// <summary>
     /// The IW4MAdmin IP address
     /// </summary>
-    public string InstanceIp { get; set; } = null!;
+    public string? InstanceIp { get; set; }
 
     /// <summary>
     /// The IW4MAdmin name
@@ -20,15 +20,15 @@ public class InstanceDto
     /// <summary>
     /// The last the the instance has replied
     /// </summary>
-    public DateTimeOffset Heartbeat { get; set; }
+    public DateTimeOffset? Heartbeat { get; set; }
     
     /// <summary>
     /// The IW4MAdmin provided API Key
     /// </summary>
-    public Guid ApiKey { get; set; }
+    public Guid? ApiKey { get; set; }
 
     /// <summary>
     /// State whether the server can upload bans
     /// </summary>
-    public bool Active { get; init; }
+    public bool? Active { get; init; }
 }
