@@ -1,0 +1,48 @@
+﻿@page "/Users"
+@using GlobalInfraction.WebCore.Shared.Models
+@inject HttpClient Http
+
+<PageTitle>Users</PageTitle>
+
+@if (_bans == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ProfileIdentity</th>
+          <th>Reputation</th>
+          <th>HeartBeat</th>
+          <th>AliasName</th>
+          <th>InstanceName</th>
+          <th>InfractionCount</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var item in _bans)
+        {
+          <tr>
+            <td>@item.ProfileIdentity</td>
+            <td>@item.Reputation</td>
+            <td>@item.HeartBeat.ToString("yyyy-MM-dd HH:mm:ss")</td>
+            <td>@item.Alias.UserName</td>
+            <td><a href="/">@(item.Instance?.InstanceName ?? "Server name is undefined")</a></td>
+            <td>@(item.Infractions?.Count.ToString() ?? "User has no infractions")</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+}
+
+@code {
+    private List<EntityDto>? _bans;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _bans = await Http.GetFromJsonAsync<List<EntityDto>>("/api/Entity/All");
+      Console.WriteLine();
+    }
+}

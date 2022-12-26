@@ -1,5 +1,9 @@
+using System.Security.Claims;
 using GlobalInfraction.WebCore.Server.Context;
+using GlobalInfraction.WebCore.Server.Interfaces;
+using GlobalInfraction.WebCore.Server.Middleware;
 using GlobalInfraction.WebCore.Server.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,7 +25,11 @@ builder.WebHost.ConfigureKestrel(options =>
 // TODO: Change to PostgreSQL
 builder.Services.AddDbContext<SqliteDataContext>(options => options.UseSqlite("Data Source=GlobalBan.db"));
 builder.Services.AddLogging();
-builder.Services.AddSingleton<ProfileService>();
+builder.Services.AddScoped<IEntityService, EntityService>();
+builder.Services.AddSingleton<CustomAuthorization>();
+builder.Services.AddTransient<ApiKeyMiddleware>();
+builder.Services.AddSingleton<ApiKeyCache>();
+
 builder.Host.ConfigureLogging(logging =>
 {
     logging.ClearProviders();
@@ -35,6 +43,8 @@ builder.Services.AddRazorPages();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseMiddleware<ApiKeyMiddleware>();
 
 app.UseSwagger();
 app.UseSwaggerUI();

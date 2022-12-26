@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GlobalInfraction.WebCore.Server.Models;
 
+/// <summary>
+/// Table for all aliases 
+/// </summary>
 public class EFAlias
 {
     [Key] public int Id { get; set; }
@@ -22,7 +25,10 @@ public class EFAlias
     /// </summary>
     public DateTimeOffset Changed { get; set; }
 
-    public int ProfileId { get; set; }
-    [ForeignKey(nameof(ProfileId))] public EFProfile Profile { get; set; } = null!;
+    /// <summary>
+    /// The associated entity
+    /// </summary>
+    public int EntityId { get; set; } 
+    [ForeignKey(nameof(EntityId))] public EFEntity Entity { get; set; } = null!;
 
 }

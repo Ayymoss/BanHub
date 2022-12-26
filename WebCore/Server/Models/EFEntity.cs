@@ -3,7 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GlobalInfraction.WebCore.Server.Models;
 
-public class EFProfile
+/// <summary>
+/// Table for all players
+/// </summary>
+public class EFEntity
 {
     [Key] public int Id { get; set; }
 
@@ -20,7 +23,7 @@ public class EFProfile
     /// <summary>
     /// The last time the player was seen
     /// </summary>
-    public DateTimeOffset? Heartbeat { get; set; }
+    public DateTimeOffset HeartBeat { get; set; }
 
     /// <summary>
     /// The player's list of names and IP addresses
@@ -33,11 +36,11 @@ public class EFProfile
     public virtual ICollection<EFInfraction> Infractions { get; set; } = null!;
 
     /// <summary>
-    /// Current profile meta
+    /// The lookup for current alias
     /// </summary>
-    public int CurrentAliasId { get; set; }
+    public virtual EFCurrentAlias CurrentAlias { get; set; } = null!;
 
-    [ForeignKey(nameof(CurrentAliasId))] public EFAlias CurrentAlias { get; set; } = null!;
+
 }
 
 /*

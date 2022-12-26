@@ -21,12 +21,12 @@ public class InfractionController : Controller
     [HttpPost]
     public async Task<ActionResult<string>> AddInfraction([FromBody] InfractionDto request)
     {
-        var user = await _context.Profiles
+        var user = await _context.Entities
             .AsTracking()
             .Include(context => context.Infractions)
             .FirstOrDefaultAsync(user => user.ProfileIdentity == request.Target.ProfileIdentity);
 
-        var admin = await _context.Profiles.FirstOrDefaultAsync(profile => profile.ProfileIdentity == request.Admin.ProfileIdentity);
+        var admin = await _context.Entities.FirstOrDefaultAsync(profile => profile.ProfileIdentity == request.Admin.ProfileIdentity);
         if (user is null || admin is null) return StatusCode(404, "User not found");
 
         // Check if the user has an existing ban and the incoming is an unban

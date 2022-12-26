@@ -1,6 +1,6 @@
-﻿namespace GlobalInfractions.Models;
+﻿namespace GlobalInfraction.WebCore.Shared.Models;
 
-public class ProfileDto
+public class EntityDto
 {
     /// <summary>
     /// The player's identity
@@ -15,7 +15,7 @@ public class ProfileDto
     /// <summary>
     /// The last time the player was seen
     /// </summary>
-    public DateTimeOffset Heartbeat { get; set; }
+    public DateTimeOffset HeartBeat { get; set; }
 
     /// <summary>
     /// The player's meta

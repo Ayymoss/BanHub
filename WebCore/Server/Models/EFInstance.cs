@@ -2,6 +2,9 @@
 
 namespace GlobalInfraction.WebCore.Server.Models;
 
+/// <summary>
+/// Table for the all instances
+/// </summary>
 public class EFInstance
 {
     [Key] public int Id { get; set; }
@@ -24,7 +27,7 @@ public class EFInstance
     /// <summary>
     /// The last the the instance has replied
     /// </summary>
-    public DateTimeOffset Heartbeat { get; set; }
+    public DateTimeOffset HeartBeat { get; set; }
 
     /// <summary>
     /// The IW4MAdmin provided API Key

@@ -17,7 +17,7 @@ namespace GlobalInfractions;
 
 public class InfractionManager
 {
-    public readonly ConcurrentDictionary<EFClient, ProfileDto> Profiles = new();
+    public readonly ConcurrentDictionary<EFClient, EntityDto> Profiles = new();
     public InstanceDto Instance = null!;
 
     private readonly IMetaServiceV2 _metaService;
@@ -54,7 +54,7 @@ public class InfractionManager
         Console.WriteLine("Updating profile for {0}", client.CleanedName);
         var httpClient = new HttpClient();
 
-        var profile = new ProfileDto
+        var profile = new EntityDto
         {
             ProfileIdentity = GetIdentity(client.GuidString, client.GameName.ToString()),
             Alias = new AliasDto
@@ -71,7 +71,7 @@ public class InfractionManager
         
         if (response.StatusCode is not HttpStatusCode.OK) return;
         
-        var profileResult = await response.Content.ReadFromJsonAsync<ProfileDto>();
+        var profileResult = await response.Content.ReadFromJsonAsync<EntityDto>();
         
         if (profileResult is null)
         {
@@ -86,7 +86,7 @@ public class InfractionManager
         Console.WriteLine("Added profile {0}", client.CleanedName);
     }
 
-    public void ProcessProfile(ProfileDto profile, EFClient client)
+    public void ProcessProfile(EntityDto profile, EFClient client)
     {
         var globalBan = profile.Infractions?.FirstOrDefault(x => x is
             {InfractionScope: InfractionScope.Global, InfractionStatus: InfractionStatus.Active});

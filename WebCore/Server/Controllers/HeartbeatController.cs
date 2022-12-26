@@ -24,16 +24,16 @@ public class HeartbeatController : Controller
             .FirstOrDefaultAsync(x => x.InstanceGuid == request.InstanceGuid && x.ApiKey == request.ApiKey);
         if (instance is null) return NotFound();
         
-        instance.Heartbeat = DateTimeOffset.UtcNow;
+        instance.HeartBeat = DateTimeOffset.UtcNow;
         _context.Instances.Update(instance);
         await _context.SaveChangesAsync();
         return Ok(instance.Active);
     }
 
     [HttpPost("Profiles")]
-    public async Task<ActionResult> ProfilesHeartbeat([FromBody] List<ProfileDto> request)
+    public async Task<ActionResult> ProfilesHeartbeat([FromBody] List<EntityDto> request)
     {
-        var profiles = await _context.Profiles
+        var profiles = await _context.Entities
             .AsTracking()
             .Where(p => request
                 .Select(r => r.ProfileIdentity)
@@ -42,8 +42,8 @@ public class HeartbeatController : Controller
 
         foreach (var profile in profiles)
         {
-            profile.Heartbeat = DateTimeOffset.UtcNow;
-            _context.Profiles.Update(profile);
+            profile.HeartBeat = DateTimeOffset.UtcNow;
+            _context.Entities.Update(profile);
         }
 
         await _context.SaveChangesAsync();

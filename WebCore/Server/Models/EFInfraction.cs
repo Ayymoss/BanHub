@@ -4,6 +4,9 @@ using GlobalInfraction.WebCore.Shared.Enums;
 
 namespace GlobalInfraction.WebCore.Server.Models;
 
+/// <summary>
+/// Table for all infractions 
+/// </summary>
 public class EFInfraction
 {
     [Key] public int Id { get; set; }
@@ -52,13 +55,13 @@ public class EFInfraction
     /// The admin GUID who issued the infraction
     /// </summary>
     public int AdminId { get; set; }
-    [ForeignKey(nameof(AdminId))] public virtual EFProfile Admin { get; set; } = null!;
+    [ForeignKey(nameof(AdminId))] public virtual EFEntity Admin { get; set; } = null!;
     
     /// <summary>
     /// The user GUID who received the infraction
     /// </summary>
     public int TargetId { get; set; }
-    [ForeignKey(nameof(TargetId))] public virtual EFProfile Target { get; set; } = null!;
+    [ForeignKey(nameof(TargetId))] public virtual EFEntity Target { get; set; } = null!;
 
     /// <summary>
     /// The server reference this infraction

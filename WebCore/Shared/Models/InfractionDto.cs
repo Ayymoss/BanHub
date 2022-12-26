@@ -42,12 +42,12 @@ public class InfractionDto
     /// <summary>
     /// The admin GUID who issued the infraction
     /// </summary>
-    public ProfileDto Admin { get; set; } = null!;
+    public EntityDto Admin { get; set; } = null!;
 
     /// <summary>
     /// Information related to the player the infraction was issued to
     /// </summary>
-    public ProfileDto Target { get; set; } = null!;
+    public EntityDto Target { get; set; } = null!;
 
     /// <summary>
     /// Information related to the server the infraction was issued from

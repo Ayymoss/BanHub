@@ -42,7 +42,7 @@ public class InstanceController : Controller
                 InstanceName = request.InstanceName,
                 ApiKey = request.ApiKey,
                 Active = false,
-                Heartbeat = DateTimeOffset.UtcNow
+                HeartBeat = DateTimeOffset.UtcNow
             });
 
             await _context.SaveChangesAsync();
@@ -62,7 +62,7 @@ public class InstanceController : Controller
         }
 
         // Update existing record
-        instanceGuid.Heartbeat = DateTimeOffset.UtcNow;
+        instanceGuid.HeartBeat = DateTimeOffset.UtcNow;
         instanceGuid.InstanceName = request.InstanceName;
         _context.Instances.Update(instanceGuid);
         await _context.SaveChangesAsync();
