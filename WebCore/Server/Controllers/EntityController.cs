@@ -28,8 +28,8 @@ public class EntityController : Controller
         };
     }
 
-    [HttpGet("All"), PluginAuthentication]
-    public async Task<ActionResult<IEnumerable<EntityDto>>> GetEntities([FromQuery] string authToken)
+    [HttpGet("All")]
+    public async Task<ActionResult<IEnumerable<EntityDto>>> GetEntities()
     {
         return Ok(await _entityService.GetUsers());
     }

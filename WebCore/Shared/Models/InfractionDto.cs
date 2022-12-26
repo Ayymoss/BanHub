@@ -32,7 +32,7 @@ public class InfractionDto
     /// <summary>
     /// The provided reason for the infraction
     /// </summary>
-    public string? Reason { get; set; } = null!;
+    public string? Reason { get; set; } 
 
     /// <summary>
     /// The uploaded evidence for the infraction
@@ -42,7 +42,7 @@ public class InfractionDto
     /// <summary>
     /// The admin GUID who issued the infraction
     /// </summary>
-    public EntityDto? Admin { get; set; } = null!;
+    public EntityDto? Admin { get; set; } 
 
     /// <summary>
     /// Information related to the player the infraction was issued to
@@ -52,5 +52,5 @@ public class InfractionDto
     /// <summary>
     /// Information related to the server the infraction was issued from
     /// </summary>
-    public InstanceDto? Instance { get; set; } = null!;
+    public InstanceDto? Instance { get; set; } 
 }

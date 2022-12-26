@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Data.Abstractions;
 using Data.Models;
+using GlobalInfractions.Configuration;
 using GlobalInfractions.Enums;
 using GlobalInfractions.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +25,7 @@ public class InfractionManager
     private readonly ITranslationLookup _translationLookup;
     private readonly ILogger<InfractionManager> _logger;
     private readonly IDatabaseContextFactory _context;
+    private readonly ConfigurationModel _config;
     
 
     public InfractionManager(IServiceProvider serviceProvider)
@@ -32,6 +34,10 @@ public class InfractionManager
         _translationLookup = serviceProvider.GetRequiredService<ITranslationLookup>();
         _logger = serviceProvider.GetRequiredService<ILogger<InfractionManager>>();
         _context = serviceProvider.GetRequiredService<IDatabaseContextFactory>();
+        
+        var handler = serviceProvider.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
+        handler.BuildAsync();
+        _config = handler.Configuration();
     }
 
     public static string GetIdentity(string guid, string game) => $"{guid}:{game}";
@@ -56,7 +62,7 @@ public class InfractionManager
 
         var profile = new EntityDto
         {
-            ProfileIdentity = GetIdentity(client.GuidString, client.GameName.ToString()),
+            Identity = GetIdentity(client.GuidString, client.GameName.ToString()),
             Alias = new AliasDto
             {
                 UserName = client.CleanedName,
@@ -125,7 +131,7 @@ public class InfractionManager
         var instanceGuid = Plugin.Manager.GetApplicationSettings().Configuration().Id;
         var instanceName = Plugin.Manager.GetApplicationSettings().Configuration().WebfrontCustomBranding;
         var instanceIp = await Utilities.GetExternalIP();
-        var apiKey = Plugin.Configuration.ApiKey;
+        var apiKey = _config.ApiKey;
 
         Instance =  new InstanceDto
         {

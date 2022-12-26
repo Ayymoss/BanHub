@@ -20,7 +20,7 @@ public class EntityDto
     /// <summary>
     /// The player's meta
     /// </summary>
-    public virtual AliasDto? Alias { get; set; } = null!;
+    public virtual AliasDto? Alias { get; set; }
 
     /// <summary>
     /// The associated instance

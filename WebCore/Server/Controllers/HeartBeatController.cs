@@ -18,11 +18,11 @@ public class HeartBeatController : Controller
     }
 
     [HttpPost("Instance")]
-    public async Task<ActionResult<bool>> InstanceHeartbeat([FromBody] InstanceDto request)
+    public async Task<ActionResult> InstanceHeartbeat([FromBody] InstanceDto request)
     {
         var result = await _heartBeatService.InstanceHeartbeat(request);
         if (result.Item1 is ControllerEnums.ProfileReturnState.NotFound) return NotFound();
-        return Ok(result.Item2);
+        return Ok();
     }
 
     [HttpPost("Profiles"), PluginAuthentication]

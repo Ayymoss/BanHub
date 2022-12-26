@@ -1,10 +1,7 @@
-﻿using GlobalInfraction.WebCore.Server.Context;
-using GlobalInfraction.WebCore.Server.Enums;
+﻿using GlobalInfraction.WebCore.Server.Enums;
 using GlobalInfraction.WebCore.Server.Interfaces;
-using GlobalInfraction.WebCore.Server.Models;
 using GlobalInfraction.WebCore.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace GlobalInfraction.WebCore.Server.Controllers;
 
@@ -37,8 +34,8 @@ public class InstanceController : Controller
         };
     }
 
-    [HttpGet("{guid}")]
-    public async Task<ActionResult<InstanceDto>> GetServer(string guid)
+    [HttpGet]
+    public async Task<ActionResult<InstanceDto>> GetServer([FromQuery] string guid)
     {
         var result = await _instanceService.GetServer(guid);
         return result.Item1 switch

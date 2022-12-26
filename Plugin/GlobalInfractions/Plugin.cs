@@ -17,15 +17,14 @@ public class Plugin : IPlugin
 
 
     private readonly IConfigurationHandler<ConfigurationModel> _configurationHandler;
-    public static ConfigurationModel Configuration = null!;
-    public static TranslationStrings Translation = null!;
     public static InfractionManager InfractionManager = null!;
-    public static readonly HeartbeatManager HeartbeatManager = new();
+    public static HeartbeatManager HeartbeatManager = null!;
     public static IManager Manager = null!;
     public static bool Active { get; set; }
 
     public Plugin(IServiceProvider serviceProvider, IConfigurationHandler<ConfigurationModel> configurationHandler)
     {
+        HeartbeatManager = new HeartbeatManager(serviceProvider);
         InfractionManager = new InfractionManager(serviceProvider);
         _configurationHandler = configurationHandler;
     }
@@ -77,9 +76,7 @@ public class Plugin : IPlugin
         {
             await _configurationHandler.Save();
         }
-
-        Configuration = _configurationHandler.Configuration();
-        Translation = Configuration.Translations[Configuration.Locale];
+        
 
         // Check activation status
         await InfractionManager.GetInstance();
