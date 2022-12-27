@@ -5,7 +5,8 @@ namespace GlobalInfraction.WebCore.Server.Interfaces;
 
 public interface IEntityService
 {
-    public Task<EntityDto?> GetUser(string identity);
-    public Task<List<EntityDto>> GetUsers();
-    public Task<ControllerEnums.ProfileReturnState> CreateOrUpdate(EntityDto request);
+    Task<EntityDto?> GetUser(string identity);
+    Task<List<EntityDto>> GetUsers();
+    Task<ControllerEnums.ProfileReturnState> CreateOrUpdate(EntityDto request);
+    Task<bool> HasEntity(string identity);
 }

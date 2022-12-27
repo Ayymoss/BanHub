@@ -11,6 +11,7 @@ public abstract class ControllerEnums
         Conflict,
         Accepted,
         Ok,
-        NotModified
+        NotModified,
+        Unauthorized
     }
 }

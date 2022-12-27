@@ -11,7 +11,7 @@ public class EntityEndpoint
 {
     private readonly ConfigurationModel _config;
     private readonly HttpClient _httpClient = new();
-    
+
     public EntityEndpoint(IServiceProvider serviceProvider)
     {
         var handler = serviceProvider.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
@@ -28,10 +28,19 @@ public class EntityEndpoint
         var content = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<EntityDto>(content);
     }
-    
-    public async Task<bool> PostEntity(EntityDto entity)
+
+    public async Task<bool> UpdateEntity(EntityDto entity)
     {
         var response = await _httpClient.PostAsJsonAsync($"http://localhost:5000/api/Entity?authToken={_config.ApiKey}", entity);
         return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> HasEntity(string identity)
+    {
+        var response = await _httpClient.GetAsync($"http://localhost:5000/api/Entity/Exists?identity={identity}");
+        if (!response.IsSuccessStatusCode) return false;
+        var content = await response.Content.ReadAsStringAsync();
+        var boolParse = bool.TryParse(content, out var result);
+        return boolParse && result;
     }
 }

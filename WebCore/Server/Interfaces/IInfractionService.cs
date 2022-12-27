@@ -5,5 +5,5 @@ namespace GlobalInfraction.WebCore.Server.Interfaces;
 
 public interface IInfractionService
 {
-    public Task<(ControllerEnums.ProfileReturnState, Guid?)> AddInfraction(InfractionDto request);
+    Task<(ControllerEnums.ProfileReturnState, Guid?)> AddInfraction(InfractionDto request);
 }

@@ -41,4 +41,12 @@ public class EntityController : Controller
         if (result is null) return NotFound();
         return Ok(result);
     }
+
+    [HttpGet("Exists")]
+    public async Task<ActionResult<bool>> EntityExists([FromQuery] string identity)
+    {
+        var result = await _entityService.HasEntity(identity);
+        if (!result) return NotFound(result);
+        return Ok(result);
+    }
 }

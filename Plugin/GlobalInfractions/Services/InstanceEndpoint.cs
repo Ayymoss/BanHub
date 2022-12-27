@@ -24,15 +24,11 @@ public class InstanceEndpoint
         var response = await _httpClient.PostAsJsonAsync("http://localhost:5000/api/Instance", instance);
         return response.IsSuccessStatusCode;
     }
-
-    public async Task<InstanceDto?> GetInstance()
+    
+    public async Task<bool> IsInstanceActive(Guid guid)
     {
-        var response =
-            await _httpClient.GetAsync($"http://localhost:5000/api/Instance?guid={Plugin.InfractionManager.Instance.InstanceGuid}");
+        var response = await _httpClient.GetAsync($"http://localhost:5000/api/Instance/Active?instanceGuid={guid.ToString()}");
+        return response.IsSuccessStatusCode;
 
-        if (!response.IsSuccessStatusCode) return null;
-
-        var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<InstanceDto>(content);
     }
 }

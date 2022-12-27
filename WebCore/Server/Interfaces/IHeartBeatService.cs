@@ -5,6 +5,6 @@ namespace GlobalInfraction.WebCore.Server.Interfaces;
 
 public interface IHeartBeatService
 {
-    public Task<(ControllerEnums.ProfileReturnState, bool)> InstanceHeartbeat(InstanceDto request);
-    public Task EntitiesHeartbeat(List<EntityDto> request);
+    Task<(ControllerEnums.ProfileReturnState, bool)> InstanceHeartbeat(InstanceDto request);
+    Task EntitiesHeartbeat(List<EntityDto> request);
 }

@@ -33,8 +33,23 @@ public class GlobalBanCommand : Command
 
     public override async Task ExecuteAsync(GameEvent gameEvent)
     {
-       var result = await Plugin.InfractionManager.NewInfraction(InfractionType.Ban, gameEvent.Origin, gameEvent.Target, gameEvent
-       .Data, scope: InfractionScope.Global);
-       gameEvent.Origin.Tell($"[{Plugin.PluginName}] {result}");
+        if (!Plugin.Active)
+        {
+            gameEvent.Origin.Tell(Plugin.Translations.NotActive);
+            return;
+        }
+
+        var result = await Plugin.EndpointManager
+            .NewInfraction(InfractionType.Ban, gameEvent.Origin, gameEvent.Target, gameEvent.Data, scope: InfractionScope.Global);
+        
+        switch (result)
+        {
+            case true:
+                gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandSuccess.FormatExt(gameEvent.Target.CleanedName, gameEvent.Data));
+                break;
+            case false:
+                gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandFail);
+                break;
+        }
     }
 }

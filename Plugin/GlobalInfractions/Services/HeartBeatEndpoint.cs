@@ -20,13 +20,13 @@ public class HeartBeatEndpoint
 
     public async Task<bool> PostInstanceHeartBeat(InstanceDto instance)
     {
-        var response = await _httpClient.PostAsJsonAsync($"http://localhost:5000/api/HeartBeat", instance);
+        var response = await _httpClient.PostAsJsonAsync($"http://localhost:5000/api/HeartBeat/Instance", instance);
         return response.IsSuccessStatusCode;
     }
     
     public async Task<bool> PostEntityHeartBeat(List<EntityDto> entity)
     {
-        var response = await _httpClient.PostAsJsonAsync($"http://localhost:5000/api/HeartBeat?authToken={_config.ApiKey}", entity);
+        var response = await _httpClient.PostAsJsonAsync($"http://localhost:5000/api/HeartBeat/Entities?authToken={_config.ApiKey}", entity);
         return response.IsSuccessStatusCode;
     }
 }

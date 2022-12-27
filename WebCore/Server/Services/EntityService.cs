@@ -195,4 +195,6 @@ public class EntityService : IEntityService
         await _context.SaveChangesAsync();
         return ControllerEnums.ProfileReturnState.Created;
     }
+
+    public async Task<bool> HasEntity(string identity) => await _context.Entities.AnyAsync(x => x.Identity == identity);
 }

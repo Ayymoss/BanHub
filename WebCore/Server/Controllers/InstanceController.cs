@@ -17,6 +17,11 @@ public class InstanceController : Controller
         _instanceService = instanceService;
     }
 
+    /// <summary>
+    /// Creates or Updates an instance.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpPost]
     public async Task<ActionResult<string>> CreateOrUpdate([FromBody] InstanceDto request)
     {
@@ -30,6 +35,20 @@ public class InstanceController : Controller
             ControllerEnums.ProfileReturnState.Conflict => StatusCode(409, result.Item2),
             ControllerEnums.ProfileReturnState.Accepted => StatusCode(202, result.Item2),
             ControllerEnums.ProfileReturnState.Ok => Ok(result.Item2),
+            _ => BadRequest() // Should never happen
+        };
+    }
+
+    [HttpGet("Active")]
+    public async Task<ActionResult<bool>> IsInstanceActive([FromQuery] string instanceGuid)
+    {
+        var result = await _instanceService.IsInstanceActive(instanceGuid);
+        return result switch
+        {
+            ControllerEnums.ProfileReturnState.NotFound => NotFound(),
+            ControllerEnums.ProfileReturnState.BadRequest => BadRequest(),
+            ControllerEnums.ProfileReturnState.Accepted => Accepted(),
+            ControllerEnums.ProfileReturnState.Unauthorized => Unauthorized(),
             _ => BadRequest() // Should never happen
         };
     }

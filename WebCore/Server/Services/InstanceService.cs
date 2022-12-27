@@ -3,6 +3,7 @@ using GlobalInfraction.WebCore.Server.Enums;
 using GlobalInfraction.WebCore.Server.Interfaces;
 using GlobalInfraction.WebCore.Server.Models;
 using GlobalInfraction.WebCore.Shared.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace GlobalInfraction.WebCore.Server.Services;
@@ -84,5 +85,14 @@ public class InstanceService : IInstanceService
             InstanceName = result.InstanceName,
             Active = result.Active
         });
+    }
+
+    public async Task<ControllerEnums.ProfileReturnState> IsInstanceActive(string instanceGuid)
+    {
+        var guidParse = Guid.TryParse(instanceGuid, out var guidResult);
+        if (!guidParse) return ControllerEnums.ProfileReturnState.BadRequest;
+        var result = await _context.Instances.SingleOrDefaultAsync(x => x.InstanceGuid == guidResult);
+        if (result is null) return ControllerEnums.ProfileReturnState.NotFound;
+        return result.Active ? ControllerEnums.ProfileReturnState.Accepted : ControllerEnums.ProfileReturnState.Unauthorized;
     }
 }

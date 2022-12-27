@@ -1,9 +1,8 @@
-﻿using System.Collections.Concurrent;
-using GlobalInfractions.Configuration;
+﻿using GlobalInfractions.Configuration;
 using GlobalInfractions.Enums;
+using GlobalInfractions.Managers;
 using GlobalInfractions.Models;
 using SharedLibraryCore;
-using SharedLibraryCore.Database.Models;
 using SharedLibraryCore.Interfaces;
 
 namespace GlobalInfractions;
@@ -15,18 +14,18 @@ public class Plugin : IPlugin
     public float Version => 20221218f;
     public string Author => "Amos";
 
-
-    private readonly IConfigurationHandler<ConfigurationModel> _configurationHandler;
-    public static InfractionManager InfractionManager = null!;
-    public static HeartbeatManager HeartbeatManager = null!;
-    public static IManager Manager = null!;
     public static bool Active { get; set; }
-
-    public Plugin(IServiceProvider serviceProvider, IConfigurationHandler<ConfigurationModel> configurationHandler)
+    public static EndpointManager EndpointManager = null!;
+    public static InstanceDto Instance = null!;
+    public static TranslationStrings Translations = null!;
+    private readonly IConfigurationHandler<ConfigurationModel> _configurationHandler;
+    private readonly HeartbeatManager _heartbeatManager;
+    
+    public Plugin(IServiceProvider serviceProvider, IConfigurationHandlerFactory configurationHandlerFactory)
     {
-        HeartbeatManager = new HeartbeatManager(serviceProvider);
-        InfractionManager = new InfractionManager(serviceProvider);
-        _configurationHandler = configurationHandler;
+        _heartbeatManager = new HeartbeatManager(serviceProvider);
+        EndpointManager = new EndpointManager(serviceProvider);
+        _configurationHandler = configurationHandlerFactory.GetConfigurationHandler<ConfigurationModel>("ReservedClientsSettings");
     }
 
     public async Task OnEventAsync(GameEvent gameEvent, Server server)
@@ -34,26 +33,26 @@ public class Plugin : IPlugin
         switch (gameEvent.Type)
         {
             case GameEvent.EventType.Join:
-                await InfractionManager.UpdateProfile(gameEvent.Origin);
+                await EndpointManager.OnJoin(gameEvent.Origin, Instance);
                 break;
             case GameEvent.EventType.Disconnect:
-                InfractionManager.RemoveFromProfiles(gameEvent.Origin);
+                EndpointManager.RemoveFromProfiles(gameEvent.Origin);
                 break;
             case GameEvent.EventType.Warn:
-                await InfractionManager.NewInfraction(InfractionType.Warn, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
+                await EndpointManager.NewInfraction(InfractionType.Warn, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
                 break;
             case GameEvent.EventType.Kick:
-                await InfractionManager.NewInfraction(InfractionType.Kick, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
+                await EndpointManager.NewInfraction(InfractionType.Kick, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
                 break;
             case GameEvent.EventType.TempBan:
-                await InfractionManager.NewInfraction(InfractionType.TempBan, gameEvent.Origin, gameEvent.Target, gameEvent.Data,
+                await EndpointManager.NewInfraction(InfractionType.TempBan, gameEvent.Origin, gameEvent.Target, gameEvent.Data,
                     duration: (TimeSpan)gameEvent.Extra);
                 break;
             case GameEvent.EventType.Ban:
-                await InfractionManager.NewInfraction(InfractionType.Ban, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
+                await EndpointManager.NewInfraction(InfractionType.Ban, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
                 break;
             case GameEvent.EventType.Unban:
-                await InfractionManager.NewInfraction(InfractionType.Unban, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
+                await EndpointManager.NewInfraction(InfractionType.Unban, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
                 break;
         }
     }
@@ -61,7 +60,6 @@ public class Plugin : IPlugin
     public async Task OnLoadAsync(IManager manager)
     {
         Console.WriteLine($"[{PluginName}] Loading...");
-        Manager = manager;
 
         // Build configuration
         await _configurationHandler.BuildAsync();
@@ -76,16 +74,26 @@ public class Plugin : IPlugin
         {
             await _configurationHandler.Save();
         }
-        
 
-        // Check activation status
-        await InfractionManager.GetInstance();
-        Active = await InfractionManager.UpdateInstance();
+        Translations = _configurationHandler.Configuration().Translations;
+
+        // Update the instance and check its state
+        Instance = new InstanceDto
+        {
+            InstanceGuid = Guid.Parse(manager.GetApplicationSettings().Configuration().Id),
+            InstanceName = manager.GetApplicationSettings().Configuration().WebfrontCustomBranding,
+            InstanceIp = await Utilities.GetExternalIP(),
+            ApiKey = _configurationHandler.Configuration().ApiKey,
+            Heartbeat = DateTimeOffset.UtcNow
+        };
+
+        await EndpointManager.UpdateInstance(Instance);
+        Active = await EndpointManager.IsInstanceActive(Instance);
 
         if (!Active)
         {
             Console.WriteLine($"[{PluginName}] Not activated. Read-only access.");
-            Console.WriteLine($"[{PluginName}] To activate your access. Please visit <DISCORD>");
+            Console.WriteLine($"[{PluginName}] To activate your access. Please visit https://discord.gg/Arruj6DWvp");
         }
         else
         {
@@ -93,8 +101,8 @@ public class Plugin : IPlugin
             Console.WriteLine($"[{PluginName}] Infractions and users will be reported to the API.");
         }
 
-        // Start the heartbeat
-        HeartbeatManager.HeartbeatTimer();
+        // Start the heartbeat timer
+        _heartbeatManager.HeartbeatTimer();
 
         Console.WriteLine($"[{PluginName}] Loaded successfully. Version: {Version}");
     }

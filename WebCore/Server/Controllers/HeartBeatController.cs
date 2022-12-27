@@ -25,7 +25,7 @@ public class HeartBeatController : Controller
         return Ok();
     }
 
-    [HttpPost("Profiles"), PluginAuthentication]
+    [HttpPost("Entities"), PluginAuthentication]
     public async Task<ActionResult> EntitiesHeartbeat([FromQuery] string authToken, [FromBody] List<EntityDto> request)
     {
         await _heartBeatService.EntitiesHeartbeat(request);
