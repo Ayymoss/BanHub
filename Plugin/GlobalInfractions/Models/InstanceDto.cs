@@ -30,5 +30,5 @@ public class InstanceDto
     /// <summary>
     /// State whether the server can upload bans
     /// </summary>
-    public bool? Active { get; init; }
+    public bool? Active { get; set; }
 }

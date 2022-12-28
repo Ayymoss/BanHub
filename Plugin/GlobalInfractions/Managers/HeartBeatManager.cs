@@ -1,16 +1,19 @@
 ﻿using System.Timers;
+using GlobalInfractions.Configuration;
 using GlobalInfractions.Services;
 using Timer = System.Timers.Timer;
 
 namespace GlobalInfractions.Managers;
 
-public class HeartbeatManager
+public class HeartBeatManager
 {
+    private readonly ConfigurationModel _configurationModel;
     private readonly HeartBeatEndpoint _heartBeatEndpoint;
 
-    public HeartbeatManager(IServiceProvider serviceProvider)
+    public HeartBeatManager(IServiceProvider serviceProvider,ConfigurationModel configurationModel)
     {
-        _heartBeatEndpoint = new HeartBeatEndpoint(serviceProvider);
+        _configurationModel = configurationModel;
+        _heartBeatEndpoint = new HeartBeatEndpoint(configurationModel);
     }
 
     public void HeartbeatTimer()
@@ -38,7 +41,7 @@ public class HeartbeatManager
 
     private async void ClientHeartbeat(object? sender, ElapsedEventArgs e)
     {
-        if (!Plugin.Active) return;
+        if (!Plugin.InstanceActive) return;
         try
         {
             if (Plugin.EndpointManager.Profiles.Count is 0) return;

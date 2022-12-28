@@ -33,7 +33,7 @@ public class GlobalBanCommand : Command
 
     public override async Task ExecuteAsync(GameEvent gameEvent)
     {
-        if (!Plugin.Active)
+        if (!Plugin.InstanceActive)
         {
             gameEvent.Origin.Tell(Plugin.Translations.NotActive);
             return;

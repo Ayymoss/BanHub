@@ -45,7 +45,7 @@ public class EntityService : IEntityService
                     Alias = new AliasDto
                     {
                         UserName = infraction.Admin.CurrentAlias.Alias.UserName,
-                        IpAddress = infraction.Admin.CurrentAlias.Alias.IpAddress,
+                        //IpAddress = infraction.Admin.CurrentAlias.Alias.IpAddress, // We don't need to return the admins IP address.
                         Changed = infraction.Admin.CurrentAlias.Alias.Changed
                     },
                     Reputation = infraction.Admin.Reputation
@@ -63,7 +63,7 @@ public class EntityService : IEntityService
             Alias = new AliasDto
             {
                 UserName = entity.Alias.UserName,
-                IpAddress = entity.Alias.IpAddress,
+                //IpAddress = entity.Alias.IpAddress, // We don't need to return their IP address.
                 Changed = entity.Alias.Changed
             },
             Infractions = infractions
@@ -135,7 +135,7 @@ public class EntityService : IEntityService
             var existingAlias = await _context.Aliases
                 .Where(x => x.EntityId == user.Id)
                 .AnyAsync(profile =>
-                    profile.UserName == request.Alias.UserName && profile.IpAddress == request.Alias.IpAddress);
+                    profile.UserName == request.Alias!.UserName && profile.IpAddress == request.Alias.IpAddress);
 
             if (!existingAlias)
             {
@@ -145,8 +145,8 @@ public class EntityService : IEntityService
 
                 var updatedAlias = new EFAlias
                 {
-                    UserName = request.Alias.UserName,
-                    IpAddress = request.Alias.IpAddress,
+                    UserName = request.Alias!.UserName,
+                    IpAddress = request.Alias.IpAddress!,
                     Changed = DateTimeOffset.UtcNow,
                     EntityId = user.Id
                 };
@@ -165,33 +165,31 @@ public class EntityService : IEntityService
         }
 
         // Create the user
-        var alias = new EFAlias
-        {
-            UserName = request.Alias.UserName,
-            IpAddress = request.Alias.IpAddress,
-            Changed = DateTimeOffset.UtcNow
-        };
-
-        var newProfile = new EFEntity
+        var entity = new EFEntity
         {
             Identity = request.Identity,
             Reputation = 10,
-            Aliases = new List<EFAlias>
-            {
-                alias
-            },
             HeartBeat = DateTimeOffset.UtcNow,
             WebRole = WebRole.User
         };
 
-        var currentAlias = new EFCurrentAlias
+        var alias = new EFAlias
         {
-            AliasId = alias.Id,
-            EntityId = newProfile.Id
+            Entity = entity,
+            UserName = request.Alias!.UserName,
+            IpAddress = request.Alias.IpAddress!,
+            Changed = DateTimeOffset.UtcNow
         };
 
+        var currentAlias = new EFCurrentAlias
+        {
+            Alias = alias,
+            Entity = entity
+        };
+        
+        entity.CurrentAlias = currentAlias;
+
         _context.CurrentAliases.Add(currentAlias);
-        _context.Entities.Add(newProfile);
         await _context.SaveChangesAsync();
         return ControllerEnums.ProfileReturnState.Created;
     }

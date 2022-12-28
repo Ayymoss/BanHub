@@ -26,9 +26,9 @@ public class SqliteDataContext : DbContext
         modelBuilder.Entity<EFCurrentAlias>().ToTable("EFCurrentAliases");
 
         modelBuilder.Entity<EFInfraction>()
-            .HasOne(i => i.Admin)
-            .WithOne()
-            .HasForeignKey<EFInfraction>(i => i.AdminId);
+            .HasOne(a => a.Admin)
+            .WithMany(p => p.Infractions)
+            .HasForeignKey(f => f.AdminId);
 
         var adminAlias = new EFAlias
         {

@@ -7,31 +7,26 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SharedLibraryCore;
 using SharedLibraryCore.Database.Models;
-using SharedLibraryCore.Interfaces;
 
 namespace GlobalInfractions.Managers;
 
 public class EndpointManager
 {
     public readonly ConcurrentDictionary<EFClient, EntityDto> Profiles = new();
-
-
+    
     private readonly ILogger<EndpointManager> _logger;
     private readonly EntityEndpoint _entity;
-    private readonly ConfigurationModel _config;
+    private readonly ConfigurationModel _configurationModel;
     private readonly InstanceEndpoint _instance;
     private readonly InfractionEndpoint _infraction;
 
-    public EndpointManager(IServiceProvider serviceProvider)
+    public EndpointManager(IServiceProvider serviceProvider, ConfigurationModel configurationModel)
     {
-        _entity = new EntityEndpoint(serviceProvider);
-        _instance = new InstanceEndpoint(serviceProvider);
-        _infraction = new InfractionEndpoint(serviceProvider);
+        _configurationModel = configurationModel;
+        _entity = new EntityEndpoint(configurationModel);
+        _instance = new InstanceEndpoint(configurationModel);
+        _infraction = new InfractionEndpoint(configurationModel);
         _logger = serviceProvider.GetRequiredService<ILogger<EndpointManager>>();
-
-        var handler = serviceProvider.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
-        handler.BuildAsync();
-        _config = handler.Configuration();
     }
 
     private static string GetIdentity(string guid, string game) => $"{guid}:{game}";
@@ -54,21 +49,34 @@ public class EndpointManager
         // Action any penalties
         if (returnedEntity is not null)
         {
-            ProcessProfile(returnedEntity, client);
+            ProcessEntity(returnedEntity, client);
             Profiles.TryAdd(client, returnedEntity);
         }
 
         // We don't want to act on anything if they're not authenticated
         if (!instance.Active!.Value) return;
-        _ = await _entity.UpdateEntity(entity);
+        
+        var entityUpdated = await _entity.UpdateEntity(entity);
+        
+        // If they're new we need to add them to the profiles
+        if (returnedEntity is null && entityUpdated)
+        {
+            var newEntity = await _entity.GetEntity(entity.Identity);
+            if (newEntity is not null)
+            {
+                ProcessEntity(newEntity, client);
+                Profiles.TryAdd(client, newEntity);
+            }
+        }
     }
 
-    private void ProcessProfile(EntityDto entity, EFClient client)
+    private void ProcessEntity(EntityDto entity, EFClient client)
     {
-        var globalBan = entity.Infractions?.FirstOrDefault(x => x is
-            {InfractionScope: InfractionScope.Global, InfractionStatus: InfractionStatus.Active});
+        var globalBan = entity.Infractions?
+            .FirstOrDefault(x => x.InfractionType is InfractionType.Ban && x.InfractionScope is InfractionScope.Global);
         if (globalBan is null || !client.IsIngame) return;
-        client.Kick(_config.Translations.GlobalBanKickMessage.FormatExt(globalBan.Reason), Utilities.IW4MAdminClient());
+        client.Kick(_configurationModel.Translations.GlobalBanKickMessage
+            .FormatExt(globalBan.Reason), Utilities.IW4MAdminClient(client.CurrentServer));
     }
 
     public async Task<bool> UpdateInstance(InstanceDto instance)
@@ -97,7 +105,7 @@ public class EndpointManager
     public async Task<bool> NewInfraction(InfractionType infractionType, EFClient origin, EFClient target,
         string reason, TimeSpan? duration = null, InfractionScope? scope = null, string? evidence = null)
     {
-        if (!Plugin.Active) return false;
+        if (!Plugin.InstanceActive) return false;
 
         var targetEntity = Profiles.Any(x => x.Key.GuidString == origin.GuidString);
         var adminEntity = Profiles.Any(x => x.Key.GuidString == target.GuidString);

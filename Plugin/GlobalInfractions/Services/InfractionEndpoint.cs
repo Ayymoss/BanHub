@@ -8,19 +8,28 @@ namespace GlobalInfractions.Services;
 
 public class InfractionEndpoint
 {
-    private readonly ConfigurationModel _config;
+    private readonly ConfigurationModel _configurationModel;
     private readonly HttpClient _httpClient = new();
-    
-    public InfractionEndpoint(IServiceProvider serviceProvider)
+    private const string ApiHost = "http://localhost:5000";
+
+    public InfractionEndpoint(ConfigurationModel configurationModel)
     {
-        var handler = serviceProvider.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
-        handler.BuildAsync();
-        _config = handler.Configuration();
+        _configurationModel = configurationModel;
     }
 
     public async Task<bool> PostInfraction(InfractionDto infraction)
     {
-        var response = await _httpClient.PostAsJsonAsync($"http://localhost:5000/api/Infraction?authToken={_config.ApiKey}", infraction);
-        return response.IsSuccessStatusCode;
+        try
+        {
+            var response = await _httpClient
+                .PostAsJsonAsync($"{ApiHost}/api/Infraction?authToken={_configurationModel.ApiKey}", infraction);
+            return response.IsSuccessStatusCode;
+        }
+        catch (HttpRequestException e)
+        {
+            Console.WriteLine($"[{Plugin.PluginName}] Error sending instance heartbeat: {e.Message}");
+        }
+
+        return false;
     }
 }

@@ -9,26 +9,42 @@ namespace GlobalInfractions.Services;
 
 public class InstanceEndpoint
 {
-    private readonly ConfigurationModel _config;
+    private readonly ConfigurationModel _configurationModel;
     private readonly HttpClient _httpClient = new();
+    private const string ApiHost = "http://localhost:5000";
 
-    public InstanceEndpoint(IServiceProvider serviceProvider)
+    public InstanceEndpoint(ConfigurationModel configurationModel)
     {
-        var handler = serviceProvider.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
-        handler.BuildAsync();
-        _config = handler.Configuration();
+        _configurationModel = configurationModel;
     }
 
     public async Task<bool> PostInstance(InstanceDto instance)
     {
-        var response = await _httpClient.PostAsJsonAsync("http://localhost:5000/api/Instance", instance);
-        return response.IsSuccessStatusCode;
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync($"{ApiHost}/api/Instance", instance);
+            return response.IsSuccessStatusCode;
+        }
+        catch (HttpRequestException e)
+        {
+            Console.WriteLine($"[{Plugin.PluginName}] Error posting instance: {e.Message}");
+        }
+
+        return false;
     }
-    
+
     public async Task<bool> IsInstanceActive(Guid guid)
     {
-        var response = await _httpClient.GetAsync($"http://localhost:5000/api/Instance/Active?instanceGuid={guid.ToString()}");
-        return response.IsSuccessStatusCode;
+        try
+        {
+            var response = await _httpClient.GetAsync($"{ApiHost}/api/Instance/Active?instanceGuid={guid.ToString()}");
+            return response.IsSuccessStatusCode;
+        }
+        catch (HttpRequestException e)
+        {
+            Console.WriteLine($"[{Plugin.PluginName}] Error getting instance state: {e.Message}");
+        }
 
+        return false;
     }
 }

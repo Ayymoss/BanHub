@@ -8,25 +8,44 @@ namespace GlobalInfractions.Services;
 
 public class HeartBeatEndpoint
 {
-    private readonly ConfigurationModel _config;
+    private readonly ConfigurationModel _configurationModel;
     private readonly HttpClient _httpClient = new();
+    private const string ApiHost = "http://localhost:5000";
 
-    public HeartBeatEndpoint(IServiceProvider serviceProvider)
+    public HeartBeatEndpoint(ConfigurationModel configurationModel)
     {
-        var handler = serviceProvider.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
-        handler.BuildAsync();
-        _config = handler.Configuration();
+        _configurationModel = configurationModel;
     }
 
     public async Task<bool> PostInstanceHeartBeat(InstanceDto instance)
     {
-        var response = await _httpClient.PostAsJsonAsync($"http://localhost:5000/api/HeartBeat/Instance", instance);
-        return response.IsSuccessStatusCode;
+        try
+        {
+            var response = await _httpClient
+                .PostAsJsonAsync($"{ApiHost}/api/HeartBeat/Instance", instance);
+            return response.IsSuccessStatusCode;
+        }
+        catch (HttpRequestException e)
+        {
+            Console.WriteLine($"[{Plugin.PluginName}] Error sending instance heartbeat: {e.Message}");
+        }
+
+        return false;
     }
-    
+
     public async Task<bool> PostEntityHeartBeat(List<EntityDto> entity)
     {
-        var response = await _httpClient.PostAsJsonAsync($"http://localhost:5000/api/HeartBeat/Entities?authToken={_config.ApiKey}", entity);
-        return response.IsSuccessStatusCode;
+        try
+        {
+            var response = await _httpClient
+                .PostAsJsonAsync($"{ApiHost}/api/HeartBeat/Entities?authToken={_configurationModel.ApiKey}", entity);
+            return response.IsSuccessStatusCode;
+        }
+        catch (HttpRequestException e)
+        {
+            Console.WriteLine($"[{Plugin.PluginName}] Error sending entity heartbeat: {e.Message}");
+        }
+
+        return false;
     }
 }

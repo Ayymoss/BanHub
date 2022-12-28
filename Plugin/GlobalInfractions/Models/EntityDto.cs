@@ -5,12 +5,12 @@ public class EntityDto
     /// <summary>
     /// The player's identity
     /// </summary>
-    public string Identity { get; init; } = null!;
+    public string Identity { get; set; } = null!;
 
     /// <summary>
     /// The player's reputation
     /// </summary>
-    public int? Reputation { get; init; }
+    public int? Reputation { get; set; }
 
     /// <summary>
     /// The last time the player was seen

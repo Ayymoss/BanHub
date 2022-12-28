@@ -9,38 +9,64 @@ namespace GlobalInfractions.Services;
 
 public class EntityEndpoint
 {
-    private readonly ConfigurationModel _config;
+    private readonly ConfigurationModel _configurationModel;
     private readonly HttpClient _httpClient = new();
+    private const string ApiHost = "http://localhost:5000";
 
-    public EntityEndpoint(IServiceProvider serviceProvider)
+    public EntityEndpoint(ConfigurationModel configurationModel)
     {
-        var handler = serviceProvider.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
-        handler.BuildAsync();
-        _config = handler.Configuration();
+        _configurationModel = configurationModel;
     }
 
     public async Task<EntityDto?> GetEntity(string identity)
     {
-        var response = await _httpClient.GetAsync($"http://localhost:5000/api/Entity?identity={identity}");
+        try
+        {
+            var response = await _httpClient.GetAsync($"{ApiHost}/api/Entity?identity={identity}");
 
-        if (!response.IsSuccessStatusCode) return null;
+            if (!response.IsSuccessStatusCode) return null;
 
-        var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<EntityDto>(content);
+            var json = await response.Content.ReadFromJsonAsync<EntityDto>();
+            return json;
+        }
+        catch (HttpRequestException e)
+        {
+            Console.WriteLine($"[{Plugin.PluginName}] Error sending instance heartbeat: {e.Message}");
+        }
+
+        return null;
     }
 
     public async Task<bool> UpdateEntity(EntityDto entity)
     {
-        var response = await _httpClient.PostAsJsonAsync($"http://localhost:5000/api/Entity?authToken={_config.ApiKey}", entity);
-        return response.IsSuccessStatusCode;
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync($"{ApiHost}/api/Entity?authToken={_configurationModel.ApiKey}", entity);
+            return response.IsSuccessStatusCode;
+        }
+        catch (HttpRequestException e)
+        {
+            Console.WriteLine($"[{Plugin.PluginName}] Error sending instance heartbeat: {e.Message}");
+        }
+
+        return false;
     }
 
     public async Task<bool> HasEntity(string identity)
     {
-        var response = await _httpClient.GetAsync($"http://localhost:5000/api/Entity/Exists?identity={identity}");
-        if (!response.IsSuccessStatusCode) return false;
-        var content = await response.Content.ReadAsStringAsync();
-        var boolParse = bool.TryParse(content, out var result);
-        return boolParse && result;
+        try
+        {
+            var response = await _httpClient.GetAsync($"{ApiHost}/api/Entity/Exists?identity={identity}");
+            if (!response.IsSuccessStatusCode) return false;
+            var content = await response.Content.ReadAsStringAsync();
+            var boolParse = bool.TryParse(content, out var result);
+            return boolParse && result;
+        }
+        catch (HttpRequestException e)
+        {
+            Console.WriteLine($"[{Plugin.PluginName}] Error sending instance heartbeat: {e.Message}");
+        }
+
+        return false;
     }
 }

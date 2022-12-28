@@ -9,27 +9,30 @@ namespace GlobalInfractions;
 
 public class Plugin : IPlugin
 {
+    private readonly IServiceProvider _serviceProvider;
     public const string PluginName = "Global Infractions";
     public string Name => PluginName;
     public float Version => 20221218f;
     public string Author => "Amos";
 
-    public static bool Active { get; set; }
+    private static bool _pluginEnabled;
+    public static bool InstanceActive { get; set; }
     public static EndpointManager EndpointManager = null!;
     public static InstanceDto Instance = null!;
     public static TranslationStrings Translations = null!;
+    public static HeartBeatManager HeartBeatManager = null!;
     private readonly IConfigurationHandler<ConfigurationModel> _configurationHandler;
-    private readonly HeartbeatManager _heartbeatManager;
     
     public Plugin(IServiceProvider serviceProvider, IConfigurationHandlerFactory configurationHandlerFactory)
     {
-        _heartbeatManager = new HeartbeatManager(serviceProvider);
-        EndpointManager = new EndpointManager(serviceProvider);
-        _configurationHandler = configurationHandlerFactory.GetConfigurationHandler<ConfigurationModel>("ReservedClientsSettings");
+        _serviceProvider = serviceProvider;
+        _configurationHandler = configurationHandlerFactory.GetConfigurationHandler<ConfigurationModel>("GlobalInfractionsSettings");
     }
 
     public async Task OnEventAsync(GameEvent gameEvent, Server server)
     {
+        if (!_pluginEnabled) return;
+
         switch (gameEvent.Type)
         {
             case GameEvent.EventType.Join:
@@ -75,7 +78,12 @@ public class Plugin : IPlugin
             await _configurationHandler.Save();
         }
 
-        Translations = _configurationHandler.Configuration().Translations;
+        var config = _configurationHandler.Configuration();
+        HeartBeatManager = new HeartBeatManager(_serviceProvider, config);
+        EndpointManager = new EndpointManager(_serviceProvider, config);
+        
+
+        Translations = config.Translations;
 
         // Update the instance and check its state
         Instance = new InstanceDto
@@ -83,28 +91,35 @@ public class Plugin : IPlugin
             InstanceGuid = Guid.Parse(manager.GetApplicationSettings().Configuration().Id),
             InstanceName = manager.GetApplicationSettings().Configuration().WebfrontCustomBranding,
             InstanceIp = await Utilities.GetExternalIP(),
-            ApiKey = _configurationHandler.Configuration().ApiKey,
+            ApiKey = config.ApiKey,
             Heartbeat = DateTimeOffset.UtcNow
         };
 
-        await EndpointManager.UpdateInstance(Instance);
-        Active = await EndpointManager.IsInstanceActive(Instance);
-
-        if (!Active)
+        _pluginEnabled = await EndpointManager.UpdateInstance(Instance);
+        
+        // If successful reply, get active state and start heartbeat
+        if (_pluginEnabled)
         {
-            Console.WriteLine($"[{PluginName}] Not activated. Read-only access.");
-            Console.WriteLine($"[{PluginName}] To activate your access. Please visit https://discord.gg/Arruj6DWvp");
-        }
-        else
-        {
-            Console.WriteLine($"[{PluginName}] Activated.");
-            Console.WriteLine($"[{PluginName}] Infractions and users will be reported to the API.");
+            InstanceActive = await EndpointManager.IsInstanceActive(Instance);
+            Instance.Active = InstanceActive;
+            
+            if (InstanceActive)
+            {
+                Console.WriteLine($"[{PluginName}] Activated.");
+                Console.WriteLine($"[{PluginName}] Infractions and users will be reported to the API.");
+            }
+            else
+            {
+                Console.WriteLine($"[{PluginName}] Not activated. Read-only access.");
+                Console.WriteLine($"[{PluginName}] To activate your access. Please visit https://discord.gg/Arruj6DWvp");
+            }
+
+            HeartBeatManager.HeartbeatTimer();
+            Console.WriteLine($"[{PluginName}] Loaded successfully. Version: {Version}");
+            return;
         }
 
-        // Start the heartbeat timer
-        _heartbeatManager.HeartbeatTimer();
-
-        Console.WriteLine($"[{PluginName}] Loaded successfully. Version: {Version}");
+        Console.WriteLine($"[{PluginName}] Failed to load. Is the API running?");
     }
 
     public Task OnUnloadAsync()
