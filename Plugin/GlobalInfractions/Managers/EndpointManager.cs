@@ -13,12 +13,13 @@ namespace GlobalInfractions.Managers;
 public class EndpointManager
 {
     public readonly ConcurrentDictionary<EFClient, EntityDto> Profiles = new();
-    
+
     private readonly ILogger<EndpointManager> _logger;
     private readonly EntityEndpoint _entity;
     private readonly ConfigurationModel _configurationModel;
     private readonly InstanceEndpoint _instance;
     private readonly InfractionEndpoint _infraction;
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     public EndpointManager(IServiceProvider serviceProvider, ConfigurationModel configurationModel)
     {
@@ -29,42 +30,47 @@ public class EndpointManager
         _logger = serviceProvider.GetRequiredService<ILogger<EndpointManager>>();
     }
 
-    private static string GetIdentity(string guid, string game) => $"{guid}:{game}";
+    private static string GetIdentity(EFClient client) => $"{client.GuidString}:{client.GameName.ToString()}";
 
-    public async Task OnJoin(EFClient client, InstanceDto instance)
+    private static EntityDto ClientToEntity(EFClient client)
     {
-        var entity = new EntityDto
+        return new EntityDto
         {
-            Identity = GetIdentity(client.GuidString, client.GameName.ToString()),
+            Identity = GetIdentity(client),
             Alias = new AliasDto
             {
                 UserName = client.CleanedName,
                 IpAddress = client.IPAddressString
             },
-            Instance = instance
+            Instance = Plugin.Instance
         };
+    }
+
+    public async Task OnJoin(EFClient client)
+    {
+        var entity = ClientToEntity(client);
 
         var returnedEntity = await _entity.GetEntity(entity.Identity);
 
         // Action any penalties
         if (returnedEntity is not null)
         {
-            ProcessEntity(returnedEntity, client);
+            if (Plugin.FeaturesEnabled) ProcessEntity(returnedEntity, client); // TODO: Remove tag
             Profiles.TryAdd(client, returnedEntity);
         }
 
         // We don't want to act on anything if they're not authenticated
-        if (!instance.Active!.Value) return;
-        
+        if (!Plugin.Instance.Active!.Value) return;
+
         var entityUpdated = await _entity.UpdateEntity(entity);
-        
+
         // If they're new we need to add them to the profiles
         if (returnedEntity is null && entityUpdated)
         {
             var newEntity = await _entity.GetEntity(entity.Identity);
             if (newEntity is not null)
             {
-                ProcessEntity(newEntity, client);
+                if (Plugin.FeaturesEnabled) ProcessEntity(newEntity, client); // TODO: Remove tag
                 Profiles.TryAdd(client, newEntity);
             }
         }
@@ -86,20 +92,29 @@ public class EndpointManager
 
     public async Task<bool> IsInstanceActive(InstanceDto instance)
     {
-        // TODO: Handle this properly if the host is offline for whatever reason. 
+        // TODO: Handle this properly if the API is offline for whatever reason. 
         return await _instance.IsInstanceActive(instance.InstanceGuid);
     }
 
-    public void RemoveFromProfiles(EFClient client)
+    public async void RemoveFromProfiles(EFClient client)
     {
-        var remove = Profiles.TryRemove(client, out _);
-        if (remove)
+        try
         {
-            _logger.LogInformation("Removed {Name} from profiles", client.CleanedName);
-            return;
-        }
+            await _semaphore.WaitAsync();
 
-        _logger.LogError("Failed to remove {Name} from profiles", client.CleanedName);
+            var remove = Profiles.TryRemove(client, out _);
+            if (remove)
+            {
+                _logger.LogInformation("Removed {Name} from profiles", client.CleanedName);
+                return;
+            }
+
+            _logger.LogError("Failed to remove {Name} from profiles", client.CleanedName);
+        }
+        finally
+        {
+            if (_semaphore.CurrentCount == 0) _semaphore.Release();
+        }
     }
 
     public async Task<bool> NewInfraction(InfractionType infractionType, EFClient origin, EFClient target,
@@ -107,22 +122,29 @@ public class EndpointManager
     {
         if (!Plugin.InstanceActive) return false;
 
-        var targetEntity = Profiles.Any(x => x.Key.GuidString == origin.GuidString);
-        var adminEntity = Profiles.Any(x => x.Key.GuidString == target.GuidString);
-        
-        if (!targetEntity || !adminEntity) return false;
-
-        var infraction = new InfractionDto
+        try
         {
-            InfractionType = infractionType,
-            InfractionScope = scope ?? InfractionScope.Local,
-            Evidence = evidence,
-            Reason = reason,
-            Duration = duration,
-            Instance = Plugin.Instance,
-            Admin = Profiles.FirstOrDefault(x => x.Key.GuidString == origin.GuidString).Value,
-            Target = Profiles.FirstOrDefault(x => x.Key.GuidString == target.GuidString).Value
-        };
-        return await _infraction.PostInfraction(infraction);
+            await _semaphore.WaitAsync();
+            
+            var adminEntity = ClientToEntity(origin);
+            var targetEntity = ClientToEntity(target);
+
+            var infraction = new InfractionDto
+            {
+                InfractionType = infractionType,
+                InfractionScope = scope ?? InfractionScope.Local,
+                Evidence = evidence,
+                Reason = reason,
+                Duration = duration,
+                Instance = Plugin.Instance,
+                Admin = adminEntity,
+                Target = targetEntity
+            };
+            return await _infraction.PostInfraction(infraction);
+        }
+        finally
+        {
+            if (_semaphore.CurrentCount == 0) _semaphore.Release();
+        }
     }
 }

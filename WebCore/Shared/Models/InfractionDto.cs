@@ -30,6 +30,11 @@ public class InfractionDto
     public TimeSpan? Duration { get; set; }
 
     /// <summary>
+    /// The date of the infraction
+    /// </summary>
+    public DateTimeOffset? Submitted { get; set; }
+    
+    /// <summary>
     /// The provided reason for the infraction
     /// </summary>
     public string? Reason { get; set; } 

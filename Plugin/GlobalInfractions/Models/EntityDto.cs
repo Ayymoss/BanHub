@@ -16,6 +16,11 @@ public class EntityDto
     /// The last time the player was seen
     /// </summary>
     public DateTimeOffset? HeartBeat { get; set; }
+    
+    /// <summary>
+    /// The first time we saw the player
+    /// </summary>
+    public DateTimeOffset? Created { get; set; }
 
     /// <summary>
     /// The player's meta

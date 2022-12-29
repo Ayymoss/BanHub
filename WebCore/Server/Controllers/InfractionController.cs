@@ -30,4 +30,29 @@ public class InfractionController : Controller
             _ => BadRequest() // Should never happen
         };
     }
+    
+    [HttpGet]
+    public async Task<ActionResult<InstanceDto>> GetInfraction([FromQuery] string guid)
+    {
+        var result = await _infractionService.GetInfraction(guid);
+        return result.Item1 switch
+        {
+            ControllerEnums.ProfileReturnState.Ok => Ok(result.Item2),
+            ControllerEnums.ProfileReturnState.NotFound => NotFound(),
+            ControllerEnums.ProfileReturnState.BadRequest => BadRequest(),
+            _ => BadRequest() // Should never happen
+        };
+    }
+    
+    [HttpGet("All")]
+    public async Task<ActionResult<InstanceDto>> GetInfractions()
+    {
+        var result = await _infractionService.GetInfractions();
+        return result.Item1 switch
+        {
+            ControllerEnums.ProfileReturnState.Ok => Ok(result.Item2),
+            ControllerEnums.ProfileReturnState.NotFound => NotFound(),
+            _ => BadRequest() // Should never happen
+        };
+    }
 }

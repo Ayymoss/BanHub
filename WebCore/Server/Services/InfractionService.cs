@@ -2,6 +2,7 @@
 using GlobalInfraction.WebCore.Server.Enums;
 using GlobalInfraction.WebCore.Server.Interfaces;
 using GlobalInfraction.WebCore.Server.Models;
+using GlobalInfraction.WebCore.Server.Utilities;
 using GlobalInfraction.WebCore.Shared.Enums;
 using GlobalInfraction.WebCore.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +12,12 @@ namespace GlobalInfraction.WebCore.Server.Services;
 
 public class InfractionService : IInfractionService
 {
-    private readonly SqliteDataContext _context;
+    private readonly IDiscordWebhookService _discordWebhook;
+    private readonly DataContext _context;
 
-    public InfractionService(SqliteDataContext context)
+    public InfractionService(DataContext context, IDiscordWebhookService discordWebhook)
     {
+        _discordWebhook = discordWebhook;
         _context = context;
     }
 
@@ -22,6 +25,7 @@ public class InfractionService : IInfractionService
     {
         var user = await _context.Entities
             .AsTracking()
+            .Include(x => x.CurrentAlias.Alias)
             .FirstOrDefaultAsync(user => user.Identity == request.Target!.Identity);
 
         var admin = await _context.Entities
@@ -73,6 +77,92 @@ public class InfractionService : IInfractionService
 
         _context.Add(infractionModel);
         await _context.SaveChangesAsync();
+
+        await _discordWebhook.CreateWebhook(infractionModel.InfractionScope, infractionModel.InfractionType, infractionModel.InfractionGuid,
+            user.Identity,
+            user.CurrentAlias.Alias.UserName, infractionModel.Reason);
+
         return (ControllerEnums.ProfileReturnState.Created, infractionModel.InfractionGuid);
+    }
+
+    public async Task<(ControllerEnums.ProfileReturnState, InfractionDto?)> GetInfraction(string infractionGuid)
+    {
+        var parseGuid = Guid.TryParse(infractionGuid, out var guid);
+        if (!parseGuid) return (ControllerEnums.ProfileReturnState.BadRequest, null);
+
+        var infraction = await _context.Infractions.Where(inf => inf.InfractionGuid == guid).Select(inf => new InfractionDto
+        {
+            InfractionGuid = inf.InfractionGuid,
+            InfractionType = inf.InfractionType,
+            InfractionStatus = inf.InfractionStatus,
+            InfractionScope = inf.InfractionScope,
+            Submitted = inf.Submitted,
+            Admin = new EntityDto
+            {
+                Identity = inf.Admin.Identity,
+                Alias = new AliasDto
+                {
+                    UserName = inf.Admin.CurrentAlias.Alias.UserName,
+                }
+            },
+            Reason = inf.Reason,
+            Evidence = inf.Evidence,
+            Instance = new InstanceDto
+            {
+                InstanceName = inf.Instance.InstanceName,
+                InstanceGuid = inf.Instance.InstanceGuid
+            },
+            Target = new EntityDto
+            {
+                Identity = inf.Target.Identity,
+                Alias = new AliasDto
+                {
+                    UserName = inf.Target.CurrentAlias.Alias.UserName,
+                }
+            }
+        }).FirstOrDefaultAsync();
+
+        return infraction is null
+            ? (ControllerEnums.ProfileReturnState.NotFound, null)
+            : (ControllerEnums.ProfileReturnState.Ok, infraction);
+    }
+
+    public async Task<(ControllerEnums.ProfileReturnState, List<InfractionDto>?)> GetInfractions()
+    {
+        var infractions = await _context.Infractions.Select(inf => new InfractionDto
+        {
+            InfractionGuid = inf.InfractionGuid,
+            InfractionType = inf.InfractionType,
+            InfractionStatus = inf.InfractionStatus,
+            InfractionScope = inf.InfractionScope,
+            Submitted = inf.Submitted,
+            Admin = new EntityDto
+            {
+                Identity = inf.Admin.Identity,
+                Alias = new AliasDto
+                {
+                    UserName = inf.Admin.CurrentAlias.Alias.UserName,
+                }
+            },
+            Reason = inf.Reason,
+            Evidence = inf.Evidence,
+            Instance = new InstanceDto
+            {
+                InstanceName = inf.Instance.InstanceName,
+                InstanceGuid = inf.Instance.InstanceGuid
+            },
+            Target = new EntityDto
+            {
+                Identity = inf.Target.Identity,
+                Alias = new AliasDto
+                {
+                    UserName = inf.Target.CurrentAlias.Alias.UserName,
+                }
+            }
+        }).ToListAsync();
+
+        return infractions.Count is 0 
+            ? (ControllerEnums.ProfileReturnState.NotFound, null) 
+            : (ControllerEnums.ProfileReturnState.Ok, infractions);
     }
 }

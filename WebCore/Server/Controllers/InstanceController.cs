@@ -25,6 +25,7 @@ public class InstanceController : Controller
     [HttpPost]
     public async Task<ActionResult<string>> CreateOrUpdate([FromBody] InstanceDto request)
     {
+        // TODO: Change. This doesn't work behind Cloudflare.
         var requestIpAddress = Request.HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
         var result = await _instanceService.CreateOrUpdate(request, requestIpAddress);
 
@@ -40,9 +41,9 @@ public class InstanceController : Controller
     }
 
     [HttpGet("Active")]
-    public async Task<ActionResult<bool>> IsInstanceActive([FromQuery] string instanceGuid)
+    public async Task<ActionResult<bool>> IsInstanceActive([FromQuery] string guid)
     {
-        var result = await _instanceService.IsInstanceActive(instanceGuid);
+        var result = await _instanceService.IsInstanceActive(guid);
         return result switch
         {
             ControllerEnums.ProfileReturnState.NotFound => NotFound(),
@@ -54,14 +55,26 @@ public class InstanceController : Controller
     }
 
     [HttpGet]
-    public async Task<ActionResult<InstanceDto>> GetServer([FromQuery] string guid)
+    public async Task<ActionResult<InstanceDto>> GetInstance([FromQuery] string guid)
     {
-        var result = await _instanceService.GetServer(guid);
+        var result = await _instanceService.GetInstance(guid);
         return result.Item1 switch
         {
             ControllerEnums.ProfileReturnState.NotFound => NotFound("Instance not found"),
             ControllerEnums.ProfileReturnState.BadRequest => BadRequest("Invalid guid"),
             ControllerEnums.ProfileReturnState.Ok => Ok(result.Item2),
+            _ => BadRequest() // Should never happen
+        };
+    }
+    
+    [HttpGet("All")]
+    public async Task<ActionResult<InstanceDto>> GetInstances()
+    {
+        var result = await _instanceService.GetInstances();
+        return result.Item1 switch
+        {
+            ControllerEnums.ProfileReturnState.Ok => Ok(result.Item2),
+            ControllerEnums.ProfileReturnState.NotFound => NotFound(),
             _ => BadRequest() // Should never happen
         };
     }

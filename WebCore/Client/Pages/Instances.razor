@@ -1,0 +1,61 @@
+﻿@page "/Instances"
+@using GlobalInfraction.WebCore.Shared.Models
+@inject HttpClient Http
+
+<PageTitle>Instances</PageTitle>
+
+@if (_instances is null)
+{
+    <p>
+        <em>Loading or there are no objects</em>
+    </p>
+}
+else
+{
+    <p>Total: @_instances.Count</p>
+    <br/>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Instance Guid</th>
+            <th>Name</th>
+            <th>IP Address</th>
+            <th>Last Reply</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in _instances.OrderByDescending(x => x.Heartbeat))
+        {
+            <tr>
+                <td>@item.InstanceGuid</td>
+                <td>@item.InstanceName</td>
+                <td>@item.InstanceIp</td>
+                <td>@item.Heartbeat</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    [Parameter, SupplyParameterFromQuery(Name = "guid")]
+    public string? InstanceGuid { get; set; }
+
+    private List<InstanceDto>? _instances;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (InstanceGuid is null)
+        {
+            _instances = await Http.GetFromJsonAsync<List<InstanceDto>>("/api/Instance/All");
+        }
+        else
+        {
+            var instance = await Http.GetFromJsonAsync<InstanceDto>($"/api/Instance?guid={InstanceGuid}");
+            _instances = new List<InstanceDto>();
+            if (instance is not null) _instances.Add(instance);
+        }
+    }
+
+}

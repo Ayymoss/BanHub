@@ -14,7 +14,11 @@ public class Plugin : IPlugin
     public string Name => PluginName;
     public float Version => 20221218f;
     public string Author => "Amos";
-
+#if DEBUG
+    public const bool FeaturesEnabled = true;
+#else
+    public const bool FeaturesEnabled = false;
+#endif
     private static bool _pluginEnabled;
     public static bool InstanceActive { get; set; }
     public static EndpointManager EndpointManager = null!;
@@ -36,7 +40,7 @@ public class Plugin : IPlugin
         switch (gameEvent.Type)
         {
             case GameEvent.EventType.Join:
-                await EndpointManager.OnJoin(gameEvent.Origin, Instance);
+                await EndpointManager.OnJoin(gameEvent.Origin);
                 break;
             case GameEvent.EventType.Disconnect:
                 EndpointManager.RemoveFromProfiles(gameEvent.Origin);
@@ -62,7 +66,11 @@ public class Plugin : IPlugin
 
     public async Task OnLoadAsync(IManager manager)
     {
+        #if DEBUG
+        Console.WriteLine($"[{PluginName}] Loading... !! DEBUG MODE !!");
+        #else
         Console.WriteLine($"[{PluginName}] Loading...");
+        #endif
 
         // Build configuration
         await _configurationHandler.BuildAsync();

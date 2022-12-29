@@ -8,9 +8,9 @@ namespace GlobalInfraction.WebCore.Server.Services;
 
 public class HeartBeatService : IHeartBeatService
 {
-    private readonly SqliteDataContext _context;
+    private readonly DataContext _context;
 
-    public HeartBeatService(SqliteDataContext context)
+    public HeartBeatService(DataContext context)
     {
         _context = context;
     }

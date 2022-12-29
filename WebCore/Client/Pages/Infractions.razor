@@ -1,0 +1,69 @@
+﻿@page "/Infractions"
+@using GlobalInfraction.WebCore.Shared.Models
+@inject HttpClient Http
+
+<PageTitle>Infractions</PageTitle>
+
+@if (_infractions is null)
+{
+    <p>
+        <em>Loading or there are no objects</em>
+    </p>
+}
+else
+{
+    <p>Total: @_infractions.Count</p>
+    <br/>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Infraction Guid</th>
+            <th>Reason</th>
+            <th>Scope</th>
+            <th>Type</th>
+            <th>Admin Name</th>
+            <th>Target Name</th>
+            <th>Instance Name</th>
+            <th>Submitted</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in _infractions.OrderByDescending(x => x.Submitted))
+        {
+            <tr>
+                <td>@item.InfractionGuid</td>
+                <td>@item.Reason</td>
+                <td>@item.InfractionScope.ToString()</td>
+                <td>@item.InfractionType.ToString()</td>
+                <td>@item.Admin!.Alias!.UserName</td>
+                <td>@item.Target!.Alias!.UserName</td>
+                <td>@item.Instance?.InstanceName (@item.Instance!.InstanceGuid.ToString())</td>
+                <td>@item.Submitted</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    [Parameter, SupplyParameterFromQuery(Name = "guid")]
+    public string? InfractionGuid { get; set; }
+
+    private List<InfractionDto>? _infractions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (InfractionGuid is null)
+        {
+            _infractions = await Http.GetFromJsonAsync<List<InfractionDto>>("/api/Infraction/All");
+        }
+        else
+        {
+            var infraction = await Http.GetFromJsonAsync<InfractionDto>($"/api/Infraction?guid={InfractionGuid}");
+            _infractions = new List<InfractionDto>();
+            if (infraction is not null) _infractions.Add(infraction);
+        }
+    }
+
+}

@@ -10,7 +10,11 @@ public class HeartBeatEndpoint
 {
     private readonly ConfigurationModel _configurationModel;
     private readonly HttpClient _httpClient = new();
-    private const string ApiHost = "http://localhost:5000";
+#if DEBUG
+    private const string ApiHost = "http://localhost:8123";
+#else
+    private const string ApiHost = "https://globalinfractions.com";
+#endif
 
     public HeartBeatEndpoint(ConfigurationModel configurationModel)
     {

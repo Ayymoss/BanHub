@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GlobalInfraction.WebCore.Server.Context;
 
-public class SqliteDataContext : DbContext
+public class DataContext : DbContext
 {
-    public SqliteDataContext(DbContextOptions<SqliteDataContext> options) : base(options)
+    public DataContext(DbContextOptions<DataContext> options) : base(options)
     {
     }
 
@@ -45,6 +45,7 @@ public class SqliteDataContext : DbContext
             Identity = "0:UKN",
             HeartBeat = DateTimeOffset.UtcNow,
             Reputation = 0,
+            Created = DateTimeOffset.UtcNow,
             WebRole = WebRole.User,
             Infractions = new List<EFInfraction>()
         };
@@ -61,7 +62,9 @@ public class SqliteDataContext : DbContext
         modelBuilder.Entity<EFCurrentAlias>().HasData(adminCurrentAlias);
 
         // TODO: Remove once tested.
+
         #region TEMPORARY_SEED_DATA
+
         var adminAliasTwo = new EFAlias
         {
             Id = -2,
@@ -70,7 +73,7 @@ public class SqliteDataContext : DbContext
             IpAddress = "0.0.0.0",
             Changed = DateTimeOffset.UtcNow + TimeSpan.FromHours(2)
         };
-        
+
         var instance = new EFInstance
         {
             Id = -1,
@@ -81,7 +84,7 @@ public class SqliteDataContext : DbContext
             ApiKey = Guid.NewGuid(),
             Active = true
         };
-        
+
         var infraction = new EFInfraction
         {
             Id = -1,
@@ -97,12 +100,13 @@ public class SqliteDataContext : DbContext
             TargetId = -1,
             InstanceId = -1
         };
-        
+
         modelBuilder.Entity<EFAlias>().HasData(adminAliasTwo);
         modelBuilder.Entity<EFInstance>().HasData(instance);
         modelBuilder.Entity<EFInfraction>().HasData(infraction);
+
         #endregion
-        
+
         base.OnModelCreating(modelBuilder);
     }
 }

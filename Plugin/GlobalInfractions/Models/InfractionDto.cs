@@ -28,6 +28,11 @@ public class InfractionDto
     /// Duration of a temporary infraction
     /// </summary>
     public TimeSpan? Duration { get; set; }
+    
+    /// <summary>
+    /// The date of the infraction
+    /// </summary>
+    public DateTimeOffset? Submitted { get; set; }
 
     /// <summary>
     /// The provided reason for the infraction

@@ -7,9 +7,9 @@ namespace GlobalInfraction.WebCore.Server.Middleware;
 public class ApiKeyMiddleware : IMiddleware
 {
     private readonly ApiKeyCache _apiKeyCache;
-    private readonly SqliteDataContext _dataContext;
+    private readonly DataContext _dataContext;
 
-    public ApiKeyMiddleware(ApiKeyCache apiKeyCache, SqliteDataContext dataContext)
+    public ApiKeyMiddleware(ApiKeyCache apiKeyCache, DataContext dataContext)
     {
         _apiKeyCache = apiKeyCache;
         _dataContext = dataContext;

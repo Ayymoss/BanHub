@@ -33,6 +33,8 @@ public class GlobalBanCommand : Command
 
     public override async Task ExecuteAsync(GameEvent gameEvent)
     {
+        if (!Plugin.FeaturesEnabled) return; // TODO: Remove tag
+        
         if (!Plugin.InstanceActive)
         {
             gameEvent.Origin.Tell(Plugin.Translations.NotActive);
@@ -41,7 +43,7 @@ public class GlobalBanCommand : Command
 
         var result = await Plugin.EndpointManager
             .NewInfraction(InfractionType.Ban, gameEvent.Origin, gameEvent.Target, gameEvent.Data, scope: InfractionScope.Global);
-        
+
         switch (result)
         {
             case true:

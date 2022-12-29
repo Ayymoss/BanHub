@@ -4,43 +4,49 @@
 
 <PageTitle>Users</PageTitle>
 
-@if (_bans == null)
+@if (_entities is null)
 {
-    <p><em>Loading...</em></p>
+    <p>
+        <em>Loading...</em>
+    </p>
 }
 else
 {
+    <p>Total: @_entities.Count</p>
+    <br/>
     <table class="table table-striped">
-      <thead>
+        <thead>
         <tr>
-          <th>Identity</th>
-          <th>Reputation</th>
-          <th>Online?</th>
-          <th>Name</th>
-          <th>Infraction Count</th>
+            <th>Identity</th>
+            <th>Reputation</th>
+            <th>Online?</th>
+            <th>Name</th>
+            <th>Infraction Count</th>
+            <th>First Connect</th>
         </tr>
-      </thead>
-      <tbody>
-        @foreach (var item in _bans)
+        </thead>
+        <tbody>
+        @foreach (var item in _entities.OrderByDescending(x => x.HeartBeat))
         {
-          <tr>
-            <td>@item.Identity</td>
-            <td>@item.Reputation</td>
-            <td>@(item.HeartBeat!.Value + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow ? "Online" : "Offline")</td>
-            <td>@item.Alias!.UserName</td>
-            <td>@(item.Infractions?.Count.ToString() ?? "User has no infractions")</td>
-          </tr>
+            <tr>
+                <td>@item.Identity</td>
+                <td>@item.Reputation</td>
+                <td>@(item.HeartBeat!.Value + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow ? "Online" : "Offline")</td>
+                <td>@item.Alias!.UserName</td>
+                <td>@(item.Infractions?.Count == 0 ? "User has no infractions" : item.Infractions!.Count)</td>
+                <td>@item.Created</td>
+            </tr>
         }
-      </tbody>
+        </tbody>
     </table>
 }
 
 @code {
-    private List<EntityDto>? _bans;
+    private List<EntityDto>? _entities;
 
     protected override async Task OnInitializedAsync()
     {
-        _bans = await Http.GetFromJsonAsync<List<EntityDto>>("/api/Entity/All");
-      Console.WriteLine();
+        _entities = await Http.GetFromJsonAsync<List<EntityDto>>("/api/Entity/All");
+        Console.WriteLine();
     }
 }

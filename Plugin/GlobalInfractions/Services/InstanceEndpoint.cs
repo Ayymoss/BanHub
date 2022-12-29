@@ -11,8 +11,12 @@ public class InstanceEndpoint
 {
     private readonly ConfigurationModel _configurationModel;
     private readonly HttpClient _httpClient = new();
-    private const string ApiHost = "http://localhost:5000";
-
+#if DEBUG
+    private const string ApiHost = "http://localhost:8123";
+#else
+    private const string ApiHost = "https://globalinfractions.com";
+#endif
+    
     public InstanceEndpoint(ConfigurationModel configurationModel)
     {
         _configurationModel = configurationModel;
@@ -37,7 +41,7 @@ public class InstanceEndpoint
     {
         try
         {
-            var response = await _httpClient.GetAsync($"{ApiHost}/api/Instance/Active?instanceGuid={guid.ToString()}");
+            var response = await _httpClient.GetAsync($"{ApiHost}/api/Instance/Active?guid={guid.ToString()}");
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException e)

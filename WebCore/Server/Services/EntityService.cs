@@ -10,9 +10,9 @@ namespace GlobalInfraction.WebCore.Server.Services;
 
 public class EntityService : IEntityService
 {
-    private readonly SqliteDataContext _context;
+    private readonly DataContext _context;
 
-    public EntityService(SqliteDataContext context)
+    public EntityService(DataContext context)
     {
         _context = context;
     }
@@ -26,7 +26,8 @@ public class EntityService : IEntityService
                 profile.Id,
                 ProfileIdentity = identity,
                 profile.Reputation,
-                profile.CurrentAlias.Alias
+                profile.CurrentAlias.Alias,
+                profile.Created
             }).FirstOrDefaultAsync();
 
         // Return null if not found
@@ -66,7 +67,8 @@ public class EntityService : IEntityService
                 //IpAddress = entity.Alias.IpAddress, // We don't need to return their IP address.
                 Changed = entity.Alias.Changed
             },
-            Infractions = infractions
+            Infractions = infractions,
+            Created = entity.Created
         };
     }
 
@@ -111,8 +113,10 @@ public class EntityService : IEntityService
                     }
                 }).ToList(),
                 HeartBeat = profile.HeartBeat,
+                Created = profile.Created,
                 Reputation = profile.Reputation
             })
+            .Take(500)
             .ToListAsync();
 
         return result;
@@ -125,7 +129,7 @@ public class EntityService : IEntityService
             .AsTracking()
             .Include(x => x.Aliases)
             .SingleOrDefaultAsync(user => user.Identity == request.Identity);
-
+        
         // TODO: This check needs to be changed to reply if the instance doesn't have permission to upload
         // TODO: Custom service should be done. Needs testing
         // Update existing user
@@ -170,7 +174,8 @@ public class EntityService : IEntityService
             Identity = request.Identity,
             Reputation = 10,
             HeartBeat = DateTimeOffset.UtcNow,
-            WebRole = WebRole.User
+            WebRole = WebRole.User,
+            Created = DateTimeOffset.UtcNow
         };
 
         var alias = new EFAlias
@@ -186,11 +191,12 @@ public class EntityService : IEntityService
             Alias = alias,
             Entity = entity
         };
-        
+
         entity.CurrentAlias = currentAlias;
 
         _context.CurrentAliases.Add(currentAlias);
         await _context.SaveChangesAsync();
+        
         return ControllerEnums.ProfileReturnState.Created;
     }
 

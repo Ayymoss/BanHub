@@ -10,11 +10,13 @@ namespace GlobalInfraction.WebCore.Server.Services;
 
 public class InstanceService : IInstanceService
 {
-    private readonly SqliteDataContext _context;
+    private readonly DataContext _context;
+    private readonly ApiKeyCache _apiKeyCache;
 
-    public InstanceService(SqliteDataContext context)
+    public InstanceService(DataContext context, ApiKeyCache apiKeyCache)
     {
         _context = context;
+        _apiKeyCache = apiKeyCache;
     }
 
     public async Task<(ControllerEnums.ProfileReturnState, string)> CreateOrUpdate(InstanceDto request, string? requestIpAddress)
@@ -56,7 +58,7 @@ public class InstanceService : IInstanceService
         {
             // TODO: Maybe webhook this?
             //_logger.LogWarning("{Instance} IP mismatch! Request: [{ReqIP}], Registered: [{InstanceIP}]",
-            //    instanceGuid.InstanceGuid, requestIpAddress, instanceGuid.InstanceIp);
+            //    guid.InstanceGuid, requestIpAddress, guid.InstanceIp);
         }
 
         // Update existing record
@@ -70,7 +72,7 @@ public class InstanceService : IInstanceService
             : (ControllerEnums.ProfileReturnState.Ok, "Instance exists, but is not active.");
     }
 
-    public async Task<(ControllerEnums.ProfileReturnState, InstanceDto?)> GetServer(string guid)
+    public async Task<(ControllerEnums.ProfileReturnState, InstanceDto?)> GetInstance(string guid)
     {
         var guidParse = Guid.TryParse(guid, out var guidResult);
         if (!guidParse) return (ControllerEnums.ProfileReturnState.BadRequest, null);
@@ -87,12 +89,35 @@ public class InstanceService : IInstanceService
         });
     }
 
+    public async Task<(ControllerEnums.ProfileReturnState, List<InstanceDto>?)> GetInstances()
+    {
+        var instances = await _context.Instances.Select(instance => new InstanceDto
+        {
+            InstanceGuid = instance.InstanceGuid,
+            InstanceIp = instance.InstanceIp,
+            InstanceName = instance.InstanceName,
+            Heartbeat = instance.HeartBeat
+        }).ToListAsync();
+        return instances.Count is 0
+            ? (ControllerEnums.ProfileReturnState.NotFound, null)
+            : (ControllerEnums.ProfileReturnState.Ok, instances);
+    }
+
     public async Task<ControllerEnums.ProfileReturnState> IsInstanceActive(string instanceGuid)
     {
         var guidParse = Guid.TryParse(instanceGuid, out var guidResult);
         if (!guidParse) return ControllerEnums.ProfileReturnState.BadRequest;
         var result = await _context.Instances.SingleOrDefaultAsync(x => x.InstanceGuid == guidResult);
         if (result is null) return ControllerEnums.ProfileReturnState.NotFound;
+
+        if (result.Active)
+        {
+            if (_apiKeyCache.ApiKeys is not null && !_apiKeyCache.ApiKeys.Contains(result.ApiKey))
+            {
+                _apiKeyCache.ApiKeys.Add(result.ApiKey);
+            }
+        }
+        
         return result.Active ? ControllerEnums.ProfileReturnState.Accepted : ControllerEnums.ProfileReturnState.Unauthorized;
     }
 }

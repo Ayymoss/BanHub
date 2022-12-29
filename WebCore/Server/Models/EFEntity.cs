@@ -26,6 +26,11 @@ public class EFEntity
     public DateTimeOffset HeartBeat { get; set; }
 
     /// <summary>
+    /// The first time we saw them
+    /// </summary>
+    public DateTimeOffset Created { get; init; }
+
+    /// <summary>
     /// The player's web-login role
     /// </summary>
     public WebRole WebRole { get; set; }

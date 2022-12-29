@@ -2,34 +2,61 @@ using GlobalInfraction.WebCore.Server.Context;
 using GlobalInfraction.WebCore.Server.Interfaces;
 using GlobalInfraction.WebCore.Server.Middleware;
 using GlobalInfraction.WebCore.Server.Services;
+using GlobalInfraction.WebCore.Server.Utilities;
 using Microsoft.EntityFrameworkCore;
+
+// TODO: Without Server-side restart, custom auth doesn't have updated authkey list. So each activation needs a server-side restart.
+
+SetupConfiguration.InitConfiguration();
+var configuration = SetupConfiguration.ReadConfiguration();
+
+if (configuration.DiscordHook is null) Environment.Exit(10);
 
 var builder = WebApplication.CreateBuilder(args);
 
 #if DEBUG
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenLocalhost(5000);
-    options.ListenLocalhost(5001, configure => configure.UseHttps());
+    configuration.DatabaseType = DatabaseType.Sqlite;
+    options.ListenLocalhost(8123);
 });
 #else
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenAnyIP(5000);
-    options.ListenAnyIP(5001, configure => configure.UseHttps());
+    options.ListenAnyIP(configuration.WebBind);
 });
 #endif
 
-// TODO: Change to PostgreSQL
-builder.Services.AddDbContext<SqliteDataContext>(options => options.UseSqlite("Data Source=GlobalBan.db"));
+if (configuration.DatabaseType is DatabaseType.Sqlite)
+{
+    builder.Services.AddDbContext<DataContext>(options => options.UseSqlite("Data Source=GlobalBan.db"));
+}
+else
+{
+    builder.Services.AddDbContext<DataContext>(
+        options =>
+        {
+            options.UseNpgsql($"Host={configuration.Database.HostName};" +
+                              $"Port={configuration.Database.Port};" +
+                              $"Username={configuration.Database.UserName};" +
+                              $"Password={configuration.Database.Password};" +
+                              $"Database={configuration.Database.Database}");
+        });
+}
+
 builder.Services.AddLogging();
+
+builder.Services.AddSingleton(configuration);
+builder.Services.AddSingleton<ApiKeyCache>();
+builder.Services.AddSingleton<PluginAuthentication>();
+
+builder.Services.AddTransient<ApiKeyMiddleware>();
+
 builder.Services.AddScoped<IEntityService, EntityService>();
 builder.Services.AddScoped<IHeartBeatService, HeartBeatService>();
 builder.Services.AddScoped<IInfractionService, InfractionService>();
 builder.Services.AddScoped<IInstanceService, InstanceService>();
-builder.Services.AddSingleton<PluginAuthentication>();
-builder.Services.AddTransient<ApiKeyMiddleware>();
-builder.Services.AddSingleton<ApiKeyCache>();
+builder.Services.AddScoped<IDiscordWebhookService, DiscordWebhookService>();
 
 builder.Host.ConfigureLogging(logging =>
 {
