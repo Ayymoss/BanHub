@@ -90,7 +90,6 @@ public class Plugin : IPlugin
         HeartBeatManager = new HeartBeatManager(_serviceProvider, config);
         EndpointManager = new EndpointManager(_serviceProvider, config);
         
-
         Translations = config.Translations;
 
         // Update the instance and check its state
@@ -100,7 +99,7 @@ public class Plugin : IPlugin
             InstanceName = manager.GetApplicationSettings().Configuration().WebfrontCustomBranding,
             InstanceIp = await Utilities.GetExternalIP(),
             ApiKey = config.ApiKey,
-            Heartbeat = DateTimeOffset.UtcNow
+            HeartBeat = DateTimeOffset.UtcNow
         };
 
         _pluginEnabled = await EndpointManager.UpdateInstance(Instance);

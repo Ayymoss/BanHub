@@ -26,9 +26,9 @@ public class DataContext : DbContext
         modelBuilder.Entity<EFCurrentAlias>().ToTable("EFCurrentAliases");
 
         modelBuilder.Entity<EFInfraction>()
-            .HasOne(a => a.Admin)
+            .HasOne(a => a.Target)
             .WithMany(p => p.Infractions)
-            .HasForeignKey(f => f.AdminId);
+            .HasForeignKey(f => f.TargetId);
 
         var adminAlias = new EFAlias
         {

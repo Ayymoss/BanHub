@@ -42,7 +42,7 @@ public class InfractionService : IInfractionService
 
         if (infraction is not null)
         {
-            switch (infraction.InfractionType)
+            switch (request.InfractionType)
             {
                 // If the incoming request is an unban, unban them.
                 case InfractionType.Unban:
@@ -160,9 +160,16 @@ public class InfractionService : IInfractionService
                 }
             }
         }).ToListAsync();
+        
+        infractions = infractions.OrderByDescending(x => x.Submitted).ToList();
 
         return infractions.Count is 0 
             ? (ControllerEnums.ProfileReturnState.NotFound, null) 
             : (ControllerEnums.ProfileReturnState.Ok, infractions);
+    }
+
+    public async Task<int> GetInfractionCount()
+    {
+        return await _context.Infractions.CountAsync();
     }
 }

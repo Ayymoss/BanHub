@@ -78,4 +78,10 @@ public class InstanceController : Controller
             _ => BadRequest() // Should never happen
         };
     }
+    
+    [HttpGet("Count")]
+    public async Task<ActionResult<int>> GetInstanceCount()
+    {
+        return Ok(await _instanceService.GetInstanceCount());
+    }
 }

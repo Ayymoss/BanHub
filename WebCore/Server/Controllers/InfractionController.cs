@@ -55,4 +55,10 @@ public class InfractionController : Controller
             _ => BadRequest() // Should never happen
         };
     }
+    
+    [HttpGet("Count")]
+    public async Task<ActionResult<int>> GetInfractionCount()
+    {
+        return Ok(await _infractionService.GetInfractionCount());
+    }
 }

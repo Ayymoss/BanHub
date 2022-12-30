@@ -20,7 +20,7 @@ public class InstanceDto
     /// <summary>
     /// The last the the instance has replied
     /// </summary>
-    public DateTimeOffset? Heartbeat { get; set; }
+    public DateTimeOffset? HeartBeat { get; set; }
     
     /// <summary>
     /// The IW4MAdmin provided API Key

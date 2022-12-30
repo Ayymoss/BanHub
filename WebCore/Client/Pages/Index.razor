@@ -1,5 +1,62 @@
 ﻿@page "/"
+@inject HttpClient Http
+@using GlobalInfraction.WebCore.Shared.Models
 
 <PageTitle>Index</PageTitle>
 
-<h1>Discord: https://discord.gg/39rMB7YE2R</h1>
+<div>
+    <Title Level="1">Welcome to Global Infractions</Title>
+    <Paragraph>We provide a service which aims to clean up the state of 3rd party Call of Duty clients.</Paragraph>
+    
+    <Divider />
+    
+    <Title Level="2">Current Stats</Title>
+    <Paragraph>
+        <ul>
+            <li>
+                <a>
+                    <Text Strong>Instances:</Text> @_instances
+                </a>
+            </li>
+            <li>
+                <a>
+                    <Text Strong>Users:</Text> @_users
+                </a>
+            </li>
+            <li>
+                <a>
+                    <Text Strong>Infractions:</Text> @_infractions
+                </a>
+            </li>
+        </ul>
+    </Paragraph>
+    
+    <Divider />
+    
+    <Title Level="2">Follow Us</Title>
+    <Paragraph>
+        <ul>
+            <li>
+                <a href="https://discord.gg/39rMB7YE2R">Discord</a>
+            </li>
+            <li>
+                <a href="https://github.com/Ayymoss/GlobalInfractions">GitHub</a>
+            </li>
+        </ul>
+    </Paragraph>
+</div>
+
+@code {
+
+    int _instances;
+    int _infractions;
+    int _users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _infractions = await Http.GetFromJsonAsync<int>("/api/Infraction/Count");
+        _instances = await Http.GetFromJsonAsync<int>("/api/Instance/Count");
+        _users = await Http.GetFromJsonAsync<int>("/api/Entity/Count");
+    }
+
+}

@@ -7,42 +7,35 @@
 @if (_infractions is null)
 {
     <p>
-        <em>Loading or there are no objects</em>
+        @if (Empty)
+        {
+            <span class="text-muted">No infraction(s) found.</span>
+        }
+        else
+        {
+            <span class="text-start">Loading...</span>
+        }
     </p>
 }
 else
 {
-    <p>Total: @_infractions.Count</p>
-    <br/>
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th>Infraction Guid</th>
-            <th>Reason</th>
-            <th>Scope</th>
-            <th>Type</th>
-            <th>Admin Name</th>
-            <th>Target Name</th>
-            <th>Instance Name</th>
-            <th>Submitted</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var item in _infractions.OrderByDescending(x => x.Submitted))
-        {
-            <tr>
-                <td>@item.InfractionGuid</td>
-                <td>@item.Reason</td>
-                <td>@item.InfractionScope.ToString()</td>
-                <td>@item.InfractionType.ToString()</td>
-                <td>@item.Admin!.Alias!.UserName</td>
-                <td>@item.Target!.Alias!.UserName</td>
-                <td>@item.Instance?.InstanceName (@item.Instance!.InstanceGuid.ToString())</td>
-                <td>@item.Submitted</td>
-            </tr>
-        }
-        </tbody>
-    </table>
+    <Table @ref="table" TItem="InfractionDto" DataSource="@_infractions" Total="_total" @bind-PageSize="_pageSize">
+        <PropertyColumn Property="c => c.InfractionGuid" Title="ID" Sortable/>
+        <PropertyColumn Property="c => c.Target" Title="Target Name" Sortable SorterCompare="@((x, y) => x.Alias.UserName.CompareTo(y.Alias.UserName))">
+            <Text Strong>@(context.Target!.Alias!.UserName)</Text>
+        </PropertyColumn>
+        <PropertyColumn Property="c => c.Admin" Title="Admin Name" Sortable SorterCompare="@((x, y) => x.Alias.UserName.CompareTo(y.Alias.UserName))">
+            @(context.Admin!.Alias!.UserName)
+        </PropertyColumn>
+        <PropertyColumn Property="c => c.Reason" Sortable/>
+        <PropertyColumn Property="c => c.InfractionType" Title="Type" Sortable/>
+        <PropertyColumn Property="c => c.InfractionStatus" Title="State" Sortable/>
+        <PropertyColumn Property="c => c.InfractionScope" Title="Scope" Sortable/>
+        <PropertyColumn Property="c => c.Instance" Title="Instance Name" Sortable SorterCompare="@((x, y) => x.InstanceName.CompareTo(y.InstanceName))">
+            @(context.Instance!.InstanceName ?? context.Instance.InstanceGuid.ToString())
+        </PropertyColumn>
+        <PropertyColumn Property="c => c.Submitted" Format="yyyy-MM-dd hh:mm:ss" Sortable/>
+    </Table>
 }
 
 @code {
@@ -50,19 +43,35 @@ else
     [Parameter, SupplyParameterFromQuery(Name = "guid")]
     public string? InfractionGuid { get; set; }
 
+    private bool Empty { get; set; }
     private List<InfractionDto>? _infractions;
+
+    ITable table;
+    int _pageSize = 20;
+    int _total;
 
     protected override async Task OnInitializedAsync()
     {
         if (InfractionGuid is null)
         {
             _infractions = await Http.GetFromJsonAsync<List<InfractionDto>>("/api/Infraction/All");
+            if (_infractions is null || !_infractions.Any()) Empty = true;
         }
         else
         {
-            var infraction = await Http.GetFromJsonAsync<InfractionDto>($"/api/Infraction?guid={InfractionGuid}");
-            _infractions = new List<InfractionDto>();
-            if (infraction is not null) _infractions.Add(infraction);
+            var response = await Http.GetAsync($"/api/Infraction?guid={InfractionGuid}");
+            if (response.IsSuccessStatusCode)
+            {
+                var instances = await response.Content.ReadFromJsonAsync<InfractionDto>();
+                if (instances is not null)
+                {
+                    _infractions = new List<InfractionDto> {instances};
+                }
+            }
+            else
+            {
+                Empty = true;
+            }
         }
     }
 

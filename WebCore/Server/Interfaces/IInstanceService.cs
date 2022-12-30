@@ -10,4 +10,5 @@ public interface IInstanceService
     Task<(ControllerEnums.ProfileReturnState, InstanceDto?)> GetInstance(string guid);
     Task<(ControllerEnums.ProfileReturnState, List<InstanceDto>?)> GetInstances();
     Task<ControllerEnums.ProfileReturnState> IsInstanceActive(string instanceGuid);
+    Task<int> GetInstanceCount();
 }

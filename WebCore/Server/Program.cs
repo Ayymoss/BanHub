@@ -17,7 +17,6 @@ var builder = WebApplication.CreateBuilder(args);
 #if DEBUG
 builder.WebHost.ConfigureKestrel(options =>
 {
-    configuration.DatabaseType = DatabaseType.Sqlite;
     options.ListenLocalhost(8123);
 });
 #else
@@ -26,6 +25,9 @@ builder.WebHost.ConfigureKestrel(options =>
     options.ListenAnyIP(configuration.WebBind);
 });
 #endif
+
+// TODO: TOGGLE MANUALLY - Migrations don't seem to honour build state
+//configuration.DatabaseType = DatabaseType.Sqlite;
 
 if (configuration.DatabaseType is DatabaseType.Sqlite)
 {

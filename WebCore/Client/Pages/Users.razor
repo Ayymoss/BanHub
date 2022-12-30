@@ -7,46 +7,76 @@
 @if (_entities is null)
 {
     <p>
-        <em>Loading...</em>
+        @if (Empty)
+        {
+            <span class="text-muted">No user(s) found.</span>
+        }
+        else
+        {
+            <span class="text-start">Loading...</span>
+        }
     </p>
 }
 else
 {
-    <p>Total: @_entities.Count</p>
-    <br/>
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th>Identity</th>
-            <th>Reputation</th>
-            <th>Online?</th>
-            <th>Name</th>
-            <th>Infraction Count</th>
-            <th>First Connect</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var item in _entities.OrderByDescending(x => x.HeartBeat))
-        {
-            <tr>
-                <td>@item.Identity</td>
-                <td>@item.Reputation</td>
-                <td>@(item.HeartBeat!.Value + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow ? "Online" : "Offline")</td>
-                <td>@item.Alias!.UserName</td>
-                <td>@(item.Infractions?.Count == 0 ? "User has no infractions" : item.Infractions!.Count)</td>
-                <td>@item.Created</td>
-            </tr>
-        }
-        </tbody>
-    </table>
+    <Table @ref="table" TItem="EntityDto" DataSource="@_entities" Total="_total" @bind-PageSize="_pageSize">
+        <PropertyColumn Property="c => c.Identity" Sortable/>
+        <PropertyColumn Property="c => c.Alias" Title="Name" Sortable SorterCompare="@((x, y) => x.UserName.CompareTo(y.UserName))">
+            <Text Strong>@context.Alias!.UserName</Text>
+        </PropertyColumn>
+        <PropertyColumn Property="c => c.Reputation" Sortable/>
+        <PropertyColumn Property="c => c.Infractions" Sortable SorterCompare="@((x, y) => x.Count.CompareTo(y.Count))">
+            @(context.Infractions?.Count != 0 ? context.Infractions!.Count.ToString() : "User has no infractions")
+        </PropertyColumn>
+        <PropertyColumn Property="c => c.HeartBeat" Title="Online?">
+            @if (context.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
+            {
+                <Tag Color="geekblue">Online</Tag>
+            }
+            else
+            {
+                <Tag Color="volcano">Offline</Tag>
+            }
+        </PropertyColumn>
+        <PropertyColumn Property="c => c.Created" Format="yyyy-MM-dd hh:mm:ss" Sortable/>
+    </Table>
 }
 
-@code {
+
+@code
+{
+    [Parameter, SupplyParameterFromQuery(Name = "identity")]
+    public string? EntityIdentity { get; set; }
+
+    private bool Empty { get; set; }
     private List<EntityDto>? _entities;
+
+    ITable table;
+    int _pageSize = 20;
+    int _total;
 
     protected override async Task OnInitializedAsync()
     {
-        _entities = await Http.GetFromJsonAsync<List<EntityDto>>("/api/Entity/All");
-        Console.WriteLine();
+        if (EntityIdentity is null)
+        {
+            _entities = await Http.GetFromJsonAsync<List<EntityDto>>("/api/Entity/All");
+            if (_entities is null || !_entities.Any()) Empty = true;
+        }
+        else
+        {
+            var response = await Http.GetAsync($"/api/Entity?identity={EntityIdentity}");
+            if (response.IsSuccessStatusCode)
+            {
+                var entities = await response.Content.ReadFromJsonAsync<EntityDto>();
+                if (entities is not null)
+                {
+                    _entities = new List<EntityDto> {entities};
+                }
+            }
+            else
+            {
+                Empty = true;
+            }
+        }
     }
 }

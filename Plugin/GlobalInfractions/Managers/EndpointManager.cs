@@ -121,25 +121,27 @@ public class EndpointManager
         string reason, TimeSpan? duration = null, InfractionScope? scope = null, string? evidence = null)
     {
         if (!Plugin.InstanceActive) return false;
+        if (infractionType == InfractionType.Kick && origin.ClientId == 0) return false;
+
+        var adminEntity = ClientToEntity(origin);
+        var targetEntity = ClientToEntity(target);
+
+        var infraction = new InfractionDto
+        {
+            InfractionType = infractionType,
+            InfractionScope = scope ?? InfractionScope.Local,
+            Evidence = evidence,
+            Reason = reason,
+            Duration = duration,
+            Instance = Plugin.Instance,
+            Admin = adminEntity,
+            Target = targetEntity
+        };
 
         try
         {
             await _semaphore.WaitAsync();
-            
-            var adminEntity = ClientToEntity(origin);
-            var targetEntity = ClientToEntity(target);
 
-            var infraction = new InfractionDto
-            {
-                InfractionType = infractionType,
-                InfractionScope = scope ?? InfractionScope.Local,
-                Evidence = evidence,
-                Reason = reason,
-                Duration = duration,
-                Instance = Plugin.Instance,
-                Admin = adminEntity,
-                Target = targetEntity
-            };
             return await _infraction.PostInfraction(infraction);
         }
         finally

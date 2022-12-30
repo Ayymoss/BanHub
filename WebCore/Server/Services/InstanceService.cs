@@ -96,8 +96,11 @@ public class InstanceService : IInstanceService
             InstanceGuid = instance.InstanceGuid,
             InstanceIp = instance.InstanceIp,
             InstanceName = instance.InstanceName,
-            Heartbeat = instance.HeartBeat
+            HeartBeat = instance.HeartBeat
         }).ToListAsync();
+        
+        instances = instances.OrderByDescending(x => x.HeartBeat).ToList();
+
         return instances.Count is 0
             ? (ControllerEnums.ProfileReturnState.NotFound, null)
             : (ControllerEnums.ProfileReturnState.Ok, instances);
@@ -119,5 +122,10 @@ public class InstanceService : IInstanceService
         }
         
         return result.Active ? ControllerEnums.ProfileReturnState.Accepted : ControllerEnums.ProfileReturnState.Unauthorized;
+    }
+
+    public async Task<int> GetInstanceCount()
+    {
+        return await _context.Instances.CountAsync();
     }
 }

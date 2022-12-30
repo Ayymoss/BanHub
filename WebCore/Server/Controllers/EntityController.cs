@@ -49,4 +49,10 @@ public class EntityController : Controller
         if (!result) return NotFound(result);
         return Ok(result);
     }
+    
+    [HttpGet("Count")]
+    public async Task<ActionResult<int>> GetEntityCount()
+    {
+        return Ok(await _entityService.GetEntityCount());
+    }
 }
