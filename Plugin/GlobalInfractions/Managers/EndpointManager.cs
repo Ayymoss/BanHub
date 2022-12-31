@@ -121,7 +121,7 @@ public class EndpointManager
         string reason, TimeSpan? duration = null, InfractionScope? scope = null, string? evidence = null)
     {
         if (!Plugin.InstanceActive) return false;
-        if (infractionType == InfractionType.Kick && origin.ClientId == 0) return false;
+        if (infractionType == InfractionType.Kick && origin.ClientId == 1) return false;
 
         var adminEntity = ClientToEntity(origin);
         var targetEntity = ClientToEntity(target);
