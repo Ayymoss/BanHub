@@ -43,7 +43,7 @@ public class DiscordWebhookService : IDiscordWebhookService
         {
             Title = $"Infraction: {infractionType}",
             Description = "Click the link to view the infraction.\n" +
-                          $"**Infraction:** [View Infraction](https://globalinfractions.com/Infractions?guid={infractionGuid})\n" +
+                          $"**Infraction:** [View Infraction](https://globalinfractions.com/Infractions?search={identity})\n" +
                           $"**Identity:** {identity}\n" +
                           $"**Username:** {username}\n" +
                           $"**Reason:** {reason}",

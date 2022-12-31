@@ -1,78 +1,176 @@
 ﻿@page "/Infractions"
 @using GlobalInfraction.WebCore.Shared.Models
+@using Color = MudBlazor.Color
+@using SortDirection = MudBlazor.SortDirection
+@using GlobalInfraction.WebCore.Shared.Enums
 @inject HttpClient Http
 
-<PageTitle>Infractions</PageTitle>
+<PageTitle>Users</PageTitle>
 
 @if (_infractions is null)
 {
     <p>
         @if (Empty)
         {
-            <span class="text-muted">No infraction(s) found.</span>
+            <MudText Class="mb-8" Color="Color.Warning">No infraction(s) found.</MudText>
         }
         else
         {
-            <span class="text-start">Loading...</span>
+            <MudProgressCircular Color="Color.Default" Indeterminate="true"/>
         }
     </p>
 }
 else
 {
-    <Table @ref="table" TItem="InfractionDto" DataSource="@_infractions" Total="_total" @bind-PageSize="_pageSize">
-        <PropertyColumn Property="c => c.InfractionGuid" Title="ID" Sortable/>
-        <PropertyColumn Property="c => c.Target" Title="Target Name" Sortable SorterCompare="@((x, y) => x.Alias.UserName.CompareTo(y.Alias.UserName))">
-            <Text Strong>@(context.Target!.Alias!.UserName)</Text>
-        </PropertyColumn>
-        <PropertyColumn Property="c => c.Admin" Title="Admin Name" Sortable SorterCompare="@((x, y) => x.Alias.UserName.CompareTo(y.Alias.UserName))">
-            @(context.Admin!.Alias!.UserName)
-        </PropertyColumn>
-        <PropertyColumn Property="c => c.Reason" Sortable/>
-        <PropertyColumn Property="c => c.InfractionType" Title="Type" Sortable/>
-        <PropertyColumn Property="c => c.InfractionStatus" Title="State" Sortable/>
-        <PropertyColumn Property="c => c.InfractionScope" Title="Scope" Sortable/>
-        <PropertyColumn Property="c => c.Instance" Title="Instance Name" Sortable SorterCompare="@((x, y) => x.InstanceName.CompareTo(y.InstanceName))">
-            @(context.Instance!.InstanceName ?? context.Instance.InstanceGuid.ToString())
-        </PropertyColumn>
-        <PropertyColumn Property="c => c.Submitted" Format="yyyy-MM-dd hh:mm:ss" Sortable/>
-    </Table>
+    <MudTable Items="_infractions" Dense="true" Hover="true" SortLabel="Sort By" Elevation="0" RowsPerPage="20" Filter="new Func<InfractionDto, bool>(FilterFunc1)">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">All infractions</MudText>
+            <MudSpacer/>
+            <MudTextField @bind-Value="_search" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionGuid)">ID</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Target.Alias.UserName)">Target Name</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Admin.Alias.UserName)">Admin Name</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Reason)">Reason</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionType)">Type</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionStatus)">State</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionScope)">Scope</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Instance.InstanceGuid)">Instance</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<InfractionDto, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
+            </MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="ID">@context.InfractionGuid</MudTd>
+            <MudTd DataLabel="Target Name">
+                <MudText Typo="Typo.body2" Color="Color.Warning">@context.Target!.Alias!.UserName</MudText>
+            </MudTd>
+            <MudTd DataLabel="Admin Name">
+                <MudText Typo="Typo.body2" Color="Color.Info">@context.Admin!.Alias!.UserName</MudText>
+            </MudTd>
+            <MudTd DataLabel="Reason">@context.Reason</MudTd>
+            <MudTd DataLabel="Type">
+                @switch (context.InfractionType)
+                {
+                    case InfractionType.Warn:
+                        <MudText Typo="Typo.body2">Warn</MudText>
+                        break;
+                    case InfractionType.Mute:
+                        <MudText Typo="Typo.body2">Mute</MudText>
+                        break;
+                    case InfractionType.Kick:
+                        <MudText Typo="Typo.body2">Kick</MudText>
+                        break;
+                    case InfractionType.Unban:
+                        <MudText Typo="Typo.body2" Color="Color.Info">Unban</MudText>
+                        break;
+                    case InfractionType.TempBan:
+                        <MudText Typo="Typo.body2" Color="Color.Warning">Tempban</MudText>
+                        break;
+                    case InfractionType.Ban:
+                        <MudText Typo="Typo.body2" Color="Color.Error">Ban</MudText>
+                        break;
+
+                }
+            </MudTd>
+            <MudTd DataLabel="Status">
+                @switch (context.InfractionStatus)
+                {
+                    case InfractionStatus.Informational:
+                        <MudText Typo="Typo.body2" Color="Color.Info">Informational</MudText>
+                        break;
+                    case InfractionStatus.Active:
+                        <MudText Typo="Typo.body2" Color="Color.Success">Active</MudText>
+                        break;
+                    case InfractionStatus.Revoked:
+                        <MudText Typo="Typo.body2" Color="Color.Info">Revoked</MudText>
+                        break;
+                    case InfractionStatus.Expired:
+                        <MudText Typo="Typo.body2" Color="Color.Info">Expired</MudText>
+                        break;
+                }
+            </MudTd>
+            <MudTd DataLabel="Scope">
+                @switch (context.InfractionScope)
+                {
+                    case InfractionScope.Local:
+                        <MudText Typo="Typo.body2" Color="Color.Info">Local</MudText>
+                        break;
+                    case InfractionScope.Global:
+                        <MudText Typo="Typo.body2" Color="Color.Error">Global</MudText>
+                        break;
+                }
+            </MudTd>
+            <MudTd DataLabel="Instance Name">@(context.Instance!.InstanceName ?? context.Instance.InstanceGuid.ToString())</MudTd>
+            <MudTd DataLabel="Submitted">@context.Submitted</MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new[] {50, 100}"/>
+        </PagerContent>
+    </MudTable>
 }
 
 @code {
 
-    [Parameter, SupplyParameterFromQuery(Name = "guid")]
-    public string? InfractionGuid { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "search")]
+    public string? SearchString { get; set; }
 
     private bool Empty { get; set; }
     private List<InfractionDto>? _infractions;
 
-    ITable table;
-    int _pageSize = 20;
-    int _total;
+    private string _search = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        if (InfractionGuid is null)
-        {
-            _infractions = await Http.GetFromJsonAsync<List<InfractionDto>>("/api/Infraction/All");
-            if (_infractions is null || !_infractions.Any()) Empty = true;
-        }
-        else
-        {
-            var response = await Http.GetAsync($"/api/Infraction?guid={InfractionGuid}");
-            if (response.IsSuccessStatusCode)
-            {
-                var instances = await response.Content.ReadFromJsonAsync<InfractionDto>();
-                if (instances is not null)
-                {
-                    _infractions = new List<InfractionDto> {instances};
-                }
-            }
-            else
-            {
-                Empty = true;
-            }
-        }
+        _infractions = await Http.GetFromJsonAsync<List<InfractionDto>>("/api/Infraction/All");
+        if (_infractions is null || !_infractions.Any()) Empty = true;
+        if (SearchString is not null) _search = SearchString;
+    }
+
+    private bool FilterFunc1(InfractionDto element) => FilterFunc(element, _search);
+
+    private bool FilterFunc(InfractionDto element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.InfractionGuid.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Admin!.Alias!.UserName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Target!.Alias!.UserName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Target.Identity.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Admin.Identity.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Reason!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.InfractionStatus.ToString()!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.InfractionScope.ToString()!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.InfractionType.ToString()!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Instance!.InstanceGuid.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
     }
 
 }

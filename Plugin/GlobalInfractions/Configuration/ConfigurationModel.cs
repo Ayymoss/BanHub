@@ -9,6 +9,8 @@ public class ConfigurationModel : IBaseConfiguration
     [JsonPropertyName("ApiKeyDoNotChange")]
     public Guid ApiKey { get; set; } = Guid.NewGuid();
 
+    public string? InstanceNameOverride { get; set; }
+
     public TranslationStrings Translations { get; set; } = new();
 
     public string Name() => "GlobalInfractionsSettings";

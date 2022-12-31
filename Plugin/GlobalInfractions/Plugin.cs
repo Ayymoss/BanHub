@@ -96,7 +96,7 @@ public class Plugin : IPlugin
         Instance = new InstanceDto
         {
             InstanceGuid = Guid.Parse(manager.GetApplicationSettings().Configuration().Id),
-            InstanceName = manager.GetApplicationSettings().Configuration().WebfrontCustomBranding,
+            InstanceName = config.InstanceNameOverride ?? manager.GetApplicationSettings().Configuration().WebfrontCustomBranding,
             InstanceIp = await Utilities.GetExternalIP(),
             ApiKey = config.ApiKey,
             HeartBeat = DateTimeOffset.UtcNow

@@ -1,82 +1,105 @@
 ﻿@page "/Users"
 @using GlobalInfraction.WebCore.Shared.Models
+@using Color = MudBlazor.Color
+@using SortDirection = MudBlazor.SortDirection
 @inject HttpClient Http
 
 <PageTitle>Users</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Users</MudText>
 
 @if (_entities is null)
 {
     <p>
         @if (Empty)
         {
-            <span class="text-muted">No user(s) found.</span>
+            <MudText Class="mb-8" Color="Color.Warning">No user(s) found.</MudText>
         }
         else
         {
-            <span class="text-start">Loading...</span>
+            <MudProgressCircular Color="Color.Default" Indeterminate="true"/>
         }
     </p>
 }
 else
 {
-    <Table @ref="table" TItem="EntityDto" DataSource="@_entities" Total="_total" @bind-PageSize="_pageSize">
-        <PropertyColumn Property="c => c.Identity" Sortable/>
-        <PropertyColumn Property="c => c.Alias" Title="Name" Sortable SorterCompare="@((x, y) => x.UserName.CompareTo(y.UserName))">
-            <Text Strong>@context.Alias!.UserName</Text>
-        </PropertyColumn>
-        <PropertyColumn Property="c => c.Reputation" Sortable/>
-        <PropertyColumn Property="c => c.Infractions" Sortable SorterCompare="@((x, y) => x.Count.CompareTo(y.Count))">
-            @(context.Infractions?.Count != 0 ? context.Infractions!.Count.ToString() : "User has no infractions")
-        </PropertyColumn>
-        <PropertyColumn Property="c => c.HeartBeat" Title="Online?">
-            @if (context.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
-            {
-                <Tag Color="geekblue">Online</Tag>
-            }
-            else
-            {
-                <Tag Color="volcano">Offline</Tag>
-            }
-        </PropertyColumn>
-        <PropertyColumn Property="c => c.Created" Format="yyyy-MM-dd hh:mm:ss" Sortable/>
-    </Table>
+    <MudTable Items="_entities" Dense="true" Hover="true" SortLabel="Sort By" Elevation="0" RowsPerPage="20" Filter="new Func<EntityDto, bool>(FilterFunc1)">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">All users</MudText>
+            <MudSpacer/>
+            <MudTextField @bind-Value="_search" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<EntityDto, object>(x => x.Identity)">ID</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<EntityDto, object>(x => x.Alias.UserName)">Name</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<EntityDto, object>(x => x.Reputation)">Reputation</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<EntityDto, object>(x => x.Infractions.Count)">Infractions</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<EntityDto, object>(x => x.HeartBeat)">Online?</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<EntityDto, object>(x => x.Created)">Created</MudTableSortLabel>
+            </MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="ID">@context.Identity</MudTd>
+            <MudTd DataLabel="Name">@context.Alias!.UserName</MudTd>
+            <MudTd DataLabel="Reputation">@context.Reputation</MudTd>
+            <MudTd DataLabel="Infractions">@(context.Infractions?.Count != 0 ? context.Infractions!.Count.ToString() : "None")</MudTd>
+            <MudTd DataLabel="Online?">
+                @if (context.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Info">Online</MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Warning">Offline</MudText>
+                }
+            </MudTd>
+            <MudTd DataLabel="Created">@context.Created!.Value.ToString("yyyy-MM-dd hh:mm:ss")</MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new[] {50, 100}"/>
+        </PagerContent>
+    </MudTable>
 }
 
 
 @code
 {
-    [Parameter, SupplyParameterFromQuery(Name = "identity")]
-    public string? EntityIdentity { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "search")]
+    public string? SearchString { get; set; }
 
     private bool Empty { get; set; }
     private List<EntityDto>? _entities;
 
-    ITable table;
-    int _pageSize = 20;
-    int _total;
+    private string _search = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        if (EntityIdentity is null)
-        {
-            _entities = await Http.GetFromJsonAsync<List<EntityDto>>("/api/Entity/All");
-            if (_entities is null || !_entities.Any()) Empty = true;
-        }
-        else
-        {
-            var response = await Http.GetAsync($"/api/Entity?identity={EntityIdentity}");
-            if (response.IsSuccessStatusCode)
-            {
-                var entities = await response.Content.ReadFromJsonAsync<EntityDto>();
-                if (entities is not null)
-                {
-                    _entities = new List<EntityDto> {entities};
-                }
-            }
-            else
-            {
-                Empty = true;
-            }
-        }
+        _entities = await Http.GetFromJsonAsync<List<EntityDto>>("/api/Entity/All");
+        if (_entities is null || !_entities.Any()) Empty = true;
+        if (SearchString is not null) _search = SearchString;
+    }
+
+    private bool FilterFunc1(EntityDto element) => FilterFunc(element, _search);
+
+    private bool FilterFunc(EntityDto element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.Identity.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Alias!.UserName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
     }
 }

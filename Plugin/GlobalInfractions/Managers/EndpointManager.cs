@@ -19,7 +19,6 @@ public class EndpointManager
     private readonly ConfigurationModel _configurationModel;
     private readonly InstanceEndpoint _instance;
     private readonly InfractionEndpoint _infraction;
-    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     public EndpointManager(IServiceProvider serviceProvider, ConfigurationModel configurationModel)
     {
@@ -96,32 +95,23 @@ public class EndpointManager
         return await _instance.IsInstanceActive(instance.InstanceGuid);
     }
 
-    public async void RemoveFromProfiles(EFClient client)
+    public void RemoveFromProfiles(EFClient client)
     {
-        try
+        var remove = Profiles.TryRemove(client, out _);
+        if (remove)
         {
-            await _semaphore.WaitAsync();
-
-            var remove = Profiles.TryRemove(client, out _);
-            if (remove)
-            {
-                _logger.LogInformation("Removed {Name} from profiles", client.CleanedName);
-                return;
-            }
-
-            _logger.LogError("Failed to remove {Name} from profiles", client.CleanedName);
+            _logger.LogInformation("Removed {Name} from profiles", client.CleanedName);
+            return;
         }
-        finally
-        {
-            if (_semaphore.CurrentCount == 0) _semaphore.Release();
-        }
+
+        _logger.LogError("Failed to remove {Name} from profiles", client.CleanedName);
     }
 
     public async Task<bool> NewInfraction(InfractionType infractionType, EFClient origin, EFClient target,
         string reason, TimeSpan? duration = null, InfractionScope? scope = null, string? evidence = null)
     {
         if (!Plugin.InstanceActive) return false;
-        if (infractionType == InfractionType.Kick && origin.ClientId == 1) return false;
+        if (infractionType is InfractionType.Kick && origin.ClientId == 1) return false;
 
         var adminEntity = ClientToEntity(origin);
         var targetEntity = ClientToEntity(target);
@@ -138,15 +128,6 @@ public class EndpointManager
             Target = targetEntity
         };
 
-        try
-        {
-            await _semaphore.WaitAsync();
-
-            return await _infraction.PostInfraction(infraction);
-        }
-        finally
-        {
-            if (_semaphore.CurrentCount == 0) _semaphore.Release();
-        }
+        return await _infraction.PostInfraction(infraction);
     }
 }

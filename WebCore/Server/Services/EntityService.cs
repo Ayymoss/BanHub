@@ -63,6 +63,33 @@ public class EntityService : IEntityService
                 Reputation = profile.Reputation
             }).FirstOrDefaultAsync();
 
+        if (entity?.Infractions is null) return entity;
+
+        // Check and expire infractions
+        var updatedInfractions = new List<Guid>();
+        foreach (var inf in entity.Infractions)
+        {
+            if (inf.Duration is null) continue;
+            if (inf.InfractionStatus != InfractionStatus.Active || !(DateTimeOffset.Now > inf.Submitted + inf.Duration)) continue;
+            
+            inf.InfractionStatus = InfractionStatus.Expired;
+            updatedInfractions.Add(inf.InfractionGuid);
+        }
+
+        if (!updatedInfractions.Any()) return entity;
+
+        var infraction = await _context.Infractions
+            .AsTracking()
+            .Where(x => updatedInfractions.Contains(x.InfractionGuid))
+            .ToListAsync();
+        
+        foreach (var inf in infraction)
+        {
+            inf.InfractionStatus = InfractionStatus.Expired;
+            _context.Infractions.Update(inf);
+        }
+
+        await _context.SaveChangesAsync();
         return entity;
     }
 
@@ -193,6 +220,7 @@ public class EntityService : IEntityService
     }
 
     public async Task<bool> HasEntity(string identity) => await _context.Entities.AnyAsync(x => x.Identity == identity);
+
     public async Task<int> GetEntityCount()
     {
         return await _context.Entities.CountAsync();

@@ -12,8 +12,10 @@ public enum InfractionType
 
 public enum InfractionStatus
 {
+    Information = 0,
+    Active = 10,
     Revoked = 20,
-    Active = 10
+    Expired = 30
 }
 
 public enum InfractionScope

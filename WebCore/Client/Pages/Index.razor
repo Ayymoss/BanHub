@@ -1,62 +1,52 @@
 ﻿@page "/"
 @inject HttpClient Http
-@using GlobalInfraction.WebCore.Shared.Models
+@using Color = MudBlazor.Color
 
 <PageTitle>Index</PageTitle>
+<MudText Typo="Typo.h3" GutterBottom="true">Welcome to Global Infractions</MudText>
+<MudText Class="mb-8">We provide a service which aims to clean up the state of 3rd party Call of Duty clients.</MudText>
+<MudDivider DividerType="DividerType.Middle" Class="my-6"/>
 
-<div>
-    <Title Level="1">Welcome to Global Infractions</Title>
-    <Paragraph>We provide a service which aims to clean up the state of 3rd party Call of Duty clients.</Paragraph>
-    
-    <Divider />
-    
-    <Title Level="2">Current Stats</Title>
-    <Paragraph>
-        <ul>
-            <li>
-                <a>
-                    <Text Strong>Instances:</Text> @_instances
-                </a>
-            </li>
-            <li>
-                <a>
-                    <Text Strong>Users:</Text> @_users
-                </a>
-            </li>
-            <li>
-                <a>
-                    <Text Strong>Infractions:</Text> @_infractions
-                </a>
-            </li>
-        </ul>
-    </Paragraph>
-    
-    <Divider />
-    
-    <Title Level="2">Follow Us</Title>
-    <Paragraph>
-        <ul>
-            <li>
+<MudItem xs="12" md="1">
+    <MudText Typo="Typo.h6" GutterBottom="true">Current Stats</MudText>
+    <MudPaper Width="100%">
+        <MudList Dense="true">
+            <MudListItem Icon="@Icons.Filled.Storage">Instances: @_instances</MudListItem>
+            <MudListItem Icon="@Icons.Filled.Person">Users: @_users</MudListItem>
+            <MudListItem Icon="@Icons.Filled.Report">Infractions: @(_infractions)</MudListItem>
+        </MudList>
+    </MudPaper>
+</MudItem>
+<MudDivider DividerType="DividerType.Middle" Class="my-5"/>
+<MudItem xs="12" md="1" >
+    <MudText Typo="Typo.h6" GutterBottom="true">Follow Us</MudText>
+    <MudPaper Width="100%">
+        <MudList Dense="true">
+            <MudListItem Icon="@Icons.Custom.Brands.Discord">
                 <a href="https://discord.gg/39rMB7YE2R">Discord</a>
-            </li>
-            <li>
+            </MudListItem>
+            <MudListItem Icon="@Icons.Custom.Brands.GitHub">
                 <a href="https://github.com/Ayymoss/GlobalInfractions">GitHub</a>
-            </li>
-        </ul>
-    </Paragraph>
-</div>
+            </MudListItem>
+        </MudList>
+    </MudPaper>
+</MudItem>
+
 
 @code {
 
-    int _instances;
-    int _infractions;
-    int _users;
+    string _instances;
+    string _infractions;
+    string _users;
 
     protected override async Task OnInitializedAsync()
     {
-        _infractions = await Http.GetFromJsonAsync<int>("/api/Infraction/Count");
-        _instances = await Http.GetFromJsonAsync<int>("/api/Instance/Count");
-        _users = await Http.GetFromJsonAsync<int>("/api/Entity/Count");
+        var infractions = await Http.GetFromJsonAsync<int>("/api/Infraction/Count");
+        var instances = await Http.GetFromJsonAsync<int>("/api/Instance/Count");
+        var users = await Http.GetFromJsonAsync<int>("/api/Entity/Count");
+        _users = $"{users:N0}";
+        _instances = $"{instances:N0}";
+        _infractions = $"{infractions:N0}";
     }
 
 }

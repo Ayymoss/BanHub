@@ -91,14 +91,16 @@ public class InstanceService : IInstanceService
 
     public async Task<(ControllerEnums.ProfileReturnState, List<InstanceDto>?)> GetInstances()
     {
-        var instances = await _context.Instances.Select(instance => new InstanceDto
-        {
-            InstanceGuid = instance.InstanceGuid,
-            InstanceIp = instance.InstanceIp,
-            InstanceName = instance.InstanceName,
-            HeartBeat = instance.HeartBeat
-        }).ToListAsync();
-        
+        var instances = await _context.Instances
+            .Where(active => active.Active)
+            .Select(instance => new InstanceDto
+            {
+                InstanceGuid = instance.InstanceGuid,
+                InstanceIp = instance.InstanceIp,
+                InstanceName = instance.InstanceName,
+                HeartBeat = instance.HeartBeat
+            }).ToListAsync();
+
         instances = instances.OrderByDescending(x => x.HeartBeat).ToList();
 
         return instances.Count is 0
@@ -120,7 +122,7 @@ public class InstanceService : IInstanceService
                 _apiKeyCache.ApiKeys.Add(result.ApiKey);
             }
         }
-        
+
         return result.Active ? ControllerEnums.ProfileReturnState.Accepted : ControllerEnums.ProfileReturnState.Unauthorized;
     }
 

@@ -1,69 +1,99 @@
 ﻿@page "/Instances"
 @using GlobalInfraction.WebCore.Shared.Models
+@using Color = MudBlazor.Color
+@using SortDirection = MudBlazor.SortDirection
 @inject HttpClient Http
 
 <PageTitle>Instances</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Verified Instances</MudText>
 
 @if (_instances is null)
 {
     <p>
         @if (Empty)
         {
-            <span class="text-muted">No instances(s) found.</span>
+            <MudText Class="mb-8" Color="Color.Warning">No instances(s) found.</MudText>
         }
         else
         {
-            <span class="text-start">Loading...</span>
+            <MudProgressCircular Color="Color.Default" Indeterminate="true"/>
         }
     </p>
 }
 else
 {
-    <Table @ref="table" TItem="InstanceDto" DataSource="@_instances" Total="_total" @bind-PageSize="_pageSize">
-        <PropertyColumn Property="c => c.InstanceGuid" Title="ID" Sortable/>
-        <PropertyColumn Property="c => c.InstanceName" Title="Instance Name" Sortable SorterCompare="@((x, y) => x.CompareTo(y))">
-            <Text Strong>@(context.InstanceName ?? "Instance Name Not Set")</Text>
-        </PropertyColumn>
-        <PropertyColumn Property="c => c.InstanceIp" Title="Instance IP" Sortable/>
-        <PropertyColumn Property="c => c.HeartBeat" Title="Heartbeat" Format="yyyy-MM-dd hh:mm:ss" Sortable/>
-    </Table>
+    <MudTable Items="_instances" Dense="true" Hover="true" SortLabel="Sort By" Elevation="0" RowsPerPage="20" Filter="new Func<InstanceDto, bool>(FilterFunc1)">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">All active instances</MudText>
+            <MudSpacer/>
+            <MudTextField @bind-Value="_search" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<InstanceDto, object>(x => x.InstanceGuid)">ID</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<InstanceDto, object>(x => x.InstanceName)">Instance Name</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<InstanceDto, object>(x => x.InstanceIp)">Instance IP</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<InstanceDto, object>(x => x.HeartBeat)">Heartbeat</MudTableSortLabel>
+            </MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="ID">@context.InstanceGuid</MudTd>
+            <MudTd DataLabel="Instance Name">@context.InstanceName</MudTd>
+            <MudTd DataLabel="Instance IP">@context.InstanceIp</MudTd>
+            <MudTd DataLabel="Heartbeat">
+                @if (context.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Info">@context.HeartBeat</MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Warning">@context.HeartBeat</MudText>
+                }
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new[] {50, 100}"/>
+        </PagerContent>
+    </MudTable>
 }
 
 @code {
 
-    [Parameter, SupplyParameterFromQuery(Name = "guid")]
-    public string? InstanceGuid { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "search")]
+    public string? SearchString { get; set; }
 
     private bool Empty { get; set; }
     private List<InstanceDto>? _instances;
 
-    ITable table;
-    int _pageSize = 20;
-    int _total;
-    
+    private string _search = string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
-        if (InstanceGuid is null)
-        {
-            _instances = await Http.GetFromJsonAsync<List<InstanceDto>>("/api/Instance/All");
-            if (_instances is null || !_instances.Any()) Empty = true;
-        }
-        else
-        {
-            var response = await Http.GetAsync($"/api/Instance?guid={InstanceGuid}");
-            if (response.IsSuccessStatusCode)
-            {
-                var instances = await response.Content.ReadFromJsonAsync<InstanceDto>();
-                if (instances is not null)
-                {
-                    _instances = new List<InstanceDto> {instances};
-                }
-            }
-            else
-            {
-                Empty = true;
-            }
-        }
+        _instances = await Http.GetFromJsonAsync<List<InstanceDto>>("/api/Instance/All");
+        if (_instances is null || !_instances.Any()) Empty = true;
+        if (SearchString is not null) _search = SearchString;
+    }
+
+    private bool FilterFunc1(InstanceDto element) => FilterFunc(element, _search);
+
+    private bool FilterFunc(InstanceDto element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.InstanceGuid.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.InstanceName!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.InstanceIp!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
     }
 
 

@@ -2,7 +2,6 @@
 using GlobalInfraction.WebCore.Server.Enums;
 using GlobalInfraction.WebCore.Server.Interfaces;
 using GlobalInfraction.WebCore.Server.Models;
-using GlobalInfraction.WebCore.Server.Utilities;
 using GlobalInfraction.WebCore.Shared.Enums;
 using GlobalInfraction.WebCore.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -55,16 +54,15 @@ public class InfractionService : IInfractionService
             }
         }
 
-
-        // TODO: Recursive ban. Find a way to prevent global bans triggering loads of kick infractions.
-
         var instance = await _context.Instances.FirstOrDefaultAsync(x => x.ApiKey == request.Instance!.ApiKey);
         if (instance is null) return (ControllerEnums.ProfileReturnState.NotFound, null);
 
         var infractionModel = new EFInfraction
         {
             InfractionType = request.InfractionType!.Value,
-            InfractionStatus = InfractionStatus.Active,
+            InfractionStatus = request.InfractionType is InfractionType.Ban or InfractionType.TempBan
+                ? InfractionStatus.Active
+                : InfractionStatus.Informational,
             InfractionScope = request.InfractionScope!.Value,
             InfractionGuid = Guid.NewGuid(),
             Submitted = DateTimeOffset.UtcNow,
@@ -160,11 +158,11 @@ public class InfractionService : IInfractionService
                 }
             }
         }).ToListAsync();
-        
+
         infractions = infractions.OrderByDescending(x => x.Submitted).ToList();
 
-        return infractions.Count is 0 
-            ? (ControllerEnums.ProfileReturnState.NotFound, null) 
+        return infractions.Count is 0
+            ? (ControllerEnums.ProfileReturnState.NotFound, null)
             : (ControllerEnums.ProfileReturnState.Ok, infractions);
     }
 
