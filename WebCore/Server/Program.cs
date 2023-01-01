@@ -27,7 +27,7 @@ builder.WebHost.ConfigureKestrel(options =>
 #endif
 
 // TODO: TOGGLE MANUALLY - Migrations don't seem to honour build state
-//configuration.DatabaseType = DatabaseType.Sqlite;
+configuration.DatabaseType = DatabaseType.Sqlite;
 
 if (configuration.DatabaseType is DatabaseType.Sqlite)
 {
