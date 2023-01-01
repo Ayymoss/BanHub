@@ -27,7 +27,7 @@ builder.WebHost.ConfigureKestrel(options =>
 #endif
 
 // TODO: TOGGLE MANUALLY - Migrations don't seem to honour build state
-configuration.DatabaseType = DatabaseType.Sqlite;
+//configuration.DatabaseType = DatabaseType.Sqlite;
 
 if (configuration.DatabaseType is DatabaseType.Sqlite)
 {
@@ -59,6 +59,7 @@ builder.Services.AddScoped<IHeartBeatService, HeartBeatService>();
 builder.Services.AddScoped<IInfractionService, InfractionService>();
 builder.Services.AddScoped<IInstanceService, InstanceService>();
 builder.Services.AddScoped<IDiscordWebhookService, DiscordWebhookService>();
+builder.Services.AddScoped<ISearchService, SearchService>();
 
 builder.Host.ConfigureLogging(logging =>
 {

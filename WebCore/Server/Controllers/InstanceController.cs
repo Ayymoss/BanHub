@@ -26,9 +26,8 @@ public class InstanceController : Controller
     public async Task<ActionResult<string>> CreateOrUpdate([FromBody] InstanceDto request)
     {
         // TODO: Change. This doesn't work behind Cloudflare.
-        var requestIpAddress = Request.HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
+        var requestIpAddress = Request.Headers["HTTP_X_FORWARDED_FOR"].ToString() ?? Request.Headers["REMOTE_ADDR"].ToString();
         var result = await _instanceService.CreateOrUpdate(request, requestIpAddress);
-
         return result.Item1 switch
         {
             ControllerEnums.ProfileReturnState.Created => StatusCode(201, result.Item2),

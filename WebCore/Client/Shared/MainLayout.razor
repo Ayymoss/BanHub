@@ -1,21 +1,28 @@
-﻿@using Color = MudBlazor.Color
+﻿@using GlobalInfraction.WebCore.Client.Theme
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
 @inherits LayoutComponentBase
 
-<MudThemeProvider IsDarkMode="true"/>
-<MudDialogProvider />
-<MudSnackbarProvider />
+
+<MudThemeProvider IsDarkMode="true" Theme="_theme"/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
 
 <MudLayout>
     <MudAppBar Elevation="0">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <MudSpacer />
-        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/Ayymoss/GlobalInfractions" Target="_blank" />
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())"/>
+        <MudSpacer/>
+        <MudItem xs="32">
+            <MudTextField @bind-Value="_searchValue" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" Label="Search" Variant="Variant.Outlined" Adornment="Adornment.End" Margin="Margin.Dense" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Info"/>
+        </MudItem>
+        <MudDivider FlexItem="true" Vertical="true" DividerType="DividerType.Middle" Class="mx-4 my-4"/>
+        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/Ayymoss/GlobalInfractions" Target="_blank"/>
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
         <MudDrawerHeader>
             <MudText Typo="Typo.h6">Global Infractions</MudText>
         </MudDrawerHeader>
-        <NavMenu />
+        <NavMenu/>
     </MudDrawer>
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="my-8 pt-8">
@@ -25,10 +32,29 @@
 </MudLayout>
 
 @code {
+    private string? _searchValue { get; set; }
+
+    private readonly MudTheme _theme = Theme.LandingPageTheme();
+
     bool _drawerOpen = true;
 
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
     }
+
+    private async Task OnKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            if (_searchValue is null || _searchValue?.Length < 3)
+            {
+                Snackbar.Add("Search must be at least 3 characters long.", Severity.Info);
+                return;
+            }
+
+            NavigationManager.NavigateTo($"/Search?q={_searchValue}");
+        }
+    }
+
 }

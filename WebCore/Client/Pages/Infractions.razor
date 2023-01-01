@@ -1,11 +1,12 @@
 ﻿@page "/Infractions"
 @using GlobalInfraction.WebCore.Shared.Models
-@using Color = MudBlazor.Color
-@using SortDirection = MudBlazor.SortDirection
 @using GlobalInfraction.WebCore.Shared.Enums
 @inject HttpClient Http
 
 <PageTitle>Users</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Infractions</MudText>
+
 
 @if (_infractions is null)
 {
@@ -16,13 +17,13 @@
         }
         else
         {
-            <MudProgressCircular Color="Color.Default" Indeterminate="true"/>
+            <MudProgressLinear Color="Color.Success" Rounded="true" Size="Size.Large" Indeterminate="true"/>
         }
     </p>
 }
 else
 {
-    <MudTable Items="_infractions" Dense="true" Hover="true" SortLabel="Sort By" Elevation="0" RowsPerPage="20" Filter="new Func<InfractionDto, bool>(FilterFunc1)">
+    <MudTable Items="_infractions" Dense="true" Hover="true" SortLabel="Sort By" Elevation="2" RowsPerPage="20" Filter="new Func<InfractionDto, bool>(FilterFunc1)">
         <ToolBarContent>
             <MudText Typo="Typo.h6">All infractions</MudText>
             <MudSpacer/>
@@ -60,50 +61,57 @@ else
         <RowTemplate>
             <MudTd DataLabel="ID">@context.InfractionGuid</MudTd>
             <MudTd DataLabel="Target Name">
-                <MudText Typo="Typo.body2" Color="Color.Warning">@context.Target!.Alias!.UserName</MudText>
+                <a href="/Profile/@context.Target!.Identity">
+                    <MudText Typo="Typo.body2" Color="Color.Warning">
+                        @context.Target!.Alias!.UserName
+                    </MudText>
+                </a>
             </MudTd>
             <MudTd DataLabel="Admin Name">
-                <MudText Typo="Typo.body2" Color="Color.Info">@context.Admin!.Alias!.UserName</MudText>
+                <a href="/Profile/@context.Admin!.Identity">
+                    <MudText Typo="Typo.body2" Color="Color.Info">
+                        @context.Admin!.Alias!.UserName
+                    </MudText>
+                </a>
             </MudTd>
             <MudTd DataLabel="Reason">@context.Reason</MudTd>
             <MudTd DataLabel="Type">
                 @switch (context.InfractionType)
                 {
                     case InfractionType.Warn:
-                        <MudText Typo="Typo.body2">Warn</MudText>
+                        <MudChip Variant="Variant.Text" Size="Size.Small">Warn</MudChip>
                         break;
                     case InfractionType.Mute:
-                        <MudText Typo="Typo.body2">Mute</MudText>
+                        <MudChip Variant="Variant.Text" Size="Size.Small">Mute</MudChip>
                         break;
                     case InfractionType.Kick:
-                        <MudText Typo="Typo.body2">Kick</MudText>
+                        <MudChip Variant="Variant.Text" Size="Size.Small">Kick</MudChip>
                         break;
                     case InfractionType.Unban:
-                        <MudText Typo="Typo.body2" Color="Color.Info">Unban</MudText>
+                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Unban</MudChip>
                         break;
                     case InfractionType.TempBan:
-                        <MudText Typo="Typo.body2" Color="Color.Warning">Tempban</MudText>
+                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Tempban</MudChip>
                         break;
                     case InfractionType.Ban:
-                        <MudText Typo="Typo.body2" Color="Color.Error">Ban</MudText>
+                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Ban</MudChip>
                         break;
-
                 }
             </MudTd>
             <MudTd DataLabel="Status">
                 @switch (context.InfractionStatus)
                 {
                     case InfractionStatus.Informational:
-                        <MudText Typo="Typo.body2" Color="Color.Info">Informational</MudText>
+                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Informational</MudChip>
                         break;
                     case InfractionStatus.Active:
-                        <MudText Typo="Typo.body2" Color="Color.Success">Active</MudText>
+                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Success">Active</MudChip>
                         break;
                     case InfractionStatus.Revoked:
-                        <MudText Typo="Typo.body2" Color="Color.Info">Revoked</MudText>
+                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Revoked</MudChip>
                         break;
                     case InfractionStatus.Expired:
-                        <MudText Typo="Typo.body2" Color="Color.Info">Expired</MudText>
+                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Expired</MudChip>
                         break;
                 }
             </MudTd>
@@ -111,15 +119,15 @@ else
                 @switch (context.InfractionScope)
                 {
                     case InfractionScope.Local:
-                        <MudText Typo="Typo.body2" Color="Color.Info">Local</MudText>
+                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Local</MudChip>
                         break;
                     case InfractionScope.Global:
-                        <MudText Typo="Typo.body2" Color="Color.Error">Global</MudText>
+                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Global</MudChip>
                         break;
                 }
             </MudTd>
             <MudTd DataLabel="Instance Name">@(context.Instance!.InstanceName ?? context.Instance.InstanceGuid.ToString())</MudTd>
-            <MudTd DataLabel="Submitted">@context.Submitted</MudTd>
+            <MudTd DataLabel="Submitted">@context.Submitted!.Value.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
         </RowTemplate>
         <PagerContent>
             <MudTablePager PageSizeOptions="new[] {50, 100}"/>

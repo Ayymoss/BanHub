@@ -128,6 +128,6 @@ public class InstanceService : IInstanceService
 
     public async Task<int> GetInstanceCount()
     {
-        return await _context.Instances.CountAsync();
+        return await _context.Instances.Where(x => x.Active).CountAsync();
     }
 }

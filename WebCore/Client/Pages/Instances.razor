@@ -1,7 +1,5 @@
 ﻿@page "/Instances"
 @using GlobalInfraction.WebCore.Shared.Models
-@using Color = MudBlazor.Color
-@using SortDirection = MudBlazor.SortDirection
 @inject HttpClient Http
 
 <PageTitle>Instances</PageTitle>
@@ -17,13 +15,13 @@
         }
         else
         {
-            <MudProgressCircular Color="Color.Default" Indeterminate="true"/>
+            <MudProgressLinear Color="Color.Success" Rounded="true" Size="Size.Large" Indeterminate="true" />
         }
     </p>
 }
 else
 {
-    <MudTable Items="_instances" Dense="true" Hover="true" SortLabel="Sort By" Elevation="0" RowsPerPage="20" Filter="new Func<InstanceDto, bool>(FilterFunc1)">
+    <MudTable Items="_instances" Dense="true" Hover="true" SortLabel="Sort By" Elevation="2" RowsPerPage="20" Filter="new Func<InstanceDto, bool>(FilterFunc1)">
         <ToolBarContent>
             <MudText Typo="Typo.h6">All active instances</MudText>
             <MudSpacer/>
@@ -50,11 +48,11 @@ else
             <MudTd DataLabel="Heartbeat">
                 @if (context.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
                 {
-                    <MudText Typo="Typo.body2" Color="Color.Info">@context.HeartBeat</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Info">@context.HeartBeat!.Value.ToString("yyyy-MM-dd HH:mm:ss") <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Connected</MudChip></MudText>
                 }
                 else
                 {
-                    <MudText Typo="Typo.body2" Color="Color.Warning">@context.HeartBeat</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Warning">@context.HeartBeat!.Value.ToString("yyyy-MM-dd HH:mm:ss") <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Offline</MudChip></MudText>
                 }
             </MudTd>
         </RowTemplate>

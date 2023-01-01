@@ -1,13 +1,14 @@
 ﻿<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
+        <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
     </Found>
     <NotFound>
-        <PageTitle>Not found</PageTitle>
+        <PageTitle>Not Found</PageTitle>
         <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Sorry, there's nothing at this address.</p>
+            <MudText Typo="Typo.h4" Color="Color.Info">404 :(</MudText>
+            <MudText Typo="Typo.h5" Color="Color.Error">Whoops, there's nothing here!</MudText>
         </LayoutView>
     </NotFound>
 </Router>
-<AntContainer />
+<AntContainer/>

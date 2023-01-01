@@ -5,6 +5,5 @@ namespace GlobalInfraction.WebCore.Server.Interfaces;
 
 public interface IDiscordWebhookService
 {
-    public Task CreateWebhook(InfractionScope scope, InfractionType infractionType, Guid infractionGuid, string identity, 
-        string username, string reason);
+    Task CreateWebhook(InfractionScope scope, InfractionType infractionType, Guid infractionGuid, string identity, string username, string reason);
 }

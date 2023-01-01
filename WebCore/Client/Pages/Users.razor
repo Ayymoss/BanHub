@@ -1,105 +1,136 @@
 ﻿@page "/Users"
 @using GlobalInfraction.WebCore.Shared.Models
-@using Color = MudBlazor.Color
-@using SortDirection = MudBlazor.SortDirection
 @inject HttpClient Http
 
 <PageTitle>Users</PageTitle>
 
 <MudText Typo="Typo.h3" GutterBottom="true">Users</MudText>
 
-@if (_entities is null)
-{
-    <p>
-        @if (Empty)
-        {
-            <MudText Class="mb-8" Color="Color.Warning">No user(s) found.</MudText>
-        }
-        else
-        {
-            <MudProgressCircular Color="Color.Default" Indeterminate="true"/>
-        }
-    </p>
-}
-else
-{
-    <MudTable Items="_entities" Dense="true" Hover="true" SortLabel="Sort By" Elevation="0" RowsPerPage="20" Filter="new Func<EntityDto, bool>(FilterFunc1)">
-        <ToolBarContent>
-            <MudText Typo="Typo.h6">All users</MudText>
-            <MudSpacer/>
-            <MudTextField @bind-Value="_search" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-        </ToolBarContent>
-        <HeaderContent>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<EntityDto, object>(x => x.Identity)">ID</MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<EntityDto, object>(x => x.Alias.UserName)">Name</MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<EntityDto, object>(x => x.Reputation)">Reputation</MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<EntityDto, object>(x => x.Infractions.Count)">Infractions</MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<EntityDto, object>(x => x.HeartBeat)">Online?</MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<EntityDto, object>(x => x.Created)">Created</MudTableSortLabel>
-            </MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="ID">@context.Identity</MudTd>
-            <MudTd DataLabel="Name">@context.Alias!.UserName</MudTd>
-            <MudTd DataLabel="Reputation">@context.Reputation</MudTd>
-            <MudTd DataLabel="Infractions">@(context.Infractions?.Count != 0 ? context.Infractions!.Count.ToString() : "None")</MudTd>
-            <MudTd DataLabel="Online?">
-                @if (context.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
-                {
-                    <MudText Typo="Typo.body2" Color="Color.Info">Online</MudText>
-                }
-                else
-                {
-                    <MudText Typo="Typo.body2" Color="Color.Warning">Offline</MudText>
-                }
-            </MudTd>
-            <MudTd DataLabel="Created">@context.Created!.Value.ToString("yyyy-MM-dd hh:mm:ss")</MudTd>
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager PageSizeOptions="new[] {50, 100}"/>
-        </PagerContent>
-    </MudTable>
-}
+<MudTable ServerData="@(new Func<TableState, Task<TableData<EntityDto>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true" Hover="true" @ref="_table">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">All users</MudText>
+        <MudSpacer/>
+        <MudTextField T="string" ValueChanged="@(OnSearch)" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Id" T="EntityDto">ID</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Name" T="EntityDto">Name</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Reputation" T="EntityDto">Reputation</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Infractions" T="EntityDto">Infractions</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="Online" T="EntityDto">Online?</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Created" T="EntityDto">Created</MudTableSortLabel>
+        </MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="ID">@context.Identity</MudTd>
+        <MudTd DataLabel="Name">
+            <a href="/Profile/@context.Identity">
+                <MudText Typo="Typo.body2" Color="Color.Info">
+                    @context.Alias!.UserName
+                </MudText>
+            </a>
+        </MudTd>
+        <MudTd DataLabel="Reputation">@context.Reputation</MudTd>
+        <MudTd DataLabel="Infractions">@(context.Infractions?.Count != 0 ? context.Infractions!.Count.ToString() : "None")</MudTd>
+        <MudTd DataLabel="Online?">
+            @if (context.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
+            {
+                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Online</MudChip>
+            }
+            else
+            {
+                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Offline</MudChip>
+            }
+        </MudTd>
+        <MudTd DataLabel="Created">@context.Created!.Value.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText Class="mb-8" Color="Color.Warning">No user(s) found.</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudProgressLinear Color="Color.Success" Rounded="true" Size="Size.Large" Indeterminate="true"/>
+    </LoadingContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new[] {50, 100}"/>
+    </PagerContent>
+</MudTable>
 
 
 @code
 {
+    // TODO: Using 'server-side' paging, though, it's not really server-side paging. It solves local performance though. NOT SCALABLE.
+
     [Parameter, SupplyParameterFromQuery(Name = "search")]
     public string? SearchString { get; set; }
 
-    private bool Empty { get; set; }
-    private List<EntityDto>? _entities;
+    private MudTable<EntityDto>? _table;
+    private IEnumerable<EntityDto> pagedData;
+    private string? _searchString;
+    private int _totalItems;
 
-    private string _search = string.Empty;
+    private async Task<TableData<EntityDto>> ServerReload(TableState state)
+    {
+        IEnumerable<EntityDto> data = (await Http.GetFromJsonAsync<List<EntityDto>>("/api/Entity/All"))!;
+
+        data = data.Where(element =>
+        {
+            if (string.IsNullOrWhiteSpace(_searchString))
+                return true;
+            if (element.Identity.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (element.Alias!.UserName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+            return false;
+        }).ToArray();
+
+        _totalItems = data.Count();
+
+        switch (state.SortLabel)
+        {
+            case "Id":
+                data = data.OrderByDirection(state.SortDirection, o => o.Identity);
+                break;
+            case "Name":
+                data = data.OrderByDirection(state.SortDirection, o => o.Alias!.UserName);
+                break;
+            case "Reputation":
+                data = data.OrderByDirection(state.SortDirection, o => o.Reputation);
+                break;
+            case "Infractions":
+                data = data.OrderByDirection(state.SortDirection, o => o.Infractions!.Count);
+                break;
+            case "Online":
+                data = data.OrderByDirection(state.SortDirection, o => o.HeartBeat);
+                break;
+            case "Created":
+                data = data.OrderByDirection(state.SortDirection, o => o.Created);
+                break;
+        }
+
+        pagedData = data.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
+        return new TableData<EntityDto> {TotalItems = _totalItems, Items = pagedData};
+    }
+
+    private void OnSearch(string text)
+    {
+        _searchString = text;
+        _table!.ReloadServerData();
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        _entities = await Http.GetFromJsonAsync<List<EntityDto>>("/api/Entity/All");
-        if (_entities is null || !_entities.Any()) Empty = true;
-        if (SearchString is not null) _search = SearchString;
+        if (SearchString is not null) _searchString = SearchString;
     }
 
-    private bool FilterFunc1(EntityDto element) => FilterFunc(element, _search);
-
-    private bool FilterFunc(EntityDto element, string searchString)
-    {
-        if (string.IsNullOrWhiteSpace(searchString))
-            return true;
-        if (element.Identity.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (element.Alias!.UserName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        return false;
-    }
 }

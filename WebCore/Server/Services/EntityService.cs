@@ -41,6 +41,7 @@ public class EntityService : IEntityService
                         Duration = inf.Duration,
                         Reason = inf.Reason,
                         Evidence = inf.Evidence,
+                        Submitted = inf.Submitted,
                         Admin = new EntityDto
                         {
                             Identity = inf.Admin.Identity,

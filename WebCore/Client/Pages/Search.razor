@@ -1,0 +1,56 @@
+﻿@page "/Search"
+@using GlobalInfraction.WebCore.Shared.Models
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+
+<PageTitle>Search</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Search</MudText>
+<MudText Typo="Typo.body2" GutterBottom="true">Search is a bit scuffed right now. You need to navigate to a different page then search again.</MudText>
+
+@if (_searchResults is null || _empty)
+{
+    @if (_empty)
+    {
+        <MudText Typo="Typo.body1" GutterBottom="true">No results</MudText>
+    }
+    else
+    {
+        <MudText Typo="Typo.body1" GutterBottom="true">Loading...</MudText>
+    }
+}
+else
+{
+    <MudTable Elevation="3" Items="@_searchResults" FixedHeader="true" Height="400px">
+        <HeaderContent>
+            <MudTh>Identity</MudTh>
+            <MudTh>Username</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="ID">@context.Identity</MudTd>
+            <MudTd DataLabel="User">
+                <a href="/Profile/@context.Identity">
+                    <MudText Typo="Typo.body2" Color="Color.Info">
+                        @context.Username
+                    </MudText>
+                </a>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+
+@code {
+
+    [Parameter, SupplyParameterFromQuery(Name = "q")]
+    public string? Query { get; set; }
+
+    private List<SearchDto>? _searchResults;
+    private bool _empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _searchResults = await Http.GetFromJsonAsync<List<SearchDto>>($"/api/Search?query={Query}");
+        if (_searchResults is null || !_searchResults.Any()) _empty = true;
+    }
+}
