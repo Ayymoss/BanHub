@@ -28,6 +28,8 @@ Massive credit to [@RaidMax](https://github.com/RaidMax) as always.
 
 [HGMServers](https://cod.hgmservers.com/) for allowing me to test and build out the plugin.
 
+Logo/Splash artwork credit to HGM (Discord: HGM#1111)
+
 ***
 <br/>
 
