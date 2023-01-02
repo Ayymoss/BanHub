@@ -1,6 +1,7 @@
 ﻿@page "/Profile/{Identity}"
 @using GlobalInfraction.WebCore.Shared.Models
 @using GlobalInfraction.WebCore.Shared.Enums
+@using Humanizer
 @inject HttpClient Http
 
 <PageTitle>Profile</PageTitle>
@@ -17,33 +18,38 @@ else
         <MudGrid>
             <MudItem xs="12" sm="6">
                 <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
-
-                    <MudTable Items="@_entity.Infractions" Hover="true" FixedHeader="true" Height="100%" @ref="mudTable" OnRowClick="RowClickEvent" T="InfractionDto">
-                        <ToolBarContent>
-                            <MudText Typo="Typo.h6">Click a infraction to view</MudText>
-                        </ToolBarContent>
-                        <HeaderContent>
-                            <MudTh>
-                                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Admin.Alias.UserName)">Admin</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh>
-                                <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<InfractionDto, object>(x => x.Submitted)">Reason</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh>
-                                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionType)">Type</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh>
-                                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionScope)">Scope</MudTableSortLabel>
-                            </MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Admin">@context.Admin.Alias.UserName</MudTd>
-                            <MudTd DataLabel="Reason">@context.Reason</MudTd>
-                            <MudTd DataLabel="Type">@context.InfractionType.ToString()</MudTd>
-                            <MudTd DataLabel="Scope">@context.InfractionScope.ToString()</MudTd>
-                        </RowTemplate>
-                    </MudTable>
-
+                    @if (!_entity.Infractions.Any())
+                    {
+                        <MudText Align="Align.Center" Typo="Typo.h5">There are no infractions :)</MudText>
+                    }
+                    else
+                    {
+                        <MudTable Items="@_entity.Infractions" Hover="true" FixedHeader="true" Height="100%" @ref="mudTable" OnRowClick="RowClickEvent" T="InfractionDto">
+                            <ToolBarContent>
+                                <MudText Typo="Typo.h6">Click a infraction to view</MudText>
+                            </ToolBarContent>
+                            <HeaderContent>
+                                <MudTh>
+                                    <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Admin.Alias.UserName)">Admin</MudTableSortLabel>
+                                </MudTh>
+                                <MudTh>
+                                    <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<InfractionDto, object>(x => x.Submitted)">Reason</MudTableSortLabel>
+                                </MudTh>
+                                <MudTh>
+                                    <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionType)">Type</MudTableSortLabel>
+                                </MudTh>
+                                <MudTh>
+                                    <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionScope)">Scope</MudTableSortLabel>
+                                </MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Admin">@context.Admin.Alias.UserName</MudTd>
+                                <MudTd DataLabel="Reason">@context.Reason</MudTd>
+                                <MudTd DataLabel="Type">@context.InfractionType.ToString()</MudTd>
+                                <MudTd DataLabel="Scope">@context.InfractionScope.ToString()</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
                 </MudPaper>
             </MudItem>
             <MudItem xs="12" sm="6">
@@ -52,15 +58,15 @@ else
                         <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
 
                             <MudList Dense="true">
-                                <MudListItem  IconColor="Color.Info" Icon="@Icons.Material.Filled.Person">
-                                    <b>Profile Name: </b> @_entity.Alias.UserName
+                                <MudListItem IconColor="Color.Info" Icon="@Icons.Material.Filled.Person">
+                                    <b>Profile Name: </b> @_entity.Alias.UserName (@_entity.Identity)
                                     @switch (_isGlobalBanned)
                                     {
                                         case true:
                                             <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Globally Banned</MudChip>
                                             break;
                                         case false:
-                                            <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Not Banned</MudChip>
+                                            <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Not Globally Banned</MudChip>
                                             break;
                                     }
                                 </MudListItem>
@@ -133,14 +139,26 @@ else
                                     <MudListItem Icon="@Icons.Filled.Message">
                                         <b>Provided Reason: </b> @_selectedInfraction.Reason
                                     </MudListItem>
-                                    <MudListItem Icon="@Icons.Filled.VideoLabel">
-                                        <b>Supporting Evidence: </b> @(_selectedInfraction.Evidence ?? "None")
-                                    </MudListItem>
+                                    @if (_selectedInfraction.Evidence is not null)
+                                    {
+                                        <MudListItem Icon="@Icons.Filled.VideoLabel">
+                                            <b>Supporting Evidence: </b> <MudLink Typo="Typo.body2" Href="@_selectedInfraction.Evidence">Link to evidence</MudLink>
+                                        </MudListItem>
+                                    }
+                                    @if (_selectedInfraction.Duration.HasValue)
+                                    {
+                                        <MudListItem Icon="@Icons.Filled.Timelapse">
+                                            <b>Infraction Duration: </b> @_selectedInfraction.Duration.Value.Humanize()
+                                        </MudListItem>
+                                    }
                                     <MudListItem Icon="@Icons.Material.Filled.Storage">
                                         <b>Sending Server: </b> @(_selectedInfraction.Instance.InstanceName ?? _selectedInfraction.Instance.InstanceGuid.ToString())
                                     </MudListItem>
                                     <MudListItem Icon="@Icons.Filled.MoreTime">
-                                        <b>Time Submitted: </b> @(_selectedInfraction.Submitted.Value.ToString("yyyy-MM-dd HH:mm:ss"))
+                                        <b>Time Submitted: </b>
+                                        <MudTooltip Arrow="true" Placement="Placement.Top" Text="@_selectedInfraction.Submitted.Value.ToString("yyyy-MM-dd HH:mm:ss")">
+                                            @(_selectedInfraction.Submitted.Value.Humanize())
+                                        </MudTooltip>
                                     </MudListItem>
                                 </MudList>
                             </MudPaper>
@@ -162,19 +180,20 @@ else
     private int selectedRowNumber = -1;
     private InfractionDto? _selectedInfraction;
     private MudTable<InfractionDto> mudTable;
-    
+
     protected override async Task OnInitializedAsync()
     {
         _entity = await Http.GetFromJsonAsync<EntityDto>($"api/Entity?identity={Identity}");
         if (_entity is not null)
         {
-            _isGlobalBanned = _entity.Infractions!.Any(x => x is {InfractionStatus: InfractionStatus.Active,InfractionScope: InfractionScope.Global});
+            _isGlobalBanned = _entity.Infractions?.Any(x => x.InfractionStatus is InfractionStatus.Active && x.InfractionScope is InfractionScope.Global) ?? false;
         }
     }
 
     private void RowClickEvent(TableRowClickEventArgs<InfractionDto> tableRowClickEventArgs)
     {
         _selectedInfraction = tableRowClickEventArgs.Item;
+        //_selectedInfraction.Duration = tableRowClickEventArgs.Item.Duration ?? new TimeSpan(0);
     }
 
 }

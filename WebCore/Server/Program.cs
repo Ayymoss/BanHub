@@ -8,8 +8,6 @@ using Microsoft.EntityFrameworkCore;
 SetupConfiguration.InitConfiguration();
 var configuration = SetupConfiguration.ReadConfiguration();
 
-if (configuration.DiscordHook is null) Environment.Exit(10);
-
 var builder = WebApplication.CreateBuilder(args);
 
 #if DEBUG
@@ -25,7 +23,7 @@ builder.WebHost.ConfigureKestrel(options =>
 #endif
 
 // TODO: TOGGLE MANUALLY - Migrations don't seem to honour build state
-//configuration.DatabaseType = DatabaseType.Sqlite;
+configuration.DatabaseType = DatabaseType.Sqlite;
 
 if (configuration.DatabaseType is DatabaseType.Sqlite)
 {

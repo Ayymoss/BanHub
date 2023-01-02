@@ -14,7 +14,7 @@ public class GlobalBanCommand : Command
         Name = "globalban";
         Description = "Bans a player from all servers";
         Alias = "gban";
-        Permission = EFClient.Permission.Moderator;
+        Permission = EFClient.Permission.SeniorAdmin;
         RequiresTarget = true;
         Arguments = new[]
         {
@@ -33,21 +33,27 @@ public class GlobalBanCommand : Command
 
     public override async Task ExecuteAsync(GameEvent gameEvent)
     {
-        if (!Plugin.FeaturesEnabled) return; // TODO: Remove tag
-        
         if (!Plugin.InstanceActive)
         {
             gameEvent.Origin.Tell(Plugin.Translations.NotActive);
             return;
         }
 
+        if (gameEvent.Target.ClientId == 1)
+        {
+            gameEvent.Origin.Tell(Plugin.Translations.CannotTargetServer);
+            return;
+        }
+
         var result = await Plugin.EndpointManager
             .NewInfraction(InfractionType.Ban, gameEvent.Origin, gameEvent.Target, gameEvent.Data, scope: InfractionScope.Global);
 
-        switch (result)
+        switch (result.Item1)
         {
             case true:
-                gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandSuccess.FormatExt(gameEvent.Target.CleanedName, gameEvent.Data));
+                gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandSuccess.FormatExt(gameEvent.Target.CleanedName, gameEvent.Data, result.Item2));
+                gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandSuccessFollow);
+                gameEvent.Target.Kick(Plugin.Translations.GlobalBanKickMessage, Utilities.IW4MAdminClient(gameEvent.Target.CurrentServer));
                 break;
             case false:
                 gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandFail);

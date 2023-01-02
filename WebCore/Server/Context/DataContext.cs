@@ -15,8 +15,9 @@ public class DataContext : DbContext
     public DbSet<EFAlias> Aliases { get; set; }
     public DbSet<EFCurrentAlias> CurrentAliases { get; set; }
     public DbSet<EFInfraction> Infractions { get; set; }
-
-
+    public DbSet<EFServer> Servers { get; set; }
+    public DbSet<EFServerConnection> ServerConnections { get; set; }
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<EFInstance>().ToTable("EFInstances");
@@ -24,6 +25,8 @@ public class DataContext : DbContext
         modelBuilder.Entity<EFAlias>().ToTable("EFAliases");
         modelBuilder.Entity<EFInfraction>().ToTable("EFInfractions");
         modelBuilder.Entity<EFCurrentAlias>().ToTable("EFCurrentAliases");
+        modelBuilder.Entity<EFServer>().ToTable("EFServers");
+        modelBuilder.Entity<EFServerConnection>().ToTable("EFServerConnections");
 
         modelBuilder.Entity<EFInfraction>()
             .HasOne(a => a.Target)

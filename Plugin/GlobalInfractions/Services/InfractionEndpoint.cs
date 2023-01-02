@@ -21,18 +21,35 @@ public class InfractionEndpoint
         _configurationModel = configurationModel;
     }
 
-    public async Task<bool> PostInfraction(InfractionDto infraction)
+    public async Task<(bool, Guid?)> PostInfraction(InfractionDto infraction)
     {
         try
         {
             var response = await _httpClient
                 .PostAsJsonAsync($"{ApiHost}/api/Infraction?authToken={_configurationModel.ApiKey}", infraction);
-            Console.WriteLine($"[{DateTimeOffset.UtcNow}] {infraction.InfractionType.ToString()}: RC: {response.StatusCode}, RP: {response.ReasonPhrase}, RM: [{response.RequestMessage}]");
+            var preGuid = await response.Content.ReadAsStringAsync();
+            var parsedState = Guid.TryParse(preGuid.Replace("\"", ""), out var guid);
+            return (response.IsSuccessStatusCode && parsedState, guid);
+        }
+        catch (HttpRequestException e)
+        {
+            Console.WriteLine($"[{Plugin.PluginName}] Error posting infraction: {e.Message}");
+        }
+
+        return (false, null);
+    }
+
+    public async Task<bool> SubmitEvidence(InfractionDto infraction)
+    {
+        try
+        {
+            var response = await _httpClient
+                .PostAsJsonAsync($"{ApiHost}/api/Infraction/Evidence?authToken={_configurationModel.ApiKey}", infraction);
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine($"[{Plugin.PluginName}] Error sending instance heartbeat: {e.Message}");
+            Console.WriteLine($"[{Plugin.PluginName}] Error submitting information: {e.Message}");
         }
 
         return false;

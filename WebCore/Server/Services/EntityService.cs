@@ -30,6 +30,16 @@ public class EntityService : IEntityService
                     UserName = profile.CurrentAlias.Alias.UserName,
                     Changed = profile.CurrentAlias.Alias.Changed
                 },
+                Servers = profile.ServerConnections
+                    .Where(x => x.Entity.Identity == identity)
+                    .Select(server => new ServerDto
+                    {
+                        ServerId = server.Server.ServerId,
+                        ServerName = server.Server.ServerName,
+                        ServerIp = server.Server.ServerIp,
+                        ServerPort = server.Server.ServerPort,
+                        Connected = server.Connected
+                    }).ToList(),
                 Infractions = profile.Infractions
                     .Where(inf => inf.Target.Identity == identity)
                     .Select(inf => new InfractionDto
@@ -149,6 +159,11 @@ public class EntityService : IEntityService
             .Include(x => x.Aliases)
             .SingleOrDefaultAsync(user => user.Identity == request.Identity);
 
+        var efServer = await _context.Servers
+            .AsNoTracking()
+            .Where(x => x.Instance.InstanceGuid == request.Instance!.InstanceGuid)
+            .FirstOrDefaultAsync(y => y.ServerId == request.Server!.ServerId);
+
         // Update existing user
         if (user is not null)
         {
@@ -176,6 +191,17 @@ public class EntityService : IEntityService
                 user.Aliases.Add(updatedAlias);
                 mostRecentAlias.Alias = updatedAlias;
                 _context.CurrentAliases.Update(mostRecentAlias);
+            }
+
+            if (efServer is not null)
+            {
+                var server = new EFServerConnection
+                {
+                    Connected = DateTimeOffset.UtcNow,
+                    EntityId = user.Id,
+                    ServerId = efServer.Id,
+                };
+                _context.ServerConnections.Add(server);
             }
 
             user.HeartBeat = DateTimeOffset.UtcNow;
@@ -209,8 +235,18 @@ public class EntityService : IEntityService
             Entity = entity
         };
 
-        entity.CurrentAlias = currentAlias;
+        if (efServer is not null)
+        {
+            var server = new EFServerConnection
+            {
+                Connected = DateTimeOffset.UtcNow,
+                Entity = entity,
+                ServerId = efServer.Id
+            };
+            _context.ServerConnections.Add(server);
+        }
 
+        entity.CurrentAlias = currentAlias;
         _context.CurrentAliases.Add(currentAlias);
         await _context.SaveChangesAsync();
 

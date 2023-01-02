@@ -26,6 +26,7 @@ public class InstanceController : Controller
     public async Task<ActionResult<string>> CreateOrUpdate([FromBody] InstanceDto request)
     {
         var requestIpAddress = Request.Headers["HTTP_X_FORWARDED_FOR"].ToString() ?? Request.Headers["REMOTE_ADDR"].ToString();
+
         var result = await _instanceService.CreateOrUpdate(request, requestIpAddress);
         return result.Item1 switch
         {

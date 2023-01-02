@@ -4,9 +4,11 @@ public class Configuration
 {
     public byte Version { get; set; } = 1;
     public int WebBind { get; set; } = 80;
-    public string? DiscordHook { get; set; }
+    public string InfractionWebHook { get; set; } = null!;
+    public string InstanceWebHook { get; set; } = null!;
     public DatabaseType DatabaseType { get; set; } = DatabaseType.Sqlite;
     public DatabaseConfiguration Database { get; set; } = new();
+    
 }
 
 public class DatabaseConfiguration

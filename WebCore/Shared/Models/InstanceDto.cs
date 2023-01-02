@@ -31,4 +31,14 @@ public class InstanceDto
     /// State whether the server can upload bans
     /// </summary>
     public bool? Active { get; set; }
+    
+    /// <summary>
+    /// The list of servers the instance has
+    /// </summary>
+    public virtual ICollection<ServerDto>? Servers { get; set; }
+    
+    /// <summary>
+    /// A server reference to this instance
+    /// </summary>
+    public virtual ServerDto? Server { get; set; }
 }

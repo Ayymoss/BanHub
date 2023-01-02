@@ -14,7 +14,7 @@ public class DiscordWebhookService : IDiscordWebhookService
         _configuration = configuration;
     }
 
-    public async Task CreateWebhook(InfractionScope scope, InfractionType infractionType, Guid infractionGuid, string identity, string
+    public async Task CreateInfractionHook(InfractionScope scope, InfractionType infractionType, Guid infractionGuid, string identity, string
         username, string reason)
     {
         Color color;
@@ -50,12 +50,26 @@ public class DiscordWebhookService : IDiscordWebhookService
             Color = color
         };
 
-        await SendWebhook(embedBuilder.Build());
+        await SendWebhook(embedBuilder.Build(), _configuration.InfractionWebHook);
+    } 
+    
+    public async Task CreateIssueHook(Guid instanceGuid, string ipOnRecord, string incomingIp)
+    {
+        var embedBuilder = new EmbedBuilder
+        {
+            Title = $"IP Mismatch: {instanceGuid}",
+            Description = "IP mismatch issue raised\n" +
+                          $"**Record IP:** {ipOnRecord}" +
+                          $"**Incoming IP:** {incomingIp}",
+            Color = Color.DarkRed
+        };
+
+        await SendWebhook(embedBuilder.Build(), _configuration.InstanceWebHook);
     }
 
-    private async Task SendWebhook(Embed embed)
+    private async Task SendWebhook(Embed embed, string webhook)
     {
-        var client = new DiscordWebhookClient(_configuration.DiscordHook);
+        var client = new DiscordWebhookClient(webhook);
         await client.SendMessageAsync(embeds: new[] {embed});
     }
 }

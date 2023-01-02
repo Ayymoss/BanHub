@@ -9,4 +9,5 @@ public interface IInfractionService
     Task<(ControllerEnums.ProfileReturnState, InfractionDto?)> GetInfraction(string infractionGuid);
     Task<(ControllerEnums.ProfileReturnState, List<InfractionDto>?)> GetInfractions();
     Task<int> GetInfractionCount();
+    Task<bool> SubmitEvidence(InfractionDto request);
 }

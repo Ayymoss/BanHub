@@ -23,7 +23,7 @@ public class EFInstance
     /// The IW4MAdmin name
     /// </summary>
     public string? InstanceName { get; set; }
-    
+
     /// <summary>
     /// The last the the instance has replied
     /// </summary>
@@ -38,4 +38,9 @@ public class EFInstance
     /// State whether the server can upload bans
     /// </summary>
     public bool Active { get; set; }
+
+    /// <summary>
+    /// The list of connected servers
+    /// </summary>
+    public virtual ICollection<EFServer> ServerConnections { get; set; } = null!;
 }

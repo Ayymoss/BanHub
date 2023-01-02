@@ -55,7 +55,8 @@ public static class SetupConfiguration
         var configPostMig = new Configuration
         {
             Version = newConfigVersion,
-            DiscordHook = configuration.DiscordHook,
+            InfractionWebHook = configuration.InfractionWebHook,
+            InstanceWebHook = configuration.InstanceWebHook,
             DatabaseType = configuration.DatabaseType,
             Database = configuration.Database
         };

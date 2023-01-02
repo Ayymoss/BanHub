@@ -19,8 +19,12 @@ public class ConfigurationModel : IBaseConfiguration
 
 public class TranslationStrings
 {
-    public string GlobalBanKickMessage { get; set; } = "GLOBALLY BANNED: {{reason}}";
+    public string GlobalBanKickMessage { get; set; } = "(Color::Red)Globally banned!(Color::White)\nGlobalInfractions.com";
     public string NotActive { get; set; } = "Global Infractions is not active";
-    public string GlobalBanCommandSuccess { get; set; } = "Global Infractions banned {{target}} for {{reason}}";
+    public string GlobalBanCommandSuccess { get; set; } = "Global Infractions banned {{target}} for {{reason}} ({{guid}})";
     public string GlobalBanCommandFail { get; set; } = "Global Infractions ban was not submitted";
+    public string SubmitEvidenceSuccess { get; set; } = "Evidence submitted";
+    public string SubmitEvidenceFail { get; set; } = "Failed to submit evidence";
+    public string GlobalBanCommandSuccessFollow { get; set; } = "(Color::Yellow)You must upload (Color::Accent)!evidence (Color::Yellow)for global bans!";
+    public string CannotTargetServer { get; set; } = "You cannot ban the console...";
 }

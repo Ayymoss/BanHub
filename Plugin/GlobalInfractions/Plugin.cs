@@ -1,4 +1,5 @@
-﻿using GlobalInfractions.Configuration;
+﻿using Data.Models;
+using GlobalInfractions.Configuration;
 using GlobalInfractions.Enums;
 using GlobalInfractions.Managers;
 using GlobalInfractions.Models;
@@ -17,19 +18,16 @@ public class Plugin : IPlugin
     public string Name => PluginName;
     public float Version => 20221218f;
     public string Author => "Amos";
-#if DEBUG
-    public const bool FeaturesEnabled = true;
-#else
-    public const bool FeaturesEnabled = false;
-#endif
+
     private static bool _pluginEnabled;
     public static bool InstanceActive { get; set; }
     public static EndpointManager EndpointManager = null!;
     public static InstanceDto Instance = null!;
     public static TranslationStrings Translations = null!;
-    public static HeartBeatManager HeartBeatManager = null!;
+    public static IManager Manager = null!;
+    private static HeartBeatManager _heartBeatManager = null!;
     private readonly IConfigurationHandler<ConfigurationModel> _configurationHandler;
-    
+
     public Plugin(IServiceProvider serviceProvider, IConfigurationHandlerFactory configurationHandlerFactory)
     {
         _serviceProvider = serviceProvider;
@@ -64,16 +62,28 @@ public class Plugin : IPlugin
             case GameEvent.EventType.Unban:
                 await EndpointManager.NewInfraction(InfractionType.Unban, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
                 break;
+            case GameEvent.EventType.Start:
+                var serverDto = new ServerDto
+                {
+                    ServerId = $"{server.IP}:{server.Port}",
+                    ServerName = server.Hostname,
+                    ServerIp = server.IP,
+                    ServerPort = server.Port
+                };
+                await EndpointManager.OnStart(serverDto);
+                break;
         }
     }
 
     public async Task OnLoadAsync(IManager manager)
     {
-        #if DEBUG
+#if DEBUG
         Console.WriteLine($"[{PluginName}] Loading... !! DEBUG MODE !!");
-        #else
+#else
         Console.WriteLine($"[{PluginName}] Loading...");
-        #endif
+#endif
+
+        Manager = manager;
 
         // Build configuration
         await _configurationHandler.BuildAsync();
@@ -90,9 +100,9 @@ public class Plugin : IPlugin
         }
 
         var config = _configurationHandler.Configuration();
-        HeartBeatManager = new HeartBeatManager(_serviceProvider, config);
+        _heartBeatManager = new HeartBeatManager(_serviceProvider, config);
         EndpointManager = new EndpointManager(_serviceProvider, config);
-        
+
         Translations = config.Translations;
 
         // Update the instance and check its state
@@ -102,17 +112,19 @@ public class Plugin : IPlugin
             InstanceName = config.InstanceNameOverride ?? manager.GetApplicationSettings().Configuration().WebfrontCustomBranding,
             InstanceIp = await Utilities.GetExternalIP(),
             ApiKey = config.ApiKey,
-            HeartBeat = DateTimeOffset.UtcNow
+            HeartBeat = DateTimeOffset.UtcNow,
+            Servers = new List<ServerDto>()
         };
+        Console.WriteLine(Instance);
 
         _pluginEnabled = await EndpointManager.UpdateInstance(Instance);
-        
+
         // If successful reply, get active state and start heartbeat
         if (_pluginEnabled)
         {
             InstanceActive = await EndpointManager.IsInstanceActive(Instance);
             Instance.Active = InstanceActive;
-            
+
             if (InstanceActive)
             {
                 Console.WriteLine($"[{PluginName}] Activated.");
@@ -124,7 +136,7 @@ public class Plugin : IPlugin
                 Console.WriteLine($"[{PluginName}] To activate your access. Please visit https://discord.gg/Arruj6DWvp");
             }
 
-            HeartBeatManager.HeartbeatTimer();
+            _heartBeatManager.HeartbeatTimer();
             Console.WriteLine($"[{PluginName}] Loaded successfully. Version: {Version}");
             return;
         }

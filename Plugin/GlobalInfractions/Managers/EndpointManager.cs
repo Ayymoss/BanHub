@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
 using GlobalInfractions.Configuration;
 using GlobalInfractions.Enums;
 using GlobalInfractions.Models;
@@ -19,6 +20,7 @@ public class EndpointManager
     private readonly ConfigurationModel _configurationModel;
     private readonly InstanceEndpoint _instance;
     private readonly InfractionEndpoint _infraction;
+    private readonly ServerEndpoint _server;
 
     public EndpointManager(IServiceProvider serviceProvider, ConfigurationModel configurationModel)
     {
@@ -26,6 +28,7 @@ public class EndpointManager
         _entity = new EntityEndpoint(configurationModel);
         _instance = new InstanceEndpoint(configurationModel);
         _infraction = new InfractionEndpoint(configurationModel);
+        _server = new ServerEndpoint(configurationModel);
         _logger = serviceProvider.GetRequiredService<ILogger<EndpointManager>>();
     }
 
@@ -33,7 +36,7 @@ public class EndpointManager
 
     private static EntityDto ClientToEntity(EFClient client)
     {
-        return new EntityDto
+        var entity = new EntityDto
         {
             Identity = GetIdentity(client),
             Alias = new AliasDto
@@ -43,6 +46,24 @@ public class EndpointManager
             },
             Instance = Plugin.Instance
         };
+
+        if (!client.IsIngame) return entity;
+
+        var server = new ServerDto
+        {
+            ServerId = $"{client.CurrentServer.IP}:{client.CurrentServer.Port}",
+            ServerName = client.CurrentServer.Hostname,
+            ServerIp = client.CurrentServer.IP,
+            ServerPort = client.CurrentServer.Port
+        };
+        
+        entity.Server = server;
+        return entity;
+    }
+
+    public async Task OnStart(ServerDto server)
+    {
+        await _server.PostServer(server);
     }
 
     public async Task OnJoin(EFClient client)
@@ -54,7 +75,7 @@ public class EndpointManager
         // Action any penalties
         if (returnedEntity is not null)
         {
-            if (Plugin.FeaturesEnabled) ProcessEntity(returnedEntity, client); // TODO: Remove tag
+            ProcessEntity(returnedEntity, client); // TODO: Remove tag
             Profiles.TryAdd(client, returnedEntity);
         }
 
@@ -69,7 +90,7 @@ public class EndpointManager
             var newEntity = await _entity.GetEntity(entity.Identity);
             if (newEntity is not null)
             {
-                if (Plugin.FeaturesEnabled) ProcessEntity(newEntity, client); // TODO: Remove tag
+                ProcessEntity(newEntity, client); // TODO: Remove tag
                 Profiles.TryAdd(client, newEntity);
             }
         }
@@ -80,8 +101,7 @@ public class EndpointManager
         var globalBan = entity.Infractions?
             .FirstOrDefault(x => x.InfractionType is InfractionType.Ban && x.InfractionScope is InfractionScope.Global);
         if (globalBan is null || !client.IsIngame) return;
-        client.Kick(_configurationModel.Translations.GlobalBanKickMessage
-            .FormatExt(globalBan.Reason), Utilities.IW4MAdminClient(client.CurrentServer));
+        client.Kick(_configurationModel.Translations.GlobalBanKickMessage, Utilities.IW4MAdminClient(client.CurrentServer));
     }
 
     public async Task<bool> UpdateInstance(InstanceDto instance)
@@ -106,11 +126,27 @@ public class EndpointManager
         _logger.LogError("Failed to remove {Name} from profiles", client.CleanedName);
     }
 
-    public async Task<bool> NewInfraction(InfractionType infractionType, EFClient origin, EFClient target,
+    public async Task<(bool, Guid?)> NewInfraction(InfractionType infractionType, EFClient origin, EFClient target,
         string reason, TimeSpan? duration = null, InfractionScope? scope = null, string? evidence = null)
     {
-        if (!Plugin.InstanceActive) return false;
-        if (infractionType is InfractionType.Kick or InfractionType.Warn && origin.ClientId == 1) return false;
+        if (!Plugin.InstanceActive) return (false, null);
+        if (infractionType is InfractionType.Kick or InfractionType.Warn && origin.ClientId == 1) return (false, null);
+        
+        var penalty = origin.AdministeredPenalties?.FirstOrDefault()?.AutomatedOffense;
+        var automatedBan = false;
+        var automatedReason = string.Empty;
+        if (penalty is not null)
+        {
+            const string regex = @"^(Recoil|Button)(-|--)\d{0,}@\d{0,}()$";
+            automatedBan = Regex.IsMatch(penalty, regex);
+            var match = Regex.Match(penalty, regex).Groups[1].ToString();
+            automatedReason = match switch
+            {
+                "Recoil" => "R",
+                "Button" => "B",
+                _ => "??"
+            };
+        }
 
         var adminEntity = ClientToEntity(origin);
         var targetEntity = ClientToEntity(target);
@@ -118,9 +154,9 @@ public class EndpointManager
         var infraction = new InfractionDto
         {
             InfractionType = infractionType,
-            InfractionScope = scope ?? InfractionScope.Local,
+            InfractionScope = automatedBan ? InfractionScope.Global : scope ?? InfractionScope.Local,
             Evidence = evidence,
-            Reason = reason,
+            Reason = automatedBan ? $"Automated Offense [{automatedReason}]" : reason,
             Duration = duration,
             Instance = Plugin.Instance,
             Admin = adminEntity,
@@ -128,5 +164,15 @@ public class EndpointManager
         };
 
         return await _infraction.PostInfraction(infraction);
+    }
+
+    public async Task<bool> SubmitInformation(Guid guid, string evidence)
+    {
+        var infraction = new InfractionDto
+        {
+            InfractionGuid = guid,
+            Evidence = evidence
+        };
+        return await _infraction.SubmitEvidence(infraction);
     }
 }

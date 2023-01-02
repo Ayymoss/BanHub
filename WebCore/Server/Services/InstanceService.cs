@@ -12,11 +12,13 @@ public class InstanceService : IInstanceService
 {
     private readonly DataContext _context;
     private readonly ApiKeyCache _apiKeyCache;
+    private readonly IDiscordWebhookService _discordWebhook;
 
-    public InstanceService(DataContext context, ApiKeyCache apiKeyCache)
+    public InstanceService(DataContext context, ApiKeyCache apiKeyCache, IDiscordWebhookService discordWebhook)
     {
         _context = context;
         _apiKeyCache = apiKeyCache;
+        _discordWebhook = discordWebhook;
     }
 
     public async Task<(ControllerEnums.ProfileReturnState, string)> CreateOrUpdate(InstanceDto request, string? requestIpAddress)
@@ -47,16 +49,14 @@ public class InstanceService : IInstanceService
             return (ControllerEnums.ProfileReturnState.Created, $"Instance added {request.InstanceGuid}");
         }
 
-        // Check existing record
+        // TODO: Update this... It doesn't check a mismatch...
         if (instanceGuid is null || instanceApi is null) return (ControllerEnums.ProfileReturnState.BadRequest, "GUID + API mismatch");
-        if (instanceGuid.Id != instanceApi.Id)
-            return (ControllerEnums.ProfileReturnState.Conflict, "Instance already exists with this API key.");
+        if (instanceGuid.Id != instanceApi.Id) return (ControllerEnums.ProfileReturnState.Conflict, "Instance already exists with this API key.");
 
         // Warn if IP address has changed... this really shouldn't happen.
-        if (requestIpAddress is null || requestIpAddress != instanceGuid.InstanceIp)
+        if (requestIpAddress is not null && requestIpAddress != instanceGuid.InstanceIp)
         {
-            //_logger.LogWarning("{Instance} IP mismatch! Request: [{ReqIP}], Registered: [{InstanceIP}]",
-            //    guid.InstanceGuid, requestIpAddress, guid.InstanceIp);
+           await  _discordWebhook.CreateIssueHook(instanceGuid.InstanceGuid, request.InstanceIp!, requestIpAddress);
         }
 
         // Update existing record

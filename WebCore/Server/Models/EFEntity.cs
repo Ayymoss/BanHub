@@ -49,4 +49,9 @@ public class EFEntity
     /// The lookup for current alias
     /// </summary>
     public virtual EFCurrentAlias CurrentAlias { get; set; } = null!;
+
+    /// <summary>
+    /// The list of historically connected servers
+    /// </summary>
+    public virtual ICollection<EFServerConnection> ServerConnections { get; set; } = null!;
 }

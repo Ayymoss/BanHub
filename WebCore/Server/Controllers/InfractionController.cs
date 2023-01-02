@@ -3,6 +3,7 @@ using GlobalInfraction.WebCore.Server.Interfaces;
 using GlobalInfraction.WebCore.Server.Services;
 using GlobalInfraction.WebCore.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
+using MudBlazor;
 
 namespace GlobalInfraction.WebCore.Server.Controllers;
 
@@ -30,7 +31,19 @@ public class InfractionController : Controller
             _ => BadRequest() // Should never happen
         };
     }
-    
+
+    [HttpPost("Evidence"), PluginAuthentication]
+    public async Task<ActionResult<bool>> SubmitEvidence([FromQuery] string authToken, [FromBody] InfractionDto request)
+    {
+        var result = await _infractionService.SubmitEvidence(request);
+
+        return result switch
+        {
+            true => Ok(true),
+            false => BadRequest(false)
+        };
+    }
+
     [HttpGet]
     public async Task<ActionResult<InstanceDto>> GetInfraction([FromQuery] string guid)
     {
@@ -43,7 +56,7 @@ public class InfractionController : Controller
             _ => BadRequest() // Should never happen
         };
     }
-    
+
     [HttpGet("All")]
     public async Task<ActionResult<InstanceDto>> GetInfractions()
     {
@@ -55,7 +68,7 @@ public class InfractionController : Controller
             _ => BadRequest() // Should never happen
         };
     }
-    
+
     [HttpGet("Count")]
     public async Task<ActionResult<int>> GetInfractionCount()
     {

@@ -13,11 +13,13 @@ public class InfractionService : IInfractionService
 {
     private readonly IDiscordWebhookService _discordWebhook;
     private readonly DataContext _context;
+    private readonly IEntityService _entityService;
 
-    public InfractionService(DataContext context, IDiscordWebhookService discordWebhook)
+    public InfractionService(DataContext context, IEntityService entityService, IDiscordWebhookService discordWebhook)
     {
         _discordWebhook = discordWebhook;
         _context = context;
+        _entityService = entityService;
     }
 
     public async Task<(ControllerEnums.ProfileReturnState, Guid?)> AddInfraction([FromBody] InfractionDto request)
@@ -25,10 +27,19 @@ public class InfractionService : IInfractionService
         var user = await _context.Entities
             .AsTracking()
             .Include(x => x.CurrentAlias.Alias)
-            .FirstOrDefaultAsync(user => user.Identity == request.Target!.Identity);
+            .FirstOrDefaultAsync(entity => entity.Identity == request.Target!.Identity);
 
         var admin = await _context.Entities
             .FirstOrDefaultAsync(profile => profile.Identity == request.Admin!.Identity);
+
+        if (user is null)
+        {
+            await _entityService.CreateOrUpdate(request.Target!);
+            user = await _context.Entities
+                .AsTracking()
+                .Include(x => x.CurrentAlias.Alias)
+                .FirstOrDefaultAsync(entity => entity.Identity == request.Target!.Identity);
+        }
 
         if (user is null || admin is null) return (ControllerEnums.ProfileReturnState.NotFound, null);
 
@@ -36,8 +47,9 @@ public class InfractionService : IInfractionService
         var infraction = await _context.Infractions
             .AsTracking()
             .Where(inf => inf.TargetId == user.Id && inf.Instance.InstanceGuid == request.Instance!.InstanceGuid)
-            .FirstOrDefaultAsync(inf => inf.InfractionType == InfractionType.Ban
-                                        && inf.InfractionStatus == InfractionStatus.Active);
+            .FirstOrDefaultAsync(inf =>
+                (inf.InfractionType == InfractionType.Ban || inf.InfractionType == InfractionType.TempBan) &&
+                inf.InfractionStatus == InfractionStatus.Active);
 
         if (infraction is not null)
         {
@@ -68,6 +80,7 @@ public class InfractionService : IInfractionService
             Submitted = DateTimeOffset.UtcNow,
             AdminId = admin.Id,
             Reason = request.Reason!,
+            Duration = request.Duration,
             Evidence = request.Evidence,
             InstanceId = instance.Id,
             TargetId = user.Id
@@ -76,9 +89,16 @@ public class InfractionService : IInfractionService
         _context.Add(infractionModel);
         await _context.SaveChangesAsync();
 
-        await _discordWebhook.CreateWebhook(infractionModel.InfractionScope, infractionModel.InfractionType, infractionModel.InfractionGuid,
-            user.Identity,
-            user.CurrentAlias.Alias.UserName, infractionModel.Reason);
+        try
+        {
+            await _discordWebhook.CreateInfractionHook(infractionModel.InfractionScope, infractionModel.InfractionType,
+                infractionModel.InfractionGuid,
+                user.Identity, user.CurrentAlias.Alias.UserName, infractionModel.Reason);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
 
         return (ControllerEnums.ProfileReturnState.Created, infractionModel.InfractionGuid);
     }
@@ -105,6 +125,7 @@ public class InfractionService : IInfractionService
             },
             Reason = inf.Reason,
             Evidence = inf.Evidence,
+            Duration = inf.Duration,
             Instance = new InstanceDto
             {
                 InstanceName = inf.Instance.InstanceName,
@@ -144,6 +165,7 @@ public class InfractionService : IInfractionService
             },
             Reason = inf.Reason,
             Evidence = inf.Evidence,
+            Duration = inf.Duration,
             Instance = new InstanceDto
             {
                 InstanceName = inf.Instance.InstanceName,
@@ -169,5 +191,19 @@ public class InfractionService : IInfractionService
     public async Task<int> GetInfractionCount()
     {
         return await _context.Infractions.CountAsync();
+    }
+
+    public async Task<bool> SubmitEvidence(InfractionDto request)
+    {
+        var infraction = await _context.Infractions
+            .AsTracking()
+            .FirstOrDefaultAsync(x => x.InfractionGuid == request.InfractionGuid);
+
+        if (infraction is null) return false;
+
+        infraction.Evidence = request.Evidence;
+        _context.Infractions.Update(infraction);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }
