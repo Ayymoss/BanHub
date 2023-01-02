@@ -7,6 +7,9 @@ using SharedLibraryCore.Interfaces;
 
 namespace GlobalInfractions;
 
+// Credit and inspiration: https://forums.mcbans.com/
+// https://forums.mcbans.com/wiki/how-the-system-works/
+
 public class Plugin : IPlugin
 {
     private readonly IServiceProvider _serviceProvider;

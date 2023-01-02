@@ -21,7 +21,6 @@ public class InstanceService : IInstanceService
 
     public async Task<(ControllerEnums.ProfileReturnState, string)> CreateOrUpdate(InstanceDto request, string? requestIpAddress)
     {
-        // TODO: There should only be one instance per IP address. Check for this and return an error if it exists.
         var instanceGuid = await _context.Instances
             .AsTracking()
             .FirstOrDefaultAsync(server => server.InstanceGuid == request.InstanceGuid);
@@ -56,7 +55,6 @@ public class InstanceService : IInstanceService
         // Warn if IP address has changed... this really shouldn't happen.
         if (requestIpAddress is null || requestIpAddress != instanceGuid.InstanceIp)
         {
-            // TODO: Maybe webhook this?
             //_logger.LogWarning("{Instance} IP mismatch! Request: [{ReqIP}], Registered: [{InstanceIP}]",
             //    guid.InstanceGuid, requestIpAddress, guid.InstanceIp);
         }

@@ -69,8 +69,6 @@
 
 @code
 {
-    // TODO: Using 'server-side' paging, though, it's not really server-side paging. It solves local performance though. NOT SCALABLE.
-
     [Parameter, SupplyParameterFromQuery(Name = "search")]
     public string? SearchString { get; set; }
 

@@ -91,7 +91,6 @@ public class EndpointManager
 
     public async Task<bool> IsInstanceActive(InstanceDto instance)
     {
-        // TODO: Handle this properly if the API is offline for whatever reason. 
         return await _instance.IsInstanceActive(instance.InstanceGuid);
     }
 

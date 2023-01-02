@@ -72,7 +72,7 @@ public class EntityService : IEntityService
         {
             if (inf.Duration is null) continue;
             if (inf.InfractionStatus != InfractionStatus.Active || !(DateTimeOffset.Now > inf.Submitted + inf.Duration)) continue;
-            
+
             inf.InfractionStatus = InfractionStatus.Expired;
             updatedInfractions.Add(inf.InfractionGuid);
         }
@@ -83,7 +83,7 @@ public class EntityService : IEntityService
             .AsTracking()
             .Where(x => updatedInfractions.Contains(x.InfractionGuid))
             .ToListAsync();
-        
+
         foreach (var inf in infraction)
         {
             inf.InfractionStatus = InfractionStatus.Expired;
@@ -144,14 +144,11 @@ public class EntityService : IEntityService
 
     public async Task<ControllerEnums.ProfileReturnState> CreateOrUpdate(EntityDto request)
     {
-        // todo: fluent validation on request
         var user = await _context.Entities
             .AsTracking()
             .Include(x => x.Aliases)
             .SingleOrDefaultAsync(user => user.Identity == request.Identity);
 
-        // TODO: This check needs to be changed to reply if the instance doesn't have permission to upload
-        // TODO: Custom service should be done. Needs testing
         // Update existing user
         if (user is not null)
         {

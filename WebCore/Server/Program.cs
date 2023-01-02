@@ -5,8 +5,6 @@ using GlobalInfraction.WebCore.Server.Services;
 using GlobalInfraction.WebCore.Server.Utilities;
 using Microsoft.EntityFrameworkCore;
 
-// TODO: Without Server-side restart, custom auth doesn't have updated authkey list. So each activation needs a server-side restart.
-
 SetupConfiguration.InitConfiguration();
 var configuration = SetupConfiguration.ReadConfiguration();
 
