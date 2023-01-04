@@ -43,7 +43,7 @@ public class InfractionService : IInfractionService
 
         if (user is null || admin is null) return (ControllerEnums.ProfileReturnState.NotFound, null);
 
-        // Check if the user has an existing ban and the incoming is an unban
+        // Check if the user has an existing ban and the incoming is an unban from the server that banned them
         var infraction = await _context.Infractions
             .AsTracking()
             .Where(inf => inf.TargetId == user.Id && inf.Instance.InstanceGuid == request.Instance!.InstanceGuid)
@@ -85,7 +85,10 @@ public class InfractionService : IInfractionService
             InstanceId = instance.Id,
             TargetId = user.Id
         };
-
+        
+        var statistic = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.InfractionCount);
+        statistic.Count++;
+        _context.Statistics.Update(statistic);
         _context.Add(infractionModel);
         await _context.SaveChangesAsync();
 

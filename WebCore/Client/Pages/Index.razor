@@ -1,7 +1,8 @@
 ﻿@page "/"
+@using GlobalInfraction.WebCore.Shared.Models
 @inject HttpClient Http
 
-<PageTitle>Index</PageTitle>
+<OpenGraphComponent Title="Index" Description="Welcome to Global Infractions"/>
 
 <MudContainer Class="mt-16 px-8" MaxWidth="MaxWidth.False">
     <MudGrid>
@@ -14,17 +15,20 @@
         <MudItem xs="12" sm="6">
             <MudGrid>
                 <MudItem xs="12">
-                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;">
+                    <MudPaper Elevation="2" Class="pa-4" Style="height: 100%;">
                         <MudText Typo="Typo.h6" GutterBottom="true">Current Stats</MudText>
                         <MudList Dense="true">
-                            <MudListItem Icon="@Icons.Filled.Storage">Instances: @_instances</MudListItem>
-                            <MudListItem Icon="@Icons.Filled.Person">Users: @_users</MudListItem>
                             <MudListItem Icon="@Icons.Filled.Report">Infractions: @(_infractions)</MudListItem>
+                            <MudDivider DividerType="DividerType.Inset"/>
+                            <MudListItem Icon="@Icons.Filled.Person">Users: @_entities</MudListItem>
+                            <MudListItem Icon="@Icons.Filled.PersonAddAlt1">Alises: @(_aliases)</MudListItem>
+                            <MudListItem Icon="@Icons.Filled.Storage">Instances: @_instances</MudListItem>
+                            <MudListItem Icon="@Icons.Filled.List">Servers: @(_servers)</MudListItem>
                         </MudList>
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12">
-                    <MudPaper Elevation="2" Class="pa-4" Style="height: 200px;">
+                    <MudPaper Elevation="2" Class="pa-4" Style="height: 100%;">
                         <MudText Typo="Typo.h6" GutterBottom="true">Follow us</MudText>
                         <MudChip Size="Size.Large" Icon="@Icons.Custom.Brands.Discord" Label="true" Color="Color.Primary">
                             <a href="https://discord.gg/39rMB7YE2R">Discord</a>
@@ -44,16 +48,20 @@
 
     string _instances;
     string _infractions;
-    string _users;
+    string _entities;
+    string _aliases;
+    string _servers;
 
     protected override async Task OnInitializedAsync()
     {
-        var infractions = await Http.GetFromJsonAsync<int>("/api/Infraction/Count");
-        var instances = await Http.GetFromJsonAsync<int>("/api/Instance/Count");
-        var users = await Http.GetFromJsonAsync<int>("/api/Entity/Count");
-        _users = $"{users:N0}";
-        _instances = $"{instances:N0}";
-        _infractions = $"{infractions:N0}";
+        var statistic = await Http.GetFromJsonAsync<StatisticDto>("/api/Statistic");
+        if (statistic is null) return;
+
+        _entities = $"{statistic.EntityCount:N0}";
+        _instances = $"{statistic.InstanceCount:N0}";
+        _infractions = $"{statistic.InfractionCount:N0}";
+        _aliases = $"{statistic.AliasCount:N0}";
+        _servers = $"{statistic.ServerCount:N0}";
     }
 
 }

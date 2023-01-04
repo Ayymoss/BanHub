@@ -56,6 +56,7 @@ builder.Services.AddScoped<IInfractionService, InfractionService>();
 builder.Services.AddScoped<IInstanceService, InstanceService>();
 builder.Services.AddScoped<IDiscordWebhookService, DiscordWebhookService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
+builder.Services.AddScoped<IStatisticService, StatisticService>();
 
 builder.Host.ConfigureLogging(logging =>
 {

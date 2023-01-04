@@ -17,7 +17,8 @@ public class DataContext : DbContext
     public DbSet<EFInfraction> Infractions { get; set; }
     public DbSet<EFServer> Servers { get; set; }
     public DbSet<EFServerConnection> ServerConnections { get; set; }
-    
+    public DbSet<EFStatistic> Statistics { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<EFInstance>().ToTable("EFInstances");
@@ -27,16 +28,99 @@ public class DataContext : DbContext
         modelBuilder.Entity<EFCurrentAlias>().ToTable("EFCurrentAliases");
         modelBuilder.Entity<EFServer>().ToTable("EFServers");
         modelBuilder.Entity<EFServerConnection>().ToTable("EFServerConnections");
+        modelBuilder.Entity<EFStatistic>().ToTable("EFStatistics");
 
         modelBuilder.Entity<EFInfraction>()
             .HasOne(a => a.Target)
             .WithMany(p => p.Infractions)
             .HasForeignKey(f => f.TargetId);
 
-        var adminAlias = new EFAlias
+        #region EFStatistic
+
+        var instanceCount = new EFStatistic
+        {
+            Id = -1,
+            Statistic = "InstanceCount",
+            Count = 0
+        };
+
+        var infractionCount = new EFStatistic
+        {
+            Id = -2,
+            Statistic = "InfractionCount",
+            Count = 0
+        };
+
+        var serverCount = new EFStatistic
+        {
+            Id = -3,
+            Statistic = "ServerCount",
+            Count = 0
+        };
+
+        var entityCount = new EFStatistic
+        {
+            Id = -4,
+            Statistic = "EntityCount",
+            Count = 0
+        };
+
+        var aliasCount = new EFStatistic
+        {
+            Id = -5,
+            Statistic = "AliasCount",
+            Count = 0
+        };
+
+        modelBuilder.Entity<EFStatistic>().HasData(instanceCount);
+        modelBuilder.Entity<EFStatistic>().HasData(infractionCount);
+        modelBuilder.Entity<EFStatistic>().HasData(serverCount);
+        modelBuilder.Entity<EFStatistic>().HasData(entityCount);
+        modelBuilder.Entity<EFStatistic>().HasData(aliasCount);
+
+        #endregion
+
+        #region SystemSeed
+
+        var systemAlias = new EFAlias
         {
             Id = -1,
             EntityId = -1,
+            UserName = "> System",
+            IpAddress = "0.0.0.0",
+            Changed = DateTimeOffset.UtcNow
+        };
+
+        var systemProfile = new EFEntity
+        {
+            Id = -1,
+            Identity = "000:SYS",
+            HeartBeat = DateTimeOffset.UtcNow,
+            Reputation = 0,
+            Created = DateTimeOffset.UtcNow,
+            WebRole = WebRole.User,
+            Infractions = new List<EFInfraction>()
+        };
+
+        var systemCurrentAlias = new EFCurrentAlias
+        {
+            Id = -1,
+            EntityId = -1,
+            AliasId = -1
+        };
+
+        modelBuilder.Entity<EFEntity>().HasData(systemProfile);
+        modelBuilder.Entity<EFAlias>().HasData(systemAlias);
+        modelBuilder.Entity<EFCurrentAlias>().HasData(systemCurrentAlias);
+
+        #endregion
+
+        #region IW4MAdminSeed
+
+        var adminAlias = new EFAlias
+        {
+            Id = -2,
+            EntityId = -2,
             UserName = "IW4MAdmin",
             IpAddress = "0.0.0.0",
             Changed = DateTimeOffset.UtcNow
@@ -44,7 +128,7 @@ public class DataContext : DbContext
 
         var adminProfile = new EFEntity
         {
-            Id = -1,
+            Id = -2,
             Identity = "0:UKN",
             HeartBeat = DateTimeOffset.UtcNow,
             Reputation = 0,
@@ -55,28 +139,20 @@ public class DataContext : DbContext
 
         var adminCurrentAlias = new EFCurrentAlias
         {
-            Id = -1,
-            EntityId = -1,
-            AliasId = -1
+            Id = -2,
+            EntityId = -2,
+            AliasId = -2
         };
 
         modelBuilder.Entity<EFEntity>().HasData(adminProfile);
         modelBuilder.Entity<EFAlias>().HasData(adminAlias);
         modelBuilder.Entity<EFCurrentAlias>().HasData(adminCurrentAlias);
 
+        #endregion
+
         // TODO: Remove once tested.
 
-        #region TEMPORARY_SEED_DATA
-
-        var adminAliasTwo = new EFAlias
-        {
-            Id = -2,
-            EntityId = -1,
-            UserName = "AdminMan",
-            IpAddress = "0.0.0.0",
-            Changed = DateTimeOffset.UtcNow + TimeSpan.FromHours(2)
-        };
-
+        #region TemporarySeed
         var instance = new EFInstance
         {
             Id = -1,
@@ -104,10 +180,8 @@ public class DataContext : DbContext
             InstanceId = -1
         };
 
-        modelBuilder.Entity<EFAlias>().HasData(adminAliasTwo);
         modelBuilder.Entity<EFInstance>().HasData(instance);
         modelBuilder.Entity<EFInfraction>().HasData(infraction);
-
         #endregion
 
         base.OnModelCreating(modelBuilder);

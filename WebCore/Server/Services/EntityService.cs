@@ -187,6 +187,9 @@ public class EntityService : IEntityService
                     EntityId = user.Id
                 };
 
+                var aliasStatistic = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.AliasCount);
+                aliasStatistic.Count++;
+                _context.Statistics.Update(aliasStatistic);
                 // update this to save to the Alias table instead of the user's nav prop
                 user.Aliases.Add(updatedAlias);
                 mostRecentAlias.Alias = updatedAlias;
@@ -246,6 +249,9 @@ public class EntityService : IEntityService
             _context.ServerConnections.Add(server);
         }
 
+        var entityStatistic = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.EntityCount);
+        entityStatistic.Count++;
+        _context.Statistics.Update(entityStatistic);
         entity.CurrentAlias = currentAlias;
         _context.CurrentAliases.Add(currentAlias);
         await _context.SaveChangesAsync();

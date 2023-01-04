@@ -1,0 +1,22 @@
+﻿@inject NavigationManager NavigationManager
+
+<PageTitle>@Title | Global Infractions</PageTitle>
+
+<head>
+    <title>@Title | Global Infractions</title>
+    <meta property="og:title" content="@Title | Global Infractions"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:url" content="@NavigationManager.Uri"/>
+    <meta property="og:image" content="/images/logo.png"/>
+    <meta property="og:description" content="@Description"/>
+</head>
+
+@code {
+
+    [Parameter]
+    public string Title { get; set; } = null!;
+
+    [Parameter]
+    public string Description { get; set; } = null!;
+
+}

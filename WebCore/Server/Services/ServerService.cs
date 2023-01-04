@@ -33,6 +33,9 @@ public class ServerService : IServerService
             InstanceId = instance.Id,
         };
 
+        var statistic = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.ServerCount);
+        statistic.Count++;
+        _context.Statistics.Update(statistic);
         _context.Servers.Add(efServer);
         await _context.SaveChangesAsync();
         return ControllerEnums.ProfileReturnState.Ok;
@@ -50,7 +53,7 @@ public class ServerService : IServerService
                 ServerPort = x.ServerPort
             })
             .FirstOrDefaultAsync();
-        
+
         return server is null ? (ControllerEnums.ProfileReturnState.NotFound, null) : (ControllerEnums.ProfileReturnState.Ok, server);
     }
 }

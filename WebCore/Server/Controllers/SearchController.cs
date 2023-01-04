@@ -22,6 +22,6 @@ public class SearchController : Controller
     {
         if (query.Length < 3) return BadRequest();
         var result = await _searchService.Search(query);
-        return result;
+        return Ok(result);
     }
 }

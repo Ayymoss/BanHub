@@ -14,4 +14,13 @@ public abstract class ControllerEnums
         NotModified,
         Unauthorized
     }
+
+    public enum StatisticType
+    {
+        AliasCount = -5,
+        EntityCount = -4,
+        ServerCount = -3,
+        InfractionCount = -2,
+        InstanceCount = -1
+    }
 }

@@ -43,6 +43,10 @@ public class InstanceService : IInstanceService
                 Active = false,
                 HeartBeat = DateTimeOffset.UtcNow
             });
+            
+            var statistic = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.InstanceCount);
+            statistic.Count++;
+            _context.Statistics.Update(statistic);
 
             await _context.SaveChangesAsync();
 
