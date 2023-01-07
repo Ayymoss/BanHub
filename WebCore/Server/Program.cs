@@ -16,37 +16,29 @@ builder.WebHost.ConfigureKestrel(options =>
     options.ListenLocalhost(8123);
 });
 #else
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(configuration.WebBind);
-});
+builder.WebHost.ConfigureKestrel(options => { options.ListenAnyIP(configuration.WebBind); });
 #endif
 
 // TODO: TOGGLE MANUALLY - Migrations don't seem to honour build state
-configuration.DatabaseType = DatabaseType.Sqlite;
+configuration.Database.Database = "GlobalInfractionsDevelopment";
 
-if (configuration.DatabaseType is DatabaseType.Sqlite)
-{
-    builder.Services.AddDbContext<DataContext>(options => options.UseSqlite("Data Source=GlobalBan.db"));
-}
-else
-{
-    builder.Services.AddDbContext<DataContext>(
-        options =>
-        {
-            options.UseNpgsql($"Host={configuration.Database.HostName};" +
-                              $"Port={configuration.Database.Port};" +
-                              $"Username={configuration.Database.UserName};" +
-                              $"Password={configuration.Database.Password};" +
-                              $"Database={configuration.Database.Database}");
-        });
-}
+builder.Services.AddDbContext<DataContext>(
+    options =>
+    {
+        options.UseNpgsql($"Host={configuration.Database.HostName};" +
+                          $"Port={configuration.Database.Port};" +
+                          $"Username={configuration.Database.UserName};" +
+                          $"Password={configuration.Database.Password};" +
+                          $"Database={configuration.Database.Database}");
+    });
+
 
 builder.Services.AddLogging();
 
 builder.Services.AddSingleton(configuration);
 builder.Services.AddSingleton<ApiKeyCache>();
 builder.Services.AddSingleton<PluginAuthentication>();
+builder.Services.AddSingleton<StatisticsTrackingService>();
 
 builder.Services.AddTransient<ApiKeyMiddleware>();
 
@@ -57,6 +49,7 @@ builder.Services.AddScoped<IInstanceService, InstanceService>();
 builder.Services.AddScoped<IDiscordWebhookService, DiscordWebhookService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IStatisticService, StatisticService>();
+builder.Services.AddScoped<IServerService, ServerService>();
 
 builder.Host.ConfigureLogging(logging =>
 {

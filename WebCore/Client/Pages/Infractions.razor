@@ -147,7 +147,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _infractions = await Http.GetFromJsonAsync<List<InfractionDto>>("/api/Infraction/All");
+        _infractions = await Http.GetFromJsonAsync<List<InfractionDto>>("/api/v2/Infraction/All");
         if (_infractions is null || !_infractions.Any()) Empty = true;
         if (SearchString is not null) _search = SearchString;
     }

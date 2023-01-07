@@ -1,6 +1,7 @@
 ﻿using GlobalInfraction.WebCore.Server.Context;
 using GlobalInfraction.WebCore.Server.Enums;
 using GlobalInfraction.WebCore.Server.Interfaces;
+using GlobalInfraction.WebCore.Server.Models;
 using GlobalInfraction.WebCore.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,16 +10,96 @@ namespace GlobalInfraction.WebCore.Server.Services;
 public class StatisticService : IStatisticService
 {
     private readonly DataContext _context;
+    private readonly StatisticsTrackingService _statisticsTrackingService;
 
-    public StatisticService(DataContext context)
+    private readonly SemaphoreSlim _load = new(1, 1);
+    private readonly SemaphoreSlim _save = new(1, 1);
+
+    public StatisticService(DataContext context, StatisticsTrackingService statisticsTrackingService)
     {
         _context = context;
+        _statisticsTrackingService = statisticsTrackingService;
+    }
+
+
+    private async Task EnsureInitialised()
+    {
+        try
+        {
+            await _load.WaitAsync();
+
+            if (!_statisticsTrackingService.Loaded)
+            {
+                var result = await ReadStatistics();
+
+                _statisticsTrackingService.Infractions = result.InfractionCount!.Value;
+                _statisticsTrackingService.Servers = result.ServerCount!.Value;
+                _statisticsTrackingService.Instances = result.InstanceCount!.Value;
+                _statisticsTrackingService.Entities = result.EntityCount!.Value;
+                _statisticsTrackingService.Loaded = true;
+            }
+        }
+        finally
+        {
+            if (_load.CurrentCount == 0) _load.Release();
+        }
+    }
+
+    public async Task UpdateStatistic(ControllerEnums.StatisticType statistic)
+    {
+        if (!_statisticsTrackingService.Loaded) await EnsureInitialised();
+
+        switch (statistic)
+        {
+            case ControllerEnums.StatisticType.InfractionCount:
+                Interlocked.Increment(ref _statisticsTrackingService.Infractions);
+                break;
+            case ControllerEnums.StatisticType.ServerCount:
+                Interlocked.Increment(ref _statisticsTrackingService.Servers);
+                break;
+            case ControllerEnums.StatisticType.InstanceCount:
+                Interlocked.Increment(ref _statisticsTrackingService.Instances);
+                break;
+            case ControllerEnums.StatisticType.EntityCount:
+                Interlocked.Increment(ref _statisticsTrackingService.Entities);
+                break;
+        }
+
+        if (_statisticsTrackingService.LastSave > DateTimeOffset.UtcNow.AddSeconds(10))
+        {
+            try
+            {
+                await _save.WaitAsync();
+
+                if (_statisticsTrackingService.LastSave > DateTimeOffset.UtcNow.AddSeconds(10))
+                {
+                    await WriteStatistics();
+                    _statisticsTrackingService.LastSave = DateTimeOffset.UtcNow;
+                }
+            }
+            finally
+            {
+                if (_save.CurrentCount == 0) _save.Release();
+            }
+        }
     }
 
     public async Task<StatisticDto> GetStatistics()
     {
+        if (!_statisticsTrackingService.Loaded) await EnsureInitialised();
+
+        return new StatisticDto
+        {
+            InfractionCount = _statisticsTrackingService.Infractions,
+            ServerCount = _statisticsTrackingService.Servers,
+            InstanceCount = _statisticsTrackingService.Instances,
+            EntityCount = _statisticsTrackingService.Entities
+        };
+    }
+
+    private async Task<StatisticDto> ReadStatistics()
+    {
         var entity = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.EntityCount);
-        var alias = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.AliasCount);
         var infraction = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.InfractionCount);
         var instance = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.InstanceCount);
         var server = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.ServerCount);
@@ -26,10 +107,29 @@ public class StatisticService : IStatisticService
         {
             EntityCount = entity.Count,
             InstanceCount = instance.Count,
-            AliasCount = alias.Count,
             ServerCount = server.Count,
             InfractionCount = infraction.Count
         };
         return statistics;
+    }
+
+    private async Task WriteStatistics()
+    {
+        var entity = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.EntityCount);
+        var infraction = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.InfractionCount);
+        var instance = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.InstanceCount);
+        var server = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.ServerCount);
+
+        entity.Count = _statisticsTrackingService.Entities;
+        infraction.Count = _statisticsTrackingService.Infractions;
+        instance.Count = _statisticsTrackingService.Instances;
+        server.Count = _statisticsTrackingService.Servers;
+
+        _context.Statistics.Update(entity);
+        _context.Statistics.Update(infraction);
+        _context.Statistics.Update(instance);
+        _context.Statistics.Update(server);
+
+        await _context.SaveChangesAsync();
     }
 }

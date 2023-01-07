@@ -20,7 +20,7 @@ public class HeartBeatManager
     public void HeartbeatTimer()
     {
         var timer = new Timer();
-        timer.Interval = 30000;
+        timer.Interval = 240_000;
         timer.AutoReset = true;
         timer.Elapsed += InstanceHeartBeat;
         timer.Elapsed += ClientHeartBeat;

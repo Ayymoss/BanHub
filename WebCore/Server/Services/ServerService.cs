@@ -10,10 +10,12 @@ namespace GlobalInfraction.WebCore.Server.Services;
 public class ServerService : IServerService
 {
     private readonly DataContext _context;
+    private readonly IStatisticService _statisticService;
 
-    public ServerService(DataContext context)
+    public ServerService(DataContext context, IStatisticService statisticService)
     {
         _context = context;
+        _statisticService = statisticService;
     }
 
     public async Task<ControllerEnums.ProfileReturnState> Add(ServerDto request)
@@ -33,9 +35,8 @@ public class ServerService : IServerService
             InstanceId = instance.Id,
         };
 
-        var statistic = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.ServerCount);
-        statistic.Count++;
-        _context.Statistics.Update(statistic);
+        await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.EntityCount);
+        
         _context.Servers.Add(efServer);
         await _context.SaveChangesAsync();
         return ControllerEnums.ProfileReturnState.Ok;

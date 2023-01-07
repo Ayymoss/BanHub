@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace GlobalInfraction.WebCore.Server.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v2/[controller]")]
 public class EntityController : Controller
 {
     private readonly IEntityService _entityService;
@@ -28,10 +28,10 @@ public class EntityController : Controller
         };
     }
 
-    [HttpGet("All")]
-    public async Task<ActionResult<IEnumerable<EntityDto>>> GetEntities()
+    [HttpPost("All")]
+    public async Task<ActionResult<IEnumerable<EntityDto>>> GetEntities([FromBody] PaginationDto pagination)
     {
-        return Ok(await _entityService.GetUsers());
+        return Ok(await _entityService.Pagination(pagination));
     }
 
     [HttpGet]
@@ -47,6 +47,13 @@ public class EntityController : Controller
     {
         var result = await _entityService.HasEntity(identity);
         if (!result) return NotFound(result);
+        return Ok(result);
+    }
+    
+    [HttpGet("Online")]
+    public async Task<ActionResult<int>> GetOnlineCount()
+    {
+        var result = await _entityService.GetOnlineCount();
         return Ok(result);
     }
 }

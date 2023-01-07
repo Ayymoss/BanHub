@@ -74,7 +74,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _instances = await Http.GetFromJsonAsync<List<InstanceDto>>("/api/Instance/All");
+        _instances = await Http.GetFromJsonAsync<List<InstanceDto>>("/api/v2/Instance/All");
         if (_instances is null || !_instances.Any()) Empty = true;
         if (SearchString is not null) _search = SearchString;
     }

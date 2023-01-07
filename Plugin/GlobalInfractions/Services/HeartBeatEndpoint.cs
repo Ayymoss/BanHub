@@ -11,10 +11,11 @@ public class HeartBeatEndpoint
     private readonly ConfigurationModel _configurationModel;
     private readonly HttpClient _httpClient = new();
 #if DEBUG
-    private const string ApiHost = "http://localhost:8123";
+    private const string ApiHost = "http://localhost:8123/api/v2";
 #else
-    private const string ApiHost = "https://globalinfractions.com";
+    private const string ApiHost = "https://globalinfractions.com/api/v2";
 #endif
+
 
     public HeartBeatEndpoint(ConfigurationModel configurationModel)
     {
@@ -26,7 +27,7 @@ public class HeartBeatEndpoint
         try
         {
             var response = await _httpClient
-                .PostAsJsonAsync($"{ApiHost}/api/HeartBeat/Instance", instance);
+                .PostAsJsonAsync($"{ApiHost}/HeartBeat/Instance", instance);
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException e)
@@ -42,7 +43,7 @@ public class HeartBeatEndpoint
         try
         {
             var response = await _httpClient
-                .PostAsJsonAsync($"{ApiHost}/api/HeartBeat/Entities?authToken={_configurationModel.ApiKey}", entity);
+                .PostAsJsonAsync($"{ApiHost}/HeartBeat/Entities?authToken={_configurationModel.ApiKey}", entity);
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException e)

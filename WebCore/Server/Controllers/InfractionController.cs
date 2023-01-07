@@ -3,12 +3,11 @@ using GlobalInfraction.WebCore.Server.Interfaces;
 using GlobalInfraction.WebCore.Server.Services;
 using GlobalInfraction.WebCore.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
-using MudBlazor;
 
 namespace GlobalInfraction.WebCore.Server.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v2/[controller]")]
 public class InfractionController : Controller
 {
     private readonly IInfractionService _infractionService;
@@ -67,5 +66,12 @@ public class InfractionController : Controller
             ControllerEnums.ProfileReturnState.NotFound => NotFound(),
             _ => BadRequest() // Should never happen
         };
+    }
+    
+    [HttpGet("Count")]
+    public async Task<ActionResult<InstanceDto>> GetInfractionsDayCount()
+    {
+        var result = await _infractionService.GetInfractionDayCount();
+        return Ok(result);
     }
 }

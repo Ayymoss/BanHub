@@ -12,12 +12,15 @@ namespace GlobalInfraction.WebCore.Server.Services;
 public class InfractionService : IInfractionService
 {
     private readonly IDiscordWebhookService _discordWebhook;
+    private readonly IStatisticService _statisticService;
     private readonly DataContext _context;
     private readonly IEntityService _entityService;
 
-    public InfractionService(DataContext context, IEntityService entityService, IDiscordWebhookService discordWebhook)
+    public InfractionService(DataContext context, IEntityService entityService, IDiscordWebhookService discordWebhook,
+        IStatisticService statisticService)
     {
         _discordWebhook = discordWebhook;
+        _statisticService = statisticService;
         _context = context;
         _entityService = entityService;
     }
@@ -32,6 +35,8 @@ public class InfractionService : IInfractionService
         var admin = await _context.Entities
             .FirstOrDefaultAsync(profile => profile.Identity == request.Admin!.Identity);
 
+        // TODO: This is redundant reused code. Needs cleaning up.
+        // Used for if the incoming infraction was set to someone who hasn't yet been added to the database.
         if (user is null)
         {
             await _entityService.CreateOrUpdate(request.Target!);
@@ -85,10 +90,10 @@ public class InfractionService : IInfractionService
             InstanceId = instance.Id,
             TargetId = user.Id
         };
-        
-        var statistic = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.InfractionCount);
-        statistic.Count++;
-        _context.Statistics.Update(statistic);
+
+        await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.EntityCount);
+        user.Strike++;
+        _context.Entities.Update(user);
         _context.Add(infractionModel);
         await _context.SaveChangesAsync();
 
@@ -191,9 +196,11 @@ public class InfractionService : IInfractionService
             : (ControllerEnums.ProfileReturnState.Ok, infractions);
     }
 
-    public async Task<int> GetInfractionCount()
+    public async Task<int> GetInfractionDayCount()
     {
-        return await _context.Infractions.CountAsync();
+        return await _context.Infractions
+            .Where(x => x.Submitted + TimeSpan.FromDays(1) > DateTimeOffset.UtcNow)
+            .CountAsync();
     }
 
     public async Task<bool> SubmitEvidence(InfractionDto request)

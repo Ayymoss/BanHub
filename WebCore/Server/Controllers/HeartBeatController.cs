@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace GlobalInfraction.WebCore.Server.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v2/[controller]")]
 public class HeartBeatController : Controller
 {
     private readonly IHeartBeatService _heartBeatService;

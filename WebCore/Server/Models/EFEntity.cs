@@ -16,9 +16,9 @@ public class EFEntity
     public string Identity { get; init; } = null!;
 
     /// <summary>
-    /// The player's reputation
+    /// The player's strike count
     /// </summary>
-    public int Reputation { get; set; } = 10;
+    public int Strike { get; set; }
 
     /// <summary>
     /// The last time the player was seen

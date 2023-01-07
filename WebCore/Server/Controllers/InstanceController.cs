@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace GlobalInfraction.WebCore.Server.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v2/[controller]")]
 public class InstanceController : Controller
 {
     private readonly IInstanceService _instanceService;
@@ -25,16 +25,17 @@ public class InstanceController : Controller
     [HttpPost]
     public async Task<ActionResult<string>> CreateOrUpdate([FromBody] InstanceDto request)
     {
-        var requestIpAddress = Request.Headers["HTTP_X_FORWARDED_FOR"].ToString() ?? Request.Headers["REMOTE_ADDR"].ToString();
+        // This just doesn't work at all. Why!?
+        //var requestIpAddress = Request.Headers["HTTP_X_FORWARDED_FOR"].ToString() ?? Request.Headers["REMOTE_ADDR"].ToString();
 
-        var result = await _instanceService.CreateOrUpdate(request, requestIpAddress);
+        var result = await _instanceService.CreateOrUpdate(request, request.InstanceIp);
         return result.Item1 switch
         {
-            ControllerEnums.ProfileReturnState.Created => StatusCode(201, result.Item2),
-            ControllerEnums.ProfileReturnState.BadRequest => BadRequest(result.Item2),
-            ControllerEnums.ProfileReturnState.Conflict => StatusCode(409, result.Item2),
-            ControllerEnums.ProfileReturnState.Accepted => StatusCode(202, result.Item2),
-            ControllerEnums.ProfileReturnState.Ok => Ok(result.Item2),
+            ControllerEnums.ProfileReturnState.Created => StatusCode(201, result.Item2), // New, added
+            ControllerEnums.ProfileReturnState.BadRequest => BadRequest(result.Item2), // ??
+            ControllerEnums.ProfileReturnState.Conflict => StatusCode(409, result.Item2), // Conflicting GUIDs
+            ControllerEnums.ProfileReturnState.Accepted => StatusCode(202, result.Item2), // Activated
+            ControllerEnums.ProfileReturnState.Ok => Ok(result.Item2), // Not activated
             _ => BadRequest() // Should never happen
         };
     }
@@ -47,8 +48,8 @@ public class InstanceController : Controller
         {
             ControllerEnums.ProfileReturnState.NotFound => NotFound(),
             ControllerEnums.ProfileReturnState.BadRequest => BadRequest(),
-            ControllerEnums.ProfileReturnState.Accepted => Accepted(),
-            ControllerEnums.ProfileReturnState.Unauthorized => Unauthorized(),
+            ControllerEnums.ProfileReturnState.Accepted => Accepted(true), // Activated
+            ControllerEnums.ProfileReturnState.Unauthorized => Unauthorized(false),
             _ => BadRequest() // Should never happen
         };
     }

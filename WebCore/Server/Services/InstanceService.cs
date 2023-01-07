@@ -13,12 +13,14 @@ public class InstanceService : IInstanceService
     private readonly DataContext _context;
     private readonly ApiKeyCache _apiKeyCache;
     private readonly IDiscordWebhookService _discordWebhook;
+    private readonly IStatisticService _statisticService;
 
-    public InstanceService(DataContext context, ApiKeyCache apiKeyCache, IDiscordWebhookService discordWebhook)
+    public InstanceService(DataContext context, ApiKeyCache apiKeyCache, IDiscordWebhookService discordWebhook, IStatisticService statisticService )
     {
         _context = context;
         _apiKeyCache = apiKeyCache;
         _discordWebhook = discordWebhook;
+        _statisticService = statisticService;
     }
 
     public async Task<(ControllerEnums.ProfileReturnState, string)> CreateOrUpdate(InstanceDto request, string? requestIpAddress)
@@ -44,10 +46,7 @@ public class InstanceService : IInstanceService
                 HeartBeat = DateTimeOffset.UtcNow
             });
             
-            var statistic = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.InstanceCount);
-            statistic.Count++;
-            _context.Statistics.Update(statistic);
-
+            await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.EntityCount);
             await _context.SaveChangesAsync();
 
             return (ControllerEnums.ProfileReturnState.Created, $"Instance added {request.InstanceGuid}");

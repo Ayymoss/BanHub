@@ -14,19 +14,21 @@ public class DiscordWebhookService : IDiscordWebhookService
         _configuration = configuration;
     }
 
-    public async Task CreateInfractionHook(InfractionScope scope, InfractionType infractionType, Guid infractionGuid, string identity, string
-        username, string reason)
+    public async Task CreateInfractionHook(InfractionScope scope, InfractionType infractionType, Guid infractionGuid, string identity, 
+        string username, string reason)
     {
         Color color;
         switch (infractionType)
         {
+            case InfractionType.Unban:
+                color = Color.Blue;
+                break;
             case InfractionType.Warn:
+                color = Color.Default;
+                break;
             case InfractionType.Mute:
             case InfractionType.Kick:
                 color = Color.LightOrange;
-                break;
-            case InfractionType.Unban:
-                color = Color.Blue;
                 break;
             case InfractionType.TempBan:
                 color = Color.Orange;
@@ -43,7 +45,7 @@ public class DiscordWebhookService : IDiscordWebhookService
         {
             Title = $"Infraction: {infractionType}",
             Description = "Click the link to view the infraction.\n" +
-                          $"**Infraction:** [View Infraction](https://globalinfractions.com/Infractions?search={identity})\n" +
+                          $"**Infraction:** [View Profile](https://globalinfractions.com/Profile/{identity})\n" +
                           $"**Identity:** {identity}\n" +
                           $"**Username:** {username}\n" +
                           $"**Reason:** {reason}",

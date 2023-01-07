@@ -57,7 +57,6 @@ public static class SetupConfiguration
             Version = newConfigVersion,
             InfractionWebHook = configuration.InfractionWebHook,
             InstanceWebHook = configuration.InstanceWebHook,
-            DatabaseType = configuration.DatabaseType,
             Database = configuration.Database
         };
 

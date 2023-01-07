@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using System.Text.Json;
 using GlobalInfractions.Configuration;
 using GlobalInfractions.Models;
 
@@ -9,9 +10,9 @@ public class ServerEndpoint
     private readonly ConfigurationModel _configurationModel;
     private readonly HttpClient _httpClient = new();
 #if DEBUG
-    private const string ApiHost = "http://localhost:8123";
+    private const string ApiHost = "http://localhost:8123/api/v2";
 #else
-    private const string ApiHost = "https://globalinfractions.com";
+    private const string ApiHost = "https://globalinfractions.com/api/v2";
 #endif
 
     public ServerEndpoint(ConfigurationModel configurationModel)
@@ -24,7 +25,7 @@ public class ServerEndpoint
         try
         {
             var response = await _httpClient
-                .PostAsJsonAsync($"{ApiHost}/api/Infraction?authToken={_configurationModel.ApiKey}", server);
+                .PostAsJsonAsync($"{ApiHost}/Server?authToken={_configurationModel.ApiKey}", server);
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException e)
@@ -33,24 +34,5 @@ public class ServerEndpoint
         }
 
         return false;
-    }
-
-    public async Task<ServerDto?> GetEntity(string serverId)
-    {
-        try
-        {
-            var response = await _httpClient.GetAsync($"{ApiHost}/api/Server?serverId={serverId}");
-
-            if (!response.IsSuccessStatusCode) return null;
-
-            var json = await response.Content.ReadFromJsonAsync<ServerDto>();
-            return json;
-        }
-        catch (HttpRequestException e)
-        {
-            Console.WriteLine($"[{Plugin.PluginName}] Error getting server: {e.Message}");
-        }
-
-        return null;
     }
 }

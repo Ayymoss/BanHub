@@ -50,7 +50,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _searchResults = await Http.GetFromJsonAsync<List<SearchDto>>($"/api/Search?query={Query}");
+        _searchResults = await Http.GetFromJsonAsync<List<SearchDto>>($"/api/v2/Search?query={Query}");
         if (_searchResults is null || !_searchResults.Any()) _empty = true;
     }
 }

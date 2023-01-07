@@ -11,10 +11,11 @@ public class InfractionEndpoint
     private readonly ConfigurationModel _configurationModel;
     private readonly HttpClient _httpClient = new();
 #if DEBUG
-    private const string ApiHost = "http://localhost:8123";
+    private const string ApiHost = "http://localhost:8123/api/v2";
 #else
-    private const string ApiHost = "https://globalinfractions.com";
+    private const string ApiHost = "https://globalinfractions.com/api/v2";
 #endif
+
 
     public InfractionEndpoint(ConfigurationModel configurationModel)
     {
@@ -26,7 +27,7 @@ public class InfractionEndpoint
         try
         {
             var response = await _httpClient
-                .PostAsJsonAsync($"{ApiHost}/api/Infraction?authToken={_configurationModel.ApiKey}", infraction);
+                .PostAsJsonAsync($"{ApiHost}/Infraction?authToken={_configurationModel.ApiKey}", infraction);
             var preGuid = await response.Content.ReadAsStringAsync();
             var parsedState = Guid.TryParse(preGuid.Replace("\"", ""), out var guid);
             return (response.IsSuccessStatusCode && parsedState, guid);
@@ -44,7 +45,7 @@ public class InfractionEndpoint
         try
         {
             var response = await _httpClient
-                .PostAsJsonAsync($"{ApiHost}/api/Infraction/Evidence?authToken={_configurationModel.ApiKey}", infraction);
+                .PostAsJsonAsync($"{ApiHost}/Infraction/Evidence?authToken={_configurationModel.ApiKey}", infraction);
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException e)

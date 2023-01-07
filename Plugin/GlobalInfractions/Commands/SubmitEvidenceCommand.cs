@@ -14,7 +14,7 @@ public class SubmitEvidenceCommand : Command
         Name = "submitevidence";
         Description = "Submit evidence for a players ban";
         Alias = "evidence";
-        Permission = EFClient.Permission.Moderator;
+        Permission = EFClient.Permission.SeniorAdmin;
         RequiresTarget = false;
         Arguments = new[]
         {

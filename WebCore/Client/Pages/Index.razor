@@ -10,6 +10,8 @@
             <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
                 <MudText Align="Align.Center" Typo="Typo.h3" GutterBottom="true">Welcome to Global Infractions!</MudText>
                 <MudText Align="Align.Center" Class="mb-8">We provide a service which aims to clean up the state of 3rd party Call of Duty clients.</MudText>
+                <MudDivider/>
+                // Last 3 Infractions
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6">
@@ -21,7 +23,6 @@
                             <MudListItem Icon="@Icons.Filled.Report">Infractions: @(_infractions)</MudListItem>
                             <MudDivider DividerType="DividerType.Inset"/>
                             <MudListItem Icon="@Icons.Filled.Person">Users: @_entities</MudListItem>
-                            <MudListItem Icon="@Icons.Filled.PersonAddAlt1">Alises: @(_aliases)</MudListItem>
                             <MudListItem Icon="@Icons.Filled.Storage">Instances: @_instances</MudListItem>
                             <MudListItem Icon="@Icons.Filled.List">Servers: @(_servers)</MudListItem>
                         </MudList>
@@ -49,18 +50,16 @@
     string _instances;
     string _infractions;
     string _entities;
-    string _aliases;
     string _servers;
 
     protected override async Task OnInitializedAsync()
     {
-        var statistic = await Http.GetFromJsonAsync<StatisticDto>("/api/Statistic");
+        var statistic = await Http.GetFromJsonAsync<StatisticDto>("/api/v2/Statistic");
         if (statistic is null) return;
 
         _entities = $"{statistic.EntityCount:N0}";
         _instances = $"{statistic.InstanceCount:N0}";
         _infractions = $"{statistic.InfractionCount:N0}";
-        _aliases = $"{statistic.AliasCount:N0}";
         _servers = $"{statistic.ServerCount:N0}";
     }
 

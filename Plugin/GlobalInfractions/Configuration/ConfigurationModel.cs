@@ -6,12 +6,13 @@ namespace GlobalInfractions.Configuration;
 
 public class ConfigurationModel : IBaseConfiguration
 {
+    public bool PluginEnabled { get; set; } = true;
     [JsonPropertyName("ApiKeyDoNotChange")]
     public Guid ApiKey { get; set; } = Guid.NewGuid();
-
     public string? InstanceNameOverride { get; set; }
-
+    public bool PrintInfractionsToConsole { get; set; } = false;
     public TranslationStrings Translations { get; set; } = new();
+    public List<int> WhitelistedClientIds { get; set; } = new();
 
     public string Name() => "GlobalInfractionsSettings";
     public IBaseConfiguration Generate() => new ConfigurationModel();

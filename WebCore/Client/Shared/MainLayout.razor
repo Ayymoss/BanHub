@@ -1,6 +1,7 @@
 ﻿@using GlobalInfraction.WebCore.Client.Theme
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
+@inject HttpClient Http
 @inherits LayoutComponentBase
 
 
@@ -11,6 +12,8 @@
 <MudLayout>
     <MudAppBar Elevation="0">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())"/>
+        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Person" Color="Color.Info">Online: @_online</MudChip>
+        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Block" Color="Color.Error">Day Global Bans: @_bans</MudChip>
         <MudSpacer/>
         <MudItem xs="32">
             <MudTextField @bind-Value="_searchValue" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" Placeholder="Search" Variant="Variant.Outlined" Adornment="Adornment.End" Margin="Margin.Dense" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Info"/>
@@ -37,7 +40,10 @@
 
     private readonly MudTheme _theme = Theme.LandingPageTheme();
 
-    bool _drawerOpen = true;
+    private int _online;
+    private int _bans;
+
+    private bool _drawerOpen = true;
 
     void DrawerToggle()
     {
@@ -56,6 +62,23 @@
 
             NavigationManager.NavigateTo($"/Search?q={_searchValue}");
         }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var online = await Http.GetAsync("/api/v2/Entity/Online");
+        var bans = await Http.GetAsync("/api/v2/Infraction/Count");
+
+        var onlineResult = await online.Content.ReadAsStringAsync();
+        var bansResult = await bans.Content.ReadAsStringAsync();
+
+        _ = int.TryParse(onlineResult, out var onlineParsed);
+        _ = int.TryParse(bansResult, out var banParsed);
+
+        _online = onlineParsed;
+        _bans = banParsed;
+
+        await base.OnInitializedAsync();
     }
 
 }

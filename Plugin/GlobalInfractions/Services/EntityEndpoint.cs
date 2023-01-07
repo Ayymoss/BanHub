@@ -12,9 +12,9 @@ public class EntityEndpoint
     private readonly ConfigurationModel _configurationModel;
     private readonly HttpClient _httpClient = new();
 #if DEBUG
-    private const string ApiHost = "http://localhost:8123";
+    private const string ApiHost = "http://localhost:8123/api/v2";
 #else
-    private const string ApiHost = "https://globalinfractions.com";
+    private const string ApiHost = "https://globalinfractions.com/api/v2";
 #endif
 
     public EntityEndpoint(ConfigurationModel configurationModel)
@@ -26,7 +26,7 @@ public class EntityEndpoint
     {
         try
         {
-            var response = await _httpClient.GetAsync($"{ApiHost}/api/Entity?identity={identity}");
+            var response = await _httpClient.GetAsync($"{ApiHost}/Entity?identity={identity}");
 
             if (!response.IsSuccessStatusCode) return null;
 
@@ -45,7 +45,7 @@ public class EntityEndpoint
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync($"{ApiHost}/api/Entity?authToken={_configurationModel.ApiKey}", entity);
+            var response = await _httpClient.PostAsJsonAsync($"{ApiHost}/Entity?authToken={_configurationModel.ApiKey}", entity);
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException e)
@@ -60,7 +60,7 @@ public class EntityEndpoint
     {
         try
         {
-            var response = await _httpClient.GetAsync($"{ApiHost}/api/Entity/Exists?identity={identity}");
+            var response = await _httpClient.GetAsync($"{ApiHost}/Entity/Exists?identity={identity}");
             if (!response.IsSuccessStatusCode) return false;
             var content = await response.Content.ReadAsStringAsync();
             var boolParse = bool.TryParse(content, out var result);

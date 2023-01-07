@@ -26,14 +26,14 @@ else
                     {
                         <MudTable Items="@_entity.Infractions" Hover="true" FixedHeader="true" Height="100%" @ref="mudTable" OnRowClick="RowClickEvent" T="InfractionDto">
                             <ToolBarContent>
-                                <MudText Typo="Typo.h6">Click a infraction to view</MudText>
+                                <MudText Typo="Typo.h6">Click an infraction for info</MudText>
                             </ToolBarContent>
                             <HeaderContent>
                                 <MudTh>
                                     <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Admin.Alias.UserName)">Admin</MudTableSortLabel>
                                 </MudTh>
                                 <MudTh>
-                                    <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<InfractionDto, object>(x => x.Submitted)">Reason</MudTableSortLabel>
+                                    <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Reason)">Reason</MudTableSortLabel>
                                 </MudTh>
                                 <MudTh>
                                     <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionType)">Type</MudTableSortLabel>
@@ -41,12 +41,16 @@ else
                                 <MudTh>
                                     <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionScope)">Scope</MudTableSortLabel>
                                 </MudTh>
+                                <MudTh>
+                                    <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<InfractionDto, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
+                                </MudTh>
                             </HeaderContent>
                             <RowTemplate>
                                 <MudTd DataLabel="Admin">@context.Admin.Alias.UserName</MudTd>
                                 <MudTd DataLabel="Reason">@context.Reason</MudTd>
                                 <MudTd DataLabel="Type">@context.InfractionType.ToString()</MudTd>
                                 <MudTd DataLabel="Scope">@context.InfractionScope.ToString()</MudTd>
+                                <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
                             </RowTemplate>
                         </MudTable>
                     }
@@ -60,19 +64,29 @@ else
                             <MudList Dense="true">
                                 <MudListItem IconColor="Color.Info" Icon="@Icons.Material.Filled.Person">
                                     <b>Profile Name: </b> @_entity.Alias.UserName (@_entity.Identity)
-                                    @switch (_isGlobalBanned)
+                                    @if (_entity.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
                                     {
-                                        case true:
-                                            <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Globally Banned</MudChip>
-                                            break;
-                                        case false:
-                                            <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Not Globally Banned</MudChip>
-                                            break;
+                                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Online</MudChip>
+                                    }
+                                    else
+                                    {
+                                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Offline</MudChip>
+                                    }
+                                    @if (_isGlobalBanned)
+                                    {
+                                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Globally Banned</MudChip>
+                                    }
+                                    else
+                                    {
+                                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Not Globally Banned</MudChip>
                                     }
                                 </MudListItem>
                                 <MudDivider DividerType="DividerType.Inset"/>
                                 <MudListItem Icon="@Icons.Material.Filled.Report">
                                     <b>Infraction Count: </b> @_entity.Infractions.Count
+                                </MudListItem>
+                                <MudListItem Icon="@Icons.Material.Filled.Report">
+                                    <b>Last Connected Server: </b> @_entity.Servers.MaxBy(x=>x.Connected).ServerName;
                                 </MudListItem>
                             </MudList>
 
@@ -183,17 +197,19 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _entity = await Http.GetFromJsonAsync<EntityDto>($"api/Entity?identity={Identity}");
+        _entity = await Http.GetFromJsonAsync<EntityDto>($"api/v2/Entity?identity={Identity}");
         if (_entity is not null)
         {
-            _isGlobalBanned = _entity.Infractions?.Any(x => x.InfractionStatus is InfractionStatus.Active && x.InfractionScope is InfractionScope.Global) ?? false;
+            var struckOut = _entity.Strike >= 3;
+            var globalBan = _entity.Infractions?.Any(x => x.InfractionStatus is InfractionStatus.Active && x.InfractionScope is InfractionScope.Global) ?? false;
+            _isGlobalBanned = struckOut || globalBan;
         }
     }
 
     private void RowClickEvent(TableRowClickEventArgs<InfractionDto> tableRowClickEventArgs)
     {
         _selectedInfraction = tableRowClickEventArgs.Item;
-        //_selectedInfraction.Duration = tableRowClickEventArgs.Item.Duration ?? new TimeSpan(0);
+    //_selectedInfraction.Duration = tableRowClickEventArgs.Item.Duration ?? new TimeSpan(0);
     }
 
 }

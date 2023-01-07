@@ -13,20 +13,22 @@ namespace GlobalInfractions;
 
 public class Plugin : IPlugin
 {
-    private readonly IServiceProvider _serviceProvider;
     public const string PluginName = "Global Infractions";
     public string Name => PluginName;
     public float Version => 20221218f;
     public string Author => "Amos";
 
-    private static bool _pluginEnabled;
     public static bool InstanceActive { get; set; }
     public static EndpointManager EndpointManager = null!;
     public static InstanceDto Instance = null!;
     public static TranslationStrings Translations = null!;
     public static IManager Manager = null!;
+    public static List<int> WhitelistedClientIds = new();
     private static HeartBeatManager _heartBeatManager = null!;
+    private static bool _pluginEnabled;
     private readonly IConfigurationHandler<ConfigurationModel> _configurationHandler;
+    private readonly IServiceProvider _serviceProvider;
+    
 
     public Plugin(IServiceProvider serviceProvider, IConfigurationHandlerFactory configurationHandlerFactory)
     {
@@ -37,6 +39,7 @@ public class Plugin : IPlugin
     public async Task OnEventAsync(GameEvent gameEvent, Server server)
     {
         if (!_pluginEnabled) return;
+        if (WhitelistedClientIds.Contains(gameEvent.Origin.ClientId)) return;
 
         switch (gameEvent.Type)
         {
@@ -66,9 +69,10 @@ public class Plugin : IPlugin
                 var serverDto = new ServerDto
                 {
                     ServerId = $"{server.IP}:{server.Port}",
-                    ServerName = server.Hostname,
+                    ServerName = server.Hostname.StripColors(),
                     ServerIp = server.IP,
-                    ServerPort = server.Port
+                    ServerPort = server.Port,
+                    Instance = Instance
                 };
                 await EndpointManager.OnStart(serverDto);
                 break;
@@ -77,12 +81,6 @@ public class Plugin : IPlugin
 
     public async Task OnLoadAsync(IManager manager)
     {
-#if DEBUG
-        Console.WriteLine($"[{PluginName}] Loading... !! DEBUG MODE !!");
-#else
-        Console.WriteLine($"[{PluginName}] Loading...");
-#endif
-
         Manager = manager;
 
         // Build configuration
@@ -100,9 +98,23 @@ public class Plugin : IPlugin
         }
 
         var config = _configurationHandler.Configuration();
+
+        if (!config.PluginEnabled)
+        {
+            _pluginEnabled = false;
+            return;
+        }
+
+#if DEBUG
+        Console.WriteLine($"[{PluginName}] Loading... !! DEBUG MODE !!");
+#else
+        Console.WriteLine($"[{PluginName}] Loading...");
+#endif
+
         _heartBeatManager = new HeartBeatManager(_serviceProvider, config);
         EndpointManager = new EndpointManager(_serviceProvider, config);
 
+        WhitelistedClientIds = config.WhitelistedClientIds.Distinct().ToList();
         Translations = config.Translations;
 
         // Update the instance and check its state
@@ -115,7 +127,6 @@ public class Plugin : IPlugin
             HeartBeat = DateTimeOffset.UtcNow,
             Servers = new List<ServerDto>()
         };
-        Console.WriteLine(Instance);
 
         _pluginEnabled = await EndpointManager.UpdateInstance(Instance);
 
@@ -144,9 +155,13 @@ public class Plugin : IPlugin
         Console.WriteLine($"[{PluginName}] Failed to load. Is the API running?");
     }
 
-    public Task OnUnloadAsync()
+    public async Task OnUnloadAsync()
     {
-        return Task.CompletedTask;
+        if (!_pluginEnabled) return;
+
+        _configurationHandler.Configuration().WhitelistedClientIds = WhitelistedClientIds;
+        await _configurationHandler.Save();
+        Console.WriteLine($"[{PluginName}] unloaded");
     }
 
     public Task OnTickAsync(Server server)

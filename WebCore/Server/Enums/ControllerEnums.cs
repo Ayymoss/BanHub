@@ -17,7 +17,6 @@ public abstract class ControllerEnums
 
     public enum StatisticType
     {
-        AliasCount = -5,
         EntityCount = -4,
         ServerCount = -3,
         InfractionCount = -2,

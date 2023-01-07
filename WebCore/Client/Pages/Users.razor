@@ -20,7 +20,7 @@
             <MudTableSortLabel SortLabel="Name" T="EntityDto">Name</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Reputation" T="EntityDto">Reputation</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Reputation" T="EntityDto">Strikes</MudTableSortLabel>
         </MudTh>
         <MudTh>
             <MudTableSortLabel SortLabel="Infractions" T="EntityDto">Infractions</MudTableSortLabel>
@@ -41,17 +41,19 @@
                 </MudText>
             </a>
         </MudTd>
-        <MudTd DataLabel="Reputation">@context.Reputation</MudTd>
+        <MudTd DataLabel="Strikes">@context.Strike/3</MudTd>
         <MudTd DataLabel="Infractions">@(context.Infractions?.Count != 0 ? context.Infractions!.Count.ToString() : "None")</MudTd>
         <MudTd DataLabel="Online?">
-            @if (context.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
-            {
-                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Online</MudChip>
-            }
-            else
-            {
-                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Offline</MudChip>
-            }
+            <MudTooltip Arrow="true" Placement="Placement.Top" Text="@context.HeartBeat!.Value.ToString("yyyy-MM-dd HH:mm:ss")">
+                @if (context.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
+                {
+                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Online</MudChip>
+                }
+                else
+                {
+                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Offline</MudChip>
+                }
+            </MudTooltip>
         </MudTd>
         <MudTd DataLabel="Created">@context.Created!.Value.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
     </RowTemplate>
@@ -73,51 +75,29 @@
     public string? SearchString { get; set; }
 
     private MudTable<EntityDto>? _table;
-    private IEnumerable<EntityDto> pagedData;
+    private IEnumerable<EntityDto>? _pagedData;
     private string? _searchString;
     private int _totalItems;
 
     private async Task<TableData<EntityDto>> ServerReload(TableState state)
     {
-        IEnumerable<EntityDto> data = (await Http.GetFromJsonAsync<List<EntityDto>>("/api/Entity/All"))!;
-
-        data = data.Where(element =>
+        var paginationQuery = new PaginationDto
         {
-            if (string.IsNullOrWhiteSpace(_searchString))
-                return true;
-            if (element.Identity.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-            if (element.Alias!.UserName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-            return false;
-        }).ToArray();
+            Page = state.Page,
+            PageSize = state.PageSize,
+            SortLabel = state.SortLabel,
+            SortDirection = (int)state.SortDirection,
+            SearchString = _searchString,
+        };
 
-        _totalItems = data.Count();
+        var statistics = await Http.GetFromJsonAsync<StatisticDto>("/api/v2/Statistic");
+        var data = await Http.PostAsJsonAsync("/api/v2/Entity/All", paginationQuery);
+        var result = await data.Content.ReadFromJsonAsync<List<EntityDto>>();
 
-        switch (state.SortLabel)
-        {
-            case "Id":
-                data = data.OrderByDirection(state.SortDirection, o => o.Identity);
-                break;
-            case "Name":
-                data = data.OrderByDirection(state.SortDirection, o => o.Alias!.UserName);
-                break;
-            case "Reputation":
-                data = data.OrderByDirection(state.SortDirection, o => o.Reputation);
-                break;
-            case "Infractions":
-                data = data.OrderByDirection(state.SortDirection, o => o.Infractions!.Count);
-                break;
-            case "Online":
-                data = data.OrderByDirection(state.SortDirection, o => o.HeartBeat);
-                break;
-            case "Created":
-                data = data.OrderByDirection(state.SortDirection, o => o.Created);
-                break;
-        }
+        _pagedData = result!.ToArray();
+        _totalItems = statistics!.EntityCount!.Value;
 
-        pagedData = data.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
-        return new TableData<EntityDto> {TotalItems = _totalItems, Items = pagedData};
+        return new TableData<EntityDto> {TotalItems = _totalItems, Items = _pagedData};
     }
 
     private void OnSearch(string text)
@@ -125,10 +105,4 @@
         _searchString = text;
         _table!.ReloadServerData();
     }
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (SearchString is not null) _searchString = SearchString;
-    }
-
 }

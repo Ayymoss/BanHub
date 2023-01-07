@@ -62,56 +62,13 @@ public class DataContext : DbContext
         {
             Id = -4,
             Statistic = "EntityCount",
-            Count = 0
+            Count = 1
         };
-
-        var aliasCount = new EFStatistic
-        {
-            Id = -5,
-            Statistic = "AliasCount",
-            Count = 0
-        };
-
+        
         modelBuilder.Entity<EFStatistic>().HasData(instanceCount);
         modelBuilder.Entity<EFStatistic>().HasData(infractionCount);
         modelBuilder.Entity<EFStatistic>().HasData(serverCount);
         modelBuilder.Entity<EFStatistic>().HasData(entityCount);
-        modelBuilder.Entity<EFStatistic>().HasData(aliasCount);
-
-        #endregion
-
-        #region SystemSeed
-
-        var systemAlias = new EFAlias
-        {
-            Id = -1,
-            EntityId = -1,
-            UserName = "> System",
-            IpAddress = "0.0.0.0",
-            Changed = DateTimeOffset.UtcNow
-        };
-
-        var systemProfile = new EFEntity
-        {
-            Id = -1,
-            Identity = "000:SYS",
-            HeartBeat = DateTimeOffset.UtcNow,
-            Reputation = 0,
-            Created = DateTimeOffset.UtcNow,
-            WebRole = WebRole.User,
-            Infractions = new List<EFInfraction>()
-        };
-
-        var systemCurrentAlias = new EFCurrentAlias
-        {
-            Id = -1,
-            EntityId = -1,
-            AliasId = -1
-        };
-
-        modelBuilder.Entity<EFEntity>().HasData(systemProfile);
-        modelBuilder.Entity<EFAlias>().HasData(systemAlias);
-        modelBuilder.Entity<EFCurrentAlias>().HasData(systemCurrentAlias);
 
         #endregion
 
@@ -119,8 +76,8 @@ public class DataContext : DbContext
 
         var adminAlias = new EFAlias
         {
-            Id = -2,
-            EntityId = -2,
+            Id = -1,
+            EntityId = -1,
             UserName = "IW4MAdmin",
             IpAddress = "0.0.0.0",
             Changed = DateTimeOffset.UtcNow
@@ -128,10 +85,10 @@ public class DataContext : DbContext
 
         var adminProfile = new EFEntity
         {
-            Id = -2,
+            Id = -1,
             Identity = "0:UKN",
             HeartBeat = DateTimeOffset.UtcNow,
-            Reputation = 0,
+            Strike = 0,
             Created = DateTimeOffset.UtcNow,
             WebRole = WebRole.User,
             Infractions = new List<EFInfraction>()
@@ -139,9 +96,9 @@ public class DataContext : DbContext
 
         var adminCurrentAlias = new EFCurrentAlias
         {
-            Id = -2,
-            EntityId = -2,
-            AliasId = -2
+            Id = -1,
+            EntityId = -1,
+            AliasId = -1
         };
 
         modelBuilder.Entity<EFEntity>().HasData(adminProfile);
@@ -149,41 +106,7 @@ public class DataContext : DbContext
         modelBuilder.Entity<EFCurrentAlias>().HasData(adminCurrentAlias);
 
         #endregion
-
-        // TODO: Remove once tested.
-
-        #region TemporarySeed
-        var instance = new EFInstance
-        {
-            Id = -1,
-            InstanceGuid = Guid.NewGuid(),
-            InstanceIp = "123.123.123.123",
-            InstanceName = "Seed Instance",
-            HeartBeat = DateTimeOffset.UtcNow,
-            ApiKey = Guid.NewGuid(),
-            Active = true
-        };
-
-        var infraction = new EFInfraction
-        {
-            Id = -1,
-            InfractionType = InfractionType.Warn,
-            InfractionStatus = InfractionStatus.Active,
-            InfractionScope = InfractionScope.Local,
-            InfractionGuid = Guid.NewGuid(),
-            Submitted = DateTimeOffset.UtcNow,
-            Duration = null,
-            Reason = "Seed Infraction",
-            Evidence = "Seed Evidence",
-            AdminId = -1,
-            TargetId = -1,
-            InstanceId = -1
-        };
-
-        modelBuilder.Entity<EFInstance>().HasData(instance);
-        modelBuilder.Entity<EFInfraction>().HasData(infraction);
-        #endregion
-
+        
         base.OnModelCreating(modelBuilder);
     }
 }

@@ -5,16 +5,19 @@ using GlobalInfraction.WebCore.Server.Models;
 using GlobalInfraction.WebCore.Shared.Enums;
 using GlobalInfraction.WebCore.Shared.Models;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor;
 
 namespace GlobalInfraction.WebCore.Server.Services;
 
 public class EntityService : IEntityService
 {
     private readonly DataContext _context;
+    private readonly IStatisticService _statisticService;
 
-    public EntityService(DataContext context)
+    public EntityService(DataContext context, IStatisticService statisticService)
     {
         _context = context;
+        _statisticService = statisticService;
     }
 
     public async Task<EntityDto?> GetUser(string identity)
@@ -60,7 +63,7 @@ public class EntityService : IEntityService
                                 UserName = inf.Admin.CurrentAlias.Alias.UserName,
                                 Changed = inf.Admin.CurrentAlias.Alias.Changed
                             },
-                            Reputation = inf.Admin.Reputation
+                            Strike = inf.Admin.Strike
                         },
                         Instance = new InstanceDto
                         {
@@ -71,7 +74,7 @@ public class EntityService : IEntityService
                     }).ToList(),
                 HeartBeat = profile.HeartBeat,
                 Created = profile.Created,
-                Reputation = profile.Reputation
+                Strike = profile.Strike
             }).FirstOrDefaultAsync();
 
         if (entity?.Infractions is null) return entity;
@@ -104,54 +107,6 @@ public class EntityService : IEntityService
         return entity;
     }
 
-    public async Task<List<EntityDto>> GetUsers()
-    {
-        var result = await _context.Entities
-            .Select(profile => new EntityDto
-            {
-                Identity = profile.Identity,
-                Alias = new AliasDto
-                {
-                    UserName = profile.CurrentAlias.Alias.UserName,
-                    Changed = profile.CurrentAlias.Alias.Changed
-                },
-                Infractions = profile.Infractions.Select(inf => new InfractionDto
-                {
-                    InfractionType = inf.InfractionType,
-                    InfractionStatus = inf.InfractionStatus,
-                    InfractionScope = inf.InfractionScope,
-                    InfractionGuid = inf.InfractionGuid,
-                    Duration = inf.Duration,
-                    Reason = inf.Reason,
-                    Evidence = inf.Evidence,
-                    Admin = new EntityDto
-                    {
-                        Identity = inf.Admin.Identity,
-                        Alias = new AliasDto
-                        {
-                            UserName = inf.Admin.CurrentAlias.Alias.UserName,
-                            Changed = inf.Admin.CurrentAlias.Alias.Changed
-                        },
-                        Reputation = inf.Admin.Reputation
-                    },
-                    Instance = new InstanceDto
-                    {
-                        InstanceGuid = inf.Instance.InstanceGuid,
-                        InstanceIp = inf.Instance.InstanceIp,
-                        InstanceName = inf.Instance.InstanceName
-                    }
-                }).ToList(),
-                HeartBeat = profile.HeartBeat,
-                Created = profile.Created,
-                Reputation = profile.Reputation
-            })
-            .ToListAsync();
-
-        result = result.OrderByDescending(x => x.HeartBeat).ToList();
-
-        return result;
-    }
-
     public async Task<ControllerEnums.ProfileReturnState> CreateOrUpdate(EntityDto request)
     {
         var user = await _context.Entities
@@ -170,8 +125,13 @@ public class EntityService : IEntityService
             // Downside for this, if they change their name to something then back, the current will be the 'old' name
             var existingAlias = await _context.Aliases
                 .Where(x => x.EntityId == user.Id)
-                .AnyAsync(profile =>
-                    profile.UserName == request.Alias!.UserName && profile.IpAddress == request.Alias.IpAddress);
+                .AnyAsync(alias =>
+                    alias.UserName == request.Alias!.UserName && alias.IpAddress == request.Alias.IpAddress);
+
+            var activeBanCount = await _context.Infractions
+                .AsNoTracking()
+                .Where(inf => inf.InfractionType == InfractionType.Ban && inf.InfractionStatus == InfractionStatus.Active)
+                .CountAsync();
 
             if (!existingAlias)
             {
@@ -187,10 +147,6 @@ public class EntityService : IEntityService
                     EntityId = user.Id
                 };
 
-                var aliasStatistic = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.AliasCount);
-                aliasStatistic.Count++;
-                _context.Statistics.Update(aliasStatistic);
-                // update this to save to the Alias table instead of the user's nav prop
                 user.Aliases.Add(updatedAlias);
                 mostRecentAlias.Alias = updatedAlias;
                 _context.CurrentAliases.Update(mostRecentAlias);
@@ -207,6 +163,7 @@ public class EntityService : IEntityService
                 _context.ServerConnections.Add(server);
             }
 
+            user.Strike = activeBanCount;
             user.HeartBeat = DateTimeOffset.UtcNow;
             _context.Entities.Update(user);
             await _context.SaveChangesAsync();
@@ -218,7 +175,7 @@ public class EntityService : IEntityService
         var entity = new EFEntity
         {
             Identity = request.Identity,
-            Reputation = 10,
+            Strike = 0,
             HeartBeat = DateTimeOffset.UtcNow,
             WebRole = WebRole.User,
             Created = DateTimeOffset.UtcNow
@@ -249,9 +206,8 @@ public class EntityService : IEntityService
             _context.ServerConnections.Add(server);
         }
 
-        var entityStatistic = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.EntityCount);
-        entityStatistic.Count++;
-        _context.Statistics.Update(entityStatistic);
+        await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.EntityCount);
+
         entity.CurrentAlias = currentAlias;
         _context.CurrentAliases.Add(currentAlias);
         await _context.SaveChangesAsync();
@@ -261,8 +217,78 @@ public class EntityService : IEntityService
 
     public async Task<bool> HasEntity(string identity) => await _context.Entities.AnyAsync(x => x.Identity == identity);
 
-    public async Task<int> GetEntityCount()
+    public async Task<int> GetOnlineCount()
     {
-        return await _context.Entities.CountAsync();
+        return await _context.Entities
+            .Where(x => x.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
+            .CountAsync();
+    }
+
+    public async Task<List<EntityDto>> Pagination(PaginationDto pagination)
+    {
+        var query = _context.Entities.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(pagination.SearchString))
+        {
+            query = query.Where(search =>
+                EF.Functions.ILike(search.Identity, $"%{pagination.SearchString}%") ||
+                EF.Functions.ILike(search.CurrentAlias.Alias.UserName, $"%{pagination.SearchString}%"));
+        }
+
+        query = pagination.SortLabel switch
+        {
+            "Id" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.Identity),
+            "Name" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.CurrentAlias.Alias.UserName),
+            "Strikes" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.Strike),
+            "Infractions" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.Infractions.Count),
+            "Online" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.HeartBeat),
+            "Created" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.Created),
+            _ => query
+        };
+
+        var pagedData = await query
+            .Skip(pagination.Page!.Value * pagination.PageSize!.Value)
+            .Take(pagination.PageSize.Value)
+            .Select(profile => new EntityDto
+            {
+                Identity = profile.Identity,
+                Alias = new AliasDto
+                {
+                    UserName = profile.CurrentAlias.Alias.UserName,
+                    Changed = profile.CurrentAlias.Alias.Changed
+                },
+                Infractions = profile.Infractions.Select(inf => new InfractionDto
+                {
+                    InfractionType = inf.InfractionType,
+                    InfractionStatus = inf.InfractionStatus,
+                    InfractionScope = inf.InfractionScope,
+                    InfractionGuid = inf.InfractionGuid,
+                    Duration = inf.Duration,
+                    Reason = inf.Reason,
+                    Evidence = inf.Evidence,
+                    Admin = new EntityDto
+                    {
+                        Identity = inf.Admin.Identity,
+                        Alias = new AliasDto
+                        {
+                            UserName = inf.Admin.CurrentAlias.Alias.UserName,
+                            Changed = inf.Admin.CurrentAlias.Alias.Changed
+                        },
+                        Strike = inf.Admin.Strike
+                    },
+                    Instance = new InstanceDto
+                    {
+                        InstanceGuid = inf.Instance.InstanceGuid,
+                        InstanceIp = inf.Instance.InstanceIp,
+                        InstanceName = inf.Instance.InstanceName
+                    }
+                }).ToList(),
+                HeartBeat = profile.HeartBeat,
+                Created = profile.Created,
+                Strike = profile.Strike
+            })
+            .ToListAsync();
+
+        return pagedData;
     }
 }

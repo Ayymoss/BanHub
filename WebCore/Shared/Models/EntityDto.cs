@@ -3,14 +3,19 @@
 public class EntityDto
 {
     /// <summary>
+    /// The synchronised API version number.
+    /// </summary>
+    public int ApiVersion { get; set; } = 1;
+    
+    /// <summary>
     /// The player's identity
     /// </summary>
     public string Identity { get; set; } = null!;
 
     /// <summary>
-    /// The player's reputation
+    /// The player's strike count
     /// </summary>
-    public int? Reputation { get; set; }
+    public int? Strike { get; set; }
 
     /// <summary>
     /// The last time the player was seen
@@ -46,4 +51,6 @@ public class EntityDto
     /// Server the client is connected to
     /// </summary>
     public virtual ServerDto? Server { get; set; }
+
+    
 }

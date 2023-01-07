@@ -56,7 +56,7 @@ public class EndpointManager
             ServerIp = client.CurrentServer.IP,
             ServerPort = client.CurrentServer.Port
         };
-        
+
         entity.Server = server;
         return entity;
     }
@@ -98,10 +98,14 @@ public class EndpointManager
 
     private void ProcessEntity(EntityDto entity, EFClient client)
     {
+        var struckOut = entity.Strike >= 3;
         var globalBan = entity.Infractions?
-            .FirstOrDefault(x => x.InfractionType is InfractionType.Ban && x.InfractionScope is InfractionScope.Global);
-        if (globalBan is null || !client.IsIngame) return;
-        client.Kick(_configurationModel.Translations.GlobalBanKickMessage, Utilities.IW4MAdminClient(client.CurrentServer));
+            .Any(x => x.InfractionType is InfractionType.Ban && x.InfractionScope is InfractionScope.Global) ?? false;
+
+        if ((globalBan || struckOut) && client.IsIngame)
+        {
+            client.Kick(_configurationModel.Translations.GlobalBanKickMessage, Utilities.IW4MAdminClient(client.CurrentServer));
+        }
     }
 
     public async Task<bool> UpdateInstance(InstanceDto instance)
@@ -131,7 +135,7 @@ public class EndpointManager
     {
         if (!Plugin.InstanceActive) return (false, null);
         if (infractionType is InfractionType.Kick or InfractionType.Warn && origin.ClientId == 1) return (false, null);
-        
+
         var penalty = origin.AdministeredPenalties?.FirstOrDefault()?.AutomatedOffense;
         var automatedBan = false;
         var automatedReason = string.Empty;
@@ -162,8 +166,17 @@ public class EndpointManager
             Admin = adminEntity,
             Target = targetEntity
         };
+        var result = await _infraction.PostInfraction(infraction);
 
-        return await _infraction.PostInfraction(infraction);
+        if (_configurationModel.PrintInfractionsToConsole)
+        {
+            var guid = result.Item1 ? $"GUID: {result.Item2.ToString()}" : "Error creating infraction!";
+            Console.WriteLine(
+                $"[{Plugin.PluginName} - {DateTimeOffset.UtcNow:HH:mm:ss}] {infractionType} ({infraction.InfractionScope}): " +
+                $"{origin.CleanedName} -> {target.CleanedName} ({infraction.Reason}) - {guid}");
+        }
+
+        return result;
     }
 
     public async Task<bool> SubmitInformation(Guid guid, string evidence)
