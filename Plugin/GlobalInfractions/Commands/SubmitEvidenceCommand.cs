@@ -51,7 +51,11 @@ public class SubmitEvidenceCommand : Command
             if (guidCheck) result = await Plugin.EndpointManager.SubmitInformation(guid, evidence);
             else result = false;
         }
-        else result = false;
+        else
+        {
+            gameEvent.Origin.Tell(Plugin.Translations.SubmitEvidenceRegexFail);
+            result = false;
+        }
 
         switch (result)
         {

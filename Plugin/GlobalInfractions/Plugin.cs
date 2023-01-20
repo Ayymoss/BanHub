@@ -15,7 +15,7 @@ public class Plugin : IPlugin
 {
     public const string PluginName = "Global Infractions";
     public string Name => PluginName;
-    public float Version => 20221218f;
+    public float Version => 20230108f;
     public string Author => "Amos";
 
     public static bool InstanceActive { get; set; }
@@ -23,12 +23,11 @@ public class Plugin : IPlugin
     public static InstanceDto Instance = null!;
     public static TranslationStrings Translations = null!;
     public static IManager Manager = null!;
-    public static List<int> WhitelistedClientIds = new();
+    public static List<int> WhitelistedClientIds = null!;
     private static HeartBeatManager _heartBeatManager = null!;
     private static bool _pluginEnabled;
     private readonly IConfigurationHandler<ConfigurationModel> _configurationHandler;
     private readonly IServiceProvider _serviceProvider;
-    
 
     public Plugin(IServiceProvider serviceProvider, IConfigurationHandlerFactory configurationHandlerFactory)
     {
@@ -39,8 +38,22 @@ public class Plugin : IPlugin
     public async Task OnEventAsync(GameEvent gameEvent, Server server)
     {
         if (!_pluginEnabled) return;
-        if (WhitelistedClientIds.Contains(gameEvent.Origin.ClientId)) return;
+        switch (gameEvent.Type)
+        {
+            case GameEvent.EventType.Start:
+                var serverDto = new ServerDto
+                {
+                    ServerId = $"{server.IP}:{server.Port}",
+                    ServerName = server.Hostname.StripColors(),
+                    ServerIp = server.IP,
+                    ServerPort = server.Port,
+                    Instance = Instance
+                };
+                await EndpointManager.OnStart(serverDto);
+                break;
+        }
 
+        if (gameEvent.Origin is null || WhitelistedClientIds.Contains(gameEvent.Origin.ClientId)) return;
         switch (gameEvent.Type)
         {
             case GameEvent.EventType.Join:
@@ -65,17 +78,6 @@ public class Plugin : IPlugin
             case GameEvent.EventType.Unban:
                 await EndpointManager.NewInfraction(InfractionType.Unban, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
                 break;
-            case GameEvent.EventType.Start:
-                var serverDto = new ServerDto
-                {
-                    ServerId = $"{server.IP}:{server.Port}",
-                    ServerName = server.Hostname.StripColors(),
-                    ServerIp = server.IP,
-                    ServerPort = server.Port,
-                    Instance = Instance
-                };
-                await EndpointManager.OnStart(serverDto);
-                break;
         }
     }
 
@@ -99,7 +101,7 @@ public class Plugin : IPlugin
 
         var config = _configurationHandler.Configuration();
 
-        if (!config.PluginEnabled)
+        if (!config.EnableGlobalInfractions)
         {
             _pluginEnabled = false;
             return;

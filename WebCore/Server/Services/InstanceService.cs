@@ -46,7 +46,7 @@ public class InstanceService : IInstanceService
                 HeartBeat = DateTimeOffset.UtcNow
             });
             
-            await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.EntityCount);
+            await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.InstanceCount);
             await _context.SaveChangesAsync();
 
             return (ControllerEnums.ProfileReturnState.Created, $"Instance added {request.InstanceGuid}");

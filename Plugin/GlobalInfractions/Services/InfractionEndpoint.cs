@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using System.Text.Json;
 using GlobalInfractions.Configuration;
 using GlobalInfractions.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,14 @@ public class InfractionEndpoint
                 .PostAsJsonAsync($"{ApiHost}/Infraction?authToken={_configurationModel.ApiKey}", infraction);
             var preGuid = await response.Content.ReadAsStringAsync();
             var parsedState = Guid.TryParse(preGuid.Replace("\"", ""), out var guid);
+
+            if (!response.IsSuccessStatusCode && _configurationModel.DebugMode)
+            {
+                Console.WriteLine($"\n[{Plugin.PluginName}] Error posting infraction {infraction.Reason}\nSC: {response.StatusCode}\n" +
+                                  $"RP: {response.ReasonPhrase}\nB: {preGuid}\nJSON: {JsonSerializer.Serialize(infraction)}\n" +
+                                  $"[{Plugin.PluginName}] End of error");
+            }
+            
             return (response.IsSuccessStatusCode && parsedState, guid);
         }
         catch (HttpRequestException e)
@@ -46,6 +55,14 @@ public class InfractionEndpoint
         {
             var response = await _httpClient
                 .PostAsJsonAsync($"{ApiHost}/Infraction/Evidence?authToken={_configurationModel.ApiKey}", infraction);
+            
+            if (!response.IsSuccessStatusCode && _configurationModel.DebugMode)
+            {
+                Console.WriteLine($"\n[{Plugin.PluginName}] Error posting evidence {infraction.Evidence}\nSC: {response.StatusCode}\n" +
+                                  $"RP: {response.ReasonPhrase}\nB: {await response.Content.ReadAsStringAsync()}\nJSON: {JsonSerializer.Serialize(infraction)}\n" +
+                                  $"[{Plugin.PluginName}] End of error");
+            }
+            
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException e)

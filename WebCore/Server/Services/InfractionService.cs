@@ -1,10 +1,10 @@
-﻿using GlobalInfraction.WebCore.Server.Context;
+﻿using System.Text.Json;
+using GlobalInfraction.WebCore.Server.Context;
 using GlobalInfraction.WebCore.Server.Enums;
 using GlobalInfraction.WebCore.Server.Interfaces;
 using GlobalInfraction.WebCore.Server.Models;
 using GlobalInfraction.WebCore.Shared.Enums;
 using GlobalInfraction.WebCore.Shared.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace GlobalInfraction.WebCore.Server.Services;
@@ -13,20 +13,25 @@ public class InfractionService : IInfractionService
 {
     private readonly IDiscordWebhookService _discordWebhook;
     private readonly IStatisticService _statisticService;
+    private readonly ILogger _logger;
     private readonly DataContext _context;
     private readonly IEntityService _entityService;
 
     public InfractionService(DataContext context, IEntityService entityService, IDiscordWebhookService discordWebhook,
-        IStatisticService statisticService)
+        IStatisticService statisticService, ILogger<InfractionService> logger)
     {
         _discordWebhook = discordWebhook;
         _statisticService = statisticService;
+        _logger = logger;
         _context = context;
         _entityService = entityService;
     }
 
-    public async Task<(ControllerEnums.ProfileReturnState, Guid?)> AddInfraction([FromBody] InfractionDto request)
+    public async Task<(ControllerEnums.ProfileReturnState, Guid?)> AddInfraction(InfractionDto request)
     {
+        await _entityService.CreateOrUpdate(request.Target!);
+        await _entityService.CreateOrUpdate(request.Admin!);
+
         var user = await _context.Entities
             .AsTracking()
             .Include(x => x.CurrentAlias.Alias)
@@ -35,38 +40,55 @@ public class InfractionService : IInfractionService
         var admin = await _context.Entities
             .FirstOrDefaultAsync(profile => profile.Identity == request.Admin!.Identity);
 
-        // TODO: This is redundant reused code. Needs cleaning up.
-        // Used for if the incoming infraction was set to someone who hasn't yet been added to the database.
-        if (user is null)
-        {
-            await _entityService.CreateOrUpdate(request.Target!);
-            user = await _context.Entities
-                .AsTracking()
-                .Include(x => x.CurrentAlias.Alias)
-                .FirstOrDefaultAsync(entity => entity.Identity == request.Target!.Identity);
-        }
-
         if (user is null || admin is null) return (ControllerEnums.ProfileReturnState.NotFound, null);
 
         // Check if the user has an existing ban and the incoming is an unban from the server that banned them
-        var infraction = await _context.Infractions
+        var activeGlobalBan = await _context.Infractions
             .AsTracking()
             .Where(inf => inf.TargetId == user.Id && inf.Instance.InstanceGuid == request.Instance!.InstanceGuid)
             .FirstOrDefaultAsync(inf =>
-                (inf.InfractionType == InfractionType.Ban || inf.InfractionType == InfractionType.TempBan) &&
-                inf.InfractionStatus == InfractionStatus.Active);
+                inf.InfractionType == InfractionType.Ban
+                && inf.InfractionScope == InfractionScope.Global
+                && inf.InfractionStatus == InfractionStatus.Active);
 
-        if (infraction is not null)
+        // Already global banned - don't want to create another
+        if (activeGlobalBan is not null && request.InfractionType == InfractionType.Ban)
+        {
+            return (ControllerEnums.ProfileReturnState.NotModified, null);
+        }
+
+        var infractions = await _context.Infractions
+            .AsTracking()
+            .Where(inf =>
+                inf.TargetId == user.Id && inf.Instance.InstanceGuid == request.Instance!.InstanceGuid
+                                        && (inf.InfractionType == InfractionType.Ban || inf.InfractionType == InfractionType.TempBan)
+                                        && inf.InfractionStatus == InfractionStatus.Active)
+            .ToListAsync();
+
+        if (!infractions.Any())
         {
             switch (request.InfractionType)
             {
                 // If the incoming request is an unban, unban them.
                 case InfractionType.Unban:
-                    infraction.InfractionStatus = InfractionStatus.Revoked;
-                    _context.Update(infraction);
+                    foreach (var inf in infractions)
+                    {
+                        inf.InfractionStatus = InfractionStatus.Revoked;
+                        _context.Update(infractions);
+                    }
+
                     break;
                 // If they're already banned. We don't need to keep creating kick infractions.
                 case InfractionType.Kick:
+                    return (ControllerEnums.ProfileReturnState.NotModified, null);
+            }
+        }
+        else
+        {
+            switch (request.InfractionType)
+            {
+                // Trying to unban when no record of a ban exists.
+                case InfractionType.Unban:
                     return (ControllerEnums.ProfileReturnState.NotModified, null);
             }
         }
@@ -91,9 +113,19 @@ public class InfractionService : IInfractionService
             TargetId = user.Id
         };
 
-        await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.EntityCount);
-        user.Strike++;
-        _context.Entities.Update(user);
+        switch (request.InfractionType)
+        {
+            case InfractionType.Ban:
+                user.Strike++;
+                _context.Entities.Update(user);
+                break;
+            case InfractionType.Unban:
+                user.Strike--;
+                _context.Entities.Update(user);
+                break;
+        }
+
+        await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.InfractionCount);
         _context.Add(infractionModel);
         await _context.SaveChangesAsync();
 
@@ -109,6 +141,43 @@ public class InfractionService : IInfractionService
         }
 
         return (ControllerEnums.ProfileReturnState.Created, infractionModel.InfractionGuid);
+    }
+
+    public async Task<bool> RevokeGlobalBan(InfractionDto request)
+    {
+        await _entityService.CreateOrUpdate(request.Target!);
+        await _entityService.CreateOrUpdate(request.Admin!);
+
+        var user = await _context.Entities
+            .AsTracking()
+            .Include(x => x.CurrentAlias.Alias)
+            .FirstOrDefaultAsync(entity => entity.Identity == request.Target!.Identity);
+
+        var admin = await _context.Entities
+            .FirstOrDefaultAsync(profile => profile.Identity == request.Admin!.Identity);
+
+        if (user is null || admin is null) return false;
+
+        var globalBans = await _context.Infractions
+            .AsTracking()
+            .Where(inf =>
+                inf.TargetId == user.Id && inf.Instance.InstanceGuid == request.Instance!.InstanceGuid
+                                        && inf.InfractionType == InfractionType.Ban
+                                        && inf.InfractionStatus == InfractionStatus.Active)
+            .ToListAsync();
+        
+        if (!globalBans.Any()) return false;
+
+        // Remove any actives
+        foreach (var inf in globalBans)
+        {
+            inf.InfractionStatus = InfractionStatus.Revoked;
+            _context.Infractions.Update(inf);
+            user.Strike--;
+        }
+
+        await _context.SaveChangesAsync();
+        return true;
     }
 
     public async Task<(ControllerEnums.ProfileReturnState, InfractionDto?)> GetInfraction(string infractionGuid)
@@ -192,14 +261,17 @@ public class InfractionService : IInfractionService
         infractions = infractions.OrderByDescending(x => x.Submitted).ToList();
 
         return infractions.Count is 0
-            ? (ControllerEnums.ProfileReturnState.NotFound, null)
+            ? (ControllerEnums.ProfileReturnState.Ok, new List<InfractionDto>())
             : (ControllerEnums.ProfileReturnState.Ok, infractions);
     }
 
     public async Task<int> GetInfractionDayCount()
     {
         return await _context.Infractions
-            .Where(x => x.Submitted + TimeSpan.FromDays(1) > DateTimeOffset.UtcNow)
+            .Where(x => x.Submitted + TimeSpan.FromDays(1) > DateTimeOffset.UtcNow
+                        && x.InfractionType == InfractionType.Ban
+                        && x.InfractionScope == InfractionScope.Global
+                        && x.InfractionStatus == InfractionStatus.Active)
             .CountAsync();
     }
 

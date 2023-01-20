@@ -25,7 +25,7 @@ public class ServerController : Controller
         return result switch
         {
             ControllerEnums.ProfileReturnState.NotFound => StatusCode(404),
-            ControllerEnums.ProfileReturnState.Conflict => StatusCode(409),
+            ControllerEnums.ProfileReturnState.Conflict => NoContent(),
             ControllerEnums.ProfileReturnState.Ok => Ok(),
             _ => BadRequest() 
         };

@@ -1,6 +1,6 @@
 ﻿namespace GlobalInfraction.WebCore.Server.Services;
 
-public class StatisticsTrackingService
+public class StatisticsTracking
 {
     public int Infractions;
     public int Servers;

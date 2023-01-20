@@ -35,7 +35,7 @@ public class ServerService : IServerService
             InstanceId = instance.Id,
         };
 
-        await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.EntityCount);
+        await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.ServerCount);
         
         _context.Servers.Add(efServer);
         await _context.SaveChangesAsync();

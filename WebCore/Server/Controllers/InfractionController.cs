@@ -63,7 +63,6 @@ public class InfractionController : Controller
         return result.Item1 switch
         {
             ControllerEnums.ProfileReturnState.Ok => Ok(result.Item2),
-            ControllerEnums.ProfileReturnState.NotFound => NotFound(),
             _ => BadRequest() // Should never happen
         };
     }

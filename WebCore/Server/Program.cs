@@ -11,16 +11,13 @@ var configuration = SetupConfiguration.ReadConfiguration();
 var builder = WebApplication.CreateBuilder(args);
 
 #if DEBUG
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenLocalhost(8123);
-});
+builder.WebHost.ConfigureKestrel(options => { options.ListenLocalhost(8123); });
 #else
 builder.WebHost.ConfigureKestrel(options => { options.ListenAnyIP(configuration.WebBind); });
 #endif
 
 // TODO: TOGGLE MANUALLY - Migrations don't seem to honour build state
-configuration.Database.Database = "GlobalInfractionsDevelopment";
+//configuration.Database.Database = "GlobalInfractionsDevelopment4";
 
 builder.Services.AddDbContext<DataContext>(
     options =>
@@ -32,13 +29,12 @@ builder.Services.AddDbContext<DataContext>(
                           $"Database={configuration.Database.Database}");
     });
 
-
 builder.Services.AddLogging();
 
 builder.Services.AddSingleton(configuration);
 builder.Services.AddSingleton<ApiKeyCache>();
 builder.Services.AddSingleton<PluginAuthentication>();
-builder.Services.AddSingleton<StatisticsTrackingService>();
+builder.Services.AddSingleton<StatisticsTracking>();
 
 builder.Services.AddTransient<ApiKeyMiddleware>();
 

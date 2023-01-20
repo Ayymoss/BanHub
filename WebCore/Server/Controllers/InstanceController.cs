@@ -74,7 +74,7 @@ public class InstanceController : Controller
         return result.Item1 switch
         {
             ControllerEnums.ProfileReturnState.Ok => Ok(result.Item2),
-            ControllerEnums.ProfileReturnState.NotFound => NotFound(),
+            ControllerEnums.ProfileReturnState.NotFound => NoContent(),
             _ => BadRequest() // Should never happen
         };
     }

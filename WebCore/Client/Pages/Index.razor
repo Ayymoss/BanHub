@@ -1,5 +1,7 @@
 ﻿@page "/"
 @using GlobalInfraction.WebCore.Shared.Models
+@using GlobalInfraction.WebCore.Shared.Enums
+@using Humanizer
 @inject HttpClient Http
 
 <OpenGraphComponent Title="Index" Description="Welcome to Global Infractions"/>
@@ -10,8 +12,44 @@
             <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
                 <MudText Align="Align.Center" Typo="Typo.h3" GutterBottom="true">Welcome to Global Infractions!</MudText>
                 <MudText Align="Align.Center" Class="mb-8">We provide a service which aims to clean up the state of 3rd party Call of Duty clients.</MudText>
+                <br/>
                 <MudDivider/>
-                // Last 3 Infractions
+                <br/>
+                <MudText Align="Align.Center" Typo="Typo.h6">Latest 3 global bans</MudText>
+                <br/>
+                @if (!_infractionTable.Any())
+                {
+                    <MudText Align="Align.Center" Typo="Typo.body2">There are no global bans...</MudText>
+                }
+                else
+                {
+                    <MudTable Dense="true" Items="@_infractionTable" Hover="true" FixedHeader="true" Height="100%" T="InfractionDto">
+                        <HeaderContent>
+                            <MudTh>Instance</MudTh>
+                            <MudTh>Target</MudTh>
+                            <MudTh>Type</MudTh>
+                            <MudTh>Scope</MudTh>
+                            <MudTh>When?</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Instance">@context.Instance.InstanceName</MudTd>
+                            <MudTd DataLabel="Target">
+                                <a href="/Profile/@context.Target!.Identity">
+                                    <MudText Typo="Typo.body2" Color="Color.Info">
+                                        @context.Target!.Alias!.UserName
+                                    </MudText>
+                                </a>
+                            </MudTd>
+                            <MudTd DataLabel="Type">
+                                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Ban</MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Scope">
+                                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Global</MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="When?">@context.Submitted.Humanize()</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6">
@@ -20,15 +58,15 @@
                     <MudPaper Elevation="2" Class="pa-4" Style="height: 100%;">
                         <MudText Typo="Typo.h6" GutterBottom="true">Current Stats</MudText>
                         <MudList Dense="true">
-                            <MudListItem Icon="@Icons.Filled.Report">Infractions: @(_infractions)</MudListItem>
+                            <MudListItem Icon="@Icons.Filled.Report">Infractions: @_infractions</MudListItem>
                             <MudDivider DividerType="DividerType.Inset"/>
                             <MudListItem Icon="@Icons.Filled.Person">Users: @_entities</MudListItem>
                             <MudListItem Icon="@Icons.Filled.Storage">Instances: @_instances</MudListItem>
-                            <MudListItem Icon="@Icons.Filled.List">Servers: @(_servers)</MudListItem>
+                            <MudListItem Icon="@Icons.Filled.List">Servers: @_servers</MudListItem>
                         </MudList>
                     </MudPaper>
                 </MudItem>
-                <MudItem xs="12">
+                <MudItem xs="12" class="align-self-stretch">
                     <MudPaper Elevation="2" Class="pa-4" Style="height: 100%;">
                         <MudText Typo="Typo.h6" GutterBottom="true">Follow us</MudText>
                         <MudChip Size="Size.Large" Icon="@Icons.Custom.Brands.Discord" Label="true" Color="Color.Primary">
@@ -47,13 +85,25 @@
 
 @code {
 
-    string _instances;
-    string _infractions;
-    string _entities;
-    string _servers;
+    private string? _instances;
+    private string? _infractions;
+    private string? _entities;
+    private string? _servers;
+
+    private List<InfractionDto> _infractionTable = new List<InfractionDto>();
 
     protected override async Task OnInitializedAsync()
     {
+        var infractionTable = await Http.GetFromJsonAsync<List<InfractionDto>>("/api/v2/Infraction/All");
+        if (infractionTable is not null)
+        {
+            _infractionTable = infractionTable
+                .Where(x => x.InfractionType == InfractionType.Ban && x.InfractionScope == InfractionScope.Global)
+                .OrderByDescending(x => x.Submitted)
+                .Take(3)
+                .ToList();
+        }
+
         var statistic = await Http.GetFromJsonAsync<StatisticDto>("/api/v2/Statistic");
         if (statistic is null) return;
 
@@ -61,6 +111,8 @@
         _instances = $"{statistic.InstanceCount:N0}";
         _infractions = $"{statistic.InfractionCount:N0}";
         _servers = $"{statistic.ServerCount:N0}";
+
+        await base.OnInitializedAsync();
     }
 
 }

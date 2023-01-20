@@ -46,6 +46,14 @@ public class EntityEndpoint
         try
         {
             var response = await _httpClient.PostAsJsonAsync($"{ApiHost}/Entity?authToken={_configurationModel.ApiKey}", entity);
+            
+            if (!response.IsSuccessStatusCode && _configurationModel.DebugMode)
+            {
+                Console.WriteLine($"\n[{Plugin.PluginName}] Error posting evidence {entity.Identity}\nSC: {response.StatusCode}\n" +
+                                  $"RP: {response.ReasonPhrase}\nB: {await response.Content.ReadAsStringAsync()}\nJSON: {JsonSerializer.Serialize(entity)}\n" +
+                                  $"[{Plugin.PluginName}] End of error");
+            }
+            
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException e)

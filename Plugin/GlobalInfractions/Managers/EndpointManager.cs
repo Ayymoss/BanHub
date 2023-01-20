@@ -63,6 +63,7 @@ public class EndpointManager
 
     public async Task OnStart(ServerDto server)
     {
+        if (!Plugin.InstanceActive) return;
         await _server.PostServer(server);
     }
 
@@ -104,7 +105,7 @@ public class EndpointManager
 
         if ((globalBan || struckOut) && client.IsIngame)
         {
-            client.Kick(_configurationModel.Translations.GlobalBanKickMessage, Utilities.IW4MAdminClient(client.CurrentServer));
+            client.Kick("^1Globally banned!^7\nGlobalInfractions.com", Utilities.IW4MAdminClient(client.CurrentServer));
         }
     }
 
@@ -141,7 +142,7 @@ public class EndpointManager
         var automatedReason = string.Empty;
         if (penalty is not null)
         {
-            const string regex = @"^(Recoil|Button)(-|--)\d{0,}@\d{0,}()$";
+            const string regex = @"^(Recoil|Button)(-{1,2})(\d{0,})@(\d{0,})$";
             automatedBan = Regex.IsMatch(penalty, regex);
             var match = Regex.Match(penalty, regex).Groups[1].ToString();
             automatedReason = match switch

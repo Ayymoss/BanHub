@@ -36,6 +36,11 @@ public class EFEntity
     public WebRole WebRole { get; set; }
 
     /// <summary>
+    /// Player's notes.
+    /// </summary>
+    public virtual ICollection<EFNote> Notes { get; set; } = null!;
+
+    /// <summary>
     /// The player's list of names and IP addresses
     /// </summary>
     public virtual ICollection<EFAlias> Aliases { get; set; } = null!;

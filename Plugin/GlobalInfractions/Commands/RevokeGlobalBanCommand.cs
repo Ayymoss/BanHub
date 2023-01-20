@@ -7,13 +7,13 @@ using SharedLibraryCore.Interfaces;
 
 namespace GlobalInfractions.Commands;
 
-public class GlobalBanCommand : Command
+public class RevokeGlobalBanCommand : Command
 {
-    public GlobalBanCommand(CommandConfiguration config, ITranslationLookup layout) : base(config, layout)
+    public RevokeGlobalBanCommand(CommandConfiguration config, ITranslationLookup layout) : base(config, layout)
     {
-        Name = "globalban";
-        Description = "Bans a player from all servers";
-        Alias = "gban";
+        Name = "revokeglobalban";
+        Description = "Revokes a global ban from a player";
+        Alias = "rgban";
         Permission = EFClient.Permission.SeniorAdmin;
         RequiresTarget = true;
         Arguments = new[]
@@ -46,14 +46,15 @@ public class GlobalBanCommand : Command
         }
 
         var result = await Plugin.EndpointManager
-            .NewInfraction(InfractionType.Ban, gameEvent.Origin, gameEvent.Target, gameEvent.Data, scope: InfractionScope.Global);
+            .RevokeGlobalBan(InfractionType.Ban, gameEvent.Origin, gameEvent.Target, gameEvent.Data, scope: InfractionScope.Global);
+        // FIX GLOBAL BAN 3/4 PROBLEM
 
         switch (result.Item1)
         {
             case true:
                 gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandSuccess.FormatExt(gameEvent.Target.CleanedName, gameEvent.Data, result.Item2));
                 gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandSuccessFollow);
-                gameEvent.Target.Ban("^1Globally banned!^7\nGlobalInfractions.com", Utilities.IW4MAdminClient(gameEvent.Target.CurrentServer), false);
+                gameEvent.Target.Unban("^1Globally banned!^7\nGlobalInfractions.com", Utilities.IW4MAdminClient(gameEvent.Target.CurrentServer));
                 break;
             case false:
                 gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandFail);

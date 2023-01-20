@@ -26,6 +26,13 @@ public class ServerEndpoint
         {
             var response = await _httpClient
                 .PostAsJsonAsync($"{ApiHost}/Server?authToken={_configurationModel.ApiKey}", server);
+            if (!response.IsSuccessStatusCode && _configurationModel.DebugMode)
+            {
+                Console.WriteLine($"\n[{Plugin.PluginName}] Error posting server {server.ServerName}\nSC: {response.StatusCode}\n" +
+                                  $"RP: {response.ReasonPhrase}\nB: {await response.Content.ReadAsStringAsync()}\nJSON: {JsonSerializer.Serialize(server)}\n" +
+                                  $"[{Plugin.PluginName}] End of error");
+            }
+            
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException e)

@@ -20,14 +20,13 @@ else
                 <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
                     @if (!_entity.Infractions.Any())
                     {
-                        <MudText Align="Align.Center" Typo="Typo.h5">There are no infractions :)</MudText>
+                        <MudText Align="Align.Center" Typo="Typo.h5">The user has no infractions.</MudText>
                     }
                     else
                     {
+                        <MudText Typo="Typo.h6" Align="Align.Center">Click an Infraction for Info</MudText>
+                        <br/>
                         <MudTable Items="@_entity.Infractions" Hover="true" FixedHeader="true" Height="100%" @ref="mudTable" OnRowClick="RowClickEvent" T="InfractionDto">
-                            <ToolBarContent>
-                                <MudText Typo="Typo.h6">Click an infraction for info</MudText>
-                            </ToolBarContent>
                             <HeaderContent>
                                 <MudTh>
                                     <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Admin.Alias.UserName)">Admin</MudTableSortLabel>
@@ -44,6 +43,7 @@ else
                                 <MudTh>
                                     <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<InfractionDto, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
                                 </MudTh>
+                                <MudTh></MudTh>
                             </HeaderContent>
                             <RowTemplate>
                                 <MudTd DataLabel="Admin">@context.Admin.Alias.UserName</MudTd>
@@ -51,6 +51,7 @@ else
                                 <MudTd DataLabel="Type">@context.InfractionType.ToString()</MudTd>
                                 <MudTd DataLabel="Scope">@context.InfractionScope.ToString()</MudTd>
                                 <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
+                                <MudTd DataLabel="View"><MudChip Size="Size.Medium" Variant="Variant.Text" Color="Color.Info">Click to View</MudChip></MudTd>
                             </RowTemplate>
                         </MudTable>
                     }
@@ -85,8 +86,8 @@ else
                                 <MudListItem Icon="@Icons.Material.Filled.Report">
                                     <b>Infraction Count: </b> @_entity.Infractions.Count
                                 </MudListItem>
-                                <MudListItem Icon="@Icons.Material.Filled.Report">
-                                    <b>Last Connected Server: </b> @_entity.Servers.MaxBy(x=>x.Connected).ServerName;
+                                <MudListItem Icon="@Icons.Material.Filled.List">
+                                    <b>Last Connected Server: </b> @_lastConnectedServer
                                 </MudListItem>
                             </MudList>
 
@@ -191,6 +192,7 @@ else
 
     private EntityDto? _entity;
     private bool _isGlobalBanned;
+    private string _lastConnectedServer;
     private int selectedRowNumber = -1;
     private InfractionDto? _selectedInfraction;
     private MudTable<InfractionDto> mudTable;
@@ -204,12 +206,20 @@ else
             var globalBan = _entity.Infractions?.Any(x => x.InfractionStatus is InfractionStatus.Active && x.InfractionScope is InfractionScope.Global) ?? false;
             _isGlobalBanned = struckOut || globalBan;
         }
+
+        if (_entity!.Servers is not null && _entity.Servers.Count is not 0)
+        {
+            _lastConnectedServer = _entity.Servers.MaxBy(x => x.Connected)?.ServerName ?? "Error";
+        }
+        else
+        {
+            _lastConnectedServer = "None";
+        }
     }
 
     private void RowClickEvent(TableRowClickEventArgs<InfractionDto> tableRowClickEventArgs)
     {
         _selectedInfraction = tableRowClickEventArgs.Item;
-    //_selectedInfraction.Duration = tableRowClickEventArgs.Item.Duration ?? new TimeSpan(0);
     }
 
 }

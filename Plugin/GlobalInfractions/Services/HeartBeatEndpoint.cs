@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using System.Text.Json;
 using GlobalInfractions.Configuration;
 using GlobalInfractions.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,14 @@ public class HeartBeatEndpoint
         {
             var response = await _httpClient
                 .PostAsJsonAsync($"{ApiHost}/HeartBeat/Instance", instance);
+            
+            if (!response.IsSuccessStatusCode && _configurationModel.DebugMode)
+            {
+                Console.WriteLine($"\n[{Plugin.PluginName}] Error posting instance {instance.InstanceGuid}\nSC: {response.StatusCode}\n" +
+                                  $"RP: {response.ReasonPhrase}\nB: {await response.Content.ReadAsStringAsync()}\nJSON: {JsonSerializer.Serialize(instance)}\n" +
+                                  $"[{Plugin.PluginName}] End of error");
+            }
+            
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException e)
@@ -44,6 +53,14 @@ public class HeartBeatEndpoint
         {
             var response = await _httpClient
                 .PostAsJsonAsync($"{ApiHost}/HeartBeat/Entities?authToken={_configurationModel.ApiKey}", entity);
+            
+            if (!response.IsSuccessStatusCode && _configurationModel.DebugMode)
+            {
+                Console.WriteLine($"\n[{Plugin.PluginName}] Error posting entity {entity.Count}\nSC: {response.StatusCode}\n" +
+                                  $"RP: {response.ReasonPhrase}\nB: {await response.Content.ReadAsStringAsync()}\nJSON: {JsonSerializer.Serialize(entity)}\n" +
+                                  $"[{Plugin.PluginName}] End of error");
+            }
+            
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException e)

@@ -33,6 +33,21 @@ public class EntityService : IEntityService
                     UserName = profile.CurrentAlias.Alias.UserName,
                     Changed = profile.CurrentAlias.Alias.Changed
                 },
+                Notes = profile.Notes.Where(x => x.Target.Identity == identity).Select(note => new NoteDto
+                {
+                    Created = note.Created,
+                    Message = note.Message,
+                    Admin = new EntityDto
+                    {
+                        Identity = note.Admin.Identity,
+                        Alias = new AliasDto
+                        {
+                            UserName = note.Admin.CurrentAlias.Alias.UserName,
+                            Changed = note.Admin.CurrentAlias.Alias.Changed
+                        },
+                        Strike = note.Admin.Strike
+                    }
+                }).ToList(),
                 Servers = profile.ServerConnections
                     .Where(x => x.Entity.Identity == identity)
                     .Select(server => new ServerDto
@@ -114,19 +129,23 @@ public class EntityService : IEntityService
             .Include(x => x.Aliases)
             .SingleOrDefaultAsync(user => user.Identity == request.Identity);
 
-        var efServer = await _context.Servers
-            .AsNoTracking()
-            .Where(x => x.Instance.InstanceGuid == request.Instance!.InstanceGuid)
-            .FirstOrDefaultAsync(y => y.ServerId == request.Server!.ServerId);
+        EFServer? efServer = null;
+        if (request.Server is not null)
+        {
+            efServer = await _context.Servers
+                .AsNoTracking()
+                .Where(x => x.Instance.InstanceGuid == request.Instance!.InstanceGuid)
+                .FirstOrDefaultAsync(y => y.ServerId == request.Server.ServerId);
+        }
 
         // Update existing user
         if (user is not null)
         {
             // Downside for this, if they change their name to something then back, the current will be the 'old' name
+            // TODO: Maybe use .Last?
             var existingAlias = await _context.Aliases
                 .Where(x => x.EntityId == user.Id)
-                .AnyAsync(alias =>
-                    alias.UserName == request.Alias!.UserName && alias.IpAddress == request.Alias.IpAddress);
+                .AnyAsync(alias => alias.UserName == request.Alias!.UserName && alias.IpAddress == request.Alias.IpAddress);
 
             var activeBanCount = await _context.Infractions
                 .AsNoTracking()
@@ -206,7 +225,7 @@ public class EntityService : IEntityService
             _context.ServerConnections.Add(server);
         }
 
-        await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.EntityCount);
+        if (user is null) await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.EntityCount);
 
         entity.CurrentAlias = currentAlias;
         _context.CurrentAliases.Add(currentAlias);

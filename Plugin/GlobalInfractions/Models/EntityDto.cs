@@ -43,6 +43,11 @@ public class EntityDto
     public virtual ICollection<ServerDto>? Servers { get; set; }
     
     /// <summary>
+    /// Player's notes.
+    /// </summary>
+    public virtual ICollection<NoteDto>? Notes { get; set; }
+    
+    /// <summary>
     /// Server the client is connected to
     /// </summary>
     public virtual ServerDto? Server { get; set; }

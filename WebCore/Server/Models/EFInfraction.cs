@@ -55,17 +55,20 @@ public class EFInfraction
     /// The admin GUID who issued the infraction
     /// </summary>
     public int AdminId { get; set; }
+
     [ForeignKey(nameof(AdminId))] public virtual EFEntity Admin { get; set; } = null!;
-    
+
     /// <summary>
     /// The user GUID who received the infraction
     /// </summary>
     public int TargetId { get; set; }
+
     [ForeignKey(nameof(TargetId))] public virtual EFEntity Target { get; set; } = null!;
 
     /// <summary>
     /// The server reference this infraction
     /// </summary>
     public int InstanceId { get; set; }
+
     [ForeignKey(nameof(InstanceId))] public virtual EFInstance Instance { get; set; } = null!;
 }
