@@ -18,6 +18,7 @@ public class DataContext : DbContext
     public DbSet<EFServer> Servers { get; set; }
     public DbSet<EFServerConnection> ServerConnections { get; set; }
     public DbSet<EFStatistic> Statistics { get; set; }
+    public DbSet<EFAuthToken> AuthTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,10 +30,17 @@ public class DataContext : DbContext
         modelBuilder.Entity<EFServer>().ToTable("EFServers");
         modelBuilder.Entity<EFServerConnection>().ToTable("EFServerConnections");
         modelBuilder.Entity<EFStatistic>().ToTable("EFStatistics");
+        modelBuilder.Entity<EFAuthToken>().ToTable("EFAuthTokens");
+        modelBuilder.Entity<EFNote>().ToTable("EFNotes");
 
         modelBuilder.Entity<EFInfraction>()
             .HasOne(a => a.Target)
             .WithMany(p => p.Infractions)
+            .HasForeignKey(f => f.TargetId);
+        
+        modelBuilder.Entity<EFNote>()
+            .HasOne(a => a.Target)
+            .WithMany(p => p.Notes)
             .HasForeignKey(f => f.TargetId);
 
         #region EFStatistic

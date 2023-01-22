@@ -1,4 +1,6 @@
-﻿namespace GlobalInfractions.Models;
+﻿using GlobalInfractions.Enums;
+
+namespace GlobalInfractions.Models;
 
 public class EntityDto
 {
@@ -21,6 +23,11 @@ public class EntityDto
     /// The first time we saw the player
     /// </summary>
     public DateTimeOffset? Created { get; set; }
+    
+    /// <summary>
+    /// The player's web-login role
+    /// </summary>
+    public WebRole WebRole { get; set; }
 
     /// <summary>
     /// The player's meta

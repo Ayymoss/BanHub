@@ -1,12 +1,12 @@
 ﻿using GlobalInfraction.WebCore.Server.Interfaces;
-using GlobalInfraction.WebCore.Shared.Models;
+using GlobalInfraction.WebCore.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GlobalInfraction.WebCore.Server.Controllers;
 
 [ApiController]
 [Route("api/v2/[controller]")]
-public class StatisticController : Controller
+public class StatisticController : ControllerBase
 {
     private readonly IStatisticService _statisticService;
 

@@ -1,10 +1,17 @@
 ﻿@page "/"
-@using GlobalInfraction.WebCore.Shared.Models
-@using GlobalInfraction.WebCore.Shared.Enums
 @using Humanizer
 @inject HttpClient Http
 
 <OpenGraphComponent Title="Index" Description="Welcome to Global Infractions"/>
+
+<AuthorizeView Roles="Admin">
+    <NotAuthorized>1Not Auth'd</NotAuthorized>
+    <Authorized>1Auth'd as Admin</Authorized>
+</AuthorizeView>
+<AuthorizeView>
+    <NotAuthorized>2Not Auth'd</NotAuthorized>
+    <Authorized>2Auth'd</Authorized>
+</AuthorizeView>
 
 <MudContainer Class="mt-16 px-8" MaxWidth="MaxWidth.False">
     <MudGrid>

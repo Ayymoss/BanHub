@@ -1,14 +1,14 @@
 ﻿using GlobalInfraction.WebCore.Server.Enums;
 using GlobalInfraction.WebCore.Server.Interfaces;
 using GlobalInfraction.WebCore.Server.Services;
-using GlobalInfraction.WebCore.Shared.Models;
+using GlobalInfraction.WebCore.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GlobalInfraction.WebCore.Server.Controllers;
 
 [ApiController]
 [Route("api/v2/[controller]")]
-public class SearchController : Controller
+public class SearchController : ControllerBase
 {
     private readonly ISearchService _searchService;
 

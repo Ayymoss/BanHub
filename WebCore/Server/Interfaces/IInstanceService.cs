@@ -1,5 +1,5 @@
 ﻿using GlobalInfraction.WebCore.Server.Enums;
-using GlobalInfraction.WebCore.Shared.Models;
+using GlobalInfraction.WebCore.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GlobalInfraction.WebCore.Server.Interfaces;

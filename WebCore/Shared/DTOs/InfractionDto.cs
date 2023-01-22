@@ -1,6 +1,6 @@
 ﻿using GlobalInfraction.WebCore.Shared.Enums;
 
-namespace GlobalInfraction.WebCore.Shared.Models;
+namespace GlobalInfraction.WebCore.Shared.DTOs;
 
 public class InfractionDto
 {

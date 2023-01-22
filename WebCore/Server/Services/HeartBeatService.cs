@@ -1,7 +1,7 @@
 ﻿using GlobalInfraction.WebCore.Server.Context;
 using GlobalInfraction.WebCore.Server.Enums;
 using GlobalInfraction.WebCore.Server.Interfaces;
-using GlobalInfraction.WebCore.Shared.Models;
+using GlobalInfraction.WebCore.Shared.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace GlobalInfraction.WebCore.Server.Services;

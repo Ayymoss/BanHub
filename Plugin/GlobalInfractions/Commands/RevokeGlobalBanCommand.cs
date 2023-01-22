@@ -45,20 +45,20 @@ public class RevokeGlobalBanCommand : Command
             return;
         }
 
-        var result = await Plugin.EndpointManager
-            .RevokeGlobalBan(InfractionType.Ban, gameEvent.Origin, gameEvent.Target, gameEvent.Data, scope: InfractionScope.Global);
-        // FIX GLOBAL BAN 3/4 PROBLEM
+        //var result = await Plugin.EndpointManager
+        //    .RevokeGlobalBan(InfractionType.Ban, gameEvent.Origin, gameEvent.Target, gameEvent.Data, scope: InfractionScope.Global);
+        // TODO: fix
 
-        switch (result.Item1)
-        {
-            case true:
-                gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandSuccess.FormatExt(gameEvent.Target.CleanedName, gameEvent.Data, result.Item2));
-                gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandSuccessFollow);
-                gameEvent.Target.Unban("^1Globally banned!^7\nGlobalInfractions.com", Utilities.IW4MAdminClient(gameEvent.Target.CurrentServer));
-                break;
-            case false:
-                gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandFail);
-                break;
-        }
+        //switch (result.Item1)
+        //{
+        //    case true:
+        //        gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandSuccess.FormatExt(gameEvent.Target.CleanedName, gameEvent.Data, result.Item2));
+        //        gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandSuccessFollow);
+        //        gameEvent.Target.Unban("^1Globally banned!^7\nGlobalInfractions.com", Utilities.IW4MAdminClient(gameEvent.Target.CurrentServer));
+        //        break;
+        //    case false:
+        //        gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandFail);
+        //        break;
+        //}
     }
 }

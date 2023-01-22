@@ -1,13 +1,13 @@
 ﻿using GlobalInfraction.WebCore.Server.Enums;
 using GlobalInfraction.WebCore.Server.Interfaces;
-using GlobalInfraction.WebCore.Shared.Models;
+using GlobalInfraction.WebCore.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GlobalInfraction.WebCore.Server.Controllers;
 
 [ApiController]
 [Route("api/v2/[controller]")]
-public class InstanceController : Controller
+public class InstanceController : ControllerBase
 {
     private readonly IInstanceService _instanceService;
 

@@ -3,6 +3,7 @@ using GlobalInfraction.WebCore.Server.Interfaces;
 using GlobalInfraction.WebCore.Server.Middleware;
 using GlobalInfraction.WebCore.Server.Services;
 using GlobalInfraction.WebCore.Server.Utilities;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 SetupConfiguration.InitConfiguration();
@@ -17,17 +18,29 @@ builder.WebHost.ConfigureKestrel(options => { options.ListenAnyIP(configuration.
 #endif
 
 // TODO: TOGGLE MANUALLY - Migrations don't seem to honour build state
-//configuration.Database.Database = "GlobalInfractionsDevelopment4";
+configuration.Database.Database = "GlobalInfractionsDevelopment";
 
-builder.Services.AddDbContext<DataContext>(
-    options =>
+builder.Services.AddDbContext<DataContext>(options =>
+{
+    options.UseNpgsql($"Host={configuration.Database.HostName};" +
+                      $"Port={configuration.Database.Port};" +
+                      $"Username={configuration.Database.UserName};" +
+                      $"Password={configuration.Database.Password};" +
+                      $"Database={configuration.Database.Database}");
+});
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsSpecs", corsPolicyBuilder =>
     {
-        options.UseNpgsql($"Host={configuration.Database.HostName};" +
-                          $"Port={configuration.Database.Port};" +
-                          $"Username={configuration.Database.UserName};" +
-                          $"Password={configuration.Database.Password};" +
-                          $"Database={configuration.Database.Database}");
+        corsPolicyBuilder
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .SetIsOriginAllowed(_ => true)
+            .AllowCredentials();
     });
+});
 
 builder.Services.AddLogging();
 
@@ -85,9 +98,15 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-
 app.MapRazorPages();
+
+app.UseCors("CorsSpecs");
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 app.MapFallbackToFile("index.html");
+
+
 
 app.Run();
