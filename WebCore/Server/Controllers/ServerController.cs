@@ -1,6 +1,7 @@
 ﻿using GlobalInfraction.WebCore.Server.Enums;
 using GlobalInfraction.WebCore.Server.Interfaces;
 using GlobalInfraction.WebCore.Server.Services;
+using GlobalInfraction.WebCore.Server.Services.Authentication;
 using GlobalInfraction.WebCore.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,17 +1,8 @@
-﻿using System.Net;
-using System.Security.Claims;
-using System.Text.Json;
-using GlobalInfraction.WebCore.Server.Context;
-using GlobalInfraction.WebCore.Server.Interfaces;
-using GlobalInfraction.WebCore.Shared.DTOs;
+﻿using GlobalInfraction.WebCore.Server.Services;
+using GlobalInfraction.WebCore.Server.Services.Authentication;
 using GlobalInfraction.WebCore.Shared.DTOs.WebEntity;
-using GlobalInfraction.WebCore.Shared.Enums;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace GlobalInfraction.WebCore.Server.Controllers;
 
@@ -19,77 +10,24 @@ namespace GlobalInfraction.WebCore.Server.Controllers;
 [Route("api/v2/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly DataContext _context;
+    private readonly WebAuthentication _webAuthentication;
+    private readonly Configuration _configuration;
 
-    public AuthController(DataContext context)
+    public AuthController(WebAuthentication webAuthentication, Configuration configuration)
     {
-        _context = context;
+        _webAuthentication = webAuthentication;
+        _configuration = configuration;
     }
 
     [HttpPost("Login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequest)
+    public async Task<ActionResult<UserDto>> Login([FromBody] LoginRequestDto loginRequest)
     {
-        var token = await _context.AuthTokens
-            .AsTracking()
-            .Where(x => x.Token == loginRequest.Token)
-            .FirstOrDefaultAsync();
-
-        if (token is null || !token.Active) return Unauthorized("Token is invalid.");
-
-        var user = await _context.Entities
-            .Where(x => x.Id == token.EntityId)
-            .Select(x => new UserDto
-            {
-                UserName = x.CurrentAlias.Alias.UserName,
-                Role = x.WebRole.ToString()
-            }).FirstOrDefaultAsync();
-
-        if (user is null) return Unauthorized("User is invalid.");
-
-        token.Active = false;
-        _context.AuthTokens.Update(token);
-        await _context.SaveChangesAsync();
-
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.Name, user.UserName),
-            new(ClaimTypes.Role, user.Role),
-            new("UserId", token.EntityId.ToString())
-        };
-        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var authProperties = new AuthenticationProperties();
-
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-            new ClaimsPrincipal(claimsIdentity), authProperties);
-
-        return Ok("Success");
+        var authManager = new JwtAuthenticationManager(_configuration, _webAuthentication);
+        var userSession = await authManager.GenerateJwtToken(loginRequest.Token ?? string.Empty);
+        if (userSession is null) return Unauthorized();
+        return Ok(userSession);
     }
 
-    [HttpGet("Profile"), Authorize]
-    public async Task<ActionResult<UserDto>> UserProfileAsync()
-    {
-        var userId = HttpContext.User.Claims
-            .Where(x => x.Type == "UserId")
-            .Select(f => Convert.ToInt32(f.Value))
-            .First();
-
-        var user = await _context.Entities
-            .Where(x => x.Id == userId)
-            .Select(f => new UserDto
-            {
-                UserName = f.CurrentAlias.Alias.UserName,
-                Role = f.WebRole.ToString()
-            }).FirstOrDefaultAsync();
-
-        if (user is null) return BadRequest("User is invalid.");
-
-        return Ok(user);
-    }
-
-    [HttpPost("Logout"), Authorize]
-    public async Task<IActionResult> Logout()
-    {
-        await HttpContext.SignOutAsync();
-        return Ok("Success");
-    }
+    [HttpGet, Authorize(Roles = "Admin")]
+    public ActionResult<string> GetCat() => Ok("Meow");
 }

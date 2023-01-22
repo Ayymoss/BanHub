@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace GlobalInfraction.WebCore.Server.Services;
+namespace GlobalInfraction.WebCore.Server.Services.Authentication;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class PluginAuthentication : Attribute, IAuthorizationFilter

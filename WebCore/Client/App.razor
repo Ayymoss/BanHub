@@ -1,9 +1,5 @@
-﻿@inject ILocalStorageService LocalStorageService;
-@inject IApiService ApiLogic
-@inject AuthenticationStateProvider AuthStateProvider
-
-<CascadingAuthenticationState>
-    <Router AppAssembly="@typeof(App).Assembly" OnNavigateAsync="@OnNavigateAsync">
+﻿<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
             <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
@@ -17,30 +13,3 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
-
-@code{
-
-    private async Task OnNavigateAsync(NavigationContext args)
-    {
-        var auth = await LocalStorageService.GetItemAsync<string>("isauthenticated");
-        var user = (await (AuthStateProvider as CustomAuthStateProvider)?.GetAuthenticationStateAsync()).User;
-
-        Console.WriteLine($"auth: {auth} - user: {user.Identity?.IsAuthenticated}");
-
-        if (!string.IsNullOrEmpty(auth) && !user.Identity!.IsAuthenticated)
-        {
-            var response = await ApiLogic.UserProfileAsync();
-            Console.WriteLine(response.message);
-            switch (response.message)
-            {
-                case "Success":
-                    (AuthStateProvider as CustomAuthStateProvider)?.SetAuthInfo(response.user);
-                    break;
-                case "Unauthorized":
-                    await LocalStorageService.RemoveItemAsync("isauthenticated");
-                    break;
-            }
-        }
-    }
-
-}

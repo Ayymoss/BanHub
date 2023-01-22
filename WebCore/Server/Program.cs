@@ -1,10 +1,14 @@
+using System.Text;
 using GlobalInfraction.WebCore.Server.Context;
 using GlobalInfraction.WebCore.Server.Interfaces;
 using GlobalInfraction.WebCore.Server.Middleware;
 using GlobalInfraction.WebCore.Server.Services;
+using GlobalInfraction.WebCore.Server.Services.Authentication;
 using GlobalInfraction.WebCore.Server.Utilities;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 SetupConfiguration.InitConfiguration();
 var configuration = SetupConfiguration.ReadConfiguration();
@@ -29,17 +33,21 @@ builder.Services.AddDbContext<DataContext>(options =>
                       $"Database={configuration.Database.Database}");
 });
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
-builder.Services.AddCors(options =>
+builder.Services.AddAuthentication(o =>
 {
-    options.AddPolicy("CorsSpecs", corsPolicyBuilder =>
+    o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(o =>
+{
+    o.RequireHttpsMetadata = false;
+    o.SaveToken = true;
+    o.TokenValidationParameters = new TokenValidationParameters
     {
-        corsPolicyBuilder
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .SetIsOriginAllowed(_ => true)
-            .AllowCredentials();
-    });
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configuration.JwtSecurityKey)),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
 });
 
 builder.Services.AddLogging();
@@ -50,6 +58,7 @@ builder.Services.AddSingleton<PluginAuthentication>();
 builder.Services.AddSingleton<StatisticsTracking>();
 
 builder.Services.AddTransient<ApiKeyMiddleware>();
+builder.Services.AddTransient<WebAuthentication>();
 
 builder.Services.AddScoped<IEntityService, EntityService>();
 builder.Services.AddScoped<IHeartBeatService, HeartBeatService>();
@@ -100,13 +109,10 @@ app.UseRouting();
 
 app.MapRazorPages();
 
-app.UseCors("CorsSpecs");
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapFallbackToFile("index.html");
-
-
 
 app.Run();

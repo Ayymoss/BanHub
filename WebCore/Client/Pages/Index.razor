@@ -5,12 +5,12 @@
 <OpenGraphComponent Title="Index" Description="Welcome to Global Infractions"/>
 
 <AuthorizeView Roles="Admin">
-    <NotAuthorized>1Not Auth'd</NotAuthorized>
-    <Authorized>1Auth'd as Admin</Authorized>
+    <NotAuthorized><p>-> Admin Auth Check: Not Authorised</p></NotAuthorized>
+    <Authorized><p>-> @context.User.Identity!.Name - Admin</p></Authorized>
 </AuthorizeView>
 <AuthorizeView>
-    <NotAuthorized>2Not Auth'd</NotAuthorized>
-    <Authorized>2Auth'd</Authorized>
+    <NotAuthorized><p>-> Other User Check: Not Authorised</p></NotAuthorized>
+    <Authorized><p>-> @context.User.Identity!.Name - Other User</p></Authorized>
 </AuthorizeView>
 
 <MudContainer Class="mt-16 px-8" MaxWidth="MaxWidth.False">
@@ -92,6 +92,9 @@
 
 @code {
 
+    //[CascadingParameter]
+    //private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+    
     private string? _instances;
     private string? _infractions;
     private string? _entities;

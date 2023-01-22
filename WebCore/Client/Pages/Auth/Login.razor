@@ -1,28 +1,39 @@
 ﻿@page "/Login"
-@inject IApiService ApiLogic
+@using System.Net
+@inject HttpClient Http
+@inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
-@inject ILocalStorageService LocalStorageService;
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <form>
     <div class="form-group">
         <label for="token">Secret Token</label>
         <input type="text" class="form-control" id="token" @bind="_loginModel.Token" placeholder="Enter Secret Token"/>
     </div>
-    <button class="btn btn-primary" @onclick="UserLogin">Login</button>
+    <MudButton Variant="Variant.Filled" OnClick="Authenticate">Default</MudButton>
 </form>
 
 
 @code {
     private LoginRequestDto _loginModel = new();
 
-    private async Task UserLogin()
+    private async Task Authenticate()
     {
-        var message = await ApiLogic.LoginAsync(_loginModel);
-        Console.WriteLine($"UserLogin: " + message);
-        if (message == "Success")
+        var response = await Http.PostAsJsonAsync("/api/v2/Auth/Login", _loginModel);
+        if (response.IsSuccessStatusCode)
         {
-            await LocalStorageService.SetItemAsStringAsync("isauthenticated", "true");
+            var userSession = await response.Content.ReadFromJsonAsync<UserDto>();
+            var customAuthState = (CustomAuthStateProvider)AuthenticationStateProvider;
+            await customAuthState.UpdateAuthenticationState(userSession);
             NavigationManager.NavigateTo("/", true);
+        }
+        else if (response.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Invalid Token");
+        }
+        else
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Something went wrong");
         }
     }
 
