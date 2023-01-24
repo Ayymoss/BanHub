@@ -7,8 +7,10 @@ namespace GlobalInfractions.Configuration;
 public class ConfigurationModel : IBaseConfiguration
 {
     public bool EnableGlobalInfractions { get; set; } = true;
+
     [JsonPropertyName("ApiKeyDoNotChange")]
     public Guid ApiKey { get; set; } = Guid.NewGuid();
+
     public string? InstanceNameOverride { get; set; }
     public bool PrintInfractionsToConsole { get; set; } = false;
     public TranslationStrings Translations { get; set; } = new();
@@ -21,6 +23,7 @@ public class ConfigurationModel : IBaseConfiguration
 
 public class TranslationStrings
 {
+    public string CannotAuthIW4MAdmin { get; set; } = "You cannot authenticate as IW4MAdmin";
     public string NotActive { get; set; } = "Global Infractions is not active";
     public string GlobalBanCommandSuccess { get; set; } = "Global Infractions banned {{target}} for {{reason}} ({{guid}})";
     public string GlobalBanCommandSuccessFollow { get; set; } = "(Color::Yellow)You must upload (Color::Accent)!evidence (Color::Yellow)for global bans!";
@@ -29,5 +32,6 @@ public class TranslationStrings
     public string SubmitEvidenceFail { get; set; } = "Failed to submit evidence";
     public string SubmitEvidenceRegexFail { get; set; } = "Evidence must be a valid YouTube URL";
     public string CannotTargetServer { get; set; } = "You cannot ban the console...";
-    
+    public string ProvideToken { get; set; } = "Your token is {{token}} (expires in 5 minutes)";
+    public string TokenGenerationFailed { get; set; } = "Failed to generate token";
 }

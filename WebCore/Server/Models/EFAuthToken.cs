@@ -13,9 +13,14 @@ public class EFAuthToken
     public string Token { get; set; } = null!;
 
     /// <summary>
-    /// Whether the token is active
+    /// When the token was created
     /// </summary>
-    public bool Active { get; set; }
+    public DateTimeOffset Created { get; set; }
+
+    /// <summary>
+    /// If the token has been used
+    /// </summary>
+    public bool Used { get; set; }
 
     /// <summary>
     /// Entity associated with current token.

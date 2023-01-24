@@ -22,22 +22,23 @@
 
     private async Task OnNavigateAsync(NavigationContext args)
     {
-        var auth = await LocalStorageService.GetItemAsync<string>("isauthenticated");
-        var user = (await (AuthStateProvider as CustomAuthStateProvider)?.GetAuthenticationStateAsync()).User;
-
-        Console.WriteLine($"auth: {auth} - user: {user.Identity?.IsAuthenticated}");
+        var auth = await LocalStorageService.GetItemAsync<string>("IsAuthenticated");
+        var user = (await (AuthStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
 
         if (!string.IsNullOrEmpty(auth) && !user.Identity!.IsAuthenticated)
         {
             var response = await ApiLogic.UserProfileAsync();
-            Console.WriteLine(response.message);
-            switch (response.message)
+            switch (response.Item1)
             {
                 case "Success":
-                    (AuthStateProvider as CustomAuthStateProvider)?.SetAuthInfo(response.user);
+                    (AuthStateProvider as CustomAuthStateProvider)?.SetAuthInfo(response.Item2!);
                     break;
                 case "Unauthorized":
-                    await LocalStorageService.RemoveItemAsync("isauthenticated");
+                    await LocalStorageService.RemoveItemAsync("IsAuthenticated");
+                    break;
+                case "Failed":
+                    (AuthStateProvider as CustomAuthStateProvider)?.ClearAuthInfo();
+                    await LocalStorageService.RemoveItemAsync("IsAuthenticated");
                     break;
             }
         }

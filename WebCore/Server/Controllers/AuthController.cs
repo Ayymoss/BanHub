@@ -1,15 +1,9 @@
-﻿using System.Net;
-using System.Security.Claims;
-using System.Text.Json;
+﻿using System.Security.Claims;
 using GlobalInfraction.WebCore.Server.Context;
-using GlobalInfraction.WebCore.Server.Interfaces;
-using GlobalInfraction.WebCore.Shared.DTOs;
 using GlobalInfraction.WebCore.Shared.DTOs.WebEntity;
-using GlobalInfraction.WebCore.Shared.Enums;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,7 +28,8 @@ public class AuthController : ControllerBase
             .Where(x => x.Token == loginRequest.Token)
             .FirstOrDefaultAsync();
 
-        if (token is null || !token.Active) return Unauthorized("Token is invalid.");
+        if (token is null || token.Created + TimeSpan.FromMinutes(5) < DateTimeOffset.UtcNow || token.Used)
+            return Unauthorized("Token is invalid.");
 
         var user = await _context.Entities
             .Where(x => x.Id == token.EntityId)
@@ -46,7 +41,7 @@ public class AuthController : ControllerBase
 
         if (user is null) return Unauthorized("User is invalid.");
 
-        token.Active = false;
+        token.Used = true;
         _context.AuthTokens.Update(token);
         await _context.SaveChangesAsync();
 
@@ -92,4 +87,7 @@ public class AuthController : ControllerBase
         await HttpContext.SignOutAsync();
         return Ok("Success");
     }
+
+    [HttpGet, Authorize(Roles = "Admin")]
+    public ActionResult<string> GetCat() => Ok("Meow");
 }

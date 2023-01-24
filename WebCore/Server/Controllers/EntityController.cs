@@ -56,4 +56,12 @@ public class EntityController : ControllerBase
         var result = await _entityService.GetOnlineCount();
         return Ok(result);
     }
+    
+    [HttpPost("GetToken"), PluginAuthentication]
+    public async Task<ActionResult<string>> GetAuthenticationToken([FromQuery] string authToken, [FromBody] EntityDto request)
+    {
+        var result = await _entityService.GetAuthenticationToken(request);
+        return Ok(result);
+    }
+    
 }

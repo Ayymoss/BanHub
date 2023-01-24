@@ -189,4 +189,10 @@ public class EndpointManager
         };
         return await _infraction.SubmitEvidence(infraction);
     }
+
+    public async Task<string?> GenerateToken(EFClient client)
+    {
+        var entity = ClientToEntity(client);
+        return await _entity.GetToken(entity);
+    }
 }

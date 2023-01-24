@@ -10,4 +10,5 @@ public interface IEntityService
     Task<bool> HasEntity(string identity);
     Task<int> GetOnlineCount();
     Task<List<EntityDto>> Pagination(PaginationDto pagination);
+    Task<string?> GetAuthenticationToken(EntityDto request);
 }

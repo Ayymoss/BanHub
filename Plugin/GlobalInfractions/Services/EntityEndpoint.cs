@@ -2,8 +2,6 @@
 using System.Text.Json;
 using GlobalInfractions.Configuration;
 using GlobalInfractions.Models;
-using Microsoft.Extensions.DependencyInjection;
-using SharedLibraryCore.Interfaces;
 
 namespace GlobalInfractions.Services;
 
@@ -27,15 +25,29 @@ public class EntityEndpoint
         try
         {
             var response = await _httpClient.GetAsync($"{ApiHost}/Entity?identity={identity}");
-
             if (!response.IsSuccessStatusCode) return null;
-
-            var json = await response.Content.ReadFromJsonAsync<EntityDto>();
-            return json;
+            return await response.Content.ReadFromJsonAsync<EntityDto>();
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine($"[{Plugin.PluginName}] Error sending instance heartbeat: {e.Message}");
+            Console.WriteLine($"[{Plugin.PluginName}] Error getting entity: {e.Message}");
+        }
+
+        return null;
+    }
+
+    public async Task<string?> GetToken(EntityDto entity)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync($"{ApiHost}/Entity/GetToken?authToken={_configurationModel.ApiKey}", entity);
+            if (!response.IsSuccessStatusCode) return null;
+            var result = await response.Content.ReadAsStringAsync();
+            return string.IsNullOrEmpty(result) ? null : result;
+        }
+        catch (HttpRequestException e)
+        {
+            Console.WriteLine($"[{Plugin.PluginName}] Error getting token: {e.Message}");
         }
 
         return null;
@@ -46,19 +58,19 @@ public class EntityEndpoint
         try
         {
             var response = await _httpClient.PostAsJsonAsync($"{ApiHost}/Entity?authToken={_configurationModel.ApiKey}", entity);
-            
+
             if (!response.IsSuccessStatusCode && _configurationModel.DebugMode)
             {
                 Console.WriteLine($"\n[{Plugin.PluginName}] Error posting evidence {entity.Identity}\nSC: {response.StatusCode}\n" +
                                   $"RP: {response.ReasonPhrase}\nB: {await response.Content.ReadAsStringAsync()}\nJSON: {JsonSerializer.Serialize(entity)}\n" +
                                   $"[{Plugin.PluginName}] End of error");
             }
-            
+
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine($"[{Plugin.PluginName}] Error sending instance heartbeat: {e.Message}");
+            Console.WriteLine($"[{Plugin.PluginName}] Error updating entity: {e.Message}");
         }
 
         return false;

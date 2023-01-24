@@ -3,9 +3,14 @@
 public class NoteDto
 {
     /// <summary>
+    /// The database ID for the note
+    /// </summary>
+    public int Id { get; set; }
+    
+    /// <summary>
     /// Time the note was issued
     /// </summary>
-    public DateTimeOffset? Created { get; init; }
+    public DateTimeOffset? Created { get; set; }
 
     /// <summary>
     /// The associated note

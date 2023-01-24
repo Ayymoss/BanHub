@@ -33,21 +33,24 @@ public class EntityService : IEntityService
                     UserName = profile.CurrentAlias.Alias.UserName,
                     Changed = profile.CurrentAlias.Alias.Changed
                 },
-                Notes = profile.Notes.Where(x => x.Target.Identity == identity).Select(note => new NoteDto
-                {
-                    Created = note.Created,
-                    Message = note.Message,
-                    Admin = new EntityDto
+                Notes = profile.Notes
+                    .Where(x => x.Target.Identity == identity)
+                    .Select(note => new NoteDto
                     {
-                        Identity = note.Admin.Identity,
-                        Alias = new AliasDto
+                        Id = note.Id,
+                        Created = note.Created,
+                        Message = note.Message,
+                        Admin = new EntityDto
                         {
-                            UserName = note.Admin.CurrentAlias.Alias.UserName,
-                            Changed = note.Admin.CurrentAlias.Alias.Changed
-                        },
-                        Strike = note.Admin.Strike
-                    }
-                }).ToList(),
+                            Identity = note.Admin.Identity,
+                            Alias = new AliasDto
+                            {
+                                UserName = note.Admin.CurrentAlias.Alias.UserName,
+                                Changed = note.Admin.CurrentAlias.Alias.Changed
+                            },
+                            Strike = note.Admin.Strike
+                        }
+                    }).ToList(),
                 Servers = profile.ServerConnections
                     .Where(x => x.Entity.Identity == identity)
                     .Select(server => new ServerDto
@@ -276,32 +279,33 @@ public class EntityService : IEntityService
                     UserName = profile.CurrentAlias.Alias.UserName,
                     Changed = profile.CurrentAlias.Alias.Changed
                 },
-                Infractions = profile.Infractions.Select(inf => new InfractionDto
-                {
-                    InfractionType = inf.InfractionType,
-                    InfractionStatus = inf.InfractionStatus,
-                    InfractionScope = inf.InfractionScope,
-                    InfractionGuid = inf.InfractionGuid,
-                    Duration = inf.Duration,
-                    Reason = inf.Reason,
-                    Evidence = inf.Evidence,
-                    Admin = new EntityDto
+                Infractions = profile.Infractions
+                    .Select(inf => new InfractionDto
                     {
-                        Identity = inf.Admin.Identity,
-                        Alias = new AliasDto
+                        InfractionType = inf.InfractionType,
+                        InfractionStatus = inf.InfractionStatus,
+                        InfractionScope = inf.InfractionScope,
+                        InfractionGuid = inf.InfractionGuid,
+                        Duration = inf.Duration,
+                        Reason = inf.Reason,
+                        Evidence = inf.Evidence,
+                        Admin = new EntityDto
                         {
-                            UserName = inf.Admin.CurrentAlias.Alias.UserName,
-                            Changed = inf.Admin.CurrentAlias.Alias.Changed
+                            Identity = inf.Admin.Identity,
+                            Alias = new AliasDto
+                            {
+                                UserName = inf.Admin.CurrentAlias.Alias.UserName,
+                                Changed = inf.Admin.CurrentAlias.Alias.Changed
+                            },
+                            Strike = inf.Admin.Strike
                         },
-                        Strike = inf.Admin.Strike
-                    },
-                    Instance = new InstanceDto
-                    {
-                        InstanceGuid = inf.Instance.InstanceGuid,
-                        InstanceIp = inf.Instance.InstanceIp,
-                        InstanceName = inf.Instance.InstanceName
-                    }
-                }).ToList(),
+                        Instance = new InstanceDto
+                        {
+                            InstanceGuid = inf.Instance.InstanceGuid,
+                            InstanceIp = inf.Instance.InstanceIp,
+                            InstanceName = inf.Instance.InstanceName
+                        }
+                    }).ToList(),
                 HeartBeat = profile.HeartBeat,
                 Created = profile.Created,
                 Strike = profile.Strike
@@ -309,5 +313,34 @@ public class EntityService : IEntityService
             .ToListAsync();
 
         return pagedData;
+    }
+
+    public async Task<string?> GetAuthenticationToken(EntityDto request)
+    {
+        var entity = await _context.Entities.FirstOrDefaultAsync(x => x.Identity == request.Identity);
+        if (entity is null) return null;
+
+        var hasActiveToken = await _context.AuthTokens.FirstOrDefaultAsync(x =>
+            x.EntityId == entity.Id && x.Created + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow && !x.Used);
+        if (hasActiveToken is not null) return hasActiveToken.Token;
+
+        const string characters = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
+        var result = string.Empty;
+        for (var i = 0; i < 6; i++)
+        {
+            result += characters[Random.Shared.Next(characters.Length)];
+        }
+
+        var token = new EFAuthToken
+        {
+            Token = result,
+            Created = DateTimeOffset.UtcNow,
+            EntityId = entity.Id,
+            Used = false
+        };
+
+        _context.AuthTokens.Add(token);
+        await _context.SaveChangesAsync();
+        return result;
     }
 }

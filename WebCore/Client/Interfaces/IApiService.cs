@@ -5,6 +5,6 @@ namespace GlobalInfraction.WebCore.Client.Interfaces;
 public interface IApiService
 {
     Task<string> LoginAsync(LoginRequestDto login);
-    Task<(string message, UserDto? user)> UserProfileAsync();
+    Task<(string, UserDto?)> UserProfileAsync();
     Task<string> LogoutAsync();
 }

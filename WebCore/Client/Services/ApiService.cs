@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using System.Text.Json;
 using GlobalInfraction.WebCore.Client.Interfaces;
 using GlobalInfraction.WebCore.Shared.DTOs.WebEntity;
 
@@ -20,12 +21,22 @@ public class ApiService : IApiService
         return response.IsSuccessStatusCode ? "Success" : "Failed";
     }
 
-    public async Task<(string message, UserDto? user)> UserProfileAsync()
+    public async Task<(string, UserDto?)> UserProfileAsync()
     {
         var response = await _httpClient.GetAsync("/api/v2/Auth/Profile");
         if (response.IsSuccessStatusCode)
         {
-            return ("Success", await response.Content.ReadFromJsonAsync<UserDto>());
+            UserDto? result;
+            try
+            {
+                result = await response.Content.ReadFromJsonAsync<UserDto>();
+            }
+            catch (JsonException)
+            {
+                return ("Failed", null);
+            }
+
+            return ("Success", result);
         }
 
         return response.StatusCode is System.Net.HttpStatusCode.Unauthorized ? ("Unauthorized", null) : ("Failed", null);

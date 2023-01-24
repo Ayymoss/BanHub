@@ -2,8 +2,6 @@
 using System.Text.Json;
 using GlobalInfractions.Configuration;
 using GlobalInfractions.Models;
-using Microsoft.Extensions.DependencyInjection;
-using SharedLibraryCore.Interfaces;
 
 namespace GlobalInfractions.Services;
 
