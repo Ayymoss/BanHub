@@ -1,11 +1,11 @@
-﻿using GlobalInfractions.Enums;
+﻿using BanHub.Enums;
 using SharedLibraryCore;
 using SharedLibraryCore.Commands;
 using SharedLibraryCore.Configuration;
 using SharedLibraryCore.Database.Models;
 using SharedLibraryCore.Interfaces;
 
-namespace GlobalInfractions.Commands;
+namespace BanHub.Commands;
 
 public class GlobalBanCommand : Command
 {
@@ -53,7 +53,7 @@ public class GlobalBanCommand : Command
             case true:
                 gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandSuccess.FormatExt(gameEvent.Target.CleanedName, gameEvent.Data, result.Item2));
                 gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandSuccessFollow);
-                gameEvent.Target.Ban("^1Globally banned!^7\nGlobalInfractions.com", Utilities.IW4MAdminClient(gameEvent.Target.CurrentServer), false);
+                gameEvent.Target.Ban("^1Globally banned!^7\nBanHub.gg", Utilities.IW4MAdminClient(gameEvent.Target.CurrentServer), false);
                 break;
             case false:
                 gameEvent.Origin.Tell(Plugin.Translations.GlobalBanCommandFail);

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
-namespace GlobalInfraction.WebCore.Client.Handlers;
+namespace BanHub.WebCore.Client.Handlers;
 
 public class CookieHandler : DelegatingHandler
 {

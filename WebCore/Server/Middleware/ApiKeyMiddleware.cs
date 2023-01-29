@@ -1,8 +1,8 @@
-﻿using GlobalInfraction.WebCore.Server.Context;
-using GlobalInfraction.WebCore.Server.Services;
+﻿using BanHub.WebCore.Server.Context;
+using BanHub.WebCore.Server.Services;
 using Microsoft.EntityFrameworkCore;
 
-namespace GlobalInfraction.WebCore.Server.Middleware;
+namespace BanHub.WebCore.Server.Middleware;
 
 public class ApiKeyMiddleware : IMiddleware
 {

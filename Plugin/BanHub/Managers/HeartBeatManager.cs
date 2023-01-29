@@ -1,20 +1,20 @@
 ﻿using System.Timers;
-using GlobalInfractions.Configuration;
-using GlobalInfractions.Models;
-using GlobalInfractions.Services;
+using BanHub.Configuration;
+using BanHub.Models;
+using BanHub.Services;
 using Timer = System.Timers.Timer;
 
-namespace GlobalInfractions.Managers;
+namespace BanHub.Managers;
 
 public class HeartBeatManager
 {
-    private readonly ConfigurationModel _configurationModel;
+    private readonly InstanceDto _instanceMeta;
     private readonly HeartBeatEndpoint _heartBeatEndpoint;
 
-    public HeartBeatManager(IServiceProvider serviceProvider, ConfigurationModel configurationModel)
+    public HeartBeatManager(ConfigurationModel configurationModel, InstanceDto instanceMeta, HeartBeatEndpoint heartBeatEndpoint)
     {
-        _configurationModel = configurationModel;
-        _heartBeatEndpoint = new HeartBeatEndpoint(configurationModel);
+        _instanceMeta = instanceMeta;
+        _heartBeatEndpoint = heartBeatEndpoint;
     }
 
     public void HeartbeatTimer()
@@ -31,8 +31,7 @@ public class HeartBeatManager
     {
         try
         {
-            var instance = Plugin.Instance;
-            await _heartBeatEndpoint.PostInstanceHeartBeat(instance);
+            await _heartBeatEndpoint.PostInstanceHeartBeat(_instanceMeta);
         }
         catch (Exception exception)
         {

@@ -1,13 +1,12 @@
-﻿using System.Text.Json;
-using GlobalInfraction.WebCore.Server.Context;
-using GlobalInfraction.WebCore.Server.Enums;
-using GlobalInfraction.WebCore.Server.Interfaces;
-using GlobalInfraction.WebCore.Server.Models;
-using GlobalInfraction.WebCore.Shared.DTOs;
-using GlobalInfraction.WebCore.Shared.Enums;
+﻿using BanHub.WebCore.Server.Context;
+using BanHub.WebCore.Server.Enums;
+using BanHub.WebCore.Server.Interfaces;
+using BanHub.WebCore.Server.Models;
+using BanHub.WebCore.Shared.DTOs;
+using BanHub.WebCore.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace GlobalInfraction.WebCore.Server.Services;
+namespace BanHub.WebCore.Server.Services;
 
 public class InfractionService : IInfractionService
 {
@@ -113,18 +112,6 @@ public class InfractionService : IInfractionService
             TargetId = user.Id
         };
 
-        switch (request.InfractionType)
-        {
-            case InfractionType.Ban:
-                user.Strike++;
-                _context.Entities.Update(user);
-                break;
-            case InfractionType.Unban:
-                user.Strike--;
-                _context.Entities.Update(user);
-                break;
-        }
-
         await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.InfractionCount);
         _context.Add(infractionModel);
         await _context.SaveChangesAsync();
@@ -165,7 +152,7 @@ public class InfractionService : IInfractionService
                                         && inf.InfractionType == InfractionType.Ban
                                         && inf.InfractionStatus == InfractionStatus.Active)
             .ToListAsync();
-        
+
         if (!globalBans.Any()) return false;
 
         // Remove any actives
@@ -173,7 +160,6 @@ public class InfractionService : IInfractionService
         {
             inf.InfractionStatus = InfractionStatus.Revoked;
             _context.Infractions.Update(inf);
-            user.Strike--;
         }
 
         await _context.SaveChangesAsync();

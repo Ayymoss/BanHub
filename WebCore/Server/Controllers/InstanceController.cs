@@ -1,9 +1,9 @@
-﻿using GlobalInfraction.WebCore.Server.Enums;
-using GlobalInfraction.WebCore.Server.Interfaces;
-using GlobalInfraction.WebCore.Shared.DTOs;
+﻿using BanHub.WebCore.Server.Enums;
+using BanHub.WebCore.Server.Interfaces;
+using BanHub.WebCore.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GlobalInfraction.WebCore.Server.Controllers;
+namespace BanHub.WebCore.Server.Controllers;
 
 [ApiController]
 [Route("api/v2/[controller]")]
@@ -31,10 +31,10 @@ public class InstanceController : ControllerBase
         var result = await _instanceService.CreateOrUpdate(request, request.InstanceIp);
         return result.Item1 switch
         {
-            ControllerEnums.ProfileReturnState.Created => StatusCode(201, result.Item2), // New, added
+            ControllerEnums.ProfileReturnState.Created => StatusCode(StatusCodes.Status201Created, result.Item2), // New, added
             ControllerEnums.ProfileReturnState.BadRequest => BadRequest(result.Item2), // ??
-            ControllerEnums.ProfileReturnState.Conflict => StatusCode(409, result.Item2), // Conflicting GUIDs
-            ControllerEnums.ProfileReturnState.Accepted => StatusCode(202, result.Item2), // Activated
+            ControllerEnums.ProfileReturnState.Conflict => StatusCode(StatusCodes.Status409Conflict, result.Item2), // Conflicting GUIDs
+            ControllerEnums.ProfileReturnState.Accepted => StatusCode(StatusCodes.Status202Accepted, result.Item2), // Activated
             ControllerEnums.ProfileReturnState.Ok => Ok(result.Item2), // Not activated
             _ => BadRequest() // Should never happen
         };

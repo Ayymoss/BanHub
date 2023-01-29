@@ -1,13 +1,13 @@
 ﻿using System.Security.Claims;
-using GlobalInfraction.WebCore.Server.Context;
-using GlobalInfraction.WebCore.Shared.DTOs.WebEntity;
+using BanHub.WebCore.Server.Context;
+using BanHub.WebCore.Shared.DTOs.WebEntity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace GlobalInfraction.WebCore.Server.Controllers;
+namespace BanHub.WebCore.Server.Controllers;
 
 [ApiController]
 [Route("api/v2/[controller]")]

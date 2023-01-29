@@ -1,9 +1,9 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
-using GlobalInfractions.Configuration;
-using GlobalInfractions.Models;
+using BanHub.Configuration;
+using BanHub.Models;
 
-namespace GlobalInfractions.Services;
+namespace BanHub.Services;
 
 public class EntityEndpoint
 {
@@ -12,7 +12,7 @@ public class EntityEndpoint
 #if DEBUG
     private const string ApiHost = "http://localhost:8123/api/v2";
 #else
-    private const string ApiHost = "https://globalinfractions.com/api/v2";
+    private const string ApiHost = "https://banhub.gg/api/v2";
 #endif
 
     public EntityEndpoint(ConfigurationModel configurationModel)

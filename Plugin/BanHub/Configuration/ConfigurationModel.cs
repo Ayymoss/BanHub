@@ -1,8 +1,7 @@
 ﻿using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Mvc.Localization;
 using SharedLibraryCore.Interfaces;
 
-namespace GlobalInfractions.Configuration;
+namespace BanHub.Configuration;
 
 public class ConfigurationModel : IBaseConfiguration
 {
@@ -17,7 +16,7 @@ public class ConfigurationModel : IBaseConfiguration
     public List<int> WhitelistedClientIds { get; set; } = new();
     public bool DebugMode { get; set; } = false;
 
-    public string Name() => "GlobalInfractionsSettings";
+    public string Name() => "BanHubSettings";
     public IBaseConfiguration Generate() => new ConfigurationModel();
 }
 

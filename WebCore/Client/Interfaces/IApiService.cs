@@ -1,6 +1,6 @@
-﻿using GlobalInfraction.WebCore.Shared.DTOs.WebEntity;
+﻿using BanHub.WebCore.Shared.DTOs.WebEntity;
 
-namespace GlobalInfraction.WebCore.Client.Interfaces;
+namespace BanHub.WebCore.Client.Interfaces;
 
 public interface IApiService
 {

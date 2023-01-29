@@ -1,7 +1,6 @@
-﻿using Discord;
-using GlobalInfraction.WebCore.Shared.Enums;
+﻿using BanHub.WebCore.Shared.Enums;
 
-namespace GlobalInfraction.WebCore.Server.Interfaces;
+namespace BanHub.WebCore.Server.Interfaces;
 
 public interface IDiscordWebhookService
 {

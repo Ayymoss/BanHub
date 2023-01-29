@@ -14,207 +14,207 @@ else
 {
     <MudContainer Style="height: 600px" Class="mt-16 px-8" MaxWidth="MaxWidth.False">
     <MudGrid>
-        <MudItem xs="12" sm="6">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
-                @if (!_entity.Infractions.Any())
-                {
-                    <MudText Align="Align.Center" Typo="Typo.h5">The user has no infractions.</MudText>
-                }
-                else
-                {
-                    <MudText Typo="Typo.h6" Align="Align.Center">Click an Infraction for Info</MudText>
-                    <br/>
-                    <MudTable Items="@_entity.Infractions" Hover="true" FixedHeader="true" Height="100%" @ref="mudTable" OnRowClick="RowClickEvent" T="InfractionDto">
-                        <HeaderContent>
-                            <MudTh>
-                                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Admin.Alias.UserName)">Admin</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh>
-                                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Reason)">Reason</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh>
-                                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionType)">Type</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh>
-                                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionScope)">Scope</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh>
-                                <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<InfractionDto, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh></MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Admin">@context.Admin.Alias.UserName</MudTd>
-                            <MudTd DataLabel="Reason">@context.Reason</MudTd>
-                            <MudTd DataLabel="Type">@context.InfractionType.ToString()</MudTd>
-                            <MudTd DataLabel="Scope">@context.InfractionScope.ToString()</MudTd>
-                            <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
-                            <MudTd DataLabel="View">
-                                <MudChip Size="Size.Medium" Variant="Variant.Text" Color="Color.Info">Click to View</MudChip>
-                            </MudTd>
-                        </RowTemplate>
-                    </MudTable>
-                }
-            </MudPaper>
-        </MudItem>
-        <MudItem xs="12" sm="6">
-            <MudGrid>
+    <MudItem xs="12" sm="6">
+        <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
+            @if (!_entity.Infractions.Any())
+            {
+                <MudText Align="Align.Center" Typo="Typo.h5">The user has no infractions.</MudText>
+            }
+            else
+            {
+                <MudText Typo="Typo.h6" Align="Align.Center">Click an Infraction for Info</MudText>
+                <br/>
+                <MudTable Items="@_entity.Infractions" Hover="true" FixedHeader="true" Height="100%" @ref="mudTable" OnRowClick="RowClickEvent" T="InfractionDto">
+                    <HeaderContent>
+                        <MudTh>
+                            <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Admin.Alias.UserName)">Admin</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh>
+                            <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Reason)">Reason</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh>
+                            <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionType)">Type</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh>
+                            <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionScope)">Scope</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh>
+                            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<InfractionDto, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Admin">@context.Admin.Alias.UserName</MudTd>
+                        <MudTd DataLabel="Reason">@context.Reason</MudTd>
+                        <MudTd DataLabel="Type">@context.InfractionType.ToString()</MudTd>
+                        <MudTd DataLabel="Scope">@context.InfractionScope.ToString()</MudTd>
+                        <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
+                        <MudTd DataLabel="View">
+                            <MudChip Size="Size.Medium" Variant="Variant.Text" Color="Color.Info">Click to View</MudChip>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudGrid>
+            <MudItem xs="12">
+                <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
+
+                    <MudList Dense="true">
+                        <MudListItem IconColor="Color.Info" Icon="@Icons.Material.Filled.Person">
+                            <b>Profile Name: </b> @_entity.Alias.UserName (@_entity.Identity)
+                            @if (_entity.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
+                            {
+                                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Online</MudChip>
+                            }
+                            else
+                            {
+                                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Offline</MudChip>
+                            }
+                            @if (_isGlobalBanned)
+                            {
+                                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Globally Banned</MudChip>
+                            }
+                            else
+                            {
+                                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Not Globally Banned</MudChip>
+                            }
+                            <AuthorizeView Roles="Moderator">
+                                <NotAuthorized>
+                                    @if (_hasNotes)
+                                    {
+                                        <MudElement>
+                                            <MudButton StartIcon="@Icons.Material.Filled.Bookmark" Variant="Variant.Filled" Size="Size.Small" Color="Color.Info" OnClick="ToggleOpen">@(_isOpen ? "Close Notes" : $"Notes ({_entity.Notes.Count})")</MudButton>
+                                            <MudPopover Class="mt-2" Open="_isOpen" OverflowBehavior="OverflowBehavior.FlipAlways" AnchorOrigin="Origin.BottomCenter" Elevation="6" TransformOrigin="Origin.TopCenter">
+                                                <div class="d-flex flex-column pa-4" style="width: 100%">
+                                                    <MudSimpleTable Hover="true" Dense="true" FixedHeader="true" Style="height:300px;">
+                                                        <thead>
+                                                        <tr>
+                                                            <th>Admin</th>
+                                                            <th>Note</th>
+                                                            <th>Created</th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        @foreach (var note in _entity.Notes.OrderByDescending(x => x.Created))
+                                                        {
+                                                            <tr>
+                                                                <td>@note.Admin.Alias.UserName</td>
+                                                                <td>@note.Message</td>
+                                                                <td>@note.Created.Humanize()</td>
+
+                                                            </tr>
+                                                        }
+                                                        </tbody>
+                                                    </MudSimpleTable>
+                                                </div>
+                                            </MudPopover>
+                                        </MudElement>
+                                    }
+                                </NotAuthorized>
+                            </AuthorizeView>
+                        </MudListItem>
+                        <MudDivider DividerType="DividerType.Inset"/>
+                        <MudListItem Icon="@Icons.Material.Filled.Report">
+                            <b>Infraction Count: </b> @_entity.Infractions.Count
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.List">
+                            <b>Last Connected Server: </b> @_lastConnectedServer
+                        </MudListItem>
+                    </MudList>
+
+                </MudPaper>
+            </MudItem>
+            @if (_selectedInfraction is not null)
+            {
                 <MudItem xs="12">
                     <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
 
                         <MudList Dense="true">
-                            <MudListItem IconColor="Color.Info" Icon="@Icons.Material.Filled.Person">
-                                <b>Profile Name: </b> @_entity.Alias.UserName (@_entity.Identity)
-                                @if (_entity.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
+                            <MudListItem IconColor="Color.Warning" Icon="@Icons.Material.Filled.Report">
+                                <b>Infraction: </b> @_selectedInfraction.InfractionGuid
+                                @switch (_selectedInfraction.InfractionScope)
                                 {
-                                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Online</MudChip>
+                                    case InfractionScope.Local:
+                                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Local</MudChip>
+                                        break;
+                                    case InfractionScope.Global:
+                                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Global</MudChip>
+                                        break;
                                 }
-                                else
+                                @switch (_selectedInfraction.InfractionType)
                                 {
-                                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Offline</MudChip>
+                                    case InfractionType.Warn:
+                                        <MudChip Variant="Variant.Text" Size="Size.Small">Warn</MudChip>
+                                        break;
+                                    case InfractionType.Mute:
+                                        <MudChip Variant="Variant.Text" Size="Size.Small">Mute</MudChip>
+                                        break;
+                                    case InfractionType.Kick:
+                                        <MudChip Variant="Variant.Text" Size="Size.Small">Kick</MudChip>
+                                        break;
+                                    case InfractionType.Unban:
+                                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Unban</MudChip>
+                                        break;
+                                    case InfractionType.TempBan:
+                                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Tempban</MudChip>
+                                        break;
+                                    case InfractionType.Ban:
+                                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Ban</MudChip>
+                                        break;
                                 }
-                                @if (_isGlobalBanned)
+                                @switch (_selectedInfraction.InfractionStatus)
                                 {
-                                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Globally Banned</MudChip>
+                                    case InfractionStatus.Informational:
+                                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Informational</MudChip>
+                                        break;
+                                    case InfractionStatus.Active:
+                                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Success">Active</MudChip>
+                                        break;
+                                    case InfractionStatus.Revoked:
+                                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Revoked</MudChip>
+                                        break;
+                                    case InfractionStatus.Expired:
+                                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Expired</MudChip>
+                                        break;
                                 }
-                                else
-                                {
-                                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Not Globally Banned</MudChip>
-                                }
-                                <AuthorizeView Roles="Moderator">
-                                    <Authorized>
-                                        @if (_hasNotes)
-                                        {
-                                            <MudElement>
-                                                <MudButton StartIcon="@Icons.Material.Filled.Bookmark"  Variant="Variant.Filled" Size="Size.Small" Color="Color.Info" OnClick="ToggleOpen">@(_isOpen ? "Close Notes" : $"Notes ({_entity.Notes.Count})")</MudButton>
-                                                <MudPopover Class="mt-2" Open="_isOpen" OverflowBehavior="OverflowBehavior.FlipAlways" AnchorOrigin="Origin.BottomCenter" Elevation="6" TransformOrigin="Origin.TopCenter">
-                                                    <div class="d-flex flex-column pa-4" style="width: 100%">
-                                                        <MudSimpleTable Hover="true" Dense="true" FixedHeader="true" Style="height:300px;">
-                                                            <thead>
-                                                            <tr>
-                                                                <th>Admin</th>
-                                                                <th>Note</th>
-                                                                <th>Created</th>
-                                                            </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                            @foreach (var note in _entity.Notes.OrderByDescending(x=>x.Created))
-                                                            {
-                                                                <tr>
-                                                                    <td>@note.Admin.Alias.UserName</td>
-                                                                    <td>@note.Message</td>
-                                                                    <td>@note.Created.Humanize()</td>
-                                                                    
-                                                                </tr>
-                                                            }
-                                                            </tbody>
-                                                        </MudSimpleTable>
-                                                    </div>
-                                                </MudPopover>
-                                            </MudElement>
-                                        }
-                                    </Authorized>
-                                </AuthorizeView>
                             </MudListItem>
                             <MudDivider DividerType="DividerType.Inset"/>
-                            <MudListItem Icon="@Icons.Material.Filled.Report">
-                                <b>Infraction Count: </b> @_entity.Infractions.Count
+                            <MudListItem Icon="@Icons.Filled.AdminPanelSettings">
+                                <b>Accusing Admin: </b> @_selectedInfraction.Admin.Alias.UserName
                             </MudListItem>
-                            <MudListItem Icon="@Icons.Material.Filled.List">
-                                <b>Last Connected Server: </b> @_lastConnectedServer
+                            <MudListItem Icon="@Icons.Filled.Message">
+                                <b>Provided Reason: </b> @_selectedInfraction.Reason
+                            </MudListItem>
+                            @if (_selectedInfraction.Evidence is not null)
+                            {
+                                <MudListItem Icon="@Icons.Filled.VideoLabel">
+                                    <b>Supporting Evidence: </b> <MudLink Typo="Typo.body2" Href="@_selectedInfraction.Evidence">Link to evidence</MudLink>
+                                </MudListItem>
+                            }
+                            @if (_selectedInfraction.Duration.HasValue)
+                            {
+                                <MudListItem Icon="@Icons.Filled.Timelapse">
+                                    <b>Infraction Duration: </b> @_selectedInfraction.Duration.Value.Humanize()
+                                </MudListItem>
+                            }
+                            <MudListItem Icon="@Icons.Material.Filled.Storage">
+                                <b>Sending Server: </b> @(_selectedInfraction.Instance.InstanceName ?? _selectedInfraction.Instance.InstanceGuid.ToString())
+                            </MudListItem>
+                            <MudListItem Icon="@Icons.Filled.MoreTime">
+                                <b>Time Submitted: </b>
+                                <MudTooltip Arrow="true" Placement="Placement.Top" Text="@_selectedInfraction.Submitted.Value.ToString("yyyy-MM-dd HH:mm:ss")">
+                                    @(_selectedInfraction.Submitted.Value.Humanize())
+                                </MudTooltip>
                             </MudListItem>
                         </MudList>
-
                     </MudPaper>
                 </MudItem>
-                @if (_selectedInfraction is not null)
-                {
-                    <MudItem xs="12">
-                        <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
-
-                            <MudList Dense="true">
-                                <MudListItem IconColor="Color.Warning" Icon="@Icons.Material.Filled.Report">
-                                    <b>Infraction: </b> @_selectedInfraction.InfractionGuid
-                                    @switch (_selectedInfraction.InfractionStatus)
-                                    {
-                                        case InfractionStatus.Informational:
-                                            <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Informational</MudChip>
-                                            break;
-                                        case InfractionStatus.Active:
-                                            <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Success">Active</MudChip>
-                                            break;
-                                        case InfractionStatus.Revoked:
-                                            <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Revoked</MudChip>
-                                            break;
-                                        case InfractionStatus.Expired:
-                                            <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Expired</MudChip>
-                                            break;
-                                    }
-                                    @switch (_selectedInfraction.InfractionType)
-                                    {
-                                        case InfractionType.Warn:
-                                            <MudChip Variant="Variant.Text" Size="Size.Small">Warn</MudChip>
-                                            break;
-                                        case InfractionType.Mute:
-                                            <MudChip Variant="Variant.Text" Size="Size.Small">Mute</MudChip>
-                                            break;
-                                        case InfractionType.Kick:
-                                            <MudChip Variant="Variant.Text" Size="Size.Small">Kick</MudChip>
-                                            break;
-                                        case InfractionType.Unban:
-                                            <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Unban</MudChip>
-                                            break;
-                                        case InfractionType.TempBan:
-                                            <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Tempban</MudChip>
-                                            break;
-                                        case InfractionType.Ban:
-                                            <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Ban</MudChip>
-                                            break;
-                                    }
-                                    @switch (_selectedInfraction.InfractionScope)
-                                    {
-                                        case InfractionScope.Local:
-                                            <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Local</MudChip>
-                                            break;
-                                        case InfractionScope.Global:
-                                            <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Global</MudChip>
-                                            break;
-                                    }
-                                </MudListItem>
-                                <MudDivider DividerType="DividerType.Inset"/>
-                                <MudListItem Icon="@Icons.Filled.AdminPanelSettings">
-                                    <b>Accusing Admin: </b> @_selectedInfraction.Admin.Alias.UserName
-                                </MudListItem>
-                                <MudListItem Icon="@Icons.Filled.Message">
-                                    <b>Provided Reason: </b> @_selectedInfraction.Reason
-                                </MudListItem>
-                                @if (_selectedInfraction.Evidence is not null)
-                                {
-                                    <MudListItem Icon="@Icons.Filled.VideoLabel">
-                                        <b>Supporting Evidence: </b> <MudLink Typo="Typo.body2" Href="@_selectedInfraction.Evidence">Link to evidence</MudLink>
-                                    </MudListItem>
-                                }
-                                @if (_selectedInfraction.Duration.HasValue)
-                                {
-                                    <MudListItem Icon="@Icons.Filled.Timelapse">
-                                        <b>Infraction Duration: </b> @_selectedInfraction.Duration.Value.Humanize()
-                                    </MudListItem>
-                                }
-                                <MudListItem Icon="@Icons.Material.Filled.Storage">
-                                    <b>Sending Server: </b> @(_selectedInfraction.Instance.InstanceName ?? _selectedInfraction.Instance.InstanceGuid.ToString())
-                                </MudListItem>
-                                <MudListItem Icon="@Icons.Filled.MoreTime">
-                                    <b>Time Submitted: </b>
-                                    <MudTooltip Arrow="true" Placement="Placement.Top" Text="@_selectedInfraction.Submitted.Value.ToString("yyyy-MM-dd HH:mm:ss")">
-                                        @(_selectedInfraction.Submitted.Value.Humanize())
-                                    </MudTooltip>
-                                </MudListItem>
-                            </MudList>
-                        </MudPaper>
-                    </MudItem>
-                }
-            </MudGrid>
-        </MudItem>
+            }
+        </MudGrid>
+    </MudItem>
     </MudGrid>
     </MudContainer>
 }
@@ -240,9 +240,7 @@ else
         _entity = await Http.GetFromJsonAsync<EntityDto>($"api/v2/Entity?identity={Identity}");
         if (_entity is not null)
         {
-            var struckOut = _entity.Strike >= 3;
-            var globalBan = _entity.Infractions?.Any(x => x.InfractionStatus is InfractionStatus.Active && x.InfractionScope is InfractionScope.Global) ?? false;
-            _isGlobalBanned = struckOut || globalBan;
+            _isGlobalBanned = _entity.Infractions?.Any(x => x.InfractionStatus is InfractionStatus.Active && x.InfractionScope is InfractionScope.Global) ?? false;
     // API returns this data. Need to protect the note endpoint TODO
             _hasNotes = _entity.Notes is not null && _entity.Notes.Count is not 0;
         }

@@ -1,7 +1,7 @@
-﻿@using GlobalInfraction.WebCore.Client.Theme
-@inject ISnackbar Snackbar
+﻿@inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
+@using BanHub.WebCore.Client.Theme
 @inherits LayoutComponentBase
 
 
@@ -14,6 +14,8 @@
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())"/>
         <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Person" Color="Color.Info">Online: @_online</MudChip>
         <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Block" Color="Color.Error">Day Global Bans: @_bans</MudChip>
+        <MudSpacer/>
+        <MudText Color="Color.Error" Typo="Typo.h6">! IN ACTIVE DEVELOPMENT !</MudText>
         <MudSpacer/>
         <MudItem xs="32" Class="mr-3">
             <MudTextField @bind-Value="_searchValue" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" Placeholder="Search" Variant="Variant.Outlined" Adornment="Adornment.End" Margin="Margin.Dense" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Info"/>
@@ -31,6 +33,12 @@
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="my-8 pt-8">
             @Body
+
+            <MudSpacer/>
+            <MudElement Class="justify-center pa-4" Style="text-align: center">
+                <MudText Color="Color.Error" Typo="Typo.h6">! IN ACTIVE DEVELOPMENT !</MudText>
+            </MudElement>
+            <MudSpacer/>
         </MudContainer>
     </MudMainContent>
 </MudLayout>

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using GlobalInfraction.WebCore.Shared.Enums;
+using BanHub.WebCore.Shared.Enums;
 
-namespace GlobalInfraction.WebCore.Server.Models;
+namespace BanHub.WebCore.Server.Models;
 
 /// <summary>
 /// Table for all players
@@ -14,11 +14,6 @@ public class EFEntity
     /// The player's identity (Format: GAMEGUID:GAMEID)
     /// </summary>
     public string Identity { get; init; } = null!;
-
-    /// <summary>
-    /// The player's strike count
-    /// </summary>
-    public int Strike { get; set; }
 
     /// <summary>
     /// The last time the player was seen

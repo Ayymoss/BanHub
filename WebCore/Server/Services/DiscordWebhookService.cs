@@ -1,9 +1,9 @@
-﻿using Discord;
+﻿using BanHub.WebCore.Server.Interfaces;
+using BanHub.WebCore.Shared.Enums;
+using Discord;
 using Discord.Webhook;
-using GlobalInfraction.WebCore.Server.Interfaces;
-using GlobalInfraction.WebCore.Shared.Enums;
 
-namespace GlobalInfraction.WebCore.Server.Services;
+namespace BanHub.WebCore.Server.Services;
 
 public class DiscordWebhookService : IDiscordWebhookService
 {
@@ -45,7 +45,7 @@ public class DiscordWebhookService : IDiscordWebhookService
         {
             Title = $"Infraction: {infractionType}",
             Description = "Click the link to view the infraction.\n" +
-                          $"**Infraction:** [View Profile](https://globalinfractions.com/Profile/{identity})\n" +
+                          $"**Infraction:** [View Profile](https://BanHub.gg/Profile/{identity})\n" +
                           $"**Identity:** {identity}\n" +
                           $"**Username:** {username}\n" +
                           $"**Reason:** {reason}",

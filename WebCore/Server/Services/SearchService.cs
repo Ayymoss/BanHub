@@ -1,10 +1,9 @@
-﻿using GlobalInfraction.WebCore.Server.Context;
-using GlobalInfraction.WebCore.Server.Enums;
-using GlobalInfraction.WebCore.Server.Interfaces;
-using GlobalInfraction.WebCore.Shared.DTOs;
+﻿using BanHub.WebCore.Server.Context;
+using BanHub.WebCore.Server.Interfaces;
+using BanHub.WebCore.Shared.DTOs;
 using Microsoft.EntityFrameworkCore;
 
-namespace GlobalInfraction.WebCore.Server.Services;
+namespace BanHub.WebCore.Server.Services;
 
 public class SearchService : ISearchService
 {

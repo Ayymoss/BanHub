@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace GlobalInfraction.WebCore.Server.Models;
+namespace BanHub.WebCore.Server.Models;
 
 public class EFStatistic
 {

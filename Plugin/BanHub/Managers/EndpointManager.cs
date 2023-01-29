@@ -1,15 +1,15 @@
 ﻿using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
-using GlobalInfractions.Configuration;
-using GlobalInfractions.Enums;
-using GlobalInfractions.Models;
-using GlobalInfractions.Services;
+using BanHub.Configuration;
+using BanHub.Enums;
+using BanHub.Models;
+using BanHub.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SharedLibraryCore;
 using SharedLibraryCore.Database.Models;
 
-namespace GlobalInfractions.Managers;
+namespace BanHub.Managers;
 
 public class EndpointManager
 {
@@ -18,13 +18,15 @@ public class EndpointManager
     private readonly ILogger<EndpointManager> _logger;
     private readonly EntityEndpoint _entity;
     private readonly ConfigurationModel _configurationModel;
+    private readonly InstanceDto _instanceMeta;
     private readonly InstanceEndpoint _instance;
     private readonly InfractionEndpoint _infraction;
     private readonly ServerEndpoint _server;
 
-    public EndpointManager(IServiceProvider serviceProvider, ConfigurationModel configurationModel)
+    public EndpointManager(IServiceProvider serviceProvider, ConfigurationModel configurationModel, InstanceDto instanceMeta)
     {
         _configurationModel = configurationModel;
+        _instanceMeta = instanceMeta;
         _entity = new EntityEndpoint(configurationModel);
         _instance = new InstanceEndpoint(configurationModel);
         _infraction = new InfractionEndpoint(configurationModel);
@@ -34,7 +36,7 @@ public class EndpointManager
 
     private static string GetIdentity(EFClient client) => $"{client.GuidString}:{client.GameName.ToString()}";
 
-    private static EntityDto ClientToEntity(EFClient client)
+    private EntityDto ClientToEntity(EFClient client)
     {
         var entity = new EntityDto
         {
@@ -44,7 +46,7 @@ public class EndpointManager
                 UserName = client.CleanedName,
                 IpAddress = client.IPAddressString
             },
-            Instance = Plugin.Instance
+            Instance = _instanceMeta
         };
 
         if (!client.IsIngame) return entity;
@@ -81,7 +83,7 @@ public class EndpointManager
         }
 
         // We don't want to act on anything if they're not authenticated
-        if (!Plugin.Instance.Active!.Value) return;
+        if (!_instanceMeta.Active!.Value) return;
 
         var entityUpdated = await _entity.UpdateEntity(entity);
 
@@ -99,13 +101,12 @@ public class EndpointManager
 
     private void ProcessEntity(EntityDto entity, EFClient client)
     {
-        var struckOut = entity.Strike >= 3;
         var globalBan = entity.Infractions?
-            .Any(x => x.InfractionType is InfractionType.Ban && x.InfractionScope is InfractionScope.Global) ?? false;
+            .Any(x => x.InfractionType is InfractionType.Ban && x.InfractionScope is InfractionScope.Global && x.InfractionStatus == InfractionStatus.Active) ?? false;
 
-        if ((globalBan || struckOut) && client.IsIngame)
+        if (globalBan && client.IsIngame)
         {
-            client.Kick("^1Globally banned!^7\nGlobalInfractions.com", Utilities.IW4MAdminClient(client.CurrentServer));
+            client.Kick("^1Globally banned!^7\nBanHub.gg", Utilities.IW4MAdminClient(client.CurrentServer));
         }
     }
 
@@ -163,7 +164,7 @@ public class EndpointManager
             Evidence = evidence,
             Reason = automatedBan ? $"Automated Offense [{automatedReason}]" : reason,
             Duration = duration,
-            Instance = Plugin.Instance,
+            Instance = _instanceMeta,
             Admin = adminEntity,
             Target = targetEntity
         };

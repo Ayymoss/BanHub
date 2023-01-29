@@ -1,4 +1,4 @@
-﻿namespace GlobalInfraction.WebCore.Server.Services;
+﻿namespace BanHub.WebCore.Server.Services;
 
 public class StatisticsTracking
 {

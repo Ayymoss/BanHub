@@ -1,6 +1,6 @@
-﻿using GlobalInfractions.Enums;
+﻿using BanHub.Enums;
 
-namespace GlobalInfractions.Models;
+namespace BanHub.Models;
 
 public class InfractionDto
 {

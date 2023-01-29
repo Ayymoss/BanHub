@@ -1,4 +1,4 @@
-﻿namespace GlobalInfraction.WebCore.Shared.DTOs.WebEntity;
+﻿namespace BanHub.WebCore.Shared.DTOs.WebEntity;
 
 public class LoginRequestDto
 {

@@ -1,4 +1,4 @@
-﻿namespace GlobalInfractions.Models;
+﻿namespace BanHub.Models;
 
 public class NoteDto
 {

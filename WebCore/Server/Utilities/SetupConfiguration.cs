@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 using System.Text.Json;
-using GlobalInfraction.WebCore.Server.Services;
+using BanHub.WebCore.Server.Services;
 
-namespace GlobalInfraction.WebCore.Server.Utilities;
+namespace BanHub.WebCore.Server.Utilities;
 
 public static class SetupConfiguration
 {

@@ -1,13 +1,13 @@
-﻿using GlobalInfraction.WebCore.Server.Context;
-using GlobalInfraction.WebCore.Server.Enums;
-using GlobalInfraction.WebCore.Server.Interfaces;
-using GlobalInfraction.WebCore.Server.Models;
-using GlobalInfraction.WebCore.Shared.DTOs;
-using GlobalInfraction.WebCore.Shared.Enums;
+﻿using BanHub.WebCore.Server.Context;
+using BanHub.WebCore.Server.Enums;
+using BanHub.WebCore.Server.Interfaces;
+using BanHub.WebCore.Server.Models;
+using BanHub.WebCore.Shared.DTOs;
+using BanHub.WebCore.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 
-namespace GlobalInfraction.WebCore.Server.Services;
+namespace BanHub.WebCore.Server.Services;
 
 public class EntityService : IEntityService
 {
@@ -48,7 +48,6 @@ public class EntityService : IEntityService
                                 UserName = note.Admin.CurrentAlias.Alias.UserName,
                                 Changed = note.Admin.CurrentAlias.Alias.Changed
                             },
-                            Strike = note.Admin.Strike
                         }
                     }).ToList(),
                 Servers = profile.ServerConnections
@@ -81,7 +80,6 @@ public class EntityService : IEntityService
                                 UserName = inf.Admin.CurrentAlias.Alias.UserName,
                                 Changed = inf.Admin.CurrentAlias.Alias.Changed
                             },
-                            Strike = inf.Admin.Strike
                         },
                         Instance = new InstanceDto
                         {
@@ -91,8 +89,7 @@ public class EntityService : IEntityService
                         }
                     }).ToList(),
                 HeartBeat = profile.HeartBeat,
-                Created = profile.Created,
-                Strike = profile.Strike
+                Created = profile.Created
             }).FirstOrDefaultAsync();
 
         if (entity?.Infractions is null) return entity;
@@ -184,8 +181,7 @@ public class EntityService : IEntityService
                 };
                 _context.ServerConnections.Add(server);
             }
-
-            user.Strike = activeBanCount;
+            
             user.HeartBeat = DateTimeOffset.UtcNow;
             _context.Entities.Update(user);
             await _context.SaveChangesAsync();
@@ -197,7 +193,6 @@ public class EntityService : IEntityService
         var entity = new EFEntity
         {
             Identity = request.Identity,
-            Strike = 0,
             HeartBeat = DateTimeOffset.UtcNow,
             WebRole = WebRole.User,
             Created = DateTimeOffset.UtcNow
@@ -261,7 +256,6 @@ public class EntityService : IEntityService
         {
             "Id" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.Identity),
             "Name" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.CurrentAlias.Alias.UserName),
-            "Strikes" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.Strike),
             "Infractions" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.Infractions.Count),
             "Online" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.HeartBeat),
             "Created" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.Created),
@@ -297,7 +291,6 @@ public class EntityService : IEntityService
                                 UserName = inf.Admin.CurrentAlias.Alias.UserName,
                                 Changed = inf.Admin.CurrentAlias.Alias.Changed
                             },
-                            Strike = inf.Admin.Strike
                         },
                         Instance = new InstanceDto
                         {
@@ -308,7 +301,6 @@ public class EntityService : IEntityService
                     }).ToList(),
                 HeartBeat = profile.HeartBeat,
                 Created = profile.Created,
-                Strike = profile.Strike
             })
             .ToListAsync();
 

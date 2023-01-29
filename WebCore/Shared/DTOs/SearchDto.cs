@@ -1,4 +1,4 @@
-﻿namespace GlobalInfraction.WebCore.Shared.DTOs;
+﻿namespace BanHub.WebCore.Shared.DTOs;
 
 public class SearchDto
 {

@@ -1,6 +1,6 @@
 ﻿using MudBlazor;
 
-namespace GlobalInfraction.WebCore.Client.Theme;
+namespace BanHub.WebCore.Client.Theme;
 
 public class Theme
 {

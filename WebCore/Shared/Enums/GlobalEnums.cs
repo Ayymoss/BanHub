@@ -1,4 +1,4 @@
-﻿namespace GlobalInfraction.WebCore.Shared.Enums;
+﻿namespace BanHub.WebCore.Shared.Enums;
 
 public enum InfractionType
 {

@@ -1,6 +1,6 @@
-﻿using GlobalInfraction.WebCore.Shared.Enums;
+﻿using BanHub.WebCore.Shared.Enums;
 
-namespace GlobalInfraction.WebCore.Shared.DTOs;
+namespace BanHub.WebCore.Shared.DTOs;
 
 public class EntityDto
 {
@@ -13,11 +13,6 @@ public class EntityDto
     /// The player's identity
     /// </summary>
     public string Identity { get; set; } = null!;
-
-    /// <summary>
-    /// The player's strike count
-    /// </summary>
-    public int? Strike { get; set; }
 
     /// <summary>
     /// The last time the player was seen
@@ -33,6 +28,11 @@ public class EntityDto
     /// The player's web-login role
     /// </summary>
     public WebRole WebRole { get; set; }
+    
+    /// <summary>
+    /// Is the player globally banned via IP or GUID
+    /// </summary>
+    public bool GlobalBanned { get; set; }
 
     /// <summary>
     /// The player's meta

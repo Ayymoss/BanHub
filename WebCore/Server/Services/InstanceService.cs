@@ -1,12 +1,11 @@
-﻿using GlobalInfraction.WebCore.Server.Context;
-using GlobalInfraction.WebCore.Server.Enums;
-using GlobalInfraction.WebCore.Server.Interfaces;
-using GlobalInfraction.WebCore.Server.Models;
-using GlobalInfraction.WebCore.Shared.DTOs;
-using Microsoft.AspNetCore.Mvc;
+﻿using BanHub.WebCore.Server.Context;
+using BanHub.WebCore.Server.Enums;
+using BanHub.WebCore.Server.Interfaces;
+using BanHub.WebCore.Server.Models;
+using BanHub.WebCore.Shared.DTOs;
 using Microsoft.EntityFrameworkCore;
 
-namespace GlobalInfraction.WebCore.Server.Services;
+namespace BanHub.WebCore.Server.Services;
 
 public class InstanceService : IInstanceService
 {
@@ -15,7 +14,8 @@ public class InstanceService : IInstanceService
     private readonly IDiscordWebhookService _discordWebhook;
     private readonly IStatisticService _statisticService;
 
-    public InstanceService(DataContext context, ApiKeyCache apiKeyCache, IDiscordWebhookService discordWebhook, IStatisticService statisticService )
+    public InstanceService(DataContext context, ApiKeyCache apiKeyCache, IDiscordWebhookService discordWebhook,
+        IStatisticService statisticService)
     {
         _context = context;
         _apiKeyCache = apiKeyCache;
@@ -45,7 +45,7 @@ public class InstanceService : IInstanceService
                 Active = false,
                 HeartBeat = DateTimeOffset.UtcNow
             });
-            
+
             await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.InstanceCount);
             await _context.SaveChangesAsync();
 
@@ -54,12 +54,13 @@ public class InstanceService : IInstanceService
 
         // TODO: Update this... It doesn't check a mismatch...
         if (instanceGuid is null || instanceApi is null) return (ControllerEnums.ProfileReturnState.BadRequest, "GUID + API mismatch");
-        if (instanceGuid.Id != instanceApi.Id) return (ControllerEnums.ProfileReturnState.Conflict, "Instance already exists with this API key.");
+        if (instanceGuid.Id != instanceApi.Id)
+            return (ControllerEnums.ProfileReturnState.Conflict, "Instance already exists with this API key.");
 
         // Warn if IP address has changed... this really shouldn't happen.
         if (requestIpAddress is not null && requestIpAddress != instanceGuid.InstanceIp)
         {
-           await  _discordWebhook.CreateIssueHook(instanceGuid.InstanceGuid, request.InstanceIp!, requestIpAddress);
+            await _discordWebhook.CreateIssueHook(instanceGuid.InstanceGuid, request.InstanceIp!, requestIpAddress);
         }
 
         // Update existing record
@@ -116,12 +117,9 @@ public class InstanceService : IInstanceService
         var result = await _context.Instances.SingleOrDefaultAsync(x => x.InstanceGuid == guidResult);
         if (result is null) return ControllerEnums.ProfileReturnState.NotFound;
 
-        if (result.Active)
+        if (result.Active && _apiKeyCache.ApiKeys is not null && !_apiKeyCache.ApiKeys.Contains(result.ApiKey))
         {
-            if (_apiKeyCache.ApiKeys is not null && !_apiKeyCache.ApiKeys.Contains(result.ApiKey))
-            {
-                _apiKeyCache.ApiKeys.Add(result.ApiKey);
-            }
+            _apiKeyCache.ApiKeys.Add(result.ApiKey);
         }
 
         return result.Active ? ControllerEnums.ProfileReturnState.Accepted : ControllerEnums.ProfileReturnState.Unauthorized;

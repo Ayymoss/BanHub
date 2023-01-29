@@ -1,8 +1,8 @@
-using GlobalInfraction.WebCore.Server.Context;
-using GlobalInfraction.WebCore.Server.Interfaces;
-using GlobalInfraction.WebCore.Server.Middleware;
-using GlobalInfraction.WebCore.Server.Services;
-using GlobalInfraction.WebCore.Server.Utilities;
+using BanHub.WebCore.Server.Context;
+using BanHub.WebCore.Server.Interfaces;
+using BanHub.WebCore.Server.Middleware;
+using BanHub.WebCore.Server.Services;
+using BanHub.WebCore.Server.Utilities;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,7 +18,7 @@ builder.WebHost.ConfigureKestrel(options => { options.ListenAnyIP(configuration.
 #endif
 
 // TODO: TOGGLE MANUALLY - Migrations don't seem to honour build state
-configuration.Database.Database = "GlobalInfractionsDevelopment2";
+configuration.Database.Database = "BanHubDev";
 
 builder.Services.AddDbContext<DataContext>(options =>
 {

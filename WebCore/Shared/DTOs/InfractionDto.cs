@@ -1,6 +1,6 @@
-﻿using GlobalInfraction.WebCore.Shared.Enums;
+﻿using BanHub.WebCore.Shared.Enums;
 
-namespace GlobalInfraction.WebCore.Shared.DTOs;
+namespace BanHub.WebCore.Shared.DTOs;
 
 public class InfractionDto
 {

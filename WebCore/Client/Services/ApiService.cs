@@ -1,9 +1,9 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
-using GlobalInfraction.WebCore.Client.Interfaces;
-using GlobalInfraction.WebCore.Shared.DTOs.WebEntity;
+using BanHub.WebCore.Client.Interfaces;
+using BanHub.WebCore.Shared.DTOs.WebEntity;
 
-namespace GlobalInfraction.WebCore.Client.Services;
+namespace BanHub.WebCore.Client.Services;
 
 public class ApiService : IApiService
 {
@@ -17,7 +17,6 @@ public class ApiService : IApiService
     public async Task<string> LoginAsync(LoginRequestDto login)
     {
         var response = await _httpClient.PostAsJsonAsync("/api/v2/Auth/Login", login);
-        Console.WriteLine(response.StatusCode + " " + response.IsSuccessStatusCode);
         return response.IsSuccessStatusCode ? "Success" : "Failed";
     }
 

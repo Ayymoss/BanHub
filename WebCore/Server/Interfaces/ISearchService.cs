@@ -1,7 +1,6 @@
-﻿using GlobalInfraction.WebCore.Server.Enums;
-using GlobalInfraction.WebCore.Shared.DTOs;
+﻿using BanHub.WebCore.Shared.DTOs;
 
-namespace GlobalInfraction.WebCore.Server.Interfaces;
+namespace BanHub.WebCore.Server.Interfaces;
 
 public interface ISearchService
 {

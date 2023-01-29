@@ -5,7 +5,7 @@ using SharedLibraryCore.Configuration;
 using SharedLibraryCore.Database.Models;
 using SharedLibraryCore.Interfaces;
 
-namespace GlobalInfractions.Commands;
+namespace BanHub.Commands;
 
 public class SubmitEvidenceCommand : Command
 {
@@ -13,7 +13,7 @@ public class SubmitEvidenceCommand : Command
     {
         Name = "submitevidence";
         Description = "Submit evidence for a players ban";
-        Alias = "evidence";
+        Alias = "evi";
         Permission = EFClient.Permission.SeniorAdmin;
         RequiresTarget = false;
         Arguments = new[]
@@ -39,7 +39,12 @@ public class SubmitEvidenceCommand : Command
             return;
         }
 
-        const string regex = @"^([0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}) (((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?)$";
+        // TODO: Report type
+        // TODO: remove warns/reports/kicks from infractions list
+
+
+        const string regex =
+            @"^([0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}) (((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?)$";
         var match = Regex.Match(gameEvent.Data, regex);
         bool result;
 

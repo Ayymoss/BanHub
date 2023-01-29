@@ -19,9 +19,6 @@
             <MudTableSortLabel SortLabel="Name" T="EntityDto">Name</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Reputation" T="EntityDto">Strikes</MudTableSortLabel>
-        </MudTh>
-        <MudTh>
             <MudTableSortLabel SortLabel="Infractions" T="EntityDto">Infractions</MudTableSortLabel>
         </MudTh>
         <MudTh>
@@ -40,7 +37,6 @@
                 </MudText>
             </a>
         </MudTd>
-        <MudTd DataLabel="Strikes">@context.Strike/3</MudTd>
         <MudTd DataLabel="Infractions">@(context.Infractions?.Count != 0 ? context.Infractions!.Count.ToString() : "None")</MudTd>
         <MudTd DataLabel="Online?">
             <MudTooltip Arrow="true" Placement="Placement.Top" Text="@context.HeartBeat!.Value.ToString("yyyy-MM-dd HH:mm:ss")">

@@ -1,18 +1,17 @@
 ﻿using SharedLibraryCore;
-using SharedLibraryCore.Commands;
 using SharedLibraryCore.Configuration;
 using SharedLibraryCore.Database.Models;
 using SharedLibraryCore.Interfaces;
 
-namespace GlobalInfractions.Commands;
+namespace BanHub.Commands;
 
-public class GlobalInfractionsAuthCommand : Command
+public class AuthenticateCommand : Command
 {
-    public GlobalInfractionsAuthCommand(CommandConfiguration config, ITranslationLookup layout) : base(config, layout)
+    public AuthenticateCommand(CommandConfiguration config, ITranslationLookup layout) : base(config, layout)
     {
-        Name = "globalauth";
+        Name = "banhubauth";
         Description = "Get an authentication code";
-        Alias = "gauth";
+        Alias = "bhauth";
         Permission = EFClient.Permission.Moderator;
         RequiresTarget = false;
     }

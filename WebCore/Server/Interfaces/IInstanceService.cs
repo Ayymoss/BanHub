@@ -1,8 +1,7 @@
-﻿using GlobalInfraction.WebCore.Server.Enums;
-using GlobalInfraction.WebCore.Shared.DTOs;
-using Microsoft.AspNetCore.Mvc;
+﻿using BanHub.WebCore.Server.Enums;
+using BanHub.WebCore.Shared.DTOs;
 
-namespace GlobalInfraction.WebCore.Server.Interfaces;
+namespace BanHub.WebCore.Server.Interfaces;
 
 public interface IInstanceService
 {

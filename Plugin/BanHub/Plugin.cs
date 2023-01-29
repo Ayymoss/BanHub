@@ -1,38 +1,76 @@
-﻿using Data.Models;
-using GlobalInfractions.Configuration;
-using GlobalInfractions.Enums;
-using GlobalInfractions.Managers;
-using GlobalInfractions.Models;
+﻿using BanHub.Configuration;
+using BanHub.Enums;
+using BanHub.Managers;
+using BanHub.Models;
+using BanHub.Services;
+using Microsoft.Extensions.DependencyInjection;
 using SharedLibraryCore;
 using SharedLibraryCore.Interfaces;
 
-namespace GlobalInfractions;
+namespace BanHub;
 
 // Credit and inspiration: https://forums.mcbans.com/
 // https://forums.mcbans.com/wiki/how-the-system-works/
 
 public class Plugin : IPlugin
 {
-    public const string PluginName = "Global Infractions";
+    public const string PluginName = "Ban Hub";
     public string Name => PluginName;
     public float Version => 20230108f;
     public string Author => "Amos";
 
     public static bool InstanceActive { get; set; }
-    public static EndpointManager EndpointManager = null!;
-    public static InstanceDto Instance = null!;
-    public static TranslationStrings Translations = null!;
-    public static IManager Manager = null!;
-    public static List<int> WhitelistedClientIds = null!;
-    private static HeartBeatManager _heartBeatManager = null!;
+    public static EndpointManager EndpointManager { get; set; } = null!;
+    private InstanceDto InstanceMeta { get; set; }
+    public static TranslationStrings Translations { get; set; } = null!;
+    public static List<int> WhitelistedClientIds { get; set; } = null!;
+    private readonly HeartBeatManager _heartBeatManager;
     private static bool _pluginEnabled;
     private readonly IConfigurationHandler<ConfigurationModel> _configurationHandler;
-    private readonly IServiceProvider _serviceProvider;
 
-    public Plugin(IServiceProvider serviceProvider, IConfigurationHandlerFactory configurationHandlerFactory)
+    public Plugin(IConfigurationHandlerFactory configurationHandlerFactory, InstanceDto instance, HeartBeatManager heartBeatManager, EndpointManager endpointManager)
     {
-        _serviceProvider = serviceProvider;
-        _configurationHandler = configurationHandlerFactory.GetConfigurationHandler<ConfigurationModel>("GlobalInfractionsSettings");
+        _heartBeatManager = heartBeatManager;
+        EndpointManager = endpointManager;
+        InstanceMeta = instance;
+        _configurationHandler = configurationHandlerFactory.GetConfigurationHandler<ConfigurationModel>("BanHubSettings");
+    }
+
+    public static void RegisterDependencies(IServiceCollection serviceCollection)
+    {
+        serviceCollection.AddSingleton(sp =>
+        {
+            var configHandler = sp.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
+            configHandler.BuildAsync().GetAwaiter().GetResult();
+            return new HeartBeatEndpoint(configHandler.Configuration());
+        });
+        serviceCollection.AddSingleton(sp =>
+        {
+            var configHandler = sp.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
+            configHandler.BuildAsync().GetAwaiter().GetResult();
+            return new EntityEndpoint(configHandler.Configuration());
+        });
+        serviceCollection.AddSingleton(sp =>
+        {
+            var configHandler = sp.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
+            configHandler.BuildAsync().GetAwaiter().GetResult();
+            return new InfractionEndpoint(configHandler.Configuration());
+        });
+        serviceCollection.AddSingleton(sp =>
+        {
+            var configHandler = sp.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
+            configHandler.BuildAsync().GetAwaiter().GetResult();
+            return new InstanceEndpoint(configHandler.Configuration());
+        });
+        serviceCollection.AddSingleton(sp =>
+        {
+            var configHandler = sp.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
+            configHandler.BuildAsync().GetAwaiter().GetResult();
+            return new ServerEndpoint(configHandler.Configuration());
+        });
+        serviceCollection.AddSingleton(new InstanceDto());
+        serviceCollection.AddSingleton<HeartBeatManager>();
+        serviceCollection.AddSingleton<EndpointManager>();
     }
 
     public async Task OnEventAsync(GameEvent gameEvent, Server server)
@@ -47,7 +85,7 @@ public class Plugin : IPlugin
                     ServerName = server.Hostname.StripColors(),
                     ServerIp = server.IP,
                     ServerPort = server.Port,
-                    Instance = Instance
+                    Instance = InstanceMeta
                 };
                 await EndpointManager.OnStart(serverDto);
                 break;
@@ -83,8 +121,6 @@ public class Plugin : IPlugin
 
     public async Task OnLoadAsync(IManager manager)
     {
-        Manager = manager;
-
         // Build configuration
         await _configurationHandler.BuildAsync();
         if (_configurationHandler.Configuration() == null)
@@ -113,30 +149,25 @@ public class Plugin : IPlugin
         Console.WriteLine($"[{PluginName}] Loading...");
 #endif
 
-        _heartBeatManager = new HeartBeatManager(_serviceProvider, config);
-        EndpointManager = new EndpointManager(_serviceProvider, config);
+     
 
         WhitelistedClientIds = config.WhitelistedClientIds.Distinct().ToList();
         Translations = config.Translations;
 
         // Update the instance and check its state
-        Instance = new InstanceDto
-        {
-            InstanceGuid = Guid.Parse(manager.GetApplicationSettings().Configuration().Id),
-            InstanceName = config.InstanceNameOverride ?? manager.GetApplicationSettings().Configuration().WebfrontCustomBranding,
-            InstanceIp = await Utilities.GetExternalIP(),
-            ApiKey = config.ApiKey,
-            HeartBeat = DateTimeOffset.UtcNow,
-            Servers = new List<ServerDto>()
-        };
+        InstanceMeta.InstanceGuid = Guid.Parse(manager.GetApplicationSettings().Configuration().Id);
+        InstanceMeta.InstanceName = config.InstanceNameOverride ?? manager.GetApplicationSettings().Configuration().WebfrontCustomBranding;
+        InstanceMeta.InstanceIp = manager.ExternalIPAddress;
+        InstanceMeta.ApiKey = config.ApiKey;
+        InstanceMeta.HeartBeat = DateTimeOffset.UtcNow;
 
-        _pluginEnabled = await EndpointManager.UpdateInstance(Instance);
+        _pluginEnabled = await EndpointManager.UpdateInstance(InstanceMeta);
 
         // If successful reply, get active state and start heartbeat
         if (_pluginEnabled)
         {
-            InstanceActive = await EndpointManager.IsInstanceActive(Instance);
-            Instance.Active = InstanceActive;
+            InstanceActive = await EndpointManager.IsInstanceActive(InstanceMeta);
+            InstanceMeta.Active = InstanceActive;
 
             if (InstanceActive)
             {

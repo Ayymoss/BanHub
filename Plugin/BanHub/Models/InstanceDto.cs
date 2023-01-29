@@ -1,4 +1,4 @@
-﻿namespace GlobalInfractions.Models;
+﻿namespace BanHub.Models;
 
 public class InstanceDto
 {
@@ -35,7 +35,7 @@ public class InstanceDto
     /// <summary>
     /// The list of servers the instance has
     /// </summary>
-    public virtual ICollection<ServerDto>? Servers { get; set; }
+    public List<ServerDto>? Servers = new();
     
     /// <summary>
     /// A server reference to this instance

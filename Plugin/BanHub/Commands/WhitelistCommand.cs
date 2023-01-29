@@ -1,11 +1,10 @@
-﻿using GlobalInfractions.Enums;
-using SharedLibraryCore;
+﻿using SharedLibraryCore;
 using SharedLibraryCore.Commands;
 using SharedLibraryCore.Configuration;
 using SharedLibraryCore.Database.Models;
 using SharedLibraryCore.Interfaces;
 
-namespace GlobalInfractions.Commands;
+namespace BanHub.Commands;
 
 public class WhitelistCommand : Command
 {

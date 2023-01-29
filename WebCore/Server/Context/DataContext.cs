@@ -1,8 +1,8 @@
-﻿using GlobalInfraction.WebCore.Server.Models;
-using GlobalInfraction.WebCore.Shared.Enums;
+﻿using BanHub.WebCore.Server.Models;
+using BanHub.WebCore.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace GlobalInfraction.WebCore.Server.Context;
+namespace BanHub.WebCore.Server.Context;
 
 public class DataContext : DbContext
 {
@@ -96,7 +96,6 @@ public class DataContext : DbContext
             Id = -1,
             Identity = "0:UKN",
             HeartBeat = DateTimeOffset.UtcNow,
-            Strike = 0,
             Created = DateTimeOffset.UtcNow,
             WebRole = WebRole.User,
             Infractions = new List<EFInfraction>()

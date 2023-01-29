@@ -1,4 +1,4 @@
-﻿namespace GlobalInfraction.WebCore.Server.Enums;
+﻿namespace BanHub.WebCore.Server.Enums;
 
 public abstract class ControllerEnums
 {

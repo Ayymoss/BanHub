@@ -1,10 +1,10 @@
-﻿using GlobalInfraction.WebCore.Server.Enums;
-using GlobalInfraction.WebCore.Server.Interfaces;
-using GlobalInfraction.WebCore.Server.Services;
-using GlobalInfraction.WebCore.Shared.DTOs;
+﻿using BanHub.WebCore.Server.Enums;
+using BanHub.WebCore.Server.Interfaces;
+using BanHub.WebCore.Server.Services;
+using BanHub.WebCore.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GlobalInfraction.WebCore.Server.Controllers;
+namespace BanHub.WebCore.Server.Controllers;
 
 [ApiController]
 [Route("api/v2/[controller]")]
@@ -26,7 +26,7 @@ public class InfractionController : ControllerBase
             ControllerEnums.ProfileReturnState.Created => Ok(result.Item2.HasValue ? result.Item2.Value : "Error"),
             ControllerEnums.ProfileReturnState.NotFound => NotFound(),
             ControllerEnums.ProfileReturnState.BadRequest => BadRequest(),
-            ControllerEnums.ProfileReturnState.NotModified => StatusCode(304, "Infraction already exists"),
+            ControllerEnums.ProfileReturnState.NotModified => Conflict("Infraction already exists"),
             _ => BadRequest() // Should never happen
         };
     }

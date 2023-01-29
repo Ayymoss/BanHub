@@ -1,8 +1,8 @@
 ﻿using System.Security.Claims;
-using GlobalInfraction.WebCore.Shared.DTOs.WebEntity;
+using BanHub.WebCore.Shared.DTOs.WebEntity;
 using Microsoft.AspNetCore.Components.Authorization;
 
-namespace GlobalInfraction.WebCore.Client.Providers;
+namespace BanHub.WebCore.Client.Providers;
 
 public class CustomAuthStateProvider : AuthenticationStateProvider
 {
