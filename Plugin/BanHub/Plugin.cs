@@ -54,7 +54,7 @@ public class Plugin : IPlugin
         {
             var configHandler = sp.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
             configHandler.BuildAsync().GetAwaiter().GetResult();
-            return new InfractionEndpoint(configHandler.Configuration());
+            return new PenaltyEndpoint(configHandler.Configuration());
         });
         serviceCollection.AddSingleton(sp =>
         {
@@ -101,20 +101,20 @@ public class Plugin : IPlugin
                 EndpointManager.RemoveFromProfiles(gameEvent.Origin);
                 break;
             case GameEvent.EventType.Warn:
-                await EndpointManager.NewInfraction(InfractionType.Warn, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
+                await EndpointManager.NewPenalty(PenaltyType.Warn, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
                 break;
             case GameEvent.EventType.Kick:
-                await EndpointManager.NewInfraction(InfractionType.Kick, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
+                await EndpointManager.NewPenalty(PenaltyType.Kick, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
                 break;
             case GameEvent.EventType.TempBan:
-                await EndpointManager.NewInfraction(InfractionType.TempBan, gameEvent.Origin, gameEvent.Target, gameEvent.Data,
+                await EndpointManager.NewPenalty(PenaltyType.TempBan, gameEvent.Origin, gameEvent.Target, gameEvent.Data,
                     duration: (TimeSpan)gameEvent.Extra);
                 break;
             case GameEvent.EventType.Ban:
-                await EndpointManager.NewInfraction(InfractionType.Ban, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
+                await EndpointManager.NewPenalty(PenaltyType.Ban, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
                 break;
             case GameEvent.EventType.Unban:
-                await EndpointManager.NewInfraction(InfractionType.Unban, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
+                await EndpointManager.NewPenalty(PenaltyType.Unban, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
                 break;
         }
     }
@@ -137,7 +137,7 @@ public class Plugin : IPlugin
 
         var config = _configurationHandler.Configuration();
 
-        if (!config.EnableGlobalInfractions)
+        if (!config.EnableBanHub)
         {
             _pluginEnabled = false;
             return;
@@ -172,7 +172,7 @@ public class Plugin : IPlugin
             if (InstanceActive)
             {
                 Console.WriteLine($"[{PluginName}] Activated.");
-                Console.WriteLine($"[{PluginName}] Infractions and users will be reported to the API.");
+                Console.WriteLine($"[{PluginName}] Penalties and users will be reported to the API.");
             }
             else
             {

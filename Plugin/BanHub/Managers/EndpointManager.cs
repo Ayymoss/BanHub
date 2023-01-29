@@ -20,7 +20,7 @@ public class EndpointManager
     private readonly ConfigurationModel _configurationModel;
     private readonly InstanceDto _instanceMeta;
     private readonly InstanceEndpoint _instance;
-    private readonly InfractionEndpoint _infraction;
+    private readonly PenaltyEndpoint _penalty;
     private readonly ServerEndpoint _server;
 
     public EndpointManager(IServiceProvider serviceProvider, ConfigurationModel configurationModel, InstanceDto instanceMeta)
@@ -29,7 +29,7 @@ public class EndpointManager
         _instanceMeta = instanceMeta;
         _entity = new EntityEndpoint(configurationModel);
         _instance = new InstanceEndpoint(configurationModel);
-        _infraction = new InfractionEndpoint(configurationModel);
+        _penalty = new PenaltyEndpoint(configurationModel);
         _server = new ServerEndpoint(configurationModel);
         _logger = serviceProvider.GetRequiredService<ILogger<EndpointManager>>();
     }
@@ -101,8 +101,8 @@ public class EndpointManager
 
     private void ProcessEntity(EntityDto entity, EFClient client)
     {
-        var globalBan = entity.Infractions?
-            .Any(x => x.InfractionType is InfractionType.Ban && x.InfractionScope is InfractionScope.Global && x.InfractionStatus == InfractionStatus.Active) ?? false;
+        var globalBan = entity.Penalties?
+            .Any(x => x.PenaltyType is PenaltyType.Ban && x.PenaltyScope is PenaltyScope.Global && x.PenaltyStatus == PenaltyStatus.Active) ?? false;
 
         if (globalBan && client.IsIngame)
         {
@@ -132,11 +132,11 @@ public class EndpointManager
         _logger.LogError("Failed to remove {Name} from profiles", client.CleanedName);
     }
 
-    public async Task<(bool, Guid?)> NewInfraction(InfractionType infractionType, EFClient origin, EFClient target,
-        string reason, TimeSpan? duration = null, InfractionScope? scope = null, string? evidence = null)
+    public async Task<(bool, Guid?)> NewPenalty(PenaltyType penaltyType, EFClient origin, EFClient target,
+        string reason, TimeSpan? duration = null, PenaltyScope? scope = null, string? evidence = null)
     {
         if (!Plugin.InstanceActive) return (false, null);
-        if (infractionType is InfractionType.Kick or InfractionType.Warn && origin.ClientId == 1) return (false, null);
+        if (penaltyType is PenaltyType.Kick or PenaltyType.Warn && origin.ClientId == 1) return (false, null);
 
         var penalty = origin.AdministeredPenalties?.FirstOrDefault()?.AutomatedOffense;
         var automatedBan = false;
@@ -157,10 +157,10 @@ public class EndpointManager
         var adminEntity = ClientToEntity(origin);
         var targetEntity = ClientToEntity(target);
 
-        var infraction = new InfractionDto
+        var penaltyDto = new PenaltyDto
         {
-            InfractionType = infractionType,
-            InfractionScope = automatedBan ? InfractionScope.Global : scope ?? InfractionScope.Local,
+            PenaltyType = penaltyType,
+            PenaltyScope = automatedBan ? PenaltyScope.Global : scope ?? PenaltyScope.Local,
             Evidence = evidence,
             Reason = automatedBan ? $"Automated Offense [{automatedReason}]" : reason,
             Duration = duration,
@@ -168,14 +168,14 @@ public class EndpointManager
             Admin = adminEntity,
             Target = targetEntity
         };
-        var result = await _infraction.PostInfraction(infraction);
+        var result = await _penalty.PostPenalty(penaltyDto);
 
-        if (_configurationModel.PrintInfractionsToConsole)
+        if (_configurationModel.PrintPenaltyToConsole)
         {
-            var guid = result.Item1 ? $"GUID: {result.Item2.ToString()}" : "Error creating infraction!";
+            var guid = result.Item1 ? $"GUID: {result.Item2.ToString()}" : "Error creating penalty!";
             Console.WriteLine(
-                $"[{Plugin.PluginName} - {DateTimeOffset.UtcNow:HH:mm:ss}] {infractionType} ({infraction.InfractionScope}): " +
-                $"{origin.CleanedName} -> {target.CleanedName} ({infraction.Reason}) - {guid}");
+                $"[{Plugin.PluginName} - {DateTimeOffset.UtcNow:HH:mm:ss}] {penaltyType} ({penaltyDto.PenaltyScope}): " +
+                $"{origin.CleanedName} -> {target.CleanedName} ({penaltyDto.Reason}) - {guid}");
         }
 
         return result;
@@ -183,12 +183,12 @@ public class EndpointManager
 
     public async Task<bool> SubmitInformation(Guid guid, string evidence)
     {
-        var infraction = new InfractionDto
+        var penalty = new PenaltyDto
         {
-            InfractionGuid = guid,
+            PenaltyGuid = guid,
             Evidence = evidence
         };
-        return await _infraction.SubmitEvidence(infraction);
+        return await _penalty.SubmitEvidence(penalty);
     }
 
     public async Task<string?> GenerateToken(EFClient client)

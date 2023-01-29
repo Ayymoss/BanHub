@@ -60,14 +60,14 @@ public class EntityService : IEntityService
                         ServerPort = server.Server.ServerPort,
                         Connected = server.Connected
                     }).ToList(),
-                Infractions = profile.Infractions
+                Penalties = profile.Penalties
                     .Where(inf => inf.Target.Identity == identity)
-                    .Select(inf => new InfractionDto
+                    .Select(inf => new PenaltyDto
                     {
-                        InfractionType = inf.InfractionType,
-                        InfractionStatus = inf.InfractionStatus,
-                        InfractionScope = inf.InfractionScope,
-                        InfractionGuid = inf.InfractionGuid,
+                        PenaltyType = inf.PenaltyType,
+                        PenaltyStatus = inf.PenaltyStatus,
+                        PenaltyScope = inf.PenaltyScope,
+                        PenaltyGuid = inf.PenaltyGuid,
                         Duration = inf.Duration,
                         Reason = inf.Reason,
                         Evidence = inf.Evidence,
@@ -92,30 +92,30 @@ public class EntityService : IEntityService
                 Created = profile.Created
             }).FirstOrDefaultAsync();
 
-        if (entity?.Infractions is null) return entity;
+        if (entity?.Penalties is null) return entity;
 
         // Check and expire infractions
-        var updatedInfractions = new List<Guid>();
-        foreach (var inf in entity.Infractions)
+        var updatedPenalty = new List<Guid>();
+        foreach (var inf in entity.Penalties)
         {
             if (inf.Duration is null) continue;
-            if (inf.InfractionStatus != InfractionStatus.Active || !(DateTimeOffset.Now > inf.Submitted + inf.Duration)) continue;
+            if (inf.PenaltyStatus != PenaltyStatus.Active || !(DateTimeOffset.Now > inf.Submitted + inf.Duration)) continue;
 
-            inf.InfractionStatus = InfractionStatus.Expired;
-            updatedInfractions.Add(inf.InfractionGuid);
+            inf.PenaltyStatus = PenaltyStatus.Expired;
+            updatedPenalty.Add(inf.PenaltyGuid);
         }
 
-        if (!updatedInfractions.Any()) return entity;
+        if (!updatedPenalty.Any()) return entity;
 
-        var infraction = await _context.Infractions
+        var penalties = await _context.Penalties
             .AsTracking()
-            .Where(x => updatedInfractions.Contains(x.InfractionGuid))
+            .Where(x => updatedPenalty.Contains(x.PenaltyGuid))
             .ToListAsync();
 
-        foreach (var inf in infraction)
+        foreach (var penalty in penalties)
         {
-            inf.InfractionStatus = InfractionStatus.Expired;
-            _context.Infractions.Update(inf);
+            penalty.PenaltyStatus = PenaltyStatus.Expired;
+            _context.Penalties.Update(penalty);
         }
 
         await _context.SaveChangesAsync();
@@ -147,9 +147,9 @@ public class EntityService : IEntityService
                 .Where(x => x.EntityId == user.Id)
                 .AnyAsync(alias => alias.UserName == request.Alias!.UserName && alias.IpAddress == request.Alias.IpAddress);
 
-            var activeBanCount = await _context.Infractions
+            var activeBanCount = await _context.Penalties
                 .AsNoTracking()
-                .Where(inf => inf.InfractionType == InfractionType.Ban && inf.InfractionStatus == InfractionStatus.Active)
+                .Where(inf => inf.PenaltyType == PenaltyType.Ban && inf.PenaltyStatus == PenaltyStatus.Active)
                 .CountAsync();
 
             if (!existingAlias)
@@ -256,7 +256,7 @@ public class EntityService : IEntityService
         {
             "Id" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.Identity),
             "Name" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.CurrentAlias.Alias.UserName),
-            "Infractions" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.Infractions.Count),
+            "Penalty" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.Penalties.Count),
             "Online" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.HeartBeat),
             "Created" => query.OrderByDirection((SortDirection)pagination.SortDirection!, entity => entity.Created),
             _ => query
@@ -273,13 +273,13 @@ public class EntityService : IEntityService
                     UserName = profile.CurrentAlias.Alias.UserName,
                     Changed = profile.CurrentAlias.Alias.Changed
                 },
-                Infractions = profile.Infractions
-                    .Select(inf => new InfractionDto
+                Penalties = profile.Penalties
+                    .Select(inf => new PenaltyDto
                     {
-                        InfractionType = inf.InfractionType,
-                        InfractionStatus = inf.InfractionStatus,
-                        InfractionScope = inf.InfractionScope,
-                        InfractionGuid = inf.InfractionGuid,
+                        PenaltyType = inf.PenaltyType,
+                        PenaltyStatus = inf.PenaltyStatus,
+                        PenaltyScope = inf.PenaltyScope,
+                        PenaltyGuid = inf.PenaltyGuid,
                         Duration = inf.Duration,
                         Reason = inf.Reason,
                         Evidence = inf.Evidence,

@@ -55,7 +55,7 @@ public static class SetupConfiguration
         var configPostMig = new Configuration
         {
             Version = newConfigVersion,
-            InfractionWebHook = configuration.InfractionWebHook,
+            PenaltyWebHook = configuration.PenaltyWebHook,
             InstanceWebHook = configuration.InstanceWebHook,
             Database = configuration.Database
         };

@@ -1,7 +1,7 @@
 ﻿@page "/Users"
 @inject HttpClient Http
 
-<OpenGraphComponent Title="Users" Description="Welcome to Global Infractions"/>
+<OpenGraphComponent Title="Users" Description="Welcome to Ban Hub"/>
 
 <MudText Typo="Typo.h3" GutterBottom="true">Users</MudText>
 
@@ -19,7 +19,7 @@
             <MudTableSortLabel SortLabel="Name" T="EntityDto">Name</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Infractions" T="EntityDto">Infractions</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Penalty" T="EntityDto">Penalty</MudTableSortLabel>
         </MudTh>
         <MudTh>
             <MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="Online" T="EntityDto">Online?</MudTableSortLabel>
@@ -37,7 +37,7 @@
                 </MudText>
             </a>
         </MudTd>
-        <MudTd DataLabel="Infractions">@(context.Infractions?.Count != 0 ? context.Infractions!.Count.ToString() : "None")</MudTd>
+        <MudTd DataLabel="Penalty">@(context.Penalties?.Count != 0 ? context.Penalties!.Count.ToString() : "None")</MudTd>
         <MudTd DataLabel="Online?">
             <MudTooltip Arrow="true" Placement="Placement.Top" Text="@context.HeartBeat!.Value.ToString("yyyy-MM-dd HH:mm:ss")">
                 @if (context.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)

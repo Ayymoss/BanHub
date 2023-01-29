@@ -14,45 +14,45 @@ public class DiscordWebhookService : IDiscordWebhookService
         _configuration = configuration;
     }
 
-    public async Task CreateInfractionHook(InfractionScope scope, InfractionType infractionType, Guid infractionGuid, string identity, 
+    public async Task CreatePenaltyHook(PenaltyScope scope, PenaltyType penaltyType, Guid penaltyGuid, string identity, 
         string username, string reason)
     {
         Color color;
-        switch (infractionType)
+        switch (penaltyType)
         {
-            case InfractionType.Unban:
+            case PenaltyType.Unban:
                 color = Color.Blue;
                 break;
-            case InfractionType.Warn:
+            case PenaltyType.Warn:
                 color = Color.Default;
                 break;
-            case InfractionType.Mute:
-            case InfractionType.Kick:
+            case PenaltyType.Mute:
+            case PenaltyType.Kick:
                 color = Color.LightOrange;
                 break;
-            case InfractionType.TempBan:
+            case PenaltyType.TempBan:
                 color = Color.Orange;
                 break;
-            case InfractionType.Ban:
+            case PenaltyType.Ban:
             default:
                 color = Color.Red;
                 break;
         }
 
-        if (scope == InfractionScope.Global) color = Color.DarkRed;
+        if (scope == PenaltyScope.Global) color = Color.DarkRed;
 
         var embedBuilder = new EmbedBuilder
         {
-            Title = $"Infraction: {infractionType}",
-            Description = "Click the link to view the infraction.\n" +
-                          $"**Infraction:** [View Profile](https://BanHub.gg/Profile/{identity})\n" +
+            Title = $"Penalty: {penaltyType}",
+            Description = "Click the link to view the penalty.\n" +
+                          $"**Penalty:** [View Profile](https://BanHub.gg/Profile/{identity})\n" +
                           $"**Identity:** {identity}\n" +
                           $"**Username:** {username}\n" +
                           $"**Reason:** {reason}",
             Color = color
         };
 
-        await SendWebhook(embedBuilder.Build(), _configuration.InfractionWebHook);
+        await SendWebhook(embedBuilder.Build(), _configuration.PenaltyWebHook);
     } 
     
     public async Task CreateIssueHook(Guid instanceGuid, string ipOnRecord, string incomingIp)

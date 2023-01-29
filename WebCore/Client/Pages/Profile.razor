@@ -2,7 +2,7 @@
 @using Humanizer
 @inject HttpClient Http
 
-<OpenGraphComponent Title="Profile" Description="Welcome to Global Infractions"/>
+<OpenGraphComponent Title="Profile" Description="Welcome to Ban Hub"/>
 
 <MudText Typo="Typo.h3" GutterBottom="true">Profile</MudText>
 
@@ -16,38 +16,38 @@ else
     <MudGrid>
     <MudItem xs="12" sm="6">
         <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
-            @if (!_entity.Infractions.Any())
+            @if (!_entity.Penalties.Any())
             {
-                <MudText Align="Align.Center" Typo="Typo.h5">The user has no infractions.</MudText>
+                <MudText Align="Align.Center" Typo="Typo.h5">The user has no penalties.</MudText>
             }
             else
             {
-                <MudText Typo="Typo.h6" Align="Align.Center">Click an Infraction for Info</MudText>
+                <MudText Typo="Typo.h6" Align="Align.Center">Click an penalty for info</MudText>
                 <br/>
-                <MudTable Items="@_entity.Infractions" Hover="true" FixedHeader="true" Height="100%" @ref="mudTable" OnRowClick="RowClickEvent" T="InfractionDto">
+                <MudTable Items="@_entity.Penalties" Hover="true" FixedHeader="true" Height="100%" @ref="mudTable" OnRowClick="RowClickEvent" T="PenaltyDto">
                     <HeaderContent>
                         <MudTh>
-                            <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Admin.Alias.UserName)">Admin</MudTableSortLabel>
+                            <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Admin.Alias.UserName)">Admin</MudTableSortLabel>
                         </MudTh>
                         <MudTh>
-                            <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Reason)">Reason</MudTableSortLabel>
+                            <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Reason)">Reason</MudTableSortLabel>
                         </MudTh>
                         <MudTh>
-                            <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionType)">Type</MudTableSortLabel>
+                            <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyType)">Type</MudTableSortLabel>
                         </MudTh>
                         <MudTh>
-                            <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionScope)">Scope</MudTableSortLabel>
+                            <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyScope)">Scope</MudTableSortLabel>
                         </MudTh>
                         <MudTh>
-                            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<InfractionDto, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
+                            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<PenaltyDto, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
                         </MudTh>
                         <MudTh></MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="Admin">@context.Admin.Alias.UserName</MudTd>
                         <MudTd DataLabel="Reason">@context.Reason</MudTd>
-                        <MudTd DataLabel="Type">@context.InfractionType.ToString()</MudTd>
-                        <MudTd DataLabel="Scope">@context.InfractionScope.ToString()</MudTd>
+                        <MudTd DataLabel="Type">@context.PenaltyType.ToString()</MudTd>
+                        <MudTd DataLabel="Scope">@context.PenaltyScope.ToString()</MudTd>
                         <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
                         <MudTd DataLabel="View">
                             <MudChip Size="Size.Medium" Variant="Variant.Text" Color="Color.Info">Click to View</MudChip>
@@ -118,7 +118,7 @@ else
                         </MudListItem>
                         <MudDivider DividerType="DividerType.Inset"/>
                         <MudListItem Icon="@Icons.Material.Filled.Report">
-                            <b>Infraction Count: </b> @_entity.Infractions.Count
+                            <b>Penalty Count: </b> @_entity.Penalties.Count
                         </MudListItem>
                         <MudListItem Icon="@Icons.Material.Filled.List">
                             <b>Last Connected Server: </b> @_lastConnectedServer
@@ -127,86 +127,86 @@ else
 
                 </MudPaper>
             </MudItem>
-            @if (_selectedInfraction is not null)
+            @if (_selectedPenalty is not null)
             {
                 <MudItem xs="12">
                     <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
 
                         <MudList Dense="true">
                             <MudListItem IconColor="Color.Warning" Icon="@Icons.Material.Filled.Report">
-                                <b>Infraction: </b> @_selectedInfraction.InfractionGuid
-                                @switch (_selectedInfraction.InfractionScope)
+                                <b>Penalty: </b> @_selectedPenalty.PenaltyGuid
+                                @switch (_selectedPenalty.PenaltyScope)
                                 {
-                                    case InfractionScope.Local:
+                                    case PenaltyScope.Local:
                                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Local</MudChip>
                                         break;
-                                    case InfractionScope.Global:
+                                    case PenaltyScope.Global:
                                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Global</MudChip>
                                         break;
                                 }
-                                @switch (_selectedInfraction.InfractionType)
+                                @switch (_selectedPenalty.PenaltyType)
                                 {
-                                    case InfractionType.Warn:
+                                    case PenaltyType.Warn:
                                         <MudChip Variant="Variant.Text" Size="Size.Small">Warn</MudChip>
                                         break;
-                                    case InfractionType.Mute:
+                                    case PenaltyType.Mute:
                                         <MudChip Variant="Variant.Text" Size="Size.Small">Mute</MudChip>
                                         break;
-                                    case InfractionType.Kick:
+                                    case PenaltyType.Kick:
                                         <MudChip Variant="Variant.Text" Size="Size.Small">Kick</MudChip>
                                         break;
-                                    case InfractionType.Unban:
+                                    case PenaltyType.Unban:
                                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Unban</MudChip>
                                         break;
-                                    case InfractionType.TempBan:
+                                    case PenaltyType.TempBan:
                                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Tempban</MudChip>
                                         break;
-                                    case InfractionType.Ban:
+                                    case PenaltyType.Ban:
                                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Ban</MudChip>
                                         break;
                                 }
-                                @switch (_selectedInfraction.InfractionStatus)
+                                @switch (_selectedPenalty.PenaltyStatus)
                                 {
-                                    case InfractionStatus.Informational:
+                                    case PenaltyStatus.Informational:
                                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Informational</MudChip>
                                         break;
-                                    case InfractionStatus.Active:
+                                    case PenaltyStatus.Active:
                                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Success">Active</MudChip>
                                         break;
-                                    case InfractionStatus.Revoked:
+                                    case PenaltyStatus.Revoked:
                                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Revoked</MudChip>
                                         break;
-                                    case InfractionStatus.Expired:
+                                    case PenaltyStatus.Expired:
                                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Expired</MudChip>
                                         break;
                                 }
                             </MudListItem>
                             <MudDivider DividerType="DividerType.Inset"/>
                             <MudListItem Icon="@Icons.Filled.AdminPanelSettings">
-                                <b>Accusing Admin: </b> @_selectedInfraction.Admin.Alias.UserName
+                                <b>Accusing Admin: </b> @_selectedPenalty.Admin.Alias.UserName
                             </MudListItem>
                             <MudListItem Icon="@Icons.Filled.Message">
-                                <b>Provided Reason: </b> @_selectedInfraction.Reason
+                                <b>Provided Reason: </b> @_selectedPenalty.Reason
                             </MudListItem>
-                            @if (_selectedInfraction.Evidence is not null)
+                            @if (_selectedPenalty.Evidence is not null)
                             {
                                 <MudListItem Icon="@Icons.Filled.VideoLabel">
-                                    <b>Supporting Evidence: </b> <MudLink Typo="Typo.body2" Href="@_selectedInfraction.Evidence">Link to evidence</MudLink>
+                                    <b>Supporting Evidence: </b> <MudLink Typo="Typo.body2" Href="@_selectedPenalty.Evidence">Link to evidence</MudLink>
                                 </MudListItem>
                             }
-                            @if (_selectedInfraction.Duration.HasValue)
+                            @if (_selectedPenalty.Duration.HasValue)
                             {
                                 <MudListItem Icon="@Icons.Filled.Timelapse">
-                                    <b>Infraction Duration: </b> @_selectedInfraction.Duration.Value.Humanize()
+                                    <b>Penalty Duration: </b> @_selectedPenalty.Duration.Value.Humanize()
                                 </MudListItem>
                             }
                             <MudListItem Icon="@Icons.Material.Filled.Storage">
-                                <b>Sending Server: </b> @(_selectedInfraction.Instance.InstanceName ?? _selectedInfraction.Instance.InstanceGuid.ToString())
+                                <b>Sending Server: </b> @(_selectedPenalty.Instance.InstanceName ?? _selectedPenalty.Instance.InstanceGuid.ToString())
                             </MudListItem>
                             <MudListItem Icon="@Icons.Filled.MoreTime">
                                 <b>Time Submitted: </b>
-                                <MudTooltip Arrow="true" Placement="Placement.Top" Text="@_selectedInfraction.Submitted.Value.ToString("yyyy-MM-dd HH:mm:ss")">
-                                    @(_selectedInfraction.Submitted.Value.Humanize())
+                                <MudTooltip Arrow="true" Placement="Placement.Top" Text="@_selectedPenalty.Submitted.Value.ToString("yyyy-MM-dd HH:mm:ss")">
+                                    @(_selectedPenalty.Submitted.Value.Humanize())
                                 </MudTooltip>
                             </MudListItem>
                         </MudList>
@@ -229,8 +229,8 @@ else
     private bool _hasNotes;
     private string _lastConnectedServer;
     private int selectedRowNumber = -1;
-    private InfractionDto? _selectedInfraction;
-    private MudTable<InfractionDto> mudTable;
+    private PenaltyDto? _selectedPenalty;
+    private MudTable<PenaltyDto> mudTable;
 
     private bool _isOpen = false;
     public void ToggleOpen() => _isOpen = !_isOpen;
@@ -240,7 +240,7 @@ else
         _entity = await Http.GetFromJsonAsync<EntityDto>($"api/v2/Entity?identity={Identity}");
         if (_entity is not null)
         {
-            _isGlobalBanned = _entity.Infractions?.Any(x => x.InfractionStatus is InfractionStatus.Active && x.InfractionScope is InfractionScope.Global) ?? false;
+            _isGlobalBanned = _entity.Penalties?.Any(x => x.PenaltyStatus is PenaltyStatus.Active && x.PenaltyScope is PenaltyScope.Global) ?? false;
     // API returns this data. Need to protect the note endpoint TODO
             _hasNotes = _entity.Notes is not null && _entity.Notes.Count is not 0;
         }
@@ -255,9 +255,9 @@ else
         }
     }
 
-    private void RowClickEvent(TableRowClickEventArgs<InfractionDto> tableRowClickEventArgs)
+    private void RowClickEvent(TableRowClickEventArgs<PenaltyDto> tableRowClickEventArgs)
     {
-        _selectedInfraction = tableRowClickEventArgs.Item;
+        _selectedPenalty = tableRowClickEventArgs.Item;
     }
 
 }

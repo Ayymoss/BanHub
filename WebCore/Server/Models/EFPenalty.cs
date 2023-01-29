@@ -7,29 +7,29 @@ namespace BanHub.WebCore.Server.Models;
 /// <summary>
 /// Table for all infractions 
 /// </summary>
-public class EFInfraction
+public class EFPenalty
 {
     [Key] public int Id { get; set; }
 
     /// <summary>
     /// The type of infraction
     /// </summary>
-    public InfractionType InfractionType { get; set; }
+    public PenaltyType PenaltyType { get; set; }
 
     /// <summary>
     /// The state of the infraction
     /// </summary>
-    public InfractionStatus InfractionStatus { get; set; }
+    public PenaltyStatus PenaltyStatus { get; set; }
 
     /// <summary>
     /// The scope of the infraction
     /// </summary>
-    public InfractionScope InfractionScope { get; set; }
+    public PenaltyScope PenaltyScope { get; set; }
 
     /// <summary>
     /// The unique infraction identifier
     /// </summary>
-    public Guid InfractionGuid { get; set; }
+    public Guid PenaltyGuid { get; set; }
 
     /// <summary>
     /// Time of the infraction

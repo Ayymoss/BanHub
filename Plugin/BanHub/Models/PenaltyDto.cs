@@ -1,39 +1,39 @@
-﻿using BanHub.WebCore.Shared.Enums;
+﻿using BanHub.Enums;
 
-namespace BanHub.WebCore.Shared.DTOs;
+namespace BanHub.Models;
 
-public class InfractionDto
+public class PenaltyDto
 {
     /// <summary>
     /// The type of infraction
     /// </summary>
-    public InfractionType? InfractionType { get; set; }
+    public PenaltyType? PenaltyType { get; set; }
 
     /// <summary>
     /// The state of the infraction
     /// </summary>
-    public InfractionStatus? InfractionStatus { get; set; }
+    public PenaltyStatus? PenaltyStatus { get; set; }
 
     /// <summary>
     /// The scope of the infraction
     /// </summary>
-    public InfractionScope? InfractionScope { get; set; }
+    public PenaltyScope? PenaltyScope { get; set; }
 
     /// <summary>
     /// The unique infraction identifier
     /// </summary>
-    public Guid InfractionGuid { get; set; }
+    public Guid PenaltyGuid { get; set; }
 
     /// <summary>
     /// Duration of a temporary infraction
     /// </summary>
     public TimeSpan? Duration { get; set; }
-
+    
     /// <summary>
     /// The date of the infraction
     /// </summary>
     public DateTimeOffset? Submitted { get; set; }
-    
+
     /// <summary>
     /// The provided reason for the infraction
     /// </summary>
@@ -59,3 +59,4 @@ public class InfractionDto
     /// </summary>
     public InstanceDto? Instance { get; set; } 
 }
+

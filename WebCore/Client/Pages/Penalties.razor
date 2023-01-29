@@ -1,17 +1,17 @@
-﻿@page "/Infractions"
+﻿@page "/Penalties"
 @inject HttpClient Http
 
-<OpenGraphComponent Title="Infractions" Description="Welcome to Global Infractions"/>
+<OpenGraphComponent Title="Penalties" Description="Welcome to Ban Hub"/>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Infractions</MudText>
+<MudText Typo="Typo.h3" GutterBottom="true">Penalties</MudText>
 
 
-@if (_infractions is null)
+@if (_penalties is null)
 {
     <p>
         @if (Empty)
         {
-            <MudText Class="mb-8" Color="Color.Warning">No infraction(s) found.</MudText>
+            <MudText Class="mb-8" Color="Color.Warning">No penalties found.</MudText>
         }
         else
         {
@@ -21,43 +21,43 @@
 }
 else
 {
-    <MudTable Items="_infractions" Dense="true" Hover="true" SortLabel="Sort By" Elevation="2" RowsPerPage="20" Filter="new Func<InfractionDto, bool>(FilterFunc1)">
+    <MudTable Items="_penalties" Dense="true" Hover="true" SortLabel="Sort By" Elevation="2" RowsPerPage="20" Filter="new Func<PenaltyDto, bool>(FilterFunc1)">
         <ToolBarContent>
-            <MudText Typo="Typo.h6">All infractions</MudText>
+            <MudText Typo="Typo.h6">All penalties</MudText>
             <MudSpacer/>
             <MudTextField @bind-Value="_search" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         </ToolBarContent>
         <HeaderContent>
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionGuid)">ID</MudTableSortLabel>
+                <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyGuid)">ID</MudTableSortLabel>
             </MudTh>
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Target.Alias.UserName)">Target Name</MudTableSortLabel>
+                <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Target.Alias.UserName)">Target Name</MudTableSortLabel>
             </MudTh>
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Admin.Alias.UserName)">Admin Name</MudTableSortLabel>
+                <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Admin.Alias.UserName)">Admin Name</MudTableSortLabel>
             </MudTh>
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Reason)">Reason</MudTableSortLabel>
+                <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Reason)">Reason</MudTableSortLabel>
             </MudTh>
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionType)">Type</MudTableSortLabel>
+                <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyType)">Type</MudTableSortLabel>
             </MudTh>
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionStatus)">State</MudTableSortLabel>
+                <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyStatus)">State</MudTableSortLabel>
             </MudTh>
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.InfractionScope)">Scope</MudTableSortLabel>
+                <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyScope)">Scope</MudTableSortLabel>
             </MudTh>
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<InfractionDto, object>(x => x.Instance.InstanceGuid)">Instance</MudTableSortLabel>
+                <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Instance.InstanceGuid)">Instance</MudTableSortLabel>
             </MudTh>
             <MudTh>
-                <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<InfractionDto, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
+                <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<PenaltyDto, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
             </MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="ID">@context.InfractionGuid</MudTd>
+            <MudTd DataLabel="ID">@context.PenaltyGuid</MudTd>
             <MudTd DataLabel="Target Name">
                 <a href="/Profile/@context.Target!.Identity">
                     <MudText Typo="Typo.body2" Color="Color.Warning">
@@ -74,52 +74,52 @@ else
             </MudTd>
             <MudTd DataLabel="Reason">@context.Reason</MudTd>
             <MudTd DataLabel="Type">
-                @switch (context.InfractionType)
+                @switch (context.PenaltyType)
                 {
-                    case InfractionType.Warn:
+                    case PenaltyType.Warn:
                         <MudChip Variant="Variant.Text" Size="Size.Small">Warn</MudChip>
                         break;
-                    case InfractionType.Mute:
+                    case PenaltyType.Mute:
                         <MudChip Variant="Variant.Text" Size="Size.Small">Mute</MudChip>
                         break;
-                    case InfractionType.Kick:
+                    case PenaltyType.Kick:
                         <MudChip Variant="Variant.Text" Size="Size.Small">Kick</MudChip>
                         break;
-                    case InfractionType.Unban:
+                    case PenaltyType.Unban:
                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Unban</MudChip>
                         break;
-                    case InfractionType.TempBan:
+                    case PenaltyType.TempBan:
                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Tempban</MudChip>
                         break;
-                    case InfractionType.Ban:
+                    case PenaltyType.Ban:
                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Ban</MudChip>
                         break;
                 }
             </MudTd>
             <MudTd DataLabel="Status">
-                @switch (context.InfractionStatus)
+                @switch (context.PenaltyStatus)
                 {
-                    case InfractionStatus.Informational:
+                    case PenaltyStatus.Informational:
                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Informational</MudChip>
                         break;
-                    case InfractionStatus.Active:
+                    case PenaltyStatus.Active:
                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Success">Active</MudChip>
                         break;
-                    case InfractionStatus.Revoked:
+                    case PenaltyStatus.Revoked:
                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Revoked</MudChip>
                         break;
-                    case InfractionStatus.Expired:
+                    case PenaltyStatus.Expired:
                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Expired</MudChip>
                         break;
                 }
             </MudTd>
             <MudTd DataLabel="Scope">
-                @switch (context.InfractionScope)
+                @switch (context.PenaltyScope)
                 {
-                    case InfractionScope.Local:
+                    case PenaltyScope.Local:
                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Local</MudChip>
                         break;
-                    case InfractionScope.Global:
+                    case PenaltyScope.Global:
                         <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Global</MudChip>
                         break;
                 }
@@ -139,24 +139,24 @@ else
     public string? SearchString { get; set; }
 
     private bool Empty { get; set; }
-    private List<InfractionDto>? _infractions;
+    private List<PenaltyDto>? _penalties;
 
     private string _search = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        _infractions = await Http.GetFromJsonAsync<List<InfractionDto>>("/api/v2/Infraction/All");
-        if (_infractions is null || !_infractions.Any()) Empty = true;
+        _penalties = await Http.GetFromJsonAsync<List<PenaltyDto>>("/api/v2/Penalty/All");
+        if (_penalties is null || !_penalties.Any()) Empty = true;
         if (SearchString is not null) _search = SearchString;
     }
 
-    private bool FilterFunc1(InfractionDto element) => FilterFunc(element, _search);
+    private bool FilterFunc1(PenaltyDto element) => FilterFunc(element, _search);
 
-    private bool FilterFunc(InfractionDto element, string searchString)
+    private bool FilterFunc(PenaltyDto element, string searchString)
     {
         if (string.IsNullOrWhiteSpace(searchString))
             return true;
-        if (element.InfractionGuid.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        if (element.PenaltyGuid.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
         if (element.Admin!.Alias!.UserName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
@@ -168,11 +168,11 @@ else
             return true;
         if (element.Reason!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
-        if (element.InfractionStatus.ToString()!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        if (element.PenaltyStatus.ToString()!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
-        if (element.InfractionScope.ToString()!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        if (element.PenaltyScope.ToString()!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
-        if (element.InfractionType.ToString()!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        if (element.PenaltyType.ToString()!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
         if (element.Instance!.InstanceGuid.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;

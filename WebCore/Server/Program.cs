@@ -53,7 +53,7 @@ builder.Services.AddTransient<ApiKeyMiddleware>();
 
 builder.Services.AddScoped<IEntityService, EntityService>();
 builder.Services.AddScoped<IHeartBeatService, HeartBeatService>();
-builder.Services.AddScoped<IInfractionService, InfractionService>();
+builder.Services.AddScoped<IPenaltyService, PenaltyService>();
 builder.Services.AddScoped<IInstanceService, InstanceService>();
 builder.Services.AddScoped<IDiscordWebhookService, DiscordWebhookService>();
 builder.Services.AddScoped<ISearchService, SearchService>();

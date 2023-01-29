@@ -2,7 +2,7 @@
 
 public class StatisticsTracking
 {
-    public int Infractions;
+    public int Penalties;
     public int Servers;
     public int Instances;
     public int Entities;

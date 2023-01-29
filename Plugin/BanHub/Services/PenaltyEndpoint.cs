@@ -5,7 +5,7 @@ using BanHub.Models;
 
 namespace BanHub.Services;
 
-public class InfractionEndpoint
+public class PenaltyEndpoint
 {
     private readonly ConfigurationModel _configurationModel;
     private readonly HttpClient _httpClient = new();
@@ -15,24 +15,24 @@ public class InfractionEndpoint
     private const string ApiHost = "https://banhub.gg/api/v2";
 #endif
 
-    public InfractionEndpoint(ConfigurationModel configurationModel)
+    public PenaltyEndpoint(ConfigurationModel configurationModel)
     {
         _configurationModel = configurationModel;
     }
 
-    public async Task<(bool, Guid?)> PostInfraction(InfractionDto infraction)
+    public async Task<(bool, Guid?)> PostPenalty(PenaltyDto penalty)
     {
         try
         {
             var response = await _httpClient
-                .PostAsJsonAsync($"{ApiHost}/Infraction?authToken={_configurationModel.ApiKey}", infraction);
+                .PostAsJsonAsync($"{ApiHost}/Penalty?authToken={_configurationModel.ApiKey}", penalty);
             var preGuid = await response.Content.ReadAsStringAsync();
             var parsedState = Guid.TryParse(preGuid.Replace("\"", ""), out var guid);
 
             if (!response.IsSuccessStatusCode && _configurationModel.DebugMode)
             {
-                Console.WriteLine($"\n[{Plugin.PluginName}] Error posting infraction {infraction.Reason}\nSC: {response.StatusCode}\n" +
-                                  $"RP: {response.ReasonPhrase}\nB: {preGuid}\nJSON: {JsonSerializer.Serialize(infraction)}\n" +
+                Console.WriteLine($"\n[{Plugin.PluginName}] Error posting penalty {penalty.Reason}\nSC: {response.StatusCode}\n" +
+                                  $"RP: {response.ReasonPhrase}\nB: {preGuid}\nJSON: {JsonSerializer.Serialize(penalty)}\n" +
                                   $"[{Plugin.PluginName}] End of error");
             }
             
@@ -40,23 +40,23 @@ public class InfractionEndpoint
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine($"[{Plugin.PluginName}] Error posting infraction: {e.Message}");
+            Console.WriteLine($"[{Plugin.PluginName}] Error posting penalty: {e.Message}");
         }
 
         return (false, null);
     }
 
-    public async Task<bool> SubmitEvidence(InfractionDto infraction)
+    public async Task<bool> SubmitEvidence(PenaltyDto penalty)
     {
         try
         {
             var response = await _httpClient
-                .PostAsJsonAsync($"{ApiHost}/Infraction/Evidence?authToken={_configurationModel.ApiKey}", infraction);
+                .PostAsJsonAsync($"{ApiHost}/Penalty/Evidence?authToken={_configurationModel.ApiKey}", penalty);
             
             if (!response.IsSuccessStatusCode && _configurationModel.DebugMode)
             {
-                Console.WriteLine($"\n[{Plugin.PluginName}] Error posting evidence {infraction.Evidence}\nSC: {response.StatusCode}\n" +
-                                  $"RP: {response.ReasonPhrase}\nB: {await response.Content.ReadAsStringAsync()}\nJSON: {JsonSerializer.Serialize(infraction)}\n" +
+                Console.WriteLine($"\n[{Plugin.PluginName}] Error posting evidence {penalty.Evidence}\nSC: {response.StatusCode}\n" +
+                                  $"RP: {response.ReasonPhrase}\nB: {await response.Content.ReadAsStringAsync()}\nJSON: {JsonSerializer.Serialize(penalty)}\n" +
                                   $"[{Plugin.PluginName}] End of error");
             }
             

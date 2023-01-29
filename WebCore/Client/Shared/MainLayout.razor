@@ -21,12 +21,12 @@
             <MudTextField @bind-Value="_searchValue" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" Placeholder="Search" Variant="Variant.Outlined" Adornment="Adornment.End" Margin="Margin.Dense" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Info"/>
         </MudItem>
         <MudIconButton Icon="@Icons.Custom.Brands.Discord" Color="Color.Inherit" Link="https://discord.gg/Arruj6DWvp" Target="_blank"/>
-        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/Ayymoss/GlobalInfractions" Target="_blank"/>
+        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/Ayymoss/BanHub" Target="_blank"/>
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
         <MudDrawerHeader>
             <MudImage Height="40" Src="/images/logo.png" Alt="GI" Elevation="25" Class="rounded-lg" Style="padding-right: 8px;padding-bottom: 4px;"/>
-            <MudText Typo="Typo.h6" Style="padding-top: 4px;">Global Infractions</MudText>
+            <MudText Typo="Typo.h6" Style="padding-top: 4px;">Ban Hub</MudText>
         </MudDrawerHeader>
         <NavMenu/>
     </MudDrawer>
@@ -75,7 +75,7 @@
     protected override async Task OnInitializedAsync()
     {
         var online = await Http.GetAsync("/api/v2/Entity/Online");
-        var bans = await Http.GetAsync("/api/v2/Infraction/Count");
+        var bans = await Http.GetAsync("/api/v2/Penalty/Count");
 
         var onlineResult = await online.Content.ReadAsStringAsync();
         var bansResult = await bans.Content.ReadAsStringAsync();

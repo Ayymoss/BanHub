@@ -43,7 +43,7 @@ public class EFEntity
     /// <summary>
     /// The player's list of infractions
     /// </summary>
-    public virtual ICollection<EFInfraction> Infractions { get; set; } = null!;
+    public virtual ICollection<EFPenalty> Penalties { get; set; } = null!;
 
     /// <summary>
     /// The lookup for current alias

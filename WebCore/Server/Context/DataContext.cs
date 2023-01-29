@@ -14,7 +14,7 @@ public class DataContext : DbContext
     public DbSet<EFEntity> Entities { get; set; }
     public DbSet<EFAlias> Aliases { get; set; }
     public DbSet<EFCurrentAlias> CurrentAliases { get; set; }
-    public DbSet<EFInfraction> Infractions { get; set; }
+    public DbSet<EFPenalty> Penalties { get; set; }
     public DbSet<EFServer> Servers { get; set; }
     public DbSet<EFServerConnection> ServerConnections { get; set; }
     public DbSet<EFStatistic> Statistics { get; set; }
@@ -25,7 +25,7 @@ public class DataContext : DbContext
         modelBuilder.Entity<EFInstance>().ToTable("EFInstances");
         modelBuilder.Entity<EFEntity>().ToTable("EFEntities");
         modelBuilder.Entity<EFAlias>().ToTable("EFAliases");
-        modelBuilder.Entity<EFInfraction>().ToTable("EFInfractions");
+        modelBuilder.Entity<EFPenalty>().ToTable("EFPenalties");
         modelBuilder.Entity<EFCurrentAlias>().ToTable("EFCurrentAliases");
         modelBuilder.Entity<EFServer>().ToTable("EFServers");
         modelBuilder.Entity<EFServerConnection>().ToTable("EFServerConnections");
@@ -33,9 +33,9 @@ public class DataContext : DbContext
         modelBuilder.Entity<EFAuthToken>().ToTable("EFAuthTokens");
         modelBuilder.Entity<EFNote>().ToTable("EFNotes");
 
-        modelBuilder.Entity<EFInfraction>()
+        modelBuilder.Entity<EFPenalty>()
             .HasOne(a => a.Target)
-            .WithMany(p => p.Infractions)
+            .WithMany(p => p.Penalties)
             .HasForeignKey(f => f.TargetId);
         
         modelBuilder.Entity<EFNote>()
@@ -55,7 +55,7 @@ public class DataContext : DbContext
         var infractionCount = new EFStatistic
         {
             Id = -2,
-            Statistic = "InfractionCount",
+            Statistic = "PenaltyCount",
             Count = 0
         };
 
@@ -98,7 +98,7 @@ public class DataContext : DbContext
             HeartBeat = DateTimeOffset.UtcNow,
             Created = DateTimeOffset.UtcNow,
             WebRole = WebRole.User,
-            Infractions = new List<EFInfraction>()
+            Penalties = new List<EFPenalty>()
         };
 
         var adminCurrentAlias = new EFCurrentAlias

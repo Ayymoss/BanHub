@@ -46,7 +46,7 @@ public class GlobalBanCommand : Command
         }
 
         var result = await Plugin.EndpointManager
-            .NewInfraction(InfractionType.Ban, gameEvent.Origin, gameEvent.Target, gameEvent.Data, scope: InfractionScope.Global);
+            .NewPenalty(PenaltyType.Ban, gameEvent.Origin, gameEvent.Target, gameEvent.Data, scope: PenaltyScope.Global);
 
         switch (result.Item1)
         {

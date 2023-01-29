@@ -42,7 +42,7 @@ public class EntityDto
     /// <summary>
     /// The player's list of infractions
     /// </summary>
-    public virtual ICollection<InfractionDto>? Infractions { get; set; }
+    public virtual ICollection<PenaltyDto>? Penalties { get; set; }
     
     /// <summary>
     /// Servers the client has connected to

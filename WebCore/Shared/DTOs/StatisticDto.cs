@@ -20,5 +20,5 @@ public class StatisticDto
     /// <summary>
     /// The count of how many infractions there are
     /// </summary>
-    public int? InfractionCount { get; set; }
+    public int? PenaltyCount { get; set; }
 }

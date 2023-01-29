@@ -31,7 +31,7 @@ public class StatisticService : IStatisticService
             {
                 var result = await ReadStatistics();
 
-                _statisticsTracking.Infractions = result.InfractionCount!.Value;
+                _statisticsTracking.Penalties = result.PenaltyCount!.Value;
                 _statisticsTracking.Servers = result.ServerCount!.Value;
                 _statisticsTracking.Instances = result.InstanceCount!.Value;
                 _statisticsTracking.Entities = result.EntityCount!.Value;
@@ -50,8 +50,8 @@ public class StatisticService : IStatisticService
 
         switch (statistic)
         {
-            case ControllerEnums.StatisticType.InfractionCount:
-                Interlocked.Increment(ref _statisticsTracking.Infractions);
+            case ControllerEnums.StatisticType.PenaltyCount:
+                Interlocked.Increment(ref _statisticsTracking.Penalties);
                 break;
             case ControllerEnums.StatisticType.ServerCount:
                 Interlocked.Increment(ref _statisticsTracking.Servers);
@@ -89,7 +89,7 @@ public class StatisticService : IStatisticService
 
         return new StatisticDto
         {
-            InfractionCount = _statisticsTracking.Infractions,
+            PenaltyCount = _statisticsTracking.Penalties,
             ServerCount = _statisticsTracking.Servers,
             InstanceCount = _statisticsTracking.Instances,
             EntityCount = _statisticsTracking.Entities
@@ -99,7 +99,7 @@ public class StatisticService : IStatisticService
     private async Task<StatisticDto> ReadStatistics()
     {
         var entity = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.EntityCount);
-        var infraction = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.InfractionCount);
+        var penalty = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.PenaltyCount);
         var instance = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.InstanceCount);
         var server = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.ServerCount);
         var statistics = new StatisticDto
@@ -107,7 +107,7 @@ public class StatisticService : IStatisticService
             EntityCount = entity.Count,
             InstanceCount = instance.Count,
             ServerCount = server.Count,
-            InfractionCount = infraction.Count
+            PenaltyCount = penalty.Count
         };
         return statistics;
     }
@@ -115,17 +115,17 @@ public class StatisticService : IStatisticService
     private async Task WriteStatistics()
     {
         var entity = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.EntityCount);
-        var infraction = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.InfractionCount);
+        var penalty = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.PenaltyCount);
         var instance = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.InstanceCount);
         var server = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.ServerCount);
 
         entity.Count = _statisticsTracking.Entities;
-        infraction.Count = _statisticsTracking.Infractions;
+        penalty.Count = _statisticsTracking.Penalties;
         instance.Count = _statisticsTracking.Instances;
         server.Count = _statisticsTracking.Servers;
 
         _context.Statistics.Update(entity);
-        _context.Statistics.Update(infraction);
+        _context.Statistics.Update(penalty);
         _context.Statistics.Update(instance);
         _context.Statistics.Update(server);
 

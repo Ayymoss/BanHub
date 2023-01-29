@@ -19,7 +19,7 @@ public abstract class ControllerEnums
     {
         EntityCount = -4,
         ServerCount = -3,
-        InfractionCount = -2,
+        PenaltyCount = -2,
         InstanceCount = -1
     }
 }

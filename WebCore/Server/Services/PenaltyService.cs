@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Services;
 
-public class InfractionService : IInfractionService
+public class PenaltyService : IPenaltyService
 {
     private readonly IDiscordWebhookService _discordWebhook;
     private readonly IStatisticService _statisticService;
@@ -16,8 +16,8 @@ public class InfractionService : IInfractionService
     private readonly DataContext _context;
     private readonly IEntityService _entityService;
 
-    public InfractionService(DataContext context, IEntityService entityService, IDiscordWebhookService discordWebhook,
-        IStatisticService statisticService, ILogger<InfractionService> logger)
+    public PenaltyService(DataContext context, IEntityService entityService, IDiscordWebhookService discordWebhook,
+        IStatisticService statisticService, ILogger<PenaltyService> logger)
     {
         _discordWebhook = discordWebhook;
         _statisticService = statisticService;
@@ -26,7 +26,7 @@ public class InfractionService : IInfractionService
         _entityService = entityService;
     }
 
-    public async Task<(ControllerEnums.ProfileReturnState, Guid?)> AddInfraction(InfractionDto request)
+    public async Task<(ControllerEnums.ProfileReturnState, Guid?)> AddPenalty(PenaltyDto request)
     {
         await _entityService.CreateOrUpdate(request.Target!);
         await _entityService.CreateOrUpdate(request.Admin!);
@@ -42,52 +42,52 @@ public class InfractionService : IInfractionService
         if (user is null || admin is null) return (ControllerEnums.ProfileReturnState.NotFound, null);
 
         // Check if the user has an existing ban and the incoming is an unban from the server that banned them
-        var activeGlobalBan = await _context.Infractions
+        var activeGlobalBan = await _context.Penalties
             .AsTracking()
             .Where(inf => inf.TargetId == user.Id && inf.Instance.InstanceGuid == request.Instance!.InstanceGuid)
             .FirstOrDefaultAsync(inf =>
-                inf.InfractionType == InfractionType.Ban
-                && inf.InfractionScope == InfractionScope.Global
-                && inf.InfractionStatus == InfractionStatus.Active);
+                inf.PenaltyType == PenaltyType.Ban
+                && inf.PenaltyScope == PenaltyScope.Global
+                && inf.PenaltyStatus == PenaltyStatus.Active);
 
         // Already global banned - don't want to create another
-        if (activeGlobalBan is not null && request.InfractionType == InfractionType.Ban)
+        if (activeGlobalBan is not null && request.PenaltyType == PenaltyType.Ban)
         {
             return (ControllerEnums.ProfileReturnState.NotModified, null);
         }
 
-        var infractions = await _context.Infractions
+        var penalty = await _context.Penalties
             .AsTracking()
             .Where(inf =>
                 inf.TargetId == user.Id && inf.Instance.InstanceGuid == request.Instance!.InstanceGuid
-                                        && (inf.InfractionType == InfractionType.Ban || inf.InfractionType == InfractionType.TempBan)
-                                        && inf.InfractionStatus == InfractionStatus.Active)
+                                        && (inf.PenaltyType == PenaltyType.Ban || inf.PenaltyType == PenaltyType.TempBan)
+                                        && inf.PenaltyStatus == PenaltyStatus.Active)
             .ToListAsync();
 
-        if (!infractions.Any())
+        if (!penalty.Any())
         {
-            switch (request.InfractionType)
+            switch (request.PenaltyType)
             {
                 // If the incoming request is an unban, unban them.
-                case InfractionType.Unban:
-                    foreach (var inf in infractions)
+                case PenaltyType.Unban:
+                    foreach (var inf in penalty)
                     {
-                        inf.InfractionStatus = InfractionStatus.Revoked;
-                        _context.Update(infractions);
+                        inf.PenaltyStatus = PenaltyStatus.Revoked;
+                        _context.Update(penalty);
                     }
 
                     break;
                 // If they're already banned. We don't need to keep creating kick infractions.
-                case InfractionType.Kick:
+                case PenaltyType.Kick:
                     return (ControllerEnums.ProfileReturnState.NotModified, null);
             }
         }
         else
         {
-            switch (request.InfractionType)
+            switch (request.PenaltyType)
             {
                 // Trying to unban when no record of a ban exists.
-                case InfractionType.Unban:
+                case PenaltyType.Unban:
                     return (ControllerEnums.ProfileReturnState.NotModified, null);
             }
         }
@@ -95,14 +95,14 @@ public class InfractionService : IInfractionService
         var instance = await _context.Instances.FirstOrDefaultAsync(x => x.ApiKey == request.Instance!.ApiKey);
         if (instance is null) return (ControllerEnums.ProfileReturnState.NotFound, null);
 
-        var infractionModel = new EFInfraction
+        var penaltyModel = new EFPenalty
         {
-            InfractionType = request.InfractionType!.Value,
-            InfractionStatus = request.InfractionType is InfractionType.Ban or InfractionType.TempBan
-                ? InfractionStatus.Active
-                : InfractionStatus.Informational,
-            InfractionScope = request.InfractionScope!.Value,
-            InfractionGuid = Guid.NewGuid(),
+            PenaltyType = request.PenaltyType!.Value,
+            PenaltyStatus = request.PenaltyType is PenaltyType.Ban or PenaltyType.TempBan
+                ? PenaltyStatus.Active
+                : PenaltyStatus.Informational,
+            PenaltyScope = request.PenaltyScope!.Value,
+            PenaltyGuid = Guid.NewGuid(),
             Submitted = DateTimeOffset.UtcNow,
             AdminId = admin.Id,
             Reason = request.Reason!,
@@ -112,25 +112,25 @@ public class InfractionService : IInfractionService
             TargetId = user.Id
         };
 
-        await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.InfractionCount);
-        _context.Add(infractionModel);
+        await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.PenaltyCount);
+        _context.Add(penaltyModel);
         await _context.SaveChangesAsync();
 
         try
         {
-            await _discordWebhook.CreateInfractionHook(infractionModel.InfractionScope, infractionModel.InfractionType,
-                infractionModel.InfractionGuid,
-                user.Identity, user.CurrentAlias.Alias.UserName, infractionModel.Reason);
+            await _discordWebhook.CreatePenaltyHook(penaltyModel.PenaltyScope, penaltyModel.PenaltyType,
+                penaltyModel.PenaltyGuid,
+                user.Identity, user.CurrentAlias.Alias.UserName, penaltyModel.Reason);
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
         }
 
-        return (ControllerEnums.ProfileReturnState.Created, infractionModel.InfractionGuid);
+        return (ControllerEnums.ProfileReturnState.Created, penaltyModel.PenaltyGuid);
     }
 
-    public async Task<bool> RevokeGlobalBan(InfractionDto request)
+    public async Task<bool> RevokeGlobalBan(PenaltyDto request)
     {
         await _entityService.CreateOrUpdate(request.Target!);
         await _entityService.CreateOrUpdate(request.Admin!);
@@ -145,12 +145,12 @@ public class InfractionService : IInfractionService
 
         if (user is null || admin is null) return false;
 
-        var globalBans = await _context.Infractions
+        var globalBans = await _context.Penalties
             .AsTracking()
             .Where(inf =>
                 inf.TargetId == user.Id && inf.Instance.InstanceGuid == request.Instance!.InstanceGuid
-                                        && inf.InfractionType == InfractionType.Ban
-                                        && inf.InfractionStatus == InfractionStatus.Active)
+                                        && inf.PenaltyType == PenaltyType.Ban
+                                        && inf.PenaltyStatus == PenaltyStatus.Active)
             .ToListAsync();
 
         if (!globalBans.Any()) return false;
@@ -158,25 +158,25 @@ public class InfractionService : IInfractionService
         // Remove any actives
         foreach (var inf in globalBans)
         {
-            inf.InfractionStatus = InfractionStatus.Revoked;
-            _context.Infractions.Update(inf);
+            inf.PenaltyStatus = PenaltyStatus.Revoked;
+            _context.Penalties.Update(inf);
         }
 
         await _context.SaveChangesAsync();
         return true;
     }
 
-    public async Task<(ControllerEnums.ProfileReturnState, InfractionDto?)> GetInfraction(string infractionGuid)
+    public async Task<(ControllerEnums.ProfileReturnState, PenaltyDto?)> GetPenalty(string penaltyGuid)
     {
-        var parseGuid = Guid.TryParse(infractionGuid, out var guid);
+        var parseGuid = Guid.TryParse(penaltyGuid, out var guid);
         if (!parseGuid) return (ControllerEnums.ProfileReturnState.BadRequest, null);
 
-        var infraction = await _context.Infractions.Where(inf => inf.InfractionGuid == guid).Select(inf => new InfractionDto
+        var penalty = await _context.Penalties.Where(inf => inf.PenaltyGuid == guid).Select(inf => new PenaltyDto
         {
-            InfractionGuid = inf.InfractionGuid,
-            InfractionType = inf.InfractionType,
-            InfractionStatus = inf.InfractionStatus,
-            InfractionScope = inf.InfractionScope,
+            PenaltyGuid = inf.PenaltyGuid,
+            PenaltyType = inf.PenaltyType,
+            PenaltyStatus = inf.PenaltyStatus,
+            PenaltyScope = inf.PenaltyScope,
             Submitted = inf.Submitted,
             Admin = new EntityDto
             {
@@ -204,19 +204,19 @@ public class InfractionService : IInfractionService
             }
         }).FirstOrDefaultAsync();
 
-        return infraction is null
+        return penalty is null
             ? (ControllerEnums.ProfileReturnState.NotFound, null)
-            : (ControllerEnums.ProfileReturnState.Ok, infraction);
+            : (ControllerEnums.ProfileReturnState.Ok, penalty);
     }
 
-    public async Task<(ControllerEnums.ProfileReturnState, List<InfractionDto>?)> GetInfractions()
+    public async Task<(ControllerEnums.ProfileReturnState, List<PenaltyDto>?)> GetPenalties()
     {
-        var infractions = await _context.Infractions.Select(inf => new InfractionDto
+        var penalties = await _context.Penalties.Select(inf => new PenaltyDto
         {
-            InfractionGuid = inf.InfractionGuid,
-            InfractionType = inf.InfractionType,
-            InfractionStatus = inf.InfractionStatus,
-            InfractionScope = inf.InfractionScope,
+            PenaltyGuid = inf.PenaltyGuid,
+            PenaltyType = inf.PenaltyType,
+            PenaltyStatus = inf.PenaltyStatus,
+            PenaltyScope = inf.PenaltyScope,
             Submitted = inf.Submitted,
             Admin = new EntityDto
             {
@@ -244,33 +244,33 @@ public class InfractionService : IInfractionService
             }
         }).ToListAsync();
 
-        infractions = infractions.OrderByDescending(x => x.Submitted).ToList();
+        penalties = penalties.OrderByDescending(x => x.Submitted).ToList();
 
-        return infractions.Count is 0
-            ? (ControllerEnums.ProfileReturnState.Ok, new List<InfractionDto>())
-            : (ControllerEnums.ProfileReturnState.Ok, infractions);
+        return penalties.Count is 0
+            ? (ControllerEnums.ProfileReturnState.Ok, new List<PenaltyDto>())
+            : (ControllerEnums.ProfileReturnState.Ok, penalties);
     }
 
-    public async Task<int> GetInfractionDayCount()
+    public async Task<int> GetPenaltyDayCount()
     {
-        return await _context.Infractions
+        return await _context.Penalties
             .Where(x => x.Submitted + TimeSpan.FromDays(1) > DateTimeOffset.UtcNow
-                        && x.InfractionType == InfractionType.Ban
-                        && x.InfractionScope == InfractionScope.Global
-                        && x.InfractionStatus == InfractionStatus.Active)
+                        && x.PenaltyType == PenaltyType.Ban
+                        && x.PenaltyScope == PenaltyScope.Global
+                        && x.PenaltyStatus == PenaltyStatus.Active)
             .CountAsync();
     }
 
-    public async Task<bool> SubmitEvidence(InfractionDto request)
+    public async Task<bool> SubmitEvidence(PenaltyDto request)
     {
-        var infraction = await _context.Infractions
+        var penalty = await _context.Penalties
             .AsTracking()
-            .FirstOrDefaultAsync(x => x.InfractionGuid == request.InfractionGuid);
+            .FirstOrDefaultAsync(x => x.PenaltyGuid == request.PenaltyGuid);
 
-        if (infraction is null) return false;
+        if (penalty is null) return false;
 
-        infraction.Evidence = request.Evidence;
-        _context.Infractions.Update(infraction);
+        penalty.Evidence = request.Evidence;
+        _context.Penalties.Update(penalty);
         await _context.SaveChangesAsync();
         return true;
     }

@@ -2,26 +2,26 @@
 @using Humanizer
 @inject HttpClient Http
 
-<OpenGraphComponent Title="Index" Description="Welcome to Global Infractions"/>
+<OpenGraphComponent Title="Index" Description="Welcome to Ban Hub"/>
 
 <MudContainer Class="mt-16 px-8" MaxWidth="MaxWidth.False">
     <MudGrid>
         <MudItem xs="12" sm="6">
             <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
-                <MudText Align="Align.Center" Typo="Typo.h3" GutterBottom="true">Welcome to Global Infractions!</MudText>
+                <MudText Align="Align.Center" Typo="Typo.h3" GutterBottom="true">Welcome to Ban Hub!</MudText>
                 <MudText Align="Align.Center" Class="mb-8">We provide a service which aims to clean up the state of 3rd party Call of Duty clients.</MudText>
                 <br/>
                 <MudDivider/>
                 <br/>
                 <MudText Align="Align.Center" Typo="Typo.h6">Latest 3 global bans</MudText>
                 <br/>
-                @if (!_infractionTable.Any())
+                @if (!_penaltyTable.Any())
                 {
                     <MudText Align="Align.Center" Typo="Typo.body2">There are no global bans...</MudText>
                 }
                 else
                 {
-                    <MudTable Dense="true" Items="@_infractionTable" Hover="true" FixedHeader="true" Height="100%" T="InfractionDto">
+                    <MudTable Dense="true" Items="@_penaltyTable" Hover="true" FixedHeader="true" Height="100%" T="PenaltyDto">
                         <HeaderContent>
                             <MudTh>Instance</MudTh>
                             <MudTh>Target</MudTh>
@@ -56,7 +56,7 @@
                     <MudPaper Elevation="2" Class="pa-4" Style="height: 100%;">
                         <MudText Typo="Typo.h6" GutterBottom="true">Current Stats</MudText>
                         <MudList Dense="true">
-                            <MudListItem Icon="@Icons.Filled.Report">Infractions: @_infractions</MudListItem>
+                            <MudListItem Icon="@Icons.Filled.Report">Penalties: @_penalties</MudListItem>
                             <MudDivider DividerType="DividerType.Inset"/>
                             <MudListItem Icon="@Icons.Filled.Person">Users: @_entities</MudListItem>
                             <MudListItem Icon="@Icons.Filled.Storage">Instances: @_instances</MudListItem>
@@ -71,7 +71,7 @@
                             <a href="https://discord.gg/39rMB7YE2R">Discord</a>
                         </MudChip>
                         <MudChip Size="Size.Large" Icon="@Icons.Custom.Brands.GitHub" Label="true" Color="Color.Info">
-                            <a href="https://github.com/Ayymoss/GlobalInfractions">GitHub</a>
+                            <a href="https://github.com/Ayymoss/BanHub">GitHub</a>
                         </MudChip>
                     </MudPaper>
                 </MudItem>
@@ -84,19 +84,19 @@
 @code {
 
     private string? _instances;
-    private string? _infractions;
+    private string? _penalties;
     private string? _entities;
     private string? _servers;
 
-    private List<InfractionDto> _infractionTable = new();
+    private List<PenaltyDto> _penaltyTable = new();
 
     protected override async Task OnInitializedAsync()
     {
-        var infractionTable = await Http.GetFromJsonAsync<List<InfractionDto>>("/api/v2/Infraction/All");
-        if (infractionTable is not null)
+        var penaltyTable = await Http.GetFromJsonAsync<List<PenaltyDto>>("/api/v2/Penalty/All");
+        if (penaltyTable is not null)
         {
-            _infractionTable = infractionTable
-                .Where(x => x.InfractionType == InfractionType.Ban && x.InfractionScope == InfractionScope.Global && x.InfractionStatus == InfractionStatus.Active)
+            _penaltyTable = penaltyTable
+                .Where(x => x.PenaltyType == PenaltyType.Ban && x.PenaltyScope == PenaltyScope.Global && x.PenaltyStatus == PenaltyStatus.Active)
                 .OrderByDescending(x => x.Submitted)
                 .Take(3)
                 .ToList();
@@ -107,7 +107,7 @@
 
         _entities = $"{statistic.EntityCount:N0}";
         _instances = $"{statistic.InstanceCount:N0}";
-        _infractions = $"{statistic.InfractionCount:N0}";
+        _penalties = $"{statistic.PenaltyCount:N0}";
         _servers = $"{statistic.ServerCount:N0}";
 
         await base.OnInitializedAsync();

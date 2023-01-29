@@ -1,6 +1,6 @@
 ﻿namespace BanHub.Enums;
 
-public enum InfractionType
+public enum PenaltyType
 {
     Warn = 10,
     Mute = 25,
@@ -10,7 +10,7 @@ public enum InfractionType
     Ban = 100
 }
 
-public enum InfractionStatus
+public enum PenaltyStatus
 {
     Information = 0,
     Active = 10,
@@ -18,7 +18,7 @@ public enum InfractionStatus
     Expired = 30
 }
 
-public enum InfractionScope
+public enum PenaltyScope
 {
     Local = 10,
     Global = 20
