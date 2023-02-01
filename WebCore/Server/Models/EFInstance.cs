@@ -12,35 +12,35 @@ public class EFInstance
     /// <summary>
     /// The IW4MAdmin GUID
     /// </summary>
-    public Guid InstanceGuid { get; set; }
+    public required Guid InstanceGuid { get; set; }
 
     /// <summary>
     /// The IW4MAdmin IP address
     /// </summary>
-    public string InstanceIp { get; set; } = null!;
+    public required string InstanceIp { get; set; } = null!;
 
     /// <summary>
     /// The IW4MAdmin name
     /// </summary>
-    public string? InstanceName { get; set; }
+    public required string? InstanceName { get; set; }
 
     /// <summary>
     /// The last the the instance has replied
     /// </summary>
-    public DateTimeOffset HeartBeat { get; set; }
+    public required DateTimeOffset HeartBeat { get; set; }
 
     /// <summary>
     /// The IW4MAdmin provided API Key
     /// </summary>
-    public Guid ApiKey { get; set; }
+    public required Guid ApiKey { get; set; }
 
     /// <summary>
     /// State whether the server can upload bans
     /// </summary>
-    public bool Active { get; set; }
+    public required bool Active { get; set; }
 
     /// <summary>
     /// The list of connected servers
     /// </summary>
-    public virtual ICollection<EFServer> ServerConnections { get; set; } = null!;
+    public ICollection<EFServer> ServerConnections { get; set; } = null!;
 }

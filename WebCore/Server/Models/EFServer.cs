@@ -5,32 +5,32 @@ namespace BanHub.WebCore.Server.Models;
 
 public class EFServer
 {
-    
     [Key] public int Id { get; set; }
 
     /// <summary>
     /// The server Id
     /// </summary>
-    public string ServerId { get; set; } = null!;
-    
+    public required string ServerId { get; set; }
+
     /// <summary>
     /// The server name
     /// </summary>
-    public string ServerName { get; set; } = null!;
-    
+    public required string ServerName { get; set; }
+
     /// <summary>
     /// The server IP
     /// </summary>
-    public string ServerIp { get; set; } = null!;
+    public required string ServerIp { get; set; }
 
     /// <summary>
     /// The port of the server
     /// </summary>
-    public int ServerPort { get; set; }
-    
+    public required int ServerPort { get; set; }
+
     /// <summary>
     /// Current alias associated with entity.
     /// </summary>
     public int InstanceId { get; set; }
+
     [ForeignKey(nameof(InstanceId))] public EFInstance Instance { get; set; } = null!;
 }

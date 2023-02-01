@@ -1,12 +1,13 @@
-﻿<MudPaper Width="240px" Elevation="0">
+﻿<MudPaper Class="d-flex flex-column" Width="240px" Height="100%" Elevation="0">
     <MudNavMenu Rounded="true" Margin="Margin.Normal" Color="Color.Info" Class="pa-2">
         <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-        <MudNavLink Href="Users" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Users</MudNavLink>
+        <MudNavLink Href="Players" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Players</MudNavLink>
         <MudNavLink Href="Penalties" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Report">Penalties</MudNavLink>
         <MudNavLink Href="Instances" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Storage">Instances</MudNavLink>
     </MudNavMenu>
+    <MudSpacer/>
+    <MudElement Class="d-flex flex-column pa-4">
+        <LoginComponent/>
+    </MudElement>
 </MudPaper>
-<MudSpacer/>
-<MudElement Class="pa-4">
-    <LoginComponent/>
-</MudElement>
+

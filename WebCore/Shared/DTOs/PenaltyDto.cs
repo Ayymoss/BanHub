@@ -37,7 +37,12 @@ public class PenaltyDto
     /// <summary>
     /// The provided reason for the infraction
     /// </summary>
-    public string? Reason { get; set; } 
+    public string? Reason { get; set; }
+
+    /// <summary>
+    /// AntiCheat Reason
+    /// </summary>
+    public string? AntiCheatReason { get; set; }
 
     /// <summary>
     /// The uploaded evidence for the infraction

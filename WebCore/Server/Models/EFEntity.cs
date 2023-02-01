@@ -13,45 +13,50 @@ public class EFEntity
     /// <summary>
     /// The player's identity (Format: GAMEGUID:GAMEID)
     /// </summary>
-    public string Identity { get; init; } = null!;
+    public required string Identity { get; init; }
 
     /// <summary>
     /// The last time the player was seen
     /// </summary>
-    public DateTimeOffset HeartBeat { get; set; }
+    public required DateTimeOffset HeartBeat { get; set; }
 
     /// <summary>
     /// The first time we saw them
     /// </summary>
-    public DateTimeOffset Created { get; init; }
+    public required DateTimeOffset Created { get; init; }
 
     /// <summary>
     /// The player's web-login role
     /// </summary>
-    public WebRole WebRole { get; set; }
+    public required WebRole WebRole { get; set; }
 
     /// <summary>
     /// Player's notes.
     /// </summary>
-    public virtual ICollection<EFNote> Notes { get; set; } = null!;
+    public ICollection<EFNote> Notes { get; set; } = null!;
 
     /// <summary>
     /// The player's list of names and IP addresses
     /// </summary>
-    public virtual ICollection<EFAlias> Aliases { get; set; } = null!;
+    public ICollection<EFAlias> Aliases { get; set; } = null!;
 
     /// <summary>
     /// The player's list of infractions
     /// </summary>
-    public virtual ICollection<EFPenalty> Penalties { get; set; } = null!;
+    public ICollection<EFPenalty> Penalties { get; set; } = null!;
 
     /// <summary>
     /// The lookup for current alias
     /// </summary>
-    public virtual EFCurrentAlias CurrentAlias { get; set; } = null!;
+    public EFCurrentAlias CurrentAlias { get; set; } = null!;
 
     /// <summary>
     /// The list of historically connected servers
     /// </summary>
-    public virtual ICollection<EFServerConnection> ServerConnections { get; set; } = null!;
+    public ICollection<EFServerConnection> ServerConnections { get; set; } = null!;
+    
+    /// <summary>
+    /// Penalty's identifiers
+    /// </summary>
+    public ICollection<EFPenaltyIdentifier> PenaltyIdentifiers { get; set; } = null!;
 }

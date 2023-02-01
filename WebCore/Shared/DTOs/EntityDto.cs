@@ -23,16 +23,11 @@ public class EntityDto
     /// The first time we saw the player
     /// </summary>
     public DateTimeOffset? Created { get; set; }
-    
-    /// <summary>
-    /// The player's web-login role
-    /// </summary>
-    public WebRole WebRole { get; set; }
-    
+
     /// <summary>
     /// Is the player globally banned via IP or GUID
     /// </summary>
-    public bool GlobalBanned { get; set; }
+    public bool HasIdentityBan { get; set; }
 
     /// <summary>
     /// The player's meta

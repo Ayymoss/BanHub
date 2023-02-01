@@ -1,13 +1,13 @@
-﻿@page "/Users"
+﻿@page "/Players"
 @inject HttpClient Http
 
 <OpenGraphComponent Title="Users" Description="Welcome to Ban Hub"/>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Users</MudText>
+<MudText Typo="Typo.h3" GutterBottom="true">Players</MudText>
 
 <MudTable ServerData="@(new Func<TableState, Task<TableData<EntityDto>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true" Hover="true" @ref="_table">
     <ToolBarContent>
-        <MudText Typo="Typo.h6">All users</MudText>
+        <MudText Typo="Typo.h6">All players</MudText>
         <MudSpacer/>
         <MudTextField T="string" ValueChanged="@(OnSearch)" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>
@@ -53,7 +53,7 @@
         <MudTd DataLabel="Created">@context.Created!.Value.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
     </RowTemplate>
     <NoRecordsContent>
-        <MudText Class="mb-8" Color="Color.Warning">No user(s) found.</MudText>
+        <MudText Class="mb-8" Color="Color.Warning">No players found.</MudText>
     </NoRecordsContent>
     <LoadingContent>
         <MudProgressLinear Color="Color.Success" Rounded="true" Size="Size.Large" Indeterminate="true"/>

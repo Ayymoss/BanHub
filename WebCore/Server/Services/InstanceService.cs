@@ -43,7 +43,7 @@ public class InstanceService : IInstanceService
                 InstanceName = request.InstanceName,
                 ApiKey = request.ApiKey!.Value,
                 Active = false,
-                HeartBeat = DateTimeOffset.UtcNow
+                HeartBeat = DateTimeOffset.UtcNow,
             });
 
             await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.InstanceCount);

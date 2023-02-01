@@ -3,32 +3,34 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BanHub.WebCore.Server.Models;
 
-/// <summary>
-/// Table for all aliases 
-/// </summary>
-public class EFAlias
+public class EFPenaltyIdentifier
 {
     [Key] public int Id { get; set; }
 
     /// <summary>
-    /// The player's name
+    /// Client's Identity
     /// </summary>
-    public required string UserName { get; set; }
+    public required string Identity { get; set; }
 
     /// <summary>
-    /// The player's IP address
+    /// Client's IpAddress
     /// </summary>
     public required string IpAddress { get; set; }
 
     /// <summary>
-    /// The last time the player's name changed
+    /// Expiration of penalty
     /// </summary>
-    public required DateTimeOffset Changed { get; set; }
+    public required DateTimeOffset Expiration { get; set; }
 
     /// <summary>
-    /// The associated entity
+    /// Referenced penalty
+    /// </summary>
+    public int PenaltyId { get; set; }
+    [ForeignKey(nameof(PenaltyId))] public EFPenalty Penalty { get; set; } = null!;
+    
+    /// <summary>
+    /// Referenced entity
     /// </summary>
     public int EntityId { get; set; }
-
     [ForeignKey(nameof(EntityId))] public EFEntity Entity { get; set; } = null!;
 }

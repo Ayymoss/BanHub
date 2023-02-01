@@ -1,4 +1,5 @@
-﻿@inject AuthenticationStateProvider AuthStateProvider
+﻿@using System.Security.Claims
+@inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 @inject IApiService ApiLogic
 @inject ILocalStorageService LocalStorageService
@@ -7,10 +8,14 @@
 <AuthorizeView>
     <Authorized>
         <MudText Align="Align.Center" Typo="Typo.body2">Logged in as @context.User.Identity!.Name</MudText>
+        <MudText Align="Align.Center" Typo="Typo.caption">@(string.Join(", ", context.User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList()))</MudText>
         <MudDivider DividerType="DividerType.Middle" Class="my-1 py-1"/>
         <MudButton FullWidth="true" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Logout">Log Out</MudButton>
     </Authorized>
     <NotAuthorized>
+        <MudText Align="Align.Center" Typo="Typo.body2">Logged in as TEST</MudText>
+        <MudText Align="Align.Center" Typo="Typo.caption">Your roles are TEST</MudText>
+        <MudDivider DividerType="DividerType.Middle" Class="my-1 py-1"/>
         <MudButton FullWidth="true" Variant="Variant.Filled" Color="Color.Info" OnClick="OpenDialog">Log In</MudButton>
     </NotAuthorized>
 </AuthorizeView>
@@ -22,7 +27,7 @@
         var response = await ApiLogic.LogoutAsync();
         if (response == "Success")
         {
-            (AuthStateProvider as CustomAuthStateProvider).ClearAuthInfo();
+            (AuthStateProvider as CustomAuthStateProvider)?.ClearAuthInfo();
             await LocalStorageService.RemoveItemAsync("IsAuthenticated");
             NavigationManager.NavigateTo("/", true);
         }

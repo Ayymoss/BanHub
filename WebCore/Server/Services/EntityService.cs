@@ -20,7 +20,7 @@ public class EntityService : IEntityService
         _statisticService = statisticService;
     }
 
-    public async Task<EntityDto?> GetUser(string identity)
+    public async Task<EntityDto?> GetUser(string identity, bool privileged)
     {
         // Find profile
         var entity = await _context.Entities
@@ -31,6 +31,7 @@ public class EntityService : IEntityService
                 Alias = new AliasDto
                 {
                     UserName = profile.CurrentAlias.Alias.UserName,
+                    IpAddress = profile.CurrentAlias.Alias.IpAddress,
                     Changed = profile.CurrentAlias.Alias.Changed
                 },
                 Notes = profile.Notes
@@ -46,8 +47,9 @@ public class EntityService : IEntityService
                             Alias = new AliasDto
                             {
                                 UserName = note.Admin.CurrentAlias.Alias.UserName,
+                                IpAddress = note.Admin.CurrentAlias.Alias.IpAddress,
                                 Changed = note.Admin.CurrentAlias.Alias.Changed
-                            },
+                            }
                         }
                     }).ToList(),
                 Servers = profile.ServerConnections
@@ -78,6 +80,7 @@ public class EntityService : IEntityService
                             Alias = new AliasDto
                             {
                                 UserName = inf.Admin.CurrentAlias.Alias.UserName,
+                                IpAddress = inf.Admin.CurrentAlias.Alias.IpAddress,
                                 Changed = inf.Admin.CurrentAlias.Alias.Changed
                             },
                         },
@@ -89,10 +92,37 @@ public class EntityService : IEntityService
                         }
                     }).ToList(),
                 HeartBeat = profile.HeartBeat,
-                Created = profile.Created
+                Created = profile.Created,
+                HasIdentityBan = false
             }).FirstOrDefaultAsync();
 
-        if (entity?.Penalties is null) return entity;
+        if (entity is null) return null;
+
+        if (entity.Penalties is null)
+        {
+            if (privileged) return entity;
+            // Strip sensitive data if not privileged
+            entity.Alias!.IpAddress = null;
+            entity.Notes = null;
+            return entity;
+        }
+
+        // Check if user is globally banned
+        var hasActiveIdentityBan = await _context.PenaltyIdentifiers
+            .AnyAsync(x => (x.IpAddress == entity.Alias!.IpAddress || x.Identity == entity.Identity)
+                           && x.Expiration > DateTimeOffset.Now);
+        entity.HasIdentityBan = hasActiveIdentityBan;
+
+        // Strip sensitive data if not privileged
+        if (!privileged)
+        {
+            entity.Alias!.IpAddress = null;
+            entity.Notes = null;
+            foreach (var penalty in entity.Penalties!)
+            {
+                penalty.Admin!.Alias!.IpAddress = null;
+            }
+        }
 
         // Check and expire infractions
         var updatedPenalty = new List<Guid>();
@@ -181,7 +211,7 @@ public class EntityService : IEntityService
                 };
                 _context.ServerConnections.Add(server);
             }
-            
+
             user.HeartBeat = DateTimeOffset.UtcNow;
             _context.Entities.Update(user);
             await _context.SaveChangesAsync();

@@ -33,7 +33,12 @@ public class PenaltyDto
     /// The date of the infraction
     /// </summary>
     public DateTimeOffset? Submitted { get; set; }
-
+    
+    /// <summary>
+    /// AntiCheat Reason
+    /// </summary>
+    public string? AntiCheatReason { get; set; }
+    
     /// <summary>
     /// The provided reason for the infraction
     /// </summary>

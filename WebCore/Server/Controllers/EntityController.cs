@@ -37,7 +37,8 @@ public class EntityController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<EntityDto>> GetEntity([FromQuery] string identity)
     {
-        var result = await _entityService.GetUser(identity);
+        var privileged = User.IsInRole("Admin");
+        var result = await _entityService.GetUser(identity, privileged);
         if (result is null) return NotFound();
         return Ok(result);
     }

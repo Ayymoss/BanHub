@@ -112,6 +112,19 @@ public class PenaltyService : IPenaltyService
             TargetId = user.Id
         };
 
+        if (request is {PenaltyType: PenaltyType.Ban, PenaltyScope: PenaltyScope.Global})
+        {
+            var identifier = new EFPenaltyIdentifier
+            {
+                Identity = user.Identity,
+                IpAddress = user.CurrentAlias.Alias.IpAddress,
+                Expiration = DateTimeOffset.UtcNow.AddMonths(1),
+                Penalty = penaltyModel,
+                EntityId = user.Id
+            };
+            _context.Add(identifier);
+        }
+
         await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.PenaltyCount);
         _context.Add(penaltyModel);
         await _context.SaveChangesAsync();

@@ -14,11 +14,13 @@ public class EFCurrentAlias
     /// Entity associated with current alias.
     /// </summary>
     public int EntityId { get; set; }
+
     [ForeignKey(nameof(EntityId))] public EFEntity Entity { get; set; } = null!;
-    
+
     /// <summary>
     /// Current alias associated with entity.
     /// </summary>
     public int AliasId { get; set; }
+
     [ForeignKey(nameof(AliasId))] public EFAlias Alias { get; set; } = null!;
 }

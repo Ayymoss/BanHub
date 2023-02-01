@@ -25,8 +25,7 @@
                         <HeaderContent>
                             <MudTh>Instance</MudTh>
                             <MudTh>Target</MudTh>
-                            <MudTh>Type</MudTh>
-                            <MudTh>Scope</MudTh>
+                            <MudTh>Reason</MudTh>
                             <MudTh>When?</MudTh>
                         </HeaderContent>
                         <RowTemplate>
@@ -38,12 +37,7 @@
                                     </MudText>
                                 </a>
                             </MudTd>
-                            <MudTd DataLabel="Type">
-                                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Ban</MudChip>
-                            </MudTd>
-                            <MudTd DataLabel="Scope">
-                                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Global</MudChip>
-                            </MudTd>
+                            <MudTd DataLabel="Reason">@context.Reason</MudTd>
                             <MudTd DataLabel="When?">@context.Submitted.Humanize()</MudTd>
                         </RowTemplate>
                     </MudTable>

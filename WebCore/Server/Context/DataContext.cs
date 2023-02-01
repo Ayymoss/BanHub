@@ -19,6 +19,8 @@ public class DataContext : DbContext
     public DbSet<EFServerConnection> ServerConnections { get; set; }
     public DbSet<EFStatistic> Statistics { get; set; }
     public DbSet<EFAuthToken> AuthTokens { get; set; }
+    public DbSet<EFNote> Notes { get; set; }
+    public DbSet<EFPenaltyIdentifier> PenaltyIdentifiers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,12 +34,13 @@ public class DataContext : DbContext
         modelBuilder.Entity<EFStatistic>().ToTable("EFStatistics");
         modelBuilder.Entity<EFAuthToken>().ToTable("EFAuthTokens");
         modelBuilder.Entity<EFNote>().ToTable("EFNotes");
+        modelBuilder.Entity<EFPenaltyIdentifier>().ToTable("EFPenaltyIdentifiers");
 
         modelBuilder.Entity<EFPenalty>()
             .HasOne(a => a.Target)
             .WithMany(p => p.Penalties)
             .HasForeignKey(f => f.TargetId);
-        
+
         modelBuilder.Entity<EFNote>()
             .HasOne(a => a.Target)
             .WithMany(p => p.Notes)
@@ -72,7 +75,7 @@ public class DataContext : DbContext
             Statistic = "EntityCount",
             Count = 1
         };
-        
+
         modelBuilder.Entity<EFStatistic>().HasData(instanceCount);
         modelBuilder.Entity<EFStatistic>().HasData(infractionCount);
         modelBuilder.Entity<EFStatistic>().HasData(serverCount);
@@ -113,7 +116,7 @@ public class DataContext : DbContext
         modelBuilder.Entity<EFCurrentAlias>().HasData(adminCurrentAlias);
 
         #endregion
-        
+
         base.OnModelCreating(modelBuilder);
     }
 }

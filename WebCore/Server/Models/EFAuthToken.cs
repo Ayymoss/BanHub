@@ -10,17 +10,17 @@ public class EFAuthToken
     /// <summary>
     /// The token
     /// </summary>
-    public string Token { get; set; } = null!;
+    public required string Token { get; set; }
 
     /// <summary>
     /// When the token was created
     /// </summary>
-    public DateTimeOffset Created { get; set; }
+    public required DateTimeOffset Created { get; set; }
 
     /// <summary>
     /// If the token has been used
     /// </summary>
-    public bool Used { get; set; }
+    public required bool Used { get; set; }
 
     /// <summary>
     /// Entity associated with current token.

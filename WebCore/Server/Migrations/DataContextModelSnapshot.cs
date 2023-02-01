@@ -22,7 +22,7 @@ namespace GlobalInfraction.WebCore.Server.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFAlias", b =>
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFAlias", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -54,14 +54,14 @@ namespace GlobalInfraction.WebCore.Server.Migrations
                         new
                         {
                             Id = -1,
-                            Changed = new DateTimeOffset(new DateTime(2023, 1, 25, 11, 5, 3, 137, DateTimeKind.Unspecified).AddTicks(9586), new TimeSpan(0, 0, 0, 0, 0)),
+                            Changed = new DateTimeOffset(new DateTime(2023, 1, 29, 13, 47, 57, 659, DateTimeKind.Unspecified).AddTicks(9836), new TimeSpan(0, 0, 0, 0, 0)),
                             EntityId = -1,
                             IpAddress = "0.0.0.0",
                             UserName = "IW4MAdmin"
                         });
                 });
 
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFAuthToken", b =>
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFAuthToken", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -89,7 +89,7 @@ namespace GlobalInfraction.WebCore.Server.Migrations
                     b.ToTable("EFAuthTokens", (string)null);
                 });
 
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFCurrentAlias", b =>
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFCurrentAlias", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -121,7 +121,7 @@ namespace GlobalInfraction.WebCore.Server.Migrations
                         });
                 });
 
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFEntity", b =>
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -150,67 +150,14 @@ namespace GlobalInfraction.WebCore.Server.Migrations
                         new
                         {
                             Id = -1,
-                            Created = new DateTimeOffset(new DateTime(2023, 1, 25, 11, 5, 3, 137, DateTimeKind.Unspecified).AddTicks(9588), new TimeSpan(0, 0, 0, 0, 0)),
-                            HeartBeat = new DateTimeOffset(new DateTime(2023, 1, 25, 11, 5, 3, 137, DateTimeKind.Unspecified).AddTicks(9588), new TimeSpan(0, 0, 0, 0, 0)),
+                            Created = new DateTimeOffset(new DateTime(2023, 1, 29, 13, 47, 57, 659, DateTimeKind.Unspecified).AddTicks(9841), new TimeSpan(0, 0, 0, 0, 0)),
+                            HeartBeat = new DateTimeOffset(new DateTime(2023, 1, 29, 13, 47, 57, 659, DateTimeKind.Unspecified).AddTicks(9840), new TimeSpan(0, 0, 0, 0, 0)),
                             Identity = "0:UKN",
                             WebRole = 10
                         });
                 });
 
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFInfraction", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AdminId")
-                        .HasColumnType("integer");
-
-                    b.Property<TimeSpan?>("Duration")
-                        .HasColumnType("interval");
-
-                    b.Property<string>("Evidence")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("InfractionGuid")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("InfractionScope")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("InfractionStatus")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("InfractionType")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("InstanceId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("Submitted")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("TargetId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AdminId");
-
-                    b.HasIndex("InstanceId");
-
-                    b.HasIndex("TargetId");
-
-                    b.ToTable("EFInfractions", (string)null);
-                });
-
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFInstance", b =>
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFInstance", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -242,7 +189,7 @@ namespace GlobalInfraction.WebCore.Server.Migrations
                     b.ToTable("EFInstances", (string)null);
                 });
 
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFNote", b =>
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFNote", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -272,7 +219,98 @@ namespace GlobalInfraction.WebCore.Server.Migrations
                     b.ToTable("EFNotes", (string)null);
                 });
 
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFServer", b =>
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFPenalty", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AdminId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("AntiCheatReason")
+                        .HasColumnType("text");
+
+                    b.Property<TimeSpan?>("Duration")
+                        .HasColumnType("interval");
+
+                    b.Property<string>("Evidence")
+                        .HasColumnType("text");
+
+                    b.Property<int>("InstanceId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("PenaltyGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("PenaltyScope")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PenaltyStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PenaltyType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("Submitted")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("TargetId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdminId");
+
+                    b.HasIndex("InstanceId");
+
+                    b.HasIndex("TargetId");
+
+                    b.ToTable("EFPenalties", (string)null);
+                });
+
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFPenaltyIdentifier", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EntityId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("Expiration")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Identity")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("PenaltyId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EntityId");
+
+                    b.HasIndex("PenaltyId")
+                        .IsUnique();
+
+                    b.ToTable("EFPenaltyIdentifiers", (string)null);
+                });
+
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFServer", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -305,7 +343,7 @@ namespace GlobalInfraction.WebCore.Server.Migrations
                     b.ToTable("EFServers", (string)null);
                 });
 
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFServerConnection", b =>
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFServerConnection", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -331,7 +369,7 @@ namespace GlobalInfraction.WebCore.Server.Migrations
                     b.ToTable("EFServerConnections", (string)null);
                 });
 
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFStatistic", b =>
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFStatistic", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -361,7 +399,7 @@ namespace GlobalInfraction.WebCore.Server.Migrations
                         {
                             Id = -2,
                             Count = 0,
-                            Statistic = "InfractionCount"
+                            Statistic = "PenaltyCount"
                         },
                         new
                         {
@@ -377,9 +415,9 @@ namespace GlobalInfraction.WebCore.Server.Migrations
                         });
                 });
 
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFAlias", b =>
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFAlias", b =>
                 {
-                    b.HasOne("GlobalInfraction.WebCore.Server.Models.EFEntity", "Entity")
+                    b.HasOne("BanHub.WebCore.Server.Models.EFEntity", "Entity")
                         .WithMany("Aliases")
                         .HasForeignKey("EntityId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -388,9 +426,9 @@ namespace GlobalInfraction.WebCore.Server.Migrations
                     b.Navigation("Entity");
                 });
 
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFAuthToken", b =>
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFAuthToken", b =>
                 {
-                    b.HasOne("GlobalInfraction.WebCore.Server.Models.EFEntity", "Entity")
+                    b.HasOne("BanHub.WebCore.Server.Models.EFEntity", "Entity")
                         .WithMany()
                         .HasForeignKey("EntityId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -399,17 +437,17 @@ namespace GlobalInfraction.WebCore.Server.Migrations
                     b.Navigation("Entity");
                 });
 
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFCurrentAlias", b =>
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFCurrentAlias", b =>
                 {
-                    b.HasOne("GlobalInfraction.WebCore.Server.Models.EFAlias", "Alias")
+                    b.HasOne("BanHub.WebCore.Server.Models.EFAlias", "Alias")
                         .WithMany()
                         .HasForeignKey("AliasId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("GlobalInfraction.WebCore.Server.Models.EFEntity", "Entity")
+                    b.HasOne("BanHub.WebCore.Server.Models.EFEntity", "Entity")
                         .WithOne("CurrentAlias")
-                        .HasForeignKey("GlobalInfraction.WebCore.Server.Models.EFCurrentAlias", "EntityId")
+                        .HasForeignKey("BanHub.WebCore.Server.Models.EFCurrentAlias", "EntityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -418,42 +456,15 @@ namespace GlobalInfraction.WebCore.Server.Migrations
                     b.Navigation("Entity");
                 });
 
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFInfraction", b =>
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFNote", b =>
                 {
-                    b.HasOne("GlobalInfraction.WebCore.Server.Models.EFEntity", "Admin")
+                    b.HasOne("BanHub.WebCore.Server.Models.EFEntity", "Admin")
                         .WithMany()
                         .HasForeignKey("AdminId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("GlobalInfraction.WebCore.Server.Models.EFInstance", "Instance")
-                        .WithMany()
-                        .HasForeignKey("InstanceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GlobalInfraction.WebCore.Server.Models.EFEntity", "Target")
-                        .WithMany("Infractions")
-                        .HasForeignKey("TargetId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Admin");
-
-                    b.Navigation("Instance");
-
-                    b.Navigation("Target");
-                });
-
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFNote", b =>
-                {
-                    b.HasOne("GlobalInfraction.WebCore.Server.Models.EFEntity", "Admin")
-                        .WithMany()
-                        .HasForeignKey("AdminId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GlobalInfraction.WebCore.Server.Models.EFEntity", "Target")
+                    b.HasOne("BanHub.WebCore.Server.Models.EFEntity", "Target")
                         .WithMany("Notes")
                         .HasForeignKey("TargetId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -464,9 +475,55 @@ namespace GlobalInfraction.WebCore.Server.Migrations
                     b.Navigation("Target");
                 });
 
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFServer", b =>
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFPenalty", b =>
                 {
-                    b.HasOne("GlobalInfraction.WebCore.Server.Models.EFInstance", "Instance")
+                    b.HasOne("BanHub.WebCore.Server.Models.EFEntity", "Admin")
+                        .WithMany()
+                        .HasForeignKey("AdminId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BanHub.WebCore.Server.Models.EFInstance", "Instance")
+                        .WithMany()
+                        .HasForeignKey("InstanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BanHub.WebCore.Server.Models.EFEntity", "Target")
+                        .WithMany("Penalties")
+                        .HasForeignKey("TargetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Admin");
+
+                    b.Navigation("Instance");
+
+                    b.Navigation("Target");
+                });
+
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFPenaltyIdentifier", b =>
+                {
+                    b.HasOne("BanHub.WebCore.Server.Models.EFEntity", "Entity")
+                        .WithMany("PenaltyIdentifiers")
+                        .HasForeignKey("EntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BanHub.WebCore.Server.Models.EFPenalty", "Penalty")
+                        .WithOne("Identifier")
+                        .HasForeignKey("BanHub.WebCore.Server.Models.EFPenaltyIdentifier", "PenaltyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Entity");
+
+                    b.Navigation("Penalty");
+                });
+
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFServer", b =>
+                {
+                    b.HasOne("BanHub.WebCore.Server.Models.EFInstance", "Instance")
                         .WithMany("ServerConnections")
                         .HasForeignKey("InstanceId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -475,15 +532,15 @@ namespace GlobalInfraction.WebCore.Server.Migrations
                     b.Navigation("Instance");
                 });
 
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFServerConnection", b =>
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFServerConnection", b =>
                 {
-                    b.HasOne("GlobalInfraction.WebCore.Server.Models.EFEntity", "Entity")
+                    b.HasOne("BanHub.WebCore.Server.Models.EFEntity", "Entity")
                         .WithMany("ServerConnections")
                         .HasForeignKey("EntityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("GlobalInfraction.WebCore.Server.Models.EFServer", "Server")
+                    b.HasOne("BanHub.WebCore.Server.Models.EFServer", "Server")
                         .WithMany()
                         .HasForeignKey("ServerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -494,23 +551,31 @@ namespace GlobalInfraction.WebCore.Server.Migrations
                     b.Navigation("Server");
                 });
 
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFEntity", b =>
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFEntity", b =>
                 {
                     b.Navigation("Aliases");
 
                     b.Navigation("CurrentAlias")
                         .IsRequired();
 
-                    b.Navigation("Infractions");
-
                     b.Navigation("Notes");
+
+                    b.Navigation("Penalties");
+
+                    b.Navigation("PenaltyIdentifiers");
 
                     b.Navigation("ServerConnections");
                 });
 
-            modelBuilder.Entity("GlobalInfraction.WebCore.Server.Models.EFInstance", b =>
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFInstance", b =>
                 {
                     b.Navigation("ServerConnections");
+                });
+
+            modelBuilder.Entity("BanHub.WebCore.Server.Models.EFPenalty", b =>
+                {
+                    b.Navigation("Identifier")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

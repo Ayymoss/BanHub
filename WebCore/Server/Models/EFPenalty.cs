@@ -14,27 +14,27 @@ public class EFPenalty
     /// <summary>
     /// The type of infraction
     /// </summary>
-    public PenaltyType PenaltyType { get; set; }
+    public required PenaltyType PenaltyType { get; set; }
 
     /// <summary>
     /// The state of the infraction
     /// </summary>
-    public PenaltyStatus PenaltyStatus { get; set; }
+    public required PenaltyStatus PenaltyStatus { get; set; }
 
     /// <summary>
     /// The scope of the infraction
     /// </summary>
-    public PenaltyScope PenaltyScope { get; set; }
+    public required PenaltyScope PenaltyScope { get; set; }
 
     /// <summary>
     /// The unique infraction identifier
     /// </summary>
-    public Guid PenaltyGuid { get; set; }
+    public required Guid PenaltyGuid { get; set; }
 
     /// <summary>
     /// Time of the infraction
     /// </summary>
-    public DateTimeOffset Submitted { get; set; }
+    public required DateTimeOffset Submitted { get; set; }
 
     /// <summary>
     /// Duration of a temporary infraction
@@ -44,31 +44,41 @@ public class EFPenalty
     /// <summary>
     /// The provided reason for the infraction
     /// </summary>
-    public string Reason { get; set; } = null!;
+    public required string Reason { get; set; }
 
+    /// <summary>
+    /// The AntiCheat detection for the infraction
+    /// </summary>
+    public string? AntiCheatReason { get; set; }
+    
     /// <summary>
     /// The uploaded evidence for the infraction
     /// </summary>
     public string? Evidence { get; set; }
 
     /// <summary>
+    /// Penalty's identifiers
+    /// </summary>
+    public EFPenaltyIdentifier Identifier { get; set; } = null!;
+
+    /// <summary>
     /// The admin GUID who issued the infraction
     /// </summary>
     public int AdminId { get; set; }
 
-    [ForeignKey(nameof(AdminId))] public virtual EFEntity Admin { get; set; } = null!;
+    [ForeignKey(nameof(AdminId))] public EFEntity Admin { get; set; } = null!;
 
     /// <summary>
     /// The user GUID who received the infraction
     /// </summary>
     public int TargetId { get; set; }
 
-    [ForeignKey(nameof(TargetId))] public virtual EFEntity Target { get; set; } = null!;
+    [ForeignKey(nameof(TargetId))] public EFEntity Target { get; set; } = null!;
 
     /// <summary>
     /// The server reference this infraction
     /// </summary>
     public int InstanceId { get; set; }
 
-    [ForeignKey(nameof(InstanceId))] public virtual EFInstance Instance { get; set; } = null!;
+    [ForeignKey(nameof(InstanceId))] public EFInstance Instance { get; set; } = null!;
 }

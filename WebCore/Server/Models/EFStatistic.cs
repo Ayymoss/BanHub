@@ -5,6 +5,6 @@ namespace BanHub.WebCore.Server.Models;
 public class EFStatistic
 {
     [Key] public int Id { get; set; }
-    public string Statistic { get; set; } = null!;
-    public int Count { get; set; }
+    public required string Statistic { get; set; }
+    public required int Count { get; set; }
 }

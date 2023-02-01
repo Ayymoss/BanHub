@@ -102,9 +102,10 @@ public class EndpointManager
     private void ProcessEntity(EntityDto entity, EFClient client)
     {
         var globalBan = entity.Penalties?
-            .Any(x => x.PenaltyType is PenaltyType.Ban && x.PenaltyScope is PenaltyScope.Global && x.PenaltyStatus == PenaltyStatus.Active) ?? false;
+            .Any(x => x.PenaltyType is PenaltyType.Ban && x.PenaltyScope is PenaltyScope.Global &&
+                      x.PenaltyStatus == PenaltyStatus.Active) ?? false;
 
-        if (globalBan && client.IsIngame)
+        if (entity.HasIdentityBan || globalBan && client.IsIngame)
         {
             client.Kick("^1Globally banned!^7\nBanHub.gg", Utilities.IW4MAdminClient(client.CurrentServer));
         }
@@ -138,20 +139,13 @@ public class EndpointManager
         if (!Plugin.InstanceActive) return (false, null);
         if (penaltyType is PenaltyType.Kick or PenaltyType.Warn && origin.ClientId == 1) return (false, null);
 
-        var penalty = origin.AdministeredPenalties?.FirstOrDefault()?.AutomatedOffense;
-        var automatedBan = false;
-        var automatedReason = string.Empty;
-        if (penalty is not null)
+        var antiCheatReason = origin.AdministeredPenalties?.FirstOrDefault()?.AutomatedOffense;
+        var globalAntiCheatBan = false;
+
+        if (antiCheatReason is not null)
         {
             const string regex = @"^(Recoil|Button)(-{1,2})(\d{0,})@(\d{0,})$";
-            automatedBan = Regex.IsMatch(penalty, regex);
-            var match = Regex.Match(penalty, regex).Groups[1].ToString();
-            automatedReason = match switch
-            {
-                "Recoil" => "R",
-                "Button" => "B",
-                _ => "??"
-            };
+            globalAntiCheatBan = Regex.IsMatch(antiCheatReason, regex);
         }
 
         var adminEntity = ClientToEntity(origin);
@@ -160,9 +154,10 @@ public class EndpointManager
         var penaltyDto = new PenaltyDto
         {
             PenaltyType = penaltyType,
-            PenaltyScope = automatedBan ? PenaltyScope.Global : scope ?? PenaltyScope.Local,
+            PenaltyScope = globalAntiCheatBan ? PenaltyScope.Global : scope ?? PenaltyScope.Local,
             Evidence = evidence,
-            Reason = automatedBan ? $"Automated Offense [{automatedReason}]" : reason,
+            Reason = globalAntiCheatBan ? "AntiCheat Detection" : reason,
+            AntiCheatReason = antiCheatReason ?? null,
             Duration = duration,
             Instance = _instanceMeta,
             Admin = adminEntity,

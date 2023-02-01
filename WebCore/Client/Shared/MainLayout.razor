@@ -15,36 +15,31 @@
         <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Person" Color="Color.Info">Online: @_online</MudChip>
         <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Block" Color="Color.Error">Day Global Bans: @_bans</MudChip>
         <MudSpacer/>
-        <MudText Color="Color.Error" Typo="Typo.h6">! IN ACTIVE DEVELOPMENT !</MudText>
+        <MudText Color="Color.Error" Typo="Typo.h6">! Work In Progress !</MudText>
         <MudSpacer/>
         <MudItem xs="32" Class="mr-3">
-            <MudTextField @bind-Value="_searchValue" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" Placeholder="Search" Variant="Variant.Outlined" Adornment="Adornment.End" Margin="Margin.Dense" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Info"/>
+            <MudTextField @bind-Value="SearchValue" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" Placeholder="Search" Variant="Variant.Outlined" Adornment="Adornment.End" Margin="Margin.Dense" AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Info"/>
         </MudItem>
         <MudIconButton Icon="@Icons.Custom.Brands.Discord" Color="Color.Inherit" Link="https://discord.gg/Arruj6DWvp" Target="_blank"/>
         <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/Ayymoss/BanHub" Target="_blank"/>
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
-        <MudDrawerHeader>
-            <MudImage Height="40" Src="/images/logo.png" Alt="GI" Elevation="25" Class="rounded-lg" Style="padding-right: 8px;padding-bottom: 4px;"/>
-            <MudText Typo="Typo.h6" Style="padding-top: 4px;">Ban Hub</MudText>
+        <MudDrawerHeader Class="justify-center align-center flex-1">
+            <MudImage Height="23" Src="/images/logo.png" Alt="BH" Elevation="23" Class="pr-2 mb-1"/>
+            <MudDivider Vertical="true" FlexItem="true" Light="true" DividerType="DividerType.Middle" Class="mx-1 py-4"/>
+            <MudText Typo="Typo.h5" Class="pl-2">Ban Hub</MudText>
         </MudDrawerHeader>
         <NavMenu/>
     </MudDrawer>
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="my-8 pt-8">
             @Body
-
-            <MudSpacer/>
-            <MudElement Class="justify-center pa-4" Style="text-align: center">
-                <MudText Color="Color.Error" Typo="Typo.h6">! IN ACTIVE DEVELOPMENT !</MudText>
-            </MudElement>
-            <MudSpacer/>
         </MudContainer>
     </MudMainContent>
 </MudLayout>
 
 @code {
-    private string? _searchValue { get; set; }
+    private string? SearchValue { get; set; }
 
     private readonly MudTheme _theme = Theme.LandingPageTheme();
 
@@ -62,13 +57,13 @@
     {
         if (e.Key == "Enter")
         {
-            if (_searchValue is null || _searchValue?.Length < 3)
+            if (SearchValue is null || SearchValue?.Length < 3)
             {
                 Snackbar.Add("Search must be at least 3 characters long.", Severity.Info);
                 return;
             }
 
-            NavigationManager.NavigateTo($"/Search?q={_searchValue}");
+            NavigationManager.NavigateTo($"/Search?q={SearchValue}");
         }
     }
 

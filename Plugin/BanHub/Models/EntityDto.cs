@@ -27,7 +27,7 @@ public class EntityDto
     /// <summary>
     /// Is the player globally banned via IP or GUID
     /// </summary>
-    public bool GlobalBanned { get; set; }
+    public bool HasIdentityBan { get; set; }
 
     /// <summary>
     /// The player's meta
