@@ -2,6 +2,7 @@
 using BanHub.WebCore.Server.Enums;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Models;
+using BanHub.WebCore.Server.Models.Context;
 using BanHub.WebCore.Shared.DTOs;
 using Microsoft.EntityFrameworkCore;
 
@@ -106,7 +107,7 @@ public class InstanceService : IInstanceService
         instances = instances.OrderByDescending(x => x.HeartBeat).ToList();
 
         return instances.Count is 0
-            ? (ControllerEnums.ProfileReturnState.NotFound, null)
+            ? (ControllerEnums.ProfileReturnState.NotFound, null) 
             : (ControllerEnums.ProfileReturnState.Ok, instances);
     }
 

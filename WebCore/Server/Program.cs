@@ -60,11 +60,7 @@ builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IStatisticService, StatisticService>();
 builder.Services.AddScoped<IServerService, ServerService>();
 
-builder.Host.ConfigureLogging(logging =>
-{
-    logging.ClearProviders();
-    logging.AddConsole();
-});
+builder.Logging.ClearProviders().AddConsole();
 
 // Add services to the container.
 

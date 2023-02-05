@@ -8,7 +8,6 @@ public interface IEntityService
     Task<EntityDto?> GetUser(string identity, bool privileged);
     Task<ControllerEnums.ProfileReturnState> CreateOrUpdate(EntityDto request);
     Task<bool> HasEntity(string identity);
-    Task<int> GetOnlineCount();
     Task<List<EntityDto>> Pagination(PaginationDto pagination);
     Task<string?> GetAuthenticationToken(EntityDto request);
 }

@@ -46,7 +46,16 @@ public class EndpointManager
                 UserName = client.CleanedName,
                 IpAddress = client.IPAddressString
             },
-            Instance = _instanceMeta
+            Instance = _instanceMeta,
+            InstanceRole = client.ClientPermission.Name switch
+            {
+                "Trusted" => InstanceRole.InstanceTrusted,
+                "Moderator" => InstanceRole.InstanceModerator,
+                "Administrator" => InstanceRole.InstanceAdministrator,
+                "SeniorAdmin" => InstanceRole.InstanceSeniorAdmin,
+                "Owner" => InstanceRole.InstanceOwner,
+                _ => InstanceRole.InstanceUser
+            } 
         };
 
         if (!client.IsIngame) return entity;

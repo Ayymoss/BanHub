@@ -30,6 +30,11 @@ public class EntityDto
     public bool HasIdentityBan { get; set; }
 
     /// <summary>
+    /// The player's instance role
+    /// </summary>
+    public InstanceRole? InstanceRole { get; set; }
+
+    /// <summary>
     /// The player's meta
     /// </summary>
     public virtual AliasDto? Alias { get; set; }

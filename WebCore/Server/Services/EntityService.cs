@@ -2,6 +2,7 @@
 using BanHub.WebCore.Server.Enums;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Models;
+using BanHub.WebCore.Server.Models.Context;
 using BanHub.WebCore.Shared.DTOs;
 using BanHub.WebCore.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -110,7 +111,7 @@ public class EntityService : IEntityService
         // Check if user is globally banned
         var hasActiveIdentityBan = await _context.PenaltyIdentifiers
             .AnyAsync(x => (x.IpAddress == entity.Alias!.IpAddress || x.Identity == entity.Identity)
-                           && x.Expiration > DateTimeOffset.Now);
+                           && x.Expiration > DateTimeOffset.UtcNow);
         entity.HasIdentityBan = hasActiveIdentityBan;
 
         // Strip sensitive data if not privileged
@@ -129,7 +130,7 @@ public class EntityService : IEntityService
         foreach (var inf in entity.Penalties)
         {
             if (inf.Duration is null) continue;
-            if (inf.PenaltyStatus != PenaltyStatus.Active || !(DateTimeOffset.Now > inf.Submitted + inf.Duration)) continue;
+            if (inf.PenaltyStatus != PenaltyStatus.Active || !(DateTimeOffset.UtcNow > inf.Submitted + inf.Duration)) continue;
 
             inf.PenaltyStatus = PenaltyStatus.Expired;
             updatedPenalty.Add(inf.PenaltyGuid);
@@ -177,11 +178,6 @@ public class EntityService : IEntityService
                 .Where(x => x.EntityId == user.Id)
                 .AnyAsync(alias => alias.UserName == request.Alias!.UserName && alias.IpAddress == request.Alias.IpAddress);
 
-            var activeBanCount = await _context.Penalties
-                .AsNoTracking()
-                .Where(inf => inf.PenaltyType == PenaltyType.Ban && inf.PenaltyStatus == PenaltyStatus.Active)
-                .CountAsync();
-
             if (!existingAlias)
             {
                 var mostRecentAlias = await _context.CurrentAliases
@@ -224,7 +220,8 @@ public class EntityService : IEntityService
         {
             Identity = request.Identity,
             HeartBeat = DateTimeOffset.UtcNow,
-            WebRole = WebRole.User,
+            WebRole = WebRole.WebUser,
+            InstanceRole = request.InstanceRole!.Value,
             Created = DateTimeOffset.UtcNow
         };
 
@@ -263,13 +260,6 @@ public class EntityService : IEntityService
     }
 
     public async Task<bool> HasEntity(string identity) => await _context.Entities.AnyAsync(x => x.Identity == identity);
-
-    public async Task<int> GetOnlineCount()
-    {
-        return await _context.Entities
-            .Where(x => x.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
-            .CountAsync();
-    }
 
     public async Task<List<EntityDto>> Pagination(PaginationDto pagination)
     {
@@ -320,7 +310,7 @@ public class EntityService : IEntityService
                             {
                                 UserName = inf.Admin.CurrentAlias.Alias.UserName,
                                 Changed = inf.Admin.CurrentAlias.Alias.Changed
-                            },
+                            }
                         },
                         Instance = new InstanceDto
                         {
@@ -331,8 +321,7 @@ public class EntityService : IEntityService
                     }).ToList(),
                 HeartBeat = profile.HeartBeat,
                 Created = profile.Created,
-            })
-            .ToListAsync();
+            }).ToListAsync();
 
         return pagedData;
     }

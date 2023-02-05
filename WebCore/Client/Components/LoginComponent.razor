@@ -7,15 +7,16 @@
 
 <AuthorizeView>
     <Authorized>
-        <MudText Align="Align.Center" Typo="Typo.body2">Logged in as @context.User.Identity!.Name</MudText>
-        <MudText Align="Align.Center" Typo="Typo.caption">@(string.Join(", ", context.User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList()))</MudText>
+        <MudText Align="Align.Center" Color="Color.Info" Typo="Typo.body2">@context.User.Identity!.Name</MudText>
+        <MudDivider DividerType="DividerType.Middle" Class="my-1"/>
+        <MudText Align="Align.Center" Class="mud-text-secondary" Typo="Typo.caption">
+            <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Success">Web: @context.User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList()[0].GetRoleName()</MudChip>
+            <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Success">Instance: @context.User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList()[1].GetRoleName()</MudChip>
+        </MudText>
         <MudDivider DividerType="DividerType.Middle" Class="my-1 py-1"/>
         <MudButton FullWidth="true" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Logout">Log Out</MudButton>
     </Authorized>
     <NotAuthorized>
-        <MudText Align="Align.Center" Typo="Typo.body2">Logged in as TEST</MudText>
-        <MudText Align="Align.Center" Typo="Typo.caption">Your roles are TEST</MudText>
-        <MudDivider DividerType="DividerType.Middle" Class="my-1 py-1"/>
         <MudButton FullWidth="true" Variant="Variant.Filled" Color="Color.Info" OnClick="OpenDialog">Log In</MudButton>
     </NotAuthorized>
 </AuthorizeView>

@@ -1,182 +1,162 @@
 ﻿@page "/Penalties"
 @inject HttpClient Http
 
-<OpenGraphComponent Title="Penalties" Description="Welcome to Ban Hub"/>
+<PageTitle>Penalties | Ban Hub</PageTitle>
 
 <MudText Typo="Typo.h3" GutterBottom="true">Penalties</MudText>
 
+<MudTable ServerData="@(new Func<TableState, Task<TableData<PenaltyDto>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true" Hover="true" @ref="_table">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">All penalties</MudText>
+        <MudSpacer/>
+        <MudTextField T="string" ValueChanged="@(OnSearch)" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Id" T="PenaltyDto">ID</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Target Name" T="PenaltyDto">Name Name</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Admin Name" T="PenaltyDto">Admin Name</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Reason" T="PenaltyDto">Reason</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Type" T="PenaltyDto">Type</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Status" T="PenaltyDto">Status</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Scope" T="PenaltyDto">Scope</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Instance" T="PenaltyDto">Instance</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="Submitted" T="PenaltyDto">Submitted</MudTableSortLabel>
+        </MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="ID">@context.PenaltyGuid</MudTd>
+        <MudTd DataLabel="Target Name">
+            <a href="/Profile/@context.Target!.Identity">
+                <MudText Typo="Typo.body2" Color="Color.Warning">
+                    @context.Target!.Alias!.UserName
+                </MudText>
+            </a>
+        </MudTd>
+        <MudTd DataLabel="Admin Name">
+            <a href="/Profile/@context.Admin!.Identity">
+                <MudText Typo="Typo.body2" Color="Color.Info">
+                    @context.Admin!.Alias!.UserName
+                </MudText>
+            </a>
+        </MudTd>
+        <MudTd DataLabel="Reason">@context.Reason</MudTd>
+        <MudTd DataLabel="Type">
+            @switch (context.PenaltyType)
+            {
+                case PenaltyType.Warn:
+                    <MudChip Variant="Variant.Text" Size="Size.Small">Warn</MudChip>
+                    break;
+                case PenaltyType.Mute:
+                    <MudChip Variant="Variant.Text" Size="Size.Small">Mute</MudChip>
+                    break;
+                case PenaltyType.Kick:
+                    <MudChip Variant="Variant.Text" Size="Size.Small">Kick</MudChip>
+                    break;
+                case PenaltyType.Unban:
+                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Unban</MudChip>
+                    break;
+                case PenaltyType.TempBan:
+                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Tempban</MudChip>
+                    break;
+                case PenaltyType.Ban:
+                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Ban</MudChip>
+                    break;
+            }
+        </MudTd>
+        <MudTd DataLabel="Status">
+            @switch (context.PenaltyStatus)
+            {
+                case PenaltyStatus.Informational:
+                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Informational</MudChip>
+                    break;
+                case PenaltyStatus.Active:
+                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Success">Active</MudChip>
+                    break;
+                case PenaltyStatus.Revoked:
+                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Revoked</MudChip>
+                    break;
+                case PenaltyStatus.Expired:
+                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Expired</MudChip>
+                    break;
+            }
+        </MudTd>
+        <MudTd DataLabel="Scope">
+            @switch (context.PenaltyScope)
+            {
+                case PenaltyScope.Local:
+                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Local</MudChip>
+                    break;
+                case PenaltyScope.Global:
+                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Global</MudChip>
+                    break;
+            }
+        </MudTd>
+        <MudTd DataLabel="Instance">@(context.Instance!.InstanceName ?? context.Instance.InstanceGuid.ToString())</MudTd>
+        <MudTd DataLabel="Submitted">@context.Submitted!.Value.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText Class="mb-8" Color="Color.Warning">No penalties found.</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudProgressLinear Color="Color.Success" Rounded="true" Size="Size.Large" Indeterminate="true"/>
+    </LoadingContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new[] {50, 100}"/>
+    </PagerContent>
+</MudTable>
 
-@if (_penalties is null)
+
+@code
 {
-    <p>
-        @if (Empty)
-        {
-            <MudText Class="mb-8" Color="Color.Warning">No penalties found.</MudText>
-        }
-        else
-        {
-            <MudProgressLinear Color="Color.Success" Rounded="true" Size="Size.Large" Indeterminate="true"/>
-        }
-    </p>
-}
-else
-{
-    <MudTable Items="_penalties" Dense="true" Hover="true" SortLabel="Sort By" Elevation="2" RowsPerPage="20" Filter="new Func<PenaltyDto, bool>(FilterFunc1)">
-        <ToolBarContent>
-            <MudText Typo="Typo.h6">All penalties</MudText>
-            <MudSpacer/>
-            <MudTextField @bind-Value="_search" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-        </ToolBarContent>
-        <HeaderContent>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyGuid)">ID</MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Target.Alias.UserName)">Target Name</MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Admin.Alias.UserName)">Admin Name</MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Reason)">Reason</MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyType)">Type</MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyStatus)">State</MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyScope)">Scope</MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Instance.InstanceGuid)">Instance</MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<PenaltyDto, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
-            </MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="ID">@context.PenaltyGuid</MudTd>
-            <MudTd DataLabel="Target Name">
-                <a href="/Profile/@context.Target!.Identity">
-                    <MudText Typo="Typo.body2" Color="Color.Warning">
-                        @context.Target!.Alias!.UserName
-                    </MudText>
-                </a>
-            </MudTd>
-            <MudTd DataLabel="Admin Name">
-                <a href="/Profile/@context.Admin!.Identity">
-                    <MudText Typo="Typo.body2" Color="Color.Info">
-                        @context.Admin!.Alias!.UserName
-                    </MudText>
-                </a>
-            </MudTd>
-            <MudTd DataLabel="Reason">@context.Reason</MudTd>
-            <MudTd DataLabel="Type">
-                @switch (context.PenaltyType)
-                {
-                    case PenaltyType.Warn:
-                        <MudChip Variant="Variant.Text" Size="Size.Small">Warn</MudChip>
-                        break;
-                    case PenaltyType.Mute:
-                        <MudChip Variant="Variant.Text" Size="Size.Small">Mute</MudChip>
-                        break;
-                    case PenaltyType.Kick:
-                        <MudChip Variant="Variant.Text" Size="Size.Small">Kick</MudChip>
-                        break;
-                    case PenaltyType.Unban:
-                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Unban</MudChip>
-                        break;
-                    case PenaltyType.TempBan:
-                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Tempban</MudChip>
-                        break;
-                    case PenaltyType.Ban:
-                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Ban</MudChip>
-                        break;
-                }
-            </MudTd>
-            <MudTd DataLabel="Status">
-                @switch (context.PenaltyStatus)
-                {
-                    case PenaltyStatus.Informational:
-                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Informational</MudChip>
-                        break;
-                    case PenaltyStatus.Active:
-                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Success">Active</MudChip>
-                        break;
-                    case PenaltyStatus.Revoked:
-                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Revoked</MudChip>
-                        break;
-                    case PenaltyStatus.Expired:
-                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Expired</MudChip>
-                        break;
-                }
-            </MudTd>
-            <MudTd DataLabel="Scope">
-                @switch (context.PenaltyScope)
-                {
-                    case PenaltyScope.Local:
-                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Local</MudChip>
-                        break;
-                    case PenaltyScope.Global:
-                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Global</MudChip>
-                        break;
-                }
-            </MudTd>
-            <MudTd DataLabel="Instance Name">@(context.Instance!.InstanceName ?? context.Instance.InstanceGuid.ToString())</MudTd>
-            <MudTd DataLabel="Submitted">@context.Submitted!.Value.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager PageSizeOptions="new[] {50, 100}"/>
-        </PagerContent>
-    </MudTable>
-}
-
-@code {
-
     [Parameter, SupplyParameterFromQuery(Name = "search")]
     public string? SearchString { get; set; }
 
-    private bool Empty { get; set; }
-    private List<PenaltyDto>? _penalties;
+    private MudTable<PenaltyDto>? _table;
+    private IEnumerable<PenaltyDto>? _pagedData;
+    private string? _searchString;
+    private int _totalItems;
 
-    private string _search = string.Empty;
-
-    protected override async Task OnInitializedAsync()
+    private async Task<TableData<PenaltyDto>> ServerReload(TableState state)
     {
-        _penalties = await Http.GetFromJsonAsync<List<PenaltyDto>>("/api/v2/Penalty/All");
-        if (_penalties is null || !_penalties.Any()) Empty = true;
-        if (SearchString is not null) _search = SearchString;
+        var paginationQuery = new PaginationDto
+        {
+            Page = state.Page,
+            PageSize = state.PageSize,
+            SortLabel = state.SortLabel,
+            SortDirection = (int)state.SortDirection,
+            SearchString = _searchString
+        };
+
+        var statistics = await Http.GetFromJsonAsync<StatisticDto>("/api/v2/Statistic");
+        var data = await Http.PostAsJsonAsync("/api/v2/Penalty/All", paginationQuery);
+        var result = await data.Content.ReadFromJsonAsync<List<PenaltyDto>>();
+
+        _pagedData = result!.ToArray();
+        _totalItems = statistics!.PenaltyCount!.Value;
+
+        return new TableData<PenaltyDto> {TotalItems = _totalItems, Items = _pagedData};
     }
 
-    private bool FilterFunc1(PenaltyDto element) => FilterFunc(element, _search);
-
-    private bool FilterFunc(PenaltyDto element, string searchString)
+    private void OnSearch(string text)
     {
-        if (string.IsNullOrWhiteSpace(searchString))
-            return true;
-        if (element.PenaltyGuid.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (element.Admin!.Alias!.UserName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (element.Target!.Alias!.UserName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (element.Target.Identity.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (element.Admin.Identity.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (element.Reason!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (element.PenaltyStatus.ToString()!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (element.PenaltyScope.ToString()!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (element.PenaltyType.ToString()!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (element.Instance!.InstanceGuid.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        return false;
+        _searchString = text;
+        _table!.ReloadServerData();
     }
-
 }

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using BanHub.WebCore.Shared.Enums;
 
-namespace BanHub.WebCore.Server.Models;
+namespace BanHub.WebCore.Server.Models.Context;
 
 /// <summary>
 /// Table for all players
@@ -31,6 +31,11 @@ public class EFEntity
     public required WebRole WebRole { get; set; }
 
     /// <summary>
+    /// The player's instance role
+    /// </summary>
+    public required InstanceRole InstanceRole { get; set; }
+
+    /// <summary>
     /// Player's notes.
     /// </summary>
     public ICollection<EFNote> Notes { get; set; } = null!;
@@ -54,7 +59,7 @@ public class EFEntity
     /// The list of historically connected servers
     /// </summary>
     public ICollection<EFServerConnection> ServerConnections { get; set; } = null!;
-    
+
     /// <summary>
     /// Penalty's identifiers
     /// </summary>

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BanHub.WebCore.Server.Models;
+namespace BanHub.WebCore.Server.Models.Context;
 
 /// <summary>
 /// Table for the all instances

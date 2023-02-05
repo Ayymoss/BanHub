@@ -1,4 +1,5 @@
 ﻿using BanHub.WebCore.Server.Models;
+using BanHub.WebCore.Server.Models.Context;
 using BanHub.WebCore.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +18,6 @@ public class DataContext : DbContext
     public DbSet<EFPenalty> Penalties { get; set; }
     public DbSet<EFServer> Servers { get; set; }
     public DbSet<EFServerConnection> ServerConnections { get; set; }
-    public DbSet<EFStatistic> Statistics { get; set; }
     public DbSet<EFAuthToken> AuthTokens { get; set; }
     public DbSet<EFNote> Notes { get; set; }
     public DbSet<EFPenaltyIdentifier> PenaltyIdentifiers { get; set; }
@@ -31,7 +31,6 @@ public class DataContext : DbContext
         modelBuilder.Entity<EFCurrentAlias>().ToTable("EFCurrentAliases");
         modelBuilder.Entity<EFServer>().ToTable("EFServers");
         modelBuilder.Entity<EFServerConnection>().ToTable("EFServerConnections");
-        modelBuilder.Entity<EFStatistic>().ToTable("EFStatistics");
         modelBuilder.Entity<EFAuthToken>().ToTable("EFAuthTokens");
         modelBuilder.Entity<EFNote>().ToTable("EFNotes");
         modelBuilder.Entity<EFPenaltyIdentifier>().ToTable("EFPenaltyIdentifiers");
@@ -45,43 +44,6 @@ public class DataContext : DbContext
             .HasOne(a => a.Target)
             .WithMany(p => p.Notes)
             .HasForeignKey(f => f.TargetId);
-
-        #region EFStatistic
-
-        var instanceCount = new EFStatistic
-        {
-            Id = -1,
-            Statistic = "InstanceCount",
-            Count = 0
-        };
-
-        var infractionCount = new EFStatistic
-        {
-            Id = -2,
-            Statistic = "PenaltyCount",
-            Count = 0
-        };
-
-        var serverCount = new EFStatistic
-        {
-            Id = -3,
-            Statistic = "ServerCount",
-            Count = 0
-        };
-
-        var entityCount = new EFStatistic
-        {
-            Id = -4,
-            Statistic = "EntityCount",
-            Count = 1
-        };
-
-        modelBuilder.Entity<EFStatistic>().HasData(instanceCount);
-        modelBuilder.Entity<EFStatistic>().HasData(infractionCount);
-        modelBuilder.Entity<EFStatistic>().HasData(serverCount);
-        modelBuilder.Entity<EFStatistic>().HasData(entityCount);
-
-        #endregion
 
         #region IW4MAdminSeed
 
@@ -100,7 +62,8 @@ public class DataContext : DbContext
             Identity = "0:UKN",
             HeartBeat = DateTimeOffset.UtcNow,
             Created = DateTimeOffset.UtcNow,
-            WebRole = WebRole.User,
+            WebRole = WebRole.WebUser,
+            InstanceRole = InstanceRole.InstanceUser,
             Penalties = new List<EFPenalty>()
         };
 
@@ -114,6 +77,41 @@ public class DataContext : DbContext
         modelBuilder.Entity<EFEntity>().HasData(adminProfile);
         modelBuilder.Entity<EFAlias>().HasData(adminAlias);
         modelBuilder.Entity<EFCurrentAlias>().HasData(adminCurrentAlias);
+
+        #endregion
+
+
+        #region TemporarySeedData
+
+        var instance = new EFInstance
+        {
+            Id = -1,
+            InstanceGuid = Guid.NewGuid(),
+            InstanceIp = "123.123.123.123",
+            InstanceName = "Seed Instance",
+            HeartBeat = DateTimeOffset.UtcNow,
+            ApiKey = Guid.NewGuid(),
+            Active = true
+        };
+
+        var infraction = new EFPenalty
+        {
+            Id = -1,
+            PenaltyType = PenaltyType.Warn,
+            PenaltyStatus = PenaltyStatus.Active,
+            PenaltyScope = PenaltyScope.Local,
+            PenaltyGuid = Guid.NewGuid(),
+            Submitted = DateTimeOffset.UtcNow,
+            Duration = null,
+            Reason = "Seed Infraction",
+            Evidence = "Seed Evidence",
+            AdminId = -1,
+            TargetId = -1,
+            InstanceId = -1
+        };
+
+        modelBuilder.Entity<EFInstance>().HasData(instance);
+        modelBuilder.Entity<EFPenalty>().HasData(infraction);
 
         #endregion
 

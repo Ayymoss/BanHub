@@ -26,7 +26,17 @@ public enum PenaltyScope
 
 public enum WebRole
 {
-    User = 10,
-    Admin = 75,
-    SuperAdmin = 100
+    WebUser = 10,
+    WebAdmin = 75,
+    WebSuperAdmin = 100
+}
+
+public enum InstanceRole
+{
+    InstanceUser = 10,
+    InstanceTrusted = 20,
+    InstanceModerator = 30,
+    InstanceAdministrator = 40,
+    InstanceSeniorAdmin = 50,
+    InstanceOwner = 60
 }

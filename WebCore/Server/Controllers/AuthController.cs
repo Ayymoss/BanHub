@@ -36,7 +36,8 @@ public class AuthController : ControllerBase
             .Select(x => new UserDto
             {
                 UserName = x.CurrentAlias.Alias.UserName,
-                Role = x.WebRole.ToString()
+                WebRole = x.WebRole.ToString(),
+                InstanceRole = x.InstanceRole.ToString()
             }).FirstOrDefaultAsync();
 
         if (user is null) return Unauthorized("User is invalid.");
@@ -48,7 +49,8 @@ public class AuthController : ControllerBase
         var claims = new List<Claim>
         {
             new(ClaimTypes.Name, user.UserName),
-            new(ClaimTypes.Role, user.Role),
+            new(ClaimTypes.Role, user.WebRole),
+            new(ClaimTypes.Role, user.InstanceRole),
             new("UserId", token.EntityId.ToString())
         };
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -73,7 +75,8 @@ public class AuthController : ControllerBase
             .Select(f => new UserDto
             {
                 UserName = f.CurrentAlias.Alias.UserName,
-                Role = f.WebRole.ToString()
+                WebRole = f.WebRole.ToString(),
+                InstanceRole = f.InstanceRole.ToString()
             }).FirstOrDefaultAsync();
 
         if (user is null) return BadRequest("User is invalid.");
@@ -87,7 +90,5 @@ public class AuthController : ControllerBase
         await HttpContext.SignOutAsync();
         return Ok("Success");
     }
-
-    [HttpGet, Authorize(Roles = "Admin")]
-    public ActionResult<string> GetCat() => Ok("Meow");
+    
 }

@@ -17,8 +17,9 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
     {
         var identity = new ClaimsIdentity(new[]
         {
-            new Claim(ClaimTypes.Role, userProfile.Role),
-            new Claim(ClaimTypes.Name, userProfile.UserName),
+            new Claim(ClaimTypes.Role, userProfile.WebRole),
+            new Claim(ClaimTypes.Role, userProfile.InstanceRole),
+            new Claim(ClaimTypes.Name, userProfile.UserName)
         }, "AuthCookie");
 
         _claimsPrincipal = new ClaimsPrincipal(identity);

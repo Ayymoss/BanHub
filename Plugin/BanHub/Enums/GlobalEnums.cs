@@ -30,9 +30,12 @@ public enum Action
     Remove
 }
 
-public enum WebRole
+public enum InstanceRole
 {
-    User = 10,
-    Admin = 75,
-    SuperAdmin = 100
+    InstanceUser = 10,
+    InstanceTrusted = 20,
+    InstanceModerator = 30,
+    InstanceAdministrator = 40,
+    InstanceSeniorAdmin = 50,
+    InstanceOwner = 60
 }

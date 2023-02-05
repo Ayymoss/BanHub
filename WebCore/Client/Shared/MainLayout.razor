@@ -11,7 +11,7 @@
 
 <MudLayout>
     <MudAppBar Elevation="0">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())"/>
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(DrawerToggle)"/>
         <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Person" Color="Color.Info">Online: @_online</MudChip>
         <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Block" Color="Color.Error">Day Global Bans: @_bans</MudChip>
         <MudSpacer/>
@@ -69,18 +69,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var online = await Http.GetAsync("/api/v2/Entity/Online");
-        var bans = await Http.GetAsync("/api/v2/Penalty/Count");
-
-        var onlineResult = await online.Content.ReadAsStringAsync();
-        var bansResult = await bans.Content.ReadAsStringAsync();
-
-        _ = int.TryParse(onlineResult, out var onlineParsed);
-        _ = int.TryParse(bansResult, out var banParsed);
-
-        _online = onlineParsed;
-        _bans = banParsed;
-
+        var statistic = await Http.GetFromJsonAsync<StatisticDto>("/api/v2/Statistic");
+        if (statistic is null) return;
+        _online = statistic.OnlineCount;
+        _bans = statistic.BanCount;
+        
         await base.OnInitializedAsync();
     }
 

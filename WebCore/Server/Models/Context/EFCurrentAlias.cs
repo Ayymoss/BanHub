@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace BanHub.WebCore.Server.Models;
+namespace BanHub.WebCore.Server.Models.Context;
 
 /// <summary>
 /// Table for the user's current alias. 

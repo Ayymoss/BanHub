@@ -56,21 +56,17 @@ public class PenaltyController : ControllerBase
         };
     }
 
-    [HttpGet("All")]
-    public async Task<ActionResult<InstanceDto>> GetPenalties()
+    [HttpPost("All")]
+    public async Task<ActionResult<IEnumerable<PenaltyDto>>> GetPenalties([FromBody] PaginationDto pagination)
     {
-        var result = await _penaltyService.GetPenalties();
-        return result.Item1 switch
-        {
-            ControllerEnums.ProfileReturnState.Ok => Ok(result.Item2),
-            _ => BadRequest() // Should never happen
-        };
+        return Ok(await _penaltyService.Pagination(pagination));
     }
     
-    [HttpGet("Count")]
-    public async Task<ActionResult<InstanceDto>> GetPenaltyDayCount()
+    [HttpGet("Index")]
+    public async Task<ActionResult<IEnumerable<PenaltyDto>>> GetRecentPenalties()
     {
-        var result = await _penaltyService.GetPenaltyDayCount();
-        return Ok(result);
+        return Ok(await _penaltyService.GetLatestThreeBans());
     }
+    
+    
 }

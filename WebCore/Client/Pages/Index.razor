@@ -1,8 +1,7 @@
 ﻿@page "/"
-@using Humanizer
 @inject HttpClient Http
 
-<OpenGraphComponent Title="Index" Description="Welcome to Ban Hub"/>
+<PageTitle>Index | Ban Hub</PageTitle>
 
 <MudContainer Class="mt-16 px-8" MaxWidth="MaxWidth.False">
     <MudGrid>
@@ -13,14 +12,14 @@
                 <br/>
                 <MudDivider/>
                 <br/>
-                <MudText Align="Align.Center" Typo="Typo.h6">Latest 3 global bans</MudText>
-                <br/>
                 @if (!_penaltyTable.Any())
                 {
                     <MudText Align="Align.Center" Typo="Typo.body2">There are no global bans...</MudText>
                 }
                 else
                 {
+                    <MudText Align="Align.Center" Typo="Typo.h6">Latest 3 global bans</MudText>
+                    <br/>
                     <MudTable Dense="true" Items="@_penaltyTable" Hover="true" FixedHeader="true" Height="100%" T="PenaltyDto">
                         <HeaderContent>
                             <MudTh>Instance</MudTh>
@@ -47,16 +46,36 @@
         <MudItem xs="12" sm="6">
             <MudGrid>
                 <MudItem xs="12">
-                    <MudPaper Elevation="2" Class="pa-4" Style="height: 100%;">
-                        <MudText Typo="Typo.h6" GutterBottom="true">Current Stats</MudText>
-                        <MudList Dense="true">
-                            <MudListItem Icon="@Icons.Filled.Report">Penalties: @_penalties</MudListItem>
-                            <MudDivider DividerType="DividerType.Inset"/>
-                            <MudListItem Icon="@Icons.Filled.Person">Users: @_entities</MudListItem>
-                            <MudListItem Icon="@Icons.Filled.Storage">Instances: @_instances</MudListItem>
-                            <MudListItem Icon="@Icons.Filled.List">Servers: @_servers</MudListItem>
-                        </MudList>
-                    </MudPaper>
+                  
+                        <MudGrid Spacing="2" Justify="Justify.Center">
+                            <MudItem Class="flex-1">
+                                <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6 w25" Elevation="2">
+                                    <MudText Typo="Typo.subtitle1" Color="Color.Info">@_penalties</MudText>
+                                    <MudText Class="mud-text-secondary">Penalties</MudText>
+                                </MudPaper>
+                            </MudItem>
+                            <MudItem Class="flex-1">
+                                <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
+                                    <MudText Typo="Typo.subtitle1" Color="Color.Info">@_entities</MudText>
+                                    <MudText Class="mud-text-secondary">Users</MudText>
+                                </MudPaper>
+                            </MudItem>
+                            <MudItem Class="flex-1">
+                                <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
+                                    <MudText Typo="Typo.subtitle1" Color="Color.Info">@_instances</MudText>
+                                    <MudText Class="mud-text-secondary">Instances</MudText>
+                                </MudPaper>
+                            </MudItem>
+                            <MudItem Class="flex-1">
+                                <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
+                                    <MudText Typo="Typo.subtitle1" Color="Color.Info">@_servers</MudText>
+                                    <MudText Class="mud-text-secondary">Servers</MudText>
+                                </MudPaper>
+                            </MudItem>
+                        </MudGrid>
+                        
+
+
                 </MudItem>
                 <MudItem xs="12" class="align-self-stretch">
                     <MudPaper Elevation="2" Class="pa-4" Style="height: 100%;">
@@ -86,15 +105,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var penaltyTable = await Http.GetFromJsonAsync<List<PenaltyDto>>("/api/v2/Penalty/All");
-        if (penaltyTable is not null)
-        {
-            _penaltyTable = penaltyTable
-                .Where(x => x.PenaltyType == PenaltyType.Ban && x.PenaltyScope == PenaltyScope.Global && x.PenaltyStatus == PenaltyStatus.Active)
-                .OrderByDescending(x => x.Submitted)
-                .Take(3)
-                .ToList();
-        }
+        var penalty = await Http.GetFromJsonAsync<List<PenaltyDto>>("/api/v2/Penalty/Index");
+        if (penalty is not null) _penaltyTable = penalty;
 
         var statistic = await Http.GetFromJsonAsync<StatisticDto>("/api/v2/Statistic");
         if (statistic is null) return;

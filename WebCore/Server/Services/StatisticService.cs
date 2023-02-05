@@ -1,6 +1,7 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Enums;
 using BanHub.WebCore.Server.Interfaces;
+using BanHub.WebCore.Server.Models;
 using BanHub.WebCore.Shared.DTOs;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,14 +13,12 @@ public class StatisticService : IStatisticService
     private readonly StatisticsTracking _statisticsTracking;
 
     private readonly SemaphoreSlim _load = new(1, 1);
-    private readonly SemaphoreSlim _save = new(1, 1);
 
     public StatisticService(DataContext context, StatisticsTracking statisticsTracking)
     {
         _context = context;
         _statisticsTracking = statisticsTracking;
     }
-
 
     private async Task EnsureInitialised()
     {
@@ -63,24 +62,6 @@ public class StatisticService : IStatisticService
                 Interlocked.Increment(ref _statisticsTracking.Entities);
                 break;
         }
-
-        if (_statisticsTracking.LastSave + TimeSpan.FromSeconds(10) < DateTimeOffset.UtcNow)
-        {
-            try
-            {
-                await _save.WaitAsync();
-                
-                if (_statisticsTracking.LastSave + TimeSpan.FromSeconds(10) < DateTimeOffset.UtcNow)
-                {
-                    await WriteStatistics();
-                    _statisticsTracking.LastSave = DateTimeOffset.UtcNow;
-                }
-            }
-            finally
-            {
-                if (_save.CurrentCount == 0) _save.Release();
-            }
-        }
     }
 
     public async Task<StatisticDto> GetStatistics()
@@ -92,43 +73,64 @@ public class StatisticService : IStatisticService
             PenaltyCount = _statisticsTracking.Penalties,
             ServerCount = _statisticsTracking.Servers,
             InstanceCount = _statisticsTracking.Instances,
-            EntityCount = _statisticsTracking.Entities
+            EntityCount = _statisticsTracking.Entities,
+            OnlineCount = _statisticsTracking.UsersOnlineCount,
+            BanCount = _statisticsTracking.BansDayCount
         };
+    }
+
+    public async Task UpdateOnlineStatistic(StatisticUsersOnline statisticUsers)
+    {
+        if (!_statisticsTracking.Loaded) await EnsureInitialised();
+
+        var instance = _statisticsTracking.UsersOnline
+            .FirstOrDefault(x => x.InstanceGuid == statisticUsers.InstanceGuid);
+
+        if (instance is null)
+        {
+            _statisticsTracking.UsersOnline.Add(statisticUsers);
+        }
+        else
+        {
+            instance.Online = statisticUsers.Online;
+            instance.HeartBeat = statisticUsers.HeartBeat;
+        }
+
+        _statisticsTracking.UsersOnline = _statisticsTracking.UsersOnline
+            .Where(x => x.HeartBeat > DateTimeOffset.UtcNow.AddMinutes(-5))
+            .ToList();
+
+        _statisticsTracking.UsersOnlineCount = _statisticsTracking.UsersOnline.Sum(x => x.Online);
+    }
+
+    public async Task UpdateDayStatistic(StatisticBan statisticBan)
+    {
+        if (!_statisticsTracking.Loaded) await EnsureInitialised();
+
+        _statisticsTracking.BansDay.Add(statisticBan);
+
+        _statisticsTracking.BansDay = _statisticsTracking.BansDay
+            .Where(x => x.Submitted > DateTimeOffset.UtcNow.AddDays(-1))
+            .ToList();
+
+        _statisticsTracking.BansDayCount = _statisticsTracking.BansDay.Count;
     }
 
     private async Task<StatisticDto> ReadStatistics()
     {
-        var entity = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.EntityCount);
-        var penalty = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.PenaltyCount);
-        var instance = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.InstanceCount);
-        var server = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.ServerCount);
+        var entity = await _context.Entities.CountAsync();
+        var instance = await _context.Instances.CountAsync();
+        var server = await _context.Servers.CountAsync();
+        var penalty = await _context.Penalties.CountAsync();
+
         var statistics = new StatisticDto
         {
-            EntityCount = entity.Count,
-            InstanceCount = instance.Count,
-            ServerCount = server.Count,
-            PenaltyCount = penalty.Count
+            EntityCount = entity,
+            InstanceCount = instance,
+            ServerCount = server,
+            PenaltyCount = penalty
         };
+
         return statistics;
-    }
-
-    private async Task WriteStatistics()
-    {
-        var entity = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.EntityCount);
-        var penalty = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.PenaltyCount);
-        var instance = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.InstanceCount);
-        var server = await _context.Statistics.FirstAsync(x => x.Id == (int)ControllerEnums.StatisticType.ServerCount);
-
-        entity.Count = _statisticsTracking.Entities;
-        penalty.Count = _statisticsTracking.Penalties;
-        instance.Count = _statisticsTracking.Instances;
-        server.Count = _statisticsTracking.Servers;
-
-        _context.Statistics.Update(entity);
-        _context.Statistics.Update(penalty);
-        _context.Statistics.Update(instance);
-        _context.Statistics.Update(server);
-
-        await _context.SaveChangesAsync();
     }
 }

@@ -8,6 +8,7 @@ public interface IPenaltyService
     Task<(ControllerEnums.ProfileReturnState, Guid?)> AddPenalty(PenaltyDto request);
     Task<(ControllerEnums.ProfileReturnState, PenaltyDto?)> GetPenalty(string penaltyGuid);
     Task<(ControllerEnums.ProfileReturnState, List<PenaltyDto>?)> GetPenalties();
-    Task<int> GetPenaltyDayCount();
     Task<bool> SubmitEvidence(PenaltyDto request);
+    Task<List<PenaltyDto>> Pagination(PaginationDto pagination);
+    Task<List<PenaltyDto>> GetLatestThreeBans();
 }

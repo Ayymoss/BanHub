@@ -1,7 +1,9 @@
 ﻿using BanHub.WebCore.Server.Enums;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Services;
+using BanHub.WebCore.Server.Utilities;
 using BanHub.WebCore.Shared.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BanHub.WebCore.Server.Controllers;
@@ -17,6 +19,7 @@ public class EntityController : ControllerBase
         _entityService = entityService;
     }
 
+    // [HttpGet("Notes"),  Authorize(Roles = "InstanceModerator, InstanceAdministrator, InstanceSeniorAdmin, InstanceOwner, WebAdmin, WebSuperAdmin")]
     [HttpPost, PluginAuthentication]
     public async Task<ActionResult> CreateOrUpdate([FromQuery] string authToken, [FromBody] EntityDto request)
     {
@@ -37,7 +40,7 @@ public class EntityController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<EntityDto>> GetEntity([FromQuery] string identity)
     {
-        var privileged = User.IsInRole("Admin");
+        var privileged = User.IsInAnyRole("InstanceModerator", "InstanceAdministrator", "InstanceSeniorAdmin", "InstanceOwner", "WebAdmin", "WebSuperAdmin");
         var result = await _entityService.GetUser(identity, privileged);
         if (result is null) return NotFound();
         return Ok(result);
@@ -50,14 +53,7 @@ public class EntityController : ControllerBase
         if (!result) return NotFound(result);
         return Ok(result);
     }
-    
-    [HttpGet("Online")]
-    public async Task<ActionResult<int>> GetOnlineCount()
-    {
-        var result = await _entityService.GetOnlineCount();
-        return Ok(result);
-    }
-    
+
     [HttpPost("GetToken"), PluginAuthentication]
     public async Task<ActionResult<string>> GetAuthenticationToken([FromQuery] string authToken, [FromBody] EntityDto request)
     {
