@@ -2,98 +2,116 @@
     <DialogContent>
 
         <MudItem xs="12">
-            <MudPaper Elevation="2" Class="pa-4">
-                <MudList Dense="true">
-                    <MudListItem IconColor="Color.Warning" Icon="@Icons.Material.Filled.Report">
-                        <b>Penalty: </b> @Penalty.PenaltyGuid
-                        @switch (Penalty.PenaltyScope)
-                        {
-                            case PenaltyScope.Local:
-                                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Local</MudChip>
-                                break;
-                            case PenaltyScope.Global:
-                                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Global</MudChip>
-                                break;
-                        }
-                        @switch (Penalty.PenaltyType)
-                        {
-                            case PenaltyType.Warn:
-                                <MudChip Variant="Variant.Text" Size="Size.Small">Warn</MudChip>
-                                break;
-                            case PenaltyType.Mute:
-                                <MudChip Variant="Variant.Text" Size="Size.Small">Mute</MudChip>
-                                break;
-                            case PenaltyType.Kick:
-                                <MudChip Variant="Variant.Text" Size="Size.Small">Kick</MudChip>
-                                break;
-                            case PenaltyType.Unban:
-                                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Unban</MudChip>
-                                break;
-                            case PenaltyType.TempBan:
-                                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Tempban</MudChip>
-                                break;
-                            case PenaltyType.Ban:
-                                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Ban</MudChip>
-                                break;
-                        }
-                        @switch (Penalty.PenaltyStatus)
-                        {
-                            case PenaltyStatus.Informational:
-                                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Informational</MudChip>
-                                break;
-                            case PenaltyStatus.Active:
-                                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Success">Active</MudChip>
-                                break;
-                            case PenaltyStatus.Revoked:
-                                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Revoked</MudChip>
-                                break;
-                            case PenaltyStatus.Expired:
-                                <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Expired</MudChip>
-                                break;
-                        }
-                    </MudListItem>
-                    <MudDivider DividerType="DividerType.Inset"/>
-                    <MudListItem Icon="@Icons.Material.Filled.AdminPanelSettings">
-                        <b>Accusing Admin: </b> @Penalty.Admin.Alias.UserName
-                    </MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.Message">
-                        <b>Provided Reason: </b> @Penalty.Reason
-                    </MudListItem>
-                    @if (Penalty.Duration.HasValue)
-                    {
-                        <MudListItem Icon="@Icons.Material.Filled.Timelapse">
-                            <b>Penalty Duration: </b> @Penalty.Duration.Value.Humanize()
-                        </MudListItem>
-                    }
-                    <MudListItem Icon="@Icons.Material.Filled.Storage">
-                        <b>Sending Server: </b> @(Penalty.Instance.InstanceName ?? Penalty.Instance.InstanceGuid.ToString())
-                    </MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.MoreTime">
-                        <b>Time Submitted: </b>
-                        <MudTooltip Arrow="true" Placement="Placement.Top" Text="@Penalty.Submitted.Value.ToString("yyyy-MM-dd HH:mm:ss")">
-                            @(Penalty.Submitted.Value.Humanize())
-                        </MudTooltip>
-                    </MudListItem>
-                </MudList>
+            <MudPaper Elevation="2" Class="pa-4 mb-2">
+                <MudGrid Spacing="2" Class="d-flex flex-row">
+                    <MudItem Class="d-flex flex-1 align-center flex-column">
+                        <MudText Align="Align.Center" Color="Color.Info">Penalty ID</MudText>
+                        <MudSpacer/>
+                        <MudText Align="Align.Center" Class="mud-text-secondary">@Penalty.PenaltyGuid</MudText>
+                        <MudSpacer/>
+                        <MudElement>
+                            @switch (Penalty.PenaltyScope)
+                            {
+                                case PenaltyScope.Local:
+                                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Local</MudChip>
+                                    break;
+                                case PenaltyScope.Global:
+                                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Global</MudChip>
+                                    break;
+                            }
+                            @switch (Penalty.PenaltyType)
+                            {
+                                case PenaltyType.Warn:
+                                    <MudChip Variant="Variant.Text" Size="Size.Small">Warn</MudChip>
+                                    break;
+                                case PenaltyType.Mute:
+                                    <MudChip Variant="Variant.Text" Size="Size.Small">Mute</MudChip>
+                                    break;
+                                case PenaltyType.Kick:
+                                    <MudChip Variant="Variant.Text" Size="Size.Small">Kick</MudChip>
+                                    break;
+                                case PenaltyType.Unban:
+                                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Unban</MudChip>
+                                    break;
+                                case PenaltyType.TempBan:
+                                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Tempban</MudChip>
+                                    break;
+                                case PenaltyType.Ban:
+                                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Ban</MudChip>
+                                    break;
+                            }
+                            @switch (Penalty.PenaltyStatus)
+                            {
+                                case PenaltyStatus.Informational:
+                                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Informational</MudChip>
+                                    break;
+                                case PenaltyStatus.Active:
+                                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Success">Active</MudChip>
+                                    break;
+                                case PenaltyStatus.Revoked:
+                                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Revoked</MudChip>
+                                    break;
+                                case PenaltyStatus.Expired:
+                                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Expired</MudChip>
+                                    break;
+                            }
+                        </MudElement>
+                    </MudItem>
+                    <MudDivider Vertical="true" FlexItem="true" DividerType="DividerType.Middle"/>
+                    <MudItem Class="d-flex flex-1 align-center flex-column">
+                        <MudText Align="Align.Center" Color="Color.Info">Reason</MudText>
+                        <MudSpacer/>
+                        <MudText Align="Align.Center" Class="mud-text-secondary">@Penalty.Reason</MudText>
+                    </MudItem>
+                </MudGrid>
             </MudPaper>
-            @if (Penalty.Evidence is not null)
-            {
-                <MudPaper Elevation="2" Class="pa-4 mt-2 d-flex justify-center">
-                    <iframe src="https://www.youtube.com/embed/@_videoId" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="height:315px"></iframe>
-                </MudPaper>
-            }
-            else
-            {
-                <MudPaper Elevation="2" Class="pa-4 mt-2 d-flex justify-center">
-                    <MudText Align="Align.Center" Class="mud-text-disabled" Typo="Typo.h4">Evidence not submitted!</MudText>
-                </MudPaper>
-            }
-        </MudItem>
 
+            <MudGrid Spacing="2" Justify="Justify.Center">
+                <MudItem Class="flex-1">
+                    <MudPaper Class="d-flex justify-center flex-column align-center align-self-center pa-4" Elevation="2">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Info">@Penalty.Admin.Alias.UserName</MudText>
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">Admin</MudText>
+                    </MudPaper>
+                </MudItem>
+                @if (Penalty.Duration.HasValue)
+                {
+                    <MudItem Class="flex-1">
+                        <MudPaper Class="d-flex justify-center flex-column align-center align-self-center pa-4" Elevation="2">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Info">@Penalty.Duration.Value.Humanize()</MudText>
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary">Duration</MudText>
+                        </MudPaper>
+                    </MudItem>
+                }
+                <MudItem Class="flex-1">
+                    <MudPaper Class="d-flex justify-center flex-column align-center align-self-center pa-4" Elevation="2">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Info">@(Penalty.Instance.InstanceName ?? Penalty.Instance.InstanceGuid.ToString())</MudText>
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">Server</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem Class="flex-1">
+                    <MudPaper Class="d-flex justify-center flex-column align-center align-self-center pa-4" Elevation="2">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Info">
+                            <MudTooltip Arrow="true" Placement="Placement.Top" Text="@Penalty.Submitted.Value.ToString("yyyy-MM-dd HH:mm:ss")">
+                                @(Penalty.Submitted.Value.Humanize().Titleize())
+                            </MudTooltip>
+                        </MudText>
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">Submitted</MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+
+            <MudPaper Elevation="2" Class="pa-4 mt-2 mb-4 d-flex justify-center">
+                @if (Penalty.Evidence is not null)
+                {
+                    <iframe src="https://www.youtube.com/embed/@_videoId" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="height:400px"></iframe>
+                }
+                else
+                {
+                    <MudText Align="Align.Center" Class="mud-text-disabled" Typo="Typo.h4">Evidence not submitted!</MudText>
+                }
+            </MudPaper>
+        </MudItem>
     </DialogContent>
-    <DialogActions>
-        <MudButton Color="Color.Info" Variant="Variant.Filled" OnClick="Cancel">Close</MudButton>
-    </DialogActions>
 </MudDialog>
 
 @code {
@@ -105,8 +123,6 @@
     public PenaltyDto Penalty { get; set; } = null!;
 
     private string? _videoId;
-
-    void Cancel() => MudDialog.Cancel();
 
     protected override Task OnInitializedAsync()
     {

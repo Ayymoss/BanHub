@@ -3,7 +3,7 @@
 
 <PageTitle>Players | Ban Hub</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Players</MudText>
+<MudText Typo="Typo.h4" GutterBottom="true">Players</MudText>
 
 <MudTable ServerData="@(new Func<TableState, Task<TableData<EntityDto>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true" Hover="true" @ref="_table">
     <ToolBarContent>

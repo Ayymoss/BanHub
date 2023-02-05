@@ -19,7 +19,6 @@ public class EntityController : ControllerBase
         _entityService = entityService;
     }
 
-    // [HttpGet("Notes"),  Authorize(Roles = "InstanceModerator, InstanceAdministrator, InstanceSeniorAdmin, InstanceOwner, WebAdmin, WebSuperAdmin")]
     [HttpPost, PluginAuthentication]
     public async Task<ActionResult> CreateOrUpdate([FromQuery] string authToken, [FromBody] EntityDto request)
     {

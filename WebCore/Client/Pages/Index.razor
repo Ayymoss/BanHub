@@ -37,7 +37,7 @@
                                 </a>
                             </MudTd>
                             <MudTd DataLabel="Reason">@context.Reason</MudTd>
-                            <MudTd DataLabel="When?">@context.Submitted.Humanize()</MudTd>
+                            <MudTd DataLabel="When?">@context.Submitted.Humanize().Titleize()</MudTd>
                         </RowTemplate>
                     </MudTable>
                 }
@@ -49,7 +49,7 @@
                   
                         <MudGrid Spacing="2" Justify="Justify.Center">
                             <MudItem Class="flex-1">
-                                <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6 w25" Elevation="2">
+                                <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
                                     <MudText Typo="Typo.subtitle1" Color="Color.Info">@_penalties</MudText>
                                     <MudText Class="mud-text-secondary">Penalties</MudText>
                                 </MudPaper>

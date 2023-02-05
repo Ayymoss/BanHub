@@ -1,18 +1,35 @@
 ﻿@page "/Profile/{Identity}"
 @inject HttpClient Http
 @inject IDialogService DialogService
-@inject NavigationManager NavigationManager
 
-<PageTitle>@_title Profile | Ban Hub</PageTitle>
-
-<MudText Typo="Typo.h3" GutterBottom="true">Profile</MudText>
+<PageTitle>@_title | Profile | Ban Hub</PageTitle>
 
 @if (_entity is null)
 {
-    <MudText Typo="Typo.body1" GutterBottom="true" Color="Color.Info">Identity doesn't exist.</MudText>
+    <MudText Typo="Typo.h4" GutterBottom="true">Profile not found!</MudText>
+    <MudText Typo="Typo.body1" GutterBottom="true" Color="Color.Info">Provided identity doesn't exist.</MudText>
 }
 else
 {
+    <MudText Typo="Typo.h4" GutterBottom="true">
+        Profile - @_entity.Alias.UserName (@_entity.Identity)
+        @if (_entity.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
+        {
+            <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Info">Online</MudChip>
+        }
+        else
+        {
+            <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Warning">Offline</MudChip>
+        }
+        @if (_isGlobalBanned)
+        {
+            <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Error">Globally Banned</MudChip>
+        }
+        else
+        {
+            <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Info">Not Globally Banned</MudChip>
+        }
+    </MudText>
     <MudContainer Style="height: 600px" Class="mt-16 px-8" MaxWidth="MaxWidth.False">
         <MudGrid>
             <MudItem xs="12" sm="6">
@@ -51,7 +68,7 @@ else
                                 <MudTd DataLabel="Scope">@context.PenaltyScope.ToString()</MudTd>
                                 <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
                                 <MudTd DataLabel="View">
-                                    <MudChip Size="Size.Medium" Variant="Variant.Text" Color="Color.Info">Click to View</MudChip>
+                                    <MudChip Size="Size.Medium" Color="Color.Info">Click to View</MudChip>
                                 </MudTd>
                             </RowTemplate>
                         </MudTable>
@@ -61,38 +78,21 @@ else
             <MudItem xs="12" sm="6">
                 <MudGrid>
                     <MudItem xs="12">
-                        <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
 
-                            <MudList Dense="true">
-                                <MudListItem IconColor="Color.Info" Icon="@Icons.Material.Filled.Person">
-                                    <b>Profile Name: </b> @_entity.Alias.UserName (@_entity.Identity)
-                                    @if (_entity.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
-                                    {
-                                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Online</MudChip>
-                                    }
-                                    else
-                                    {
-                                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Offline</MudChip>
-                                    }
-                                    @if (_isGlobalBanned)
-                                    {
-                                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Globally Banned</MudChip>
-                                    }
-                                    else
-                                    {
-                                        <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Not Globally Banned</MudChip>
-                                    }
-                                </MudListItem>
-                                <MudDivider DividerType="DividerType.Inset"/>
-                                <MudListItem Icon="@Icons.Material.Filled.Report">
-                                    <b>Penalty Count: </b> @_entity.Penalties.Count
-                                </MudListItem>
-                                <MudListItem Icon="@Icons.Material.Filled.List">
-                                    <b>Last Connected Server: </b> @_lastConnectedServer
-                                </MudListItem>
-                            </MudList>
-
-                        </MudPaper>
+                        <MudGrid Spacing="2" Justify="Justify.Center">
+                            <MudItem Class="flex-1">
+                                <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
+                                    <MudText Typo="Typo.subtitle1" Color="Color.Info">@_entity.Penalties.Count</MudText>
+                                    <MudText Class="mud-text-secondary">Penalty Count</MudText>
+                                </MudPaper>
+                            </MudItem>
+                            <MudItem Class="flex-1">
+                                <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
+                                    <MudText Typo="Typo.subtitle1" Color="Color.Info">@_lastConnectedServer</MudText>
+                                    <MudText Class="mud-text-secondary">Last Connected Server</MudText>
+                                </MudPaper>
+                            </MudItem>
+                        </MudGrid>
                     </MudItem>
                     @if (_hasNotes)
                     {
@@ -136,24 +136,20 @@ else
     private bool _isGlobalBanned;
     private bool _hasNotes;
     private string? _lastConnectedServer;
-    private string _title = "Not Found |";
+    private string _title = "Not Found";
     private MudTable<PenaltyDto>? _mudTable;
 
     protected override async Task OnInitializedAsync()
     {
         var request = await Http.GetAsync($"api/v2/Entity?identity={Identity}");
-        if (!request.IsSuccessStatusCode)
-        {
-            //NavigationManager.NavigateTo("/404");
-            return;
-        }
+        if (!request.IsSuccessStatusCode) return;
 
         _entity = await request.Content.ReadFromJsonAsync<EntityDto>();
         if (_entity is not null)
         {
-            _isGlobalBanned = _entity.Penalties?.Any(x => x is {PenaltyStatus: PenaltyStatus.Active,PenaltyScope: PenaltyScope.Global}) ?? false;
+            _isGlobalBanned = _entity.Penalties?.Any(x => x is {PenaltyStatus: PenaltyStatus.Active, PenaltyScope: PenaltyScope.Global}) ?? false;
             _hasNotes = _entity.Notes is not null && _entity.Notes.Count is not 0;
-            _title = $"{_entity.Alias.UserName} |";
+            _title = _entity.Alias.UserName;
         }
 
         if (_entity!.Servers is not null && _entity.Servers.Count is not 0)
@@ -173,9 +169,10 @@ else
             {"Penalty", tableRowClickEventArgs.Item}
         };
 
-        var options = new DialogOptions {CloseButton = true, MaxWidth = MaxWidth.Large, CloseOnEscapeKey = true};
+        var options = new DialogOptions {CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Medium, CloseOnEscapeKey = true};
+        var title = $"{tableRowClickEventArgs.Item.PenaltyType} - {_entity!.Alias!.UserName} - {tableRowClickEventArgs.Item.Submitted.Humanize().Titleize()}";
 
-        DialogService.Show<ProfilePenaltyDialog>($"Penalty - {tableRowClickEventArgs.Item.PenaltyGuid}", parameters, options);
+        DialogService.Show<ProfilePenaltyDialog>(title, parameters, options);
     }
 
 }
