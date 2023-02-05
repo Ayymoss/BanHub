@@ -5,93 +5,86 @@
 
 <MudText Typo="Typo.h4" GutterBottom="true">Verified Instances</MudText>
 
-@if (_instances is null)
-{
-    <p>
-        @if (Empty)
-        {
-            <MudText Class="mb-8" Color="Color.Warning">No instances(s) found.</MudText>
-        }
-        else
-        {
-            <MudProgressLinear Color="Color.Success" Rounded="true" Size="Size.Large" Indeterminate="true" />
-        }
-    </p>
-}
-else
-{
-    <MudTable Items="_instances" Dense="true" Hover="true" SortLabel="Sort By" Elevation="2" RowsPerPage="20" Filter="new Func<InstanceDto, bool>(FilterFunc1)">
-        <ToolBarContent>
-            <MudText Typo="Typo.h6">All active instances</MudText>
-            <MudSpacer/>
-            <MudTextField @bind-Value="_search" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-        </ToolBarContent>
-        <HeaderContent>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<InstanceDto, object>(x => x.InstanceGuid)">ID</MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<InstanceDto, object>(x => x.InstanceName)">Instance Name</MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<InstanceDto, object>(x => x.InstanceIp)">Instance IP</MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<InstanceDto, object>(x => x.HeartBeat)">Heartbeat</MudTableSortLabel>
-            </MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="ID">@context.InstanceGuid</MudTd>
-            <MudTd DataLabel="Instance Name">@context.InstanceName</MudTd>
-            <MudTd DataLabel="Instance IP">@context.InstanceIp</MudTd>
-            <MudTd DataLabel="Heartbeat">
-                @if (context.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
-                {
-                    <MudText Typo="Typo.body2" Color="Color.Info">@context.HeartBeat!.Value.ToString("yyyy-MM-dd HH:mm:ss") <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Connected</MudChip></MudText>
-                }
-                else
-                {
-                    <MudText Typo="Typo.body2" Color="Color.Warning">@context.HeartBeat!.Value.ToString("yyyy-MM-dd HH:mm:ss") <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Offline</MudChip></MudText>
-                }
-            </MudTd>
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager PageSizeOptions="new[] {50, 100}"/>
-        </PagerContent>
-    </MudTable>
-}
+<MudTable ServerData="@(new Func<TableState, Task<TableData<InstanceDto>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true" Hover="true" @ref="_table">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">All instances</MudText>
+        <MudSpacer/>
+        <MudTextField T="string" ValueChanged="@(OnSearch)" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Id" T="InstanceDto">ID</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Instance Name" T="InstanceDto">Instance Name</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Instance IP" T="InstanceDto">Instance IP</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Servers" T="InstanceDto">Servers</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="HeartBeat" T="InstanceDto">Heart Beat</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortLabel="Created" T="InstanceDto">Created</MudTableSortLabel>
+        </MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="ID">@context.InstanceGuid</MudTd>
+        <MudTd DataLabel="Instance Name">@(context.InstanceName ?? "<Name Not Set>")</MudTd>
+        <MudTd DataLabel="Instance IP">@context.InstanceIp</MudTd>
+        <MudTd DataLabel="Servers">@context.ServerCount</MudTd>
+        <MudTd DataLabel="HeartBeat">@context.HeartBeat!.Value.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
+        <MudTd DataLabel="Created">@context.Created</MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText Class="mb-8" Color="Color.Warning">No instances found.</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudProgressLinear Color="Color.Success" Rounded="true" Size="Size.Large" Indeterminate="true"/>
+    </LoadingContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new[] {50, 100}"/>
+    </PagerContent>
+</MudTable>
 
-@code {
 
+@code
+{
     [Parameter, SupplyParameterFromQuery(Name = "search")]
     public string? SearchString { get; set; }
 
-    private bool Empty { get; set; }
-    private List<InstanceDto>? _instances;
+    private MudTable<InstanceDto>? _table;
+    private IEnumerable<InstanceDto>? _pagedData;
+    private string? _searchString;
+    private int _totalItems;
 
-    private string _search = string.Empty;
-
-    protected override async Task OnInitializedAsync()
+    private async Task<TableData<InstanceDto>> ServerReload(TableState state)
     {
-        _instances = await Http.GetFromJsonAsync<List<InstanceDto>>("/api/v2/Instance/All");
-        if (_instances is null || !_instances.Any()) Empty = true;
-        if (SearchString is not null) _search = SearchString;
+        var paginationQuery = new PaginationDto
+        {
+            Page = state.Page,
+            PageSize = state.PageSize,
+            SortLabel = state.SortLabel,
+            SortDirection = (int)state.SortDirection,
+            SearchString = _searchString
+        };
+
+        var statistics = await Http.GetFromJsonAsync<StatisticDto>("/api/v2/Statistic");
+        var data = await Http.PostAsJsonAsync("/api/v2/Instance/All", paginationQuery);
+        var result = await data.Content.ReadFromJsonAsync<List<InstanceDto>>();
+
+        _pagedData = result!.ToArray();
+        _totalItems = statistics!.PenaltyCount!.Value;
+
+        return new TableData<InstanceDto> {TotalItems = _totalItems, Items = _pagedData};
     }
 
-    private bool FilterFunc1(InstanceDto element) => FilterFunc(element, _search);
-
-    private bool FilterFunc(InstanceDto element, string searchString)
+    private void OnSearch(string text)
     {
-        if (string.IsNullOrWhiteSpace(searchString))
-            return true;
-        if (element.InstanceGuid.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (element.InstanceName!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (element.InstanceIp!.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        return false;
+        _searchString = text;
+        _table!.ReloadServerData();
     }
-
-
 }

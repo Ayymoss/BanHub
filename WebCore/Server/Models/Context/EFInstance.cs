@@ -28,6 +28,11 @@ public class EFInstance
     /// The last the the instance has replied
     /// </summary>
     public required DateTimeOffset HeartBeat { get; set; }
+    
+    /// <summary>
+    /// When the instance was created
+    /// </summary>
+    public required DateTimeOffset Created { get; set; }
 
     /// <summary>
     /// The IW4MAdmin provided API Key

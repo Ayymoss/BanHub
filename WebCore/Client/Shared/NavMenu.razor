@@ -4,10 +4,14 @@
         <MudNavLink Href="Players" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Players</MudNavLink>
         <MudNavLink Href="Penalties" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Report">Penalties</MudNavLink>
         <MudNavLink Href="Instances" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Storage">Instances</MudNavLink>
+        <AuthorizeView>
+            <Authorized>
+                <MudNavLink Href="Profile" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Person">My Profile</MudNavLink>
+            </Authorized>
+        </AuthorizeView>
     </MudNavMenu>
     <MudSpacer/>
     <MudElement Class="d-flex flex-column pa-4">
         <LoginComponent/>
     </MudElement>
 </MudPaper>
-

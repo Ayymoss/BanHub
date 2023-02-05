@@ -7,7 +7,6 @@ public interface IInstanceService
 {
     Task<(ControllerEnums.ProfileReturnState, string)> CreateOrUpdate(InstanceDto request, string? requestIpAddress);
     Task<(ControllerEnums.ProfileReturnState, InstanceDto?)> GetInstance(string guid);
-    Task<(ControllerEnums.ProfileReturnState, List<InstanceDto>?)> GetInstances();
+    Task<List<InstanceDto>> Pagination(PaginationDto pagination);
     Task<ControllerEnums.ProfileReturnState> IsInstanceActive(string instanceGuid);
-    Task<int> GetInstanceCount();
 }

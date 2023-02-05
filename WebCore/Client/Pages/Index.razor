@@ -28,7 +28,7 @@
                             <MudTh>When?</MudTh>
                         </HeaderContent>
                         <RowTemplate>
-                            <MudTd DataLabel="Instance">@context.Instance.InstanceName</MudTd>
+                            <MudTd DataLabel="Instance">@(context.Instance.InstanceName ?? context.Instance.InstanceGuid.ToString())</MudTd>
                             <MudTd DataLabel="Target">
                                 <a href="/Profile/@context.Target!.Identity">
                                     <MudText Typo="Typo.body2" Color="Color.Info">

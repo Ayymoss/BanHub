@@ -20,7 +20,12 @@ public class InstanceDto
     /// <summary>
     /// The last the the instance has replied
     /// </summary>
-    public DateTimeOffset? HeartBeat { get; set; }
+    public DateTimeOffset? HeartBeat { get; set; } 
+    
+    /// <summary>
+    /// When the instance was created
+    /// </summary>
+    public DateTimeOffset? Created { get; set; }
     
     /// <summary>
     /// The IW4MAdmin provided API Key
@@ -31,6 +36,11 @@ public class InstanceDto
     /// State whether the server can upload bans
     /// </summary>
     public bool? Active { get; set; }
+    
+    /// <summary>
+    /// Count of child servers
+    /// </summary>
+    public int? ServerCount { get; set; }
     
     /// <summary>
     /// The list of servers the instance has

@@ -67,15 +67,10 @@ public class InstanceController : ControllerBase
         };
     }
     
-    [HttpGet("All")]
-    public async Task<ActionResult<InstanceDto>> GetInstances()
+    [HttpPost("All")]
+    public async Task<ActionResult<IEnumerable<InstanceDto>>> GetInstances([FromBody] PaginationDto pagination)
     {
-        var result = await _instanceService.GetInstances();
-        return result.Item1 switch
-        {
-            ControllerEnums.ProfileReturnState.Ok => Ok(result.Item2),
-            ControllerEnums.ProfileReturnState.NotFound => NoContent(),
-            _ => BadRequest() // Should never happen
-        };
+        return Ok(await _instanceService.Pagination(pagination));
+
     }
 }

@@ -37,7 +37,8 @@ public class AuthController : ControllerBase
             {
                 UserName = x.CurrentAlias.Alias.UserName,
                 WebRole = x.WebRole.ToString(),
-                InstanceRole = x.InstanceRole.ToString()
+                InstanceRole = x.InstanceRole.ToString(),
+                Identity = x.Identity
             }).FirstOrDefaultAsync();
 
         if (user is null) return Unauthorized("User is invalid.");
@@ -51,6 +52,7 @@ public class AuthController : ControllerBase
             new(ClaimTypes.Name, user.UserName),
             new(ClaimTypes.Role, user.WebRole),
             new(ClaimTypes.Role, user.InstanceRole),
+            new(ClaimTypes.NameIdentifier, user.Identity),
             new("UserId", token.EntityId.ToString())
         };
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -76,7 +78,8 @@ public class AuthController : ControllerBase
             {
                 UserName = f.CurrentAlias.Alias.UserName,
                 WebRole = f.WebRole.ToString(),
-                InstanceRole = f.InstanceRole.ToString()
+                InstanceRole = f.InstanceRole.ToString(),
+                Identity = f.Identity
             }).FirstOrDefaultAsync();
 
         if (user is null) return BadRequest("User is invalid.");

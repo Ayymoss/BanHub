@@ -1,10 +1,10 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Enums;
 using BanHub.WebCore.Server.Interfaces;
-using BanHub.WebCore.Server.Models;
 using BanHub.WebCore.Server.Models.Context;
 using BanHub.WebCore.Shared.DTOs;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor;
 
 namespace BanHub.WebCore.Server.Services;
 
@@ -45,6 +45,7 @@ public class InstanceService : IInstanceService
                 ApiKey = request.ApiKey!.Value,
                 Active = false,
                 HeartBeat = DateTimeOffset.UtcNow,
+                Created = DateTimeOffset.UtcNow
             });
 
             await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.InstanceCount);
@@ -92,23 +93,43 @@ public class InstanceService : IInstanceService
         });
     }
 
-    public async Task<(ControllerEnums.ProfileReturnState, List<InstanceDto>?)> GetInstances()
+    public async Task<List<InstanceDto>> Pagination(PaginationDto pagination)
     {
-        var instances = await _context.Instances
-            .Where(active => active.Active)
+        var query = _context.Instances.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(pagination.SearchString))
+        {
+            query = query.Where(search =>
+                EF.Functions.ILike(search.InstanceGuid.ToString(), $"%{pagination.SearchString}%") ||
+                EF.Functions.ILike(search.InstanceName ?? "Unknown", $"%{pagination.SearchString}%") ||
+                EF.Functions.ILike(search.InstanceIp, $"%{pagination.SearchString}%"));
+        }
+
+        query = pagination.SortLabel switch
+        {
+            "Id" => query.OrderByDirection((SortDirection)pagination.SortDirection!, key => key.Id),
+            "Instance Name" => query.OrderByDirection((SortDirection)pagination.SortDirection!, key => key.InstanceName),
+            "Instance IP" => query.OrderByDirection((SortDirection)pagination.SortDirection!, key => key.InstanceIp),
+            "Heart Beat" => query.OrderByDirection((SortDirection)pagination.SortDirection!, key => key.HeartBeat),
+            "Created" => query.OrderByDirection((SortDirection)pagination.SortDirection!, key => key.Created),
+            "Servers" => query.OrderByDirection((SortDirection)pagination.SortDirection!, key => key.ServerConnections.Count),
+            _ => query
+        };
+
+        var pagedData = await query
+            .Skip(pagination.Page!.Value * pagination.PageSize!.Value)
+            .Take(pagination.PageSize.Value)
             .Select(instance => new InstanceDto
             {
                 InstanceGuid = instance.InstanceGuid,
                 InstanceIp = instance.InstanceIp,
                 InstanceName = instance.InstanceName,
-                HeartBeat = instance.HeartBeat
+                HeartBeat = instance.HeartBeat,
+                Created = instance.Created,
+                ServerCount = instance.ServerConnections.Count
             }).ToListAsync();
 
-        instances = instances.OrderByDescending(x => x.HeartBeat).ToList();
-
-        return instances.Count is 0
-            ? (ControllerEnums.ProfileReturnState.NotFound, null) 
-            : (ControllerEnums.ProfileReturnState.Ok, instances);
+        return pagedData;
     }
 
     public async Task<ControllerEnums.ProfileReturnState> IsInstanceActive(string instanceGuid)
@@ -124,10 +145,5 @@ public class InstanceService : IInstanceService
         }
 
         return result.Active ? ControllerEnums.ProfileReturnState.Accepted : ControllerEnums.ProfileReturnState.Unauthorized;
-    }
-
-    public async Task<int> GetInstanceCount()
-    {
-        return await _context.Instances.Where(x => x.Active).CountAsync();
     }
 }

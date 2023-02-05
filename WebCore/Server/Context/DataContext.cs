@@ -91,7 +91,8 @@ public class DataContext : DbContext
             InstanceName = "Seed Instance",
             HeartBeat = DateTimeOffset.UtcNow,
             ApiKey = Guid.NewGuid(),
-            Active = true
+            Active = true,
+            Created = DateTimeOffset.UtcNow,
         };
 
         var infraction = new EFPenalty

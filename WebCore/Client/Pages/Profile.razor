@@ -1,6 +1,9 @@
-﻿@page "/Profile/{Identity}"
+﻿@page "/Profile"
+@page "/Profile/{Identity}"
+@using System.Security.Claims
 @inject HttpClient Http
 @inject IDialogService DialogService
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>@_title | Profile | Ban Hub</PageTitle>
 
@@ -130,7 +133,7 @@ else
 @code
 {
     [Parameter]
-    public string Identity { get; set; } = null!;
+    public string? Identity { get; set; }
 
     private EntityDto? _entity;
     private bool _isGlobalBanned;
@@ -141,6 +144,12 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (Identity is null)
+        {
+            var user = (await (AuthStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
+            Identity = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        }
+
         var request = await Http.GetAsync($"api/v2/Entity?identity={Identity}");
         if (!request.IsSuccessStatusCode) return;
 
