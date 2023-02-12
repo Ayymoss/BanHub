@@ -30,7 +30,7 @@ public class EntityEndpoint
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine($"[{Plugin.PluginName}] Error getting entity: {e.Message}");
+            Console.WriteLine($"[{ConfigurationModel.Name}] Error getting entity: {e.Message}");
         }
 
         return null;
@@ -47,7 +47,7 @@ public class EntityEndpoint
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine($"[{Plugin.PluginName}] Error getting token: {e.Message}");
+            Console.WriteLine($"[{ConfigurationModel.Name}] Error getting token: {e.Message}");
         }
 
         return null;
@@ -61,16 +61,16 @@ public class EntityEndpoint
 
             if (!response.IsSuccessStatusCode && _configurationModel.DebugMode)
             {
-                Console.WriteLine($"\n[{Plugin.PluginName}] Error posting evidence {entity.Identity}\nSC: {response.StatusCode}\n" +
+                Console.WriteLine($"\n[{ConfigurationModel.Name}] Error posting evidence {entity.Identity}\nSC: {response.StatusCode}\n" +
                                   $"RP: {response.ReasonPhrase}\nB: {await response.Content.ReadAsStringAsync()}\nJSON: {JsonSerializer.Serialize(entity)}\n" +
-                                  $"[{Plugin.PluginName}] End of error");
+                                  $"[{ConfigurationModel.Name}] End of error");
             }
 
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine($"[{Plugin.PluginName}] Error updating entity: {e.Message}");
+            Console.WriteLine($"[{ConfigurationModel.Name}] Error updating entity: {e.Message}");
         }
 
         return false;
@@ -88,7 +88,7 @@ public class EntityEndpoint
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine($"[{Plugin.PluginName}] Error sending instance heartbeat: {e.Message}");
+            Console.WriteLine($"[{ConfigurationModel.Name}] Error sending instance heartbeat: {e.Message}");
         }
 
         return false;

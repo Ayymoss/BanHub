@@ -29,16 +29,16 @@ public class HeartBeatEndpoint
 
             if (!response.IsSuccessStatusCode && _configurationModel.DebugMode)
             {
-                Console.WriteLine($"\n[{Plugin.PluginName}] Error posting instance {instance.InstanceGuid}\nSC: {response.StatusCode}\n" +
+                Console.WriteLine($"\n[{ConfigurationModel.Name}] Error posting instance {instance.InstanceGuid}\nSC: {response.StatusCode}\n" +
                                   $"RP: {response.ReasonPhrase}\nB: {await response.Content.ReadAsStringAsync()}\nJSON: {JsonSerializer.Serialize(instance)}\n" +
-                                  $"[{Plugin.PluginName}] End of error");
+                                  $"[{ConfigurationModel.Name}] End of error");
             }
 
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine($"[{Plugin.PluginName}] Error sending instance heartbeat: {e.Message}");
+            Console.WriteLine($"[{ConfigurationModel.Name}] Error sending instance heartbeat: {e.Message}");
         }
 
         return false;
@@ -53,16 +53,16 @@ public class HeartBeatEndpoint
 
             if (!response.IsSuccessStatusCode && _configurationModel.DebugMode)
             {
-                Console.WriteLine($"\n[{Plugin.PluginName}] Error posting entity {entity.Count}\nSC: {response.StatusCode}\n" +
+                Console.WriteLine($"\n[{ConfigurationModel.Name}] Error posting entity {entity.Count}\nSC: {response.StatusCode}\n" +
                                   $"RP: {response.ReasonPhrase}\nB: {await response.Content.ReadAsStringAsync()}\nJSON: {JsonSerializer.Serialize(entity)}\n" +
-                                  $"[{Plugin.PluginName}] End of error");
+                                  $"[{ConfigurationModel.Name}] End of error");
             }
 
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine($"[{Plugin.PluginName}] Error sending entity heartbeat: {e.Message}");
+            Console.WriteLine($"[{ConfigurationModel.Name}] Error sending entity heartbeat: {e.Message}");
         }
 
         return false;

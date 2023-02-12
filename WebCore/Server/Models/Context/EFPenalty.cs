@@ -50,7 +50,7 @@ public class EFPenalty
     /// The AntiCheat detection for the infraction
     /// </summary>
     public string? AntiCheatReason { get; set; }
-    
+
     /// <summary>
     /// The uploaded evidence for the infraction
     /// </summary>

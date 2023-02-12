@@ -1,4 +1,5 @@
-﻿using BanHub.Enums;
+﻿using System.Text.Json.Serialization;
+using BanHub.Enums;
 
 namespace BanHub.Models;
 
@@ -7,7 +8,7 @@ public class PenaltyDto
     /// <summary>
     /// The type of infraction
     /// </summary>
-    public PenaltyType? PenaltyType { get; set; }
+    [JsonConverter(typeof(JsonStringEnumConverter))] public PenaltyType? PenaltyType { get; set; }
 
     /// <summary>
     /// The state of the infraction

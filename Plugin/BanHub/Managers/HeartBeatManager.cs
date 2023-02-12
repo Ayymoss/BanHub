@@ -11,23 +11,13 @@ public class HeartBeatManager
     private readonly InstanceDto _instanceMeta;
     private readonly HeartBeatEndpoint _heartBeatEndpoint;
 
-    public HeartBeatManager(ConfigurationModel configurationModel, InstanceDto instanceMeta, HeartBeatEndpoint heartBeatEndpoint)
+    public HeartBeatManager(InstanceDto instanceMeta, HeartBeatEndpoint heartBeatEndpoint)
     {
         _instanceMeta = instanceMeta;
         _heartBeatEndpoint = heartBeatEndpoint;
     }
-
-    public void HeartbeatTimer()
-    {
-        var timer = new Timer();
-        timer.Interval = 240_000;
-        timer.AutoReset = true;
-        timer.Elapsed += InstanceHeartBeat;
-        timer.Elapsed += ClientHeartBeat;
-        timer.Enabled = true;
-    }
-
-    private async void InstanceHeartBeat(object? sender, ElapsedEventArgs e)
+    
+    public async Task InstanceHeartBeat()
     {
         try
         {
@@ -39,7 +29,7 @@ public class HeartBeatManager
         }
     }
 
-    private async void ClientHeartBeat(object? sender, ElapsedEventArgs e)
+    public async Task ClientHeartBeat()
     {
         if (!Plugin.InstanceActive) return;
         try

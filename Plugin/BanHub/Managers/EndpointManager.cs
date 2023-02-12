@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SharedLibraryCore;
 using SharedLibraryCore.Database.Models;
+using SharedLibraryCore.Interfaces;
 
 namespace BanHub.Managers;
 
@@ -23,18 +24,21 @@ public class EndpointManager
     private readonly PenaltyEndpoint _penalty;
     private readonly ServerEndpoint _server;
 
-    public EndpointManager(IServiceProvider serviceProvider, ConfigurationModel configurationModel, InstanceDto instanceMeta)
+    public EndpointManager(IServiceProvider serviceProvider, ConfigurationModel configurationModel, InstanceDto instanceMeta,
+        EntityEndpoint entityEndpoint, InstanceEndpoint instanceEndpoint, PenaltyEndpoint penaltyEndpoint, ServerEndpoint serverEndpoint)
     {
         _configurationModel = configurationModel;
         _instanceMeta = instanceMeta;
-        _entity = new EntityEndpoint(configurationModel);
-        _instance = new InstanceEndpoint(configurationModel);
-        _penalty = new PenaltyEndpoint(configurationModel);
-        _server = new ServerEndpoint(configurationModel);
+        _entity = entityEndpoint;
+        _instance = instanceEndpoint;
+        _penalty = penaltyEndpoint;
+        _server = serverEndpoint;
         _logger = serviceProvider.GetRequiredService<ILogger<EndpointManager>>();
     }
 
     private static string GetIdentity(EFClient client) => $"{client.GuidString}:{client.GameName.ToString()}";
+    public async Task<bool> UpdateInstance(InstanceDto instance) => await _instance.PostInstance(instance);
+    public async Task<bool> IsInstanceActive(InstanceDto instance) => await _instance.IsInstanceActive(instance.InstanceGuid);
 
     private EntityDto ClientToEntity(EFClient client)
     {
@@ -55,20 +59,21 @@ public class EndpointManager
                 "SeniorAdmin" => InstanceRole.InstanceSeniorAdmin,
                 "Owner" => InstanceRole.InstanceOwner,
                 _ => InstanceRole.InstanceUser
-            } 
+            }
         };
 
         if (!client.IsIngame) return entity;
 
-        var server = new ServerDto
+        var server = (IGameServer)client.CurrentServer;
+        var serverDto = new ServerDto
         {
-            ServerId = $"{client.CurrentServer.IP}:{client.CurrentServer.Port}",
-            ServerName = client.CurrentServer.Hostname,
-            ServerIp = client.CurrentServer.IP,
-            ServerPort = client.CurrentServer.Port
+            ServerId = server.Id,
+            ServerName = server.ServerName,
+            ServerIp = server.ListenAddress,
+            ServerPort = server.ListenPort
         };
 
-        entity.Server = server;
+        entity.Server = serverDto;
         return entity;
     }
 
@@ -81,7 +86,6 @@ public class EndpointManager
     public async Task OnJoin(EFClient client)
     {
         var entity = ClientToEntity(client);
-
         var returnedEntity = await _entity.GetEntity(entity.Identity);
 
         // Action any penalties
@@ -111,23 +115,12 @@ public class EndpointManager
     private void ProcessEntity(EntityDto entity, EFClient client)
     {
         var globalBan = entity.Penalties?
-            .Any(x => x.PenaltyType is PenaltyType.Ban && x.PenaltyScope is PenaltyScope.Global &&
-                      x.PenaltyStatus == PenaltyStatus.Active) ?? false;
+            .Any(x => x is {PenaltyType: PenaltyType.Ban, PenaltyScope: PenaltyScope.Global, PenaltyStatus: PenaltyStatus.Active}) ?? false;
 
-        if (entity.HasIdentityBan || globalBan && client.IsIngame)
-        {
-            client.Kick("^1Globally banned!^7\nBanHub.gg", Utilities.IW4MAdminClient(client.CurrentServer));
-        }
-    }
-
-    public async Task<bool> UpdateInstance(InstanceDto instance)
-    {
-        return await _instance.PostInstance(instance);
-    }
-
-    public async Task<bool> IsInstanceActive(InstanceDto instance)
-    {
-        return await _instance.IsInstanceActive(instance.InstanceGuid);
+        if (!entity.HasIdentityBan && (!globalBan || !client.IsIngame)) return;
+        
+        client.Kick("^1Globally banned!^7\nBanHub.gg", Utilities.IW4MAdminClient(client.CurrentServer));
+        _logger.LogInformation("{Name} globally banned. Referenced? {Association}", client.CleanedName, entity.HasIdentityBan);
     }
 
     public void RemoveFromProfiles(EFClient client)
@@ -142,11 +135,12 @@ public class EndpointManager
         _logger.LogError("Failed to remove {Name} from profiles", client.CleanedName);
     }
 
-    public async Task<(bool, Guid?)> NewPenalty(PenaltyType penaltyType, EFClient origin, EFClient target,
+    public async Task<(bool, Guid?)> NewPenalty(string sourcePenaltyType, EFClient origin, EFClient target,
         string reason, TimeSpan? duration = null, PenaltyScope? scope = null, string? evidence = null)
     {
-        if (!Plugin.InstanceActive) return (false, null);
-        if (penaltyType is PenaltyType.Kick or PenaltyType.Warn && origin.ClientId == 1) return (false, null);
+        var parsedPenaltyType = Enum.TryParse<PenaltyType>(sourcePenaltyType, out var penaltyType);
+        if (!parsedPenaltyType || !Plugin.InstanceActive) return (false, null);
+        if (penaltyType is PenaltyType.Kick or PenaltyType.Warning && origin.ClientId == 1) return (false, null);
 
         var antiCheatReason = origin.AdministeredPenalties?.FirstOrDefault()?.AutomatedOffense;
         var globalAntiCheatBan = false;
@@ -166,8 +160,8 @@ public class EndpointManager
             PenaltyScope = globalAntiCheatBan ? PenaltyScope.Global : scope ?? PenaltyScope.Local,
             Evidence = evidence,
             Reason = globalAntiCheatBan ? "AntiCheat Detection" : reason,
-            AntiCheatReason = antiCheatReason ?? null,
-            Duration = duration,
+            AntiCheatReason = antiCheatReason,
+            Duration = duration is not null && duration.Value.TotalSeconds > 1 ? duration : null,
             Instance = _instanceMeta,
             Admin = adminEntity,
             Target = targetEntity
@@ -178,7 +172,7 @@ public class EndpointManager
         {
             var guid = result.Item1 ? $"GUID: {result.Item2.ToString()}" : "Error creating penalty!";
             Console.WriteLine(
-                $"[{Plugin.PluginName} - {DateTimeOffset.UtcNow:HH:mm:ss}] {penaltyType} ({penaltyDto.PenaltyScope}): " +
+                $"[{ConfigurationModel.Name} - {DateTimeOffset.UtcNow:HH:mm:ss}] {penaltyType} ({penaltyDto.PenaltyScope}): " +
                 $"{origin.CleanedName} -> {target.CleanedName} ({penaltyDto.Reason}) - {guid}");
         }
 

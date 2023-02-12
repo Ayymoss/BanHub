@@ -86,7 +86,7 @@ else
                             <MudItem Class="flex-1">
                                 <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
                                     <MudText Typo="Typo.subtitle1" Color="Color.Info">@_entity.Penalties.Count</MudText>
-                                    <MudText Class="mud-text-secondary">Penalty Count</MudText>
+                                    <MudText Class="mud-text-secondary">Penalties</MudText>
                                 </MudPaper>
                             </MudItem>
                             <MudItem Class="flex-1">
@@ -163,7 +163,8 @@ else
 
         if (_entity!.Servers is not null && _entity.Servers.Count is not 0)
         {
-            _lastConnectedServer = _entity.Servers.MaxBy(x => x.Connected)?.ServerName ?? "Error";
+            var server = _entity.Servers.MaxBy(x => x.Connected);
+            _lastConnectedServer = $"({server?.Instance?.InstanceName ?? "NoSetName"}) {server?.ServerName ?? "Error"}";
         }
         else
         {
@@ -171,7 +172,7 @@ else
         }
     }
 
-    private void RowClickEvent(TableRowClickEventArgs<PenaltyDto> tableRowClickEventArgs)
+    private async Task RowClickEvent(TableRowClickEventArgs<PenaltyDto> tableRowClickEventArgs)
     {
         var parameters = new DialogParameters
         {
@@ -181,7 +182,15 @@ else
         var options = new DialogOptions {CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Medium, CloseOnEscapeKey = true};
         var title = $"{tableRowClickEventArgs.Item.PenaltyType} - {_entity!.Alias!.UserName} - {tableRowClickEventArgs.Item.Submitted.Humanize().Titleize()}";
 
-        DialogService.Show<ProfilePenaltyDialog>(title, parameters, options);
+        var dialog = await DialogService.ShowAsync<ProfilePenaltyDialog>(title, parameters, options);
+        var result = await dialog.Result;
+
+        if (result?.Data is PenaltyDto penalty)
+        {
+            _entity.Penalties!.Remove(penalty);
+            StateHasChanged();
+        }
     }
+
 
 }

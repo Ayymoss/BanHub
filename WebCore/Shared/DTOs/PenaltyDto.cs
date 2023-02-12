@@ -1,4 +1,5 @@
-﻿using BanHub.WebCore.Shared.Enums;
+﻿using System.Text.Json.Serialization;
+using BanHub.WebCore.Shared.Enums;
 
 namespace BanHub.WebCore.Shared.DTOs;
 
@@ -7,6 +8,7 @@ public class PenaltyDto
     /// <summary>
     /// The type of infraction
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public PenaltyType? PenaltyType { get; set; }
 
     /// <summary>
@@ -33,7 +35,7 @@ public class PenaltyDto
     /// The date of the infraction
     /// </summary>
     public DateTimeOffset? Submitted { get; set; }
-    
+
     /// <summary>
     /// The provided reason for the infraction
     /// </summary>
@@ -50,9 +52,14 @@ public class PenaltyDto
     public string? Evidence { get; set; }
 
     /// <summary>
+    /// For privileged users, the reason for the infraction deletion
+    /// </summary>
+    public string? DeletionReason { get; set; }
+
+    /// <summary>
     /// The admin GUID who issued the infraction
     /// </summary>
-    public EntityDto? Admin { get; set; } 
+    public EntityDto? Admin { get; set; }
 
     /// <summary>
     /// Information related to the player the infraction was issued to
@@ -62,5 +69,5 @@ public class PenaltyDto
     /// <summary>
     /// Information related to the server the infraction was issued from
     /// </summary>
-    public InstanceDto? Instance { get; set; } 
+    public InstanceDto? Instance { get; set; }
 }

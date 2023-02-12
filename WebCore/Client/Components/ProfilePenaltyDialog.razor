@@ -1,4 +1,6 @@
-﻿<MudDialog>
+﻿@inject IDialogService DialogService
+
+<MudDialog>
     <DialogContent>
 
         <MudItem xs="12">
@@ -21,7 +23,7 @@
                             }
                             @switch (Penalty.PenaltyType)
                             {
-                                case PenaltyType.Warn:
+                                case PenaltyType.Warning:
                                     <MudChip Variant="Variant.Text" Size="Size.Small">Warn</MudChip>
                                     break;
                                 case PenaltyType.Mute:
@@ -101,7 +103,7 @@
             </MudGrid>
 
             <MudPaper Elevation="2" Class="pa-4 mt-2 mb-4 d-flex justify-center">
-                @if (Penalty.Evidence is not null)
+                @if (Penalty.Evidence is not null && _videoId is not null)
                 {
                     <iframe src="https://www.youtube.com/embed/@_videoId" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="height:400px"></iframe>
                 }
@@ -112,6 +114,16 @@
             </MudPaper>
         </MudItem>
     </DialogContent>
+    <DialogActions>
+        <MudElement Class="mr-4 mb-4 d-flex align-content-center">
+            <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="Cancel">Close</MudButton>
+            <AuthorizeView Roles="WebAdmin, WebSuperAdmin">
+                <Authorized>
+                    <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" OnClick="OpenConfirmDialog">Delete Penalty</MudButton>
+                </Authorized>
+            </AuthorizeView>
+        </MudElement>
+    </DialogActions>
 </MudDialog>
 
 @code {
@@ -124,15 +136,46 @@
 
     private string? _videoId;
 
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task OpenConfirmDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            {"Penalty", Penalty}
+        };
+
+        var options = new DialogOptions {CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Small, CloseOnEscapeKey = true};
+        var dialog = await DialogService.ShowAsync<ProfilePenaltyConfirmDialog>("Delete Penalty?", parameters, options);
+        var result = await dialog.Result;
+
+        if (result?.Data is not null)
+        {
+            MudDialog.Close(DialogResult.Ok(result.Data));
+        }
+    }
+
     protected override Task OnInitializedAsync()
     {
         if (Penalty.Evidence is null) return base.OnInitializedAsync();
 
-        var uri = new Uri(Penalty.Evidence);
+        Uri? uri;
+
+        try
+        {
+            uri = new Uri(Penalty.Evidence);
+        }
+        catch
+        {
+            return base.OnInitializedAsync();
+        }
+
         var query = HttpUtility.ParseQueryString(uri.Query);
         _videoId = query["v"];
 
         return base.OnInitializedAsync();
     }
+
+
 
 }

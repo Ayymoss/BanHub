@@ -9,9 +9,9 @@ public class StatisticsTracking
     public int Servers;
     public int Instances;
     public int Entities;
-    public ICollection<StatisticBan> BansDay { get; set; } = null!;
+    public List<StatisticBan> BansDay { get; set; } = new();
     public int BansDayCount { get; set; }
-    public ICollection<StatisticUsersOnline> UsersOnline { get; set; } = null!;
+    public List<StatisticUsersOnline> UsersOnline { get; set; } = new();
     public int UsersOnlineCount { get; set; }
     public bool Loaded { get; set; }
 }

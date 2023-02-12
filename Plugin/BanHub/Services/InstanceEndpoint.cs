@@ -30,9 +30,9 @@ public class InstanceEndpoint
             
             if (!response.IsSuccessStatusCode && _configurationModel.DebugMode)
             {
-                Console.WriteLine($"\n[{Plugin.PluginName}] Error posting instance {instance.InstanceGuid}\nSC: {response.StatusCode}\n" +
+                Console.WriteLine($"\n[{ConfigurationModel.Name}] Error posting instance {instance.InstanceGuid}\nSC: {response.StatusCode}\n" +
                                   $"RP: {response.ReasonPhrase}\nB: {await response.Content.ReadAsStringAsync()}\nJSON: {JsonSerializer.Serialize(instance)}\n" +
-                                  $"[{Plugin.PluginName}] End of error");
+                                  $"[{ConfigurationModel.Name}] End of error");
             }
             
             return response.IsSuccessStatusCode;
@@ -40,7 +40,7 @@ public class InstanceEndpoint
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine($"[{Plugin.PluginName}] Error posting instance: {e.Message}");
+            Console.WriteLine($"[{ConfigurationModel.Name}] Error posting instance: {e.Message}");
         }
 
         return false;
@@ -57,7 +57,7 @@ public class InstanceEndpoint
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine($"[{Plugin.PluginName}] Error getting instance state: {e.Message}");
+            Console.WriteLine($"[{ConfigurationModel.Name}] Error getting instance state: {e.Message}");
         }
 
         return false;

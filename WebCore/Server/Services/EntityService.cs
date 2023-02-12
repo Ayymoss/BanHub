@@ -55,13 +55,19 @@ public class EntityService : IEntityService
                     }).ToList(),
                 Servers = profile.ServerConnections
                     .Where(x => x.Entity.Identity == identity)
+                    .OrderBy(x => x.Connected)
+                    .Take(10)
                     .Select(server => new ServerDto
                     {
                         ServerId = server.Server.ServerId,
                         ServerName = server.Server.ServerName,
                         ServerIp = server.Server.ServerIp,
                         ServerPort = server.Server.ServerPort,
-                        Connected = server.Connected
+                        Connected = server.Connected,
+                        Instance = new InstanceDto
+                        {
+                            InstanceName = server.Server.Instance.InstanceName
+                        }
                     }).ToList(),
                 Penalties = profile.Penalties
                     .Where(inf => inf.Target.Identity == identity)
@@ -250,7 +256,7 @@ public class EntityService : IEntityService
             _context.ServerConnections.Add(server);
         }
 
-        if (user is null) await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.EntityCount);
+        if (user is null) await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.EntityCount, ControllerEnums.StatisticTypeAction.Add);
 
         entity.CurrentAlias = currentAlias;
         _context.CurrentAliases.Add(currentAlias);

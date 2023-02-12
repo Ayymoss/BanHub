@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="RaidMax.IW4MAdmin.SharedLibraryCore" Version="2022.10.13.1" />
+        <ProjectReference Include="..\..\..\..\_Cloned\IW4M-Admin\SharedLibraryCore\SharedLibraryCore.csproj" />
     </ItemGroup>
     
 </Project>

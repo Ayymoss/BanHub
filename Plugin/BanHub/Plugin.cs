@@ -5,200 +5,179 @@ using BanHub.Models;
 using BanHub.Services;
 using Microsoft.Extensions.DependencyInjection;
 using SharedLibraryCore;
+using SharedLibraryCore.Configuration;
+using SharedLibraryCore.Events.Management;
+using SharedLibraryCore.Events.Server;
 using SharedLibraryCore.Interfaces;
+using SharedLibraryCore.Interfaces.Events;
 
 namespace BanHub;
 
-// Credit and inspiration: https://forums.mcbans.com/
-// https://forums.mcbans.com/wiki/how-the-system-works/
-
-public class Plugin : IPlugin
+public class Plugin : IPluginV2
 {
-    public const string PluginName = "Ban Hub";
-    public string Name => PluginName;
-    public float Version => 20230108f;
+    public string Name => "Ban Hub";
+    public string Version => Utilities.GetVersionAsString();
     public string Author => "Amos";
 
     public static bool InstanceActive { get; set; }
     public static EndpointManager EndpointManager { get; set; } = null!;
-    private InstanceDto InstanceMeta { get; set; }
     public static TranslationStrings Translations { get; set; } = null!;
-    public static List<int> WhitelistedClientIds { get; set; } = null!;
-    private readonly HeartBeatManager _heartBeatManager;
-    private static bool _pluginEnabled;
-    private readonly IConfigurationHandler<ConfigurationModel> _configurationHandler;
+    private InstanceDto InstanceMeta { get; }
+    private IManager Manager { get; set; }
 
-    public Plugin(IConfigurationHandlerFactory configurationHandlerFactory, InstanceDto instance, HeartBeatManager heartBeatManager, EndpointManager endpointManager)
+    private readonly HeartBeatManager _heartBeatManager;
+    private readonly ConfigurationModel _config;
+    private readonly ApplicationConfiguration _appConfig;
+    private readonly WhitelistManager _whitelistManager;
+    private static bool _pluginEnabled;
+
+    public Plugin(InstanceDto instance, HeartBeatManager heartBeatManager, EndpointManager endpointManager, ConfigurationModel config,
+        ApplicationConfiguration appConfig, WhitelistManager whitelistManager)
     {
+        if (!config.EnableBanHub) return; // disable if not enabled in config
+
+        _config = config;
+        _appConfig = appConfig;
+        _whitelistManager = whitelistManager;
         _heartBeatManager = heartBeatManager;
         EndpointManager = endpointManager;
         InstanceMeta = instance;
-        _configurationHandler = configurationHandlerFactory.GetConfigurationHandler<ConfigurationModel>("BanHubSettings");
+
+        IGameServerEventSubscriptions.MonitoringStarted += OnMonitoringStarted;
+        IManagementEventSubscriptions.Load += OnLoad;
+        IManagementEventSubscriptions.ClientStateAuthorized += OnClientStateAuthorized;
+        IManagementEventSubscriptions.ClientStateDisposed += OnClientStateDisposed;
+        IManagementEventSubscriptions.ClientPenaltyAdministered += OnClientPenaltyAdministered;
+        IManagementEventSubscriptions.ClientPenaltyRevoked += OnClientPenaltyRevoked;
+        IManagementEventSubscriptions.NotifyAfterDelayCompleted += OnNotifyAfterDelayCompleted;
     }
 
     public static void RegisterDependencies(IServiceCollection serviceCollection)
     {
-        serviceCollection.AddSingleton(sp =>
-        {
-            var configHandler = sp.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
-            configHandler.BuildAsync().GetAwaiter().GetResult();
-            return new HeartBeatEndpoint(configHandler.Configuration());
-        });
-        serviceCollection.AddSingleton(sp =>
-        {
-            var configHandler = sp.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
-            configHandler.BuildAsync().GetAwaiter().GetResult();
-            return new EntityEndpoint(configHandler.Configuration());
-        });
-        serviceCollection.AddSingleton(sp =>
-        {
-            var configHandler = sp.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
-            configHandler.BuildAsync().GetAwaiter().GetResult();
-            return new PenaltyEndpoint(configHandler.Configuration());
-        });
-        serviceCollection.AddSingleton(sp =>
-        {
-            var configHandler = sp.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
-            configHandler.BuildAsync().GetAwaiter().GetResult();
-            return new InstanceEndpoint(configHandler.Configuration());
-        });
-        serviceCollection.AddSingleton(sp =>
-        {
-            var configHandler = sp.GetRequiredService<IConfigurationHandler<ConfigurationModel>>();
-            configHandler.BuildAsync().GetAwaiter().GetResult();
-            return new ServerEndpoint(configHandler.Configuration());
-        });
+        serviceCollection.AddConfiguration("BanHubSettings", new ConfigurationModel());
+
+        serviceCollection.AddSingleton<HeartBeatEndpoint>();
+        serviceCollection.AddSingleton<EntityEndpoint>();
+        serviceCollection.AddSingleton<PenaltyEndpoint>();
+        serviceCollection.AddSingleton<InstanceEndpoint>();
+        serviceCollection.AddSingleton<ServerEndpoint>();
         serviceCollection.AddSingleton(new InstanceDto());
         serviceCollection.AddSingleton<HeartBeatManager>();
         serviceCollection.AddSingleton<EndpointManager>();
+        serviceCollection.AddSingleton<WhitelistManager>();
     }
 
-    public async Task OnEventAsync(GameEvent gameEvent, Server server)
+    private async Task OnMonitoringStarted(MonitorStartEvent startEvent, CancellationToken token)
     {
-        if (!_pluginEnabled) return;
-        switch (gameEvent.Type)
+        var serverDto = new ServerDto
         {
-            case GameEvent.EventType.Start:
-                var serverDto = new ServerDto
-                {
-                    ServerId = $"{server.IP}:{server.Port}",
-                    ServerName = server.Hostname.StripColors(),
-                    ServerIp = server.IP,
-                    ServerPort = server.Port,
-                    Instance = InstanceMeta
-                };
-                await EndpointManager.OnStart(serverDto);
-                break;
-        }
-
-        if (gameEvent.Origin is null || WhitelistedClientIds.Contains(gameEvent.Origin.ClientId)) return;
-        switch (gameEvent.Type)
-        {
-            case GameEvent.EventType.Join:
-                await EndpointManager.OnJoin(gameEvent.Origin);
-                break;
-            case GameEvent.EventType.Disconnect:
-                EndpointManager.RemoveFromProfiles(gameEvent.Origin);
-                break;
-            case GameEvent.EventType.Warn:
-                await EndpointManager.NewPenalty(PenaltyType.Warn, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
-                break;
-            case GameEvent.EventType.Kick:
-                await EndpointManager.NewPenalty(PenaltyType.Kick, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
-                break;
-            case GameEvent.EventType.TempBan:
-                await EndpointManager.NewPenalty(PenaltyType.TempBan, gameEvent.Origin, gameEvent.Target, gameEvent.Data,
-                    duration: (TimeSpan)gameEvent.Extra);
-                break;
-            case GameEvent.EventType.Ban:
-                await EndpointManager.NewPenalty(PenaltyType.Ban, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
-                break;
-            case GameEvent.EventType.Unban:
-                await EndpointManager.NewPenalty(PenaltyType.Unban, gameEvent.Origin, gameEvent.Target, gameEvent.Data);
-                break;
-        }
+            ServerId = startEvent.Server.Id,
+            ServerName = startEvent.Server.ServerName.StripColors(),
+            ServerIp = startEvent.Server.ListenAddress,
+            ServerPort = startEvent.Server.ListenPort,
+            Instance = InstanceMeta
+        };
+        await EndpointManager.OnStart(serverDto);
     }
 
-    public async Task OnLoadAsync(IManager manager)
+    private async Task OnClientPenaltyRevoked(ClientPenaltyRevokeEvent penaltyEvent, CancellationToken arg2)
     {
-        // Build configuration
-        await _configurationHandler.BuildAsync();
-        if (_configurationHandler.Configuration() == null)
-        {
-            Console.WriteLine($"[{PluginName}] Configuration not found, creating.");
-            _configurationHandler.Set(new ConfigurationModel());
-            await _configurationHandler.Save();
-            await _configurationHandler.BuildAsync();
-        }
-        else
-        {
-            await _configurationHandler.Save();
-        }
+        if (await _whitelistManager.IsWhitelisted(penaltyEvent.Client.ToPartialClient())) return;
 
-        var config = _configurationHandler.Configuration();
+        await EndpointManager.NewPenalty(penaltyEvent.Penalty.Type.ToString(),
+            penaltyEvent.Penalty.Punisher.ToPartialClient(),
+            penaltyEvent.Penalty.Offender.ToPartialClient(),
+            penaltyEvent.Penalty.Offense);
+    }
 
-        if (!config.EnableBanHub)
-        {
-            _pluginEnabled = false;
-            return;
-        }
+    private async Task OnClientPenaltyAdministered(ClientPenaltyEvent penaltyEvent, CancellationToken arg2)
+    {
+        if (await _whitelistManager.IsWhitelisted(penaltyEvent.Client.ToPartialClient())) return;
 
+        await EndpointManager.NewPenalty(penaltyEvent.Penalty.Type.ToString(),
+            penaltyEvent.Penalty.Punisher.ToPartialClient(),
+            penaltyEvent.Penalty.Offender.ToPartialClient(),
+            penaltyEvent.Penalty.Offense,
+            duration: penaltyEvent.Penalty.Expires - DateTimeOffset.UtcNow);
+    }
+
+    private Task OnClientStateDisposed(ClientStateEvent clientEvent, CancellationToken arg2)
+    {
+        EndpointManager.RemoveFromProfiles(clientEvent.Client);
+        return Task.CompletedTask;
+    }
+
+    private async Task OnClientStateAuthorized(ClientStateAuthorizeEvent clientEvent, CancellationToken arg2)
+    {
+        if (await _whitelistManager.IsWhitelisted(clientEvent.Client.ToPartialClient())) return;
+        await EndpointManager.OnJoin(clientEvent.Client);
+    }
+
+    private async Task OnLoad(IManager manager, CancellationToken arg2)
+    {
 #if DEBUG
-        Console.WriteLine($"[{PluginName}] Loading... !! DEBUG MODE !!");
+        Console.WriteLine($"[{ConfigurationModel.Name}] Loading... !! DEBUG MODE !!");
 #else
-        Console.WriteLine($"[{PluginName}] Loading...");
+        Console.WriteLine($"[{ConfigurationModel.Name}] Loading...");
 #endif
-
-     
-
-        WhitelistedClientIds = config.WhitelistedClientIds.Distinct().ToList();
-        Translations = config.Translations;
+        
+        Manager = manager;
+        Translations = _config.Translations;
 
         // Update the instance and check its state
-        InstanceMeta.InstanceGuid = Guid.Parse(manager.GetApplicationSettings().Configuration().Id);
-        InstanceMeta.InstanceName = config.InstanceNameOverride ?? manager.GetApplicationSettings().Configuration().WebfrontCustomBranding;
+        InstanceMeta.InstanceGuid = Guid.Parse(_appConfig.Id);
+        InstanceMeta.InstanceName = _config.InstanceNameOverride ?? _appConfig.WebfrontCustomBranding;
         InstanceMeta.InstanceIp = manager.ExternalIPAddress;
-        InstanceMeta.ApiKey = config.ApiKey;
+        InstanceMeta.ApiKey = _config.ApiKey;
         InstanceMeta.HeartBeat = DateTimeOffset.UtcNow;
 
         _pluginEnabled = await EndpointManager.UpdateInstance(InstanceMeta);
 
-        // If successful reply, get active state and start heartbeat
-        if (_pluginEnabled)
+        // Unsubscribe from events if response is bad.
+        if (!_pluginEnabled)
         {
-            InstanceActive = await EndpointManager.IsInstanceActive(InstanceMeta);
-            InstanceMeta.Active = InstanceActive;
+            IGameServerEventSubscriptions.MonitoringStarted -= OnMonitoringStarted;
+            IManagementEventSubscriptions.Load -= OnLoad;
+            IManagementEventSubscriptions.ClientStateAuthorized -= OnClientStateAuthorized;
+            IManagementEventSubscriptions.ClientStateDisposed -= OnClientStateDisposed;
+            IManagementEventSubscriptions.ClientPenaltyAdministered -= OnClientPenaltyAdministered;
+            IManagementEventSubscriptions.ClientPenaltyRevoked -= OnClientPenaltyRevoked;
 
-            if (InstanceActive)
-            {
-                Console.WriteLine($"[{PluginName}] Activated.");
-                Console.WriteLine($"[{PluginName}] Penalties and users will be reported to the API.");
-            }
-            else
-            {
-                Console.WriteLine($"[{PluginName}] Not activated. Read-only access.");
-                Console.WriteLine($"[{PluginName}] To activate your access. Please visit https://discord.gg/Arruj6DWvp");
-            }
-
-            _heartBeatManager.HeartbeatTimer();
-            Console.WriteLine($"[{PluginName}] Loaded successfully. Version: {Version}");
+            Console.WriteLine($"[{ConfigurationModel.Name}] Failed to load. Is the API running?");
             return;
         }
 
-        Console.WriteLine($"[{PluginName}] Failed to load. Is the API running?");
+        InstanceActive = await EndpointManager.IsInstanceActive(InstanceMeta);
+        InstanceMeta.Active = InstanceActive;
+
+        if (InstanceActive)
+        {
+            Console.WriteLine($"[{ConfigurationModel.Name}] Activated.");
+            Console.WriteLine($"[{ConfigurationModel.Name}] Penalties and users will be reported to the API.");
+        }
+        else
+        {
+            Console.WriteLine($"[{ConfigurationModel.Name}] Not activated. Read-only access.");
+            Console.WriteLine($"[{ConfigurationModel.Name}] To activate your access. Please visit https://discord.gg/Arruj6DWvp");
+        }
+
+        manager.QueueEvent(new NotifyAfterDelayRequestEvent
+        {
+            Source = "BanHub",
+            DelayMs = 240_000,
+        });
     }
 
-    public async Task OnUnloadAsync()
+    private async Task OnNotifyAfterDelayCompleted(NotifyAfterDelayCompleteEvent notifyEvent, CancellationToken token)
     {
-        if (!_pluginEnabled) return;
-
-        _configurationHandler.Configuration().WhitelistedClientIds = WhitelistedClientIds;
-        await _configurationHandler.Save();
-        Console.WriteLine($"[{PluginName}] unloaded");
-    }
-
-    public Task OnTickAsync(Server server)
-    {
-        return Task.CompletedTask;
+        Console.WriteLine($"[{ConfigurationModel.Name}] Notify Event Fired");
+        if (notifyEvent.Source is not "BanHub") return;
+        await _heartBeatManager.InstanceHeartBeat();
+        await _heartBeatManager.ClientHeartBeat();
+        Manager.QueueEvent(new NotifyAfterDelayRequestEvent
+        {
+            Source = "BanHub",
+            DelayMs = 240_000
+        });
     }
 }

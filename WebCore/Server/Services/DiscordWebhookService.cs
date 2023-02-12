@@ -21,11 +21,14 @@ public class DiscordWebhookService : IDiscordWebhookService
         switch (penaltyType)
         {
             case PenaltyType.Unban:
+            case PenaltyType.Unmute:
                 color = Color.Blue;
                 break;
-            case PenaltyType.Warn:
+            case PenaltyType.Report:
+            case PenaltyType.Warning:
                 color = Color.Default;
                 break;
+            case PenaltyType.TempMute:
             case PenaltyType.Mute:
             case PenaltyType.Kick:
                 color = Color.LightOrange;
@@ -69,7 +72,19 @@ public class DiscordWebhookService : IDiscordWebhookService
         await SendWebhook(embedBuilder.Build(), _configuration.InstanceWebHook);
     }
 
-    private async Task SendWebhook(Embed embed, string webhook)
+    public async Task CreateAdminActionHook(string message)
+    {
+        var embedBuilder = new EmbedBuilder
+        {
+            Title = "Admin Action!",
+            Description = message,
+            Color = Color.DarkRed
+        };
+
+        await SendWebhook(embedBuilder.Build(), _configuration.AdminActionWebHook);
+    }
+
+    private static async Task SendWebhook(Embed embed, string webhook)
     {
         var client = new DiscordWebhookClient(webhook);
         await client.SendMessageAsync(embeds: new[] {embed});

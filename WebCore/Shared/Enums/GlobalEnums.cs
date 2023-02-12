@@ -2,12 +2,15 @@
 
 public enum PenaltyType
 {
-    Warn = 10,
-    Mute = 25,
-    Kick = 50,
-    Unban = 90,
-    TempBan = 95,
-    Ban = 100
+    Report,
+    Warning,
+    Mute,
+    TempMute,
+    Unmute,
+    Kick,
+    Unban,
+    TempBan,
+    Ban
 }
 
 public enum PenaltyStatus

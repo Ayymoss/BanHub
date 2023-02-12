@@ -11,4 +11,5 @@ public interface IPenaltyService
     Task<bool> SubmitEvidence(PenaltyDto request);
     Task<List<PenaltyDto>> Pagination(PaginationDto pagination);
     Task<List<PenaltyDto>> GetLatestThreeBans();
+    Task<bool> RemovePenalty(PenaltyDto request, string requestingAdmin);
 }

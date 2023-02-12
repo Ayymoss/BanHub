@@ -98,7 +98,7 @@ public class DataContext : DbContext
         var infraction = new EFPenalty
         {
             Id = -1,
-            PenaltyType = PenaltyType.Warn,
+            PenaltyType = PenaltyType.Warning,
             PenaltyStatus = PenaltyStatus.Active,
             PenaltyScope = PenaltyScope.Local,
             PenaltyGuid = Guid.NewGuid(),

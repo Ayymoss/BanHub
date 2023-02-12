@@ -1,0 +1,73 @@
+﻿@inject ISnackbar SnackbarService
+@inject HttpClient Http
+@attribute [Authorize(Roles = "WebAdmin, WebSuperAdmin")]
+
+<MudDialog>
+    <DialogContent>
+        <MudElement Class="d-flex flex-column">
+            <MudText Typo="Typo.subtitle1">You're about to delete penalty</MudText>
+            <MudText Class="mud-text-secondary" Typo="Typo.subtitle2">@Penalty.PenaltyGuid</MudText>
+            <MudTextField @bind-Value="Penalty.DeletionReason" AutoFocus="false" Immediate="true" MaxLength="32" Label="Reason" Variant="Variant.Text" Counter="32" AdornmentIcon="@Icons.Material.Filled.Warning" Adornment="Adornment.End"/>
+        </MudElement>
+        <MudElement Class="d-flex flex-column mb-3">
+            <MudDivider FlexItem="true" DividerType="DividerType.Inset" Class="mx-n6 mb-4 mt-8"/>
+            <MudElement Class="d-flex">
+                <MudText Class="align-self-center" Typo="Typo.caption" Align="Align.Center" Color="Color.Error">This action is logged</MudText>
+                <MudSpacer/>
+                <MudButton Class="flex-shrink-1" Variant="Variant.Text" Size="Size.Small" OnClick="ToggleOpen">Cancel</MudButton>
+                <MudButton Class="flex-shrink-1 ml-2" Disabled="@_processing" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" ButtonType="ButtonType.Submit" OnClick="DeletePenalty">
+                    @if (_processing)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                        <MudText Class="ms-2">Deleting...</MudText>
+                    }
+                    else
+                    {
+                        <MudText>Delete</MudText>
+                    }
+                </MudButton>
+            </MudElement>
+        </MudElement>
+
+    </DialogContent>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public PenaltyDto Penalty { get; set; } = null!;
+
+    private bool _processing;
+
+    private void ToggleOpen() => MudDialog.Close();
+
+    private async Task DeletePenalty()
+    {
+        _processing = true;
+
+        if (Penalty.DeletionReason is null || Penalty.DeletionReason.Length < 3)
+        {
+            SnackbarService.Add("A reason is required!", Severity.Warning);
+            _processing = false;
+            return;
+        }
+
+        var request = await Http.PostAsJsonAsync("api/v2/Penalty/Remove", Penalty);
+
+        if (!request.IsSuccessStatusCode)
+        {
+            SnackbarService.Add("Failed to delete penalty!", Severity.Error);
+            _processing = false;
+            MudDialog.Cancel();
+            return;
+        }
+
+        SnackbarService.Add("Penalty Deleted!", Severity.Success);
+        _processing = false;
+        MudDialog.Close(DialogResult.Ok(Penalty));
+    }
+
+}

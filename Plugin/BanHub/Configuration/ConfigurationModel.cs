@@ -3,21 +3,15 @@ using SharedLibraryCore.Interfaces;
 
 namespace BanHub.Configuration;
 
-public class ConfigurationModel : IBaseConfiguration
+public class ConfigurationModel
 {
+    [JsonIgnore] public const string Name = "Ban Hub";
     public bool EnableBanHub { get; set; } = true;
-
-    [JsonPropertyName("ApiKeyDoNotChange")]
-    public Guid ApiKey { get; set; } = Guid.NewGuid();
-
+    [JsonPropertyName("ApiKeyDoNotChange")] public Guid ApiKey { get; set; } = Guid.NewGuid();
     public string? InstanceNameOverride { get; set; }
     public bool PrintPenaltyToConsole { get; set; } = false;
     public TranslationStrings Translations { get; set; } = new();
-    public List<int> WhitelistedClientIds { get; set; } = new();
     public bool DebugMode { get; set; } = false;
-
-    public string Name() => "BanHubSettings";
-    public IBaseConfiguration Generate() => new ConfigurationModel();
 }
 
 public class TranslationStrings

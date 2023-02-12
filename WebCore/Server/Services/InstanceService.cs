@@ -48,7 +48,7 @@ public class InstanceService : IInstanceService
                 Created = DateTimeOffset.UtcNow
             });
 
-            await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.InstanceCount);
+            await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.InstanceCount, ControllerEnums.StatisticTypeAction.Add);
             await _context.SaveChangesAsync();
 
             return (ControllerEnums.ProfileReturnState.Created, $"Instance added {request.InstanceGuid}");

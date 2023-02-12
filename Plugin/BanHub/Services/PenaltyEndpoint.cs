@@ -27,20 +27,21 @@ public class PenaltyEndpoint
             var response = await _httpClient
                 .PostAsJsonAsync($"{ApiHost}/Penalty?authToken={_configurationModel.ApiKey}", penalty);
             var preGuid = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(preGuid);
             var parsedState = Guid.TryParse(preGuid.Replace("\"", ""), out var guid);
 
             if (!response.IsSuccessStatusCode && _configurationModel.DebugMode)
             {
-                Console.WriteLine($"\n[{Plugin.PluginName}] Error posting penalty {penalty.Reason}\nSC: {response.StatusCode}\n" +
+                Console.WriteLine($"\n[{ConfigurationModel.Name}] Error posting penalty {penalty.Reason}\nSC: {response.StatusCode}\n" +
                                   $"RP: {response.ReasonPhrase}\nB: {preGuid}\nJSON: {JsonSerializer.Serialize(penalty)}\n" +
-                                  $"[{Plugin.PluginName}] End of error");
+                                  $"[{ConfigurationModel.Name}] End of error");
             }
             
             return (response.IsSuccessStatusCode && parsedState, guid);
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine($"[{Plugin.PluginName}] Error posting penalty: {e.Message}");
+            Console.WriteLine($"[{ConfigurationModel.Name}] Error posting penalty: {e.Message}");
         }
 
         return (false, null);
@@ -55,16 +56,16 @@ public class PenaltyEndpoint
             
             if (!response.IsSuccessStatusCode && _configurationModel.DebugMode)
             {
-                Console.WriteLine($"\n[{Plugin.PluginName}] Error posting evidence {penalty.Evidence}\nSC: {response.StatusCode}\n" +
+                Console.WriteLine($"\n[{ConfigurationModel.Name}] Error posting evidence {penalty.Evidence}\nSC: {response.StatusCode}\n" +
                                   $"RP: {response.ReasonPhrase}\nB: {await response.Content.ReadAsStringAsync()}\nJSON: {JsonSerializer.Serialize(penalty)}\n" +
-                                  $"[{Plugin.PluginName}] End of error");
+                                  $"[{ConfigurationModel.Name}] End of error");
             }
             
             return response.IsSuccessStatusCode;
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine($"[{Plugin.PluginName}] Error submitting information: {e.Message}");
+            Console.WriteLine($"[{ConfigurationModel.Name}] Error submitting information: {e.Message}");
         }
 
         return false;

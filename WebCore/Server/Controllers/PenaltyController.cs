@@ -1,7 +1,10 @@
-﻿using BanHub.WebCore.Server.Enums;
+﻿using System.Security.Claims;
+using BanHub.WebCore.Server.Enums;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Services;
+using BanHub.WebCore.Server.Utilities;
 using BanHub.WebCore.Shared.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BanHub.WebCore.Server.Controllers;
@@ -26,7 +29,8 @@ public class PenaltyController : ControllerBase
             ControllerEnums.ProfileReturnState.Created => Ok(result.Item2.HasValue ? result.Item2.Value : "Error"),
             ControllerEnums.ProfileReturnState.NotFound => NotFound(),
             ControllerEnums.ProfileReturnState.BadRequest => BadRequest(),
-            ControllerEnums.ProfileReturnState.NotModified => Conflict("Infraction already exists"),
+            ControllerEnums.ProfileReturnState.Conflict => Conflict("Infraction already exists"),
+            ControllerEnums.ProfileReturnState.NoContent => NoContent(),
             _ => BadRequest() // Should never happen
         };
     }
@@ -61,12 +65,26 @@ public class PenaltyController : ControllerBase
     {
         return Ok(await _penaltyService.Pagination(pagination));
     }
-    
+
     [HttpGet("Index")]
     public async Task<ActionResult<IEnumerable<PenaltyDto>>> GetRecentPenalties()
     {
         return Ok(await _penaltyService.GetLatestThreeBans());
     }
-    
-    
+
+    [HttpPost("Remove")] // Authorised endpoint
+    public async Task<ActionResult<bool>> RemovePenalty([FromBody] PenaltyDto request)
+    {
+        var privileged = User.IsInAnyRole("WebAdmin", "WebSuperAdmin");
+        if (!privileged) return Unauthorized("You are not authorised to perform this action");
+
+        var adminIdentity = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name ?? "ERROR!";
+
+        var result = await _penaltyService.RemovePenalty(request, adminIdentity);
+        return result switch
+        {
+            true => Ok("Penalty deleted!"),
+            false => BadRequest("Error removing penalty")
+        };
+    }
 }

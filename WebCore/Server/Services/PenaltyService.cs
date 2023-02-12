@@ -54,10 +54,9 @@ public class PenaltyService : IPenaltyService
 
         // Already global banned - don't want to create another
         if (activeGlobalBan is not null && request.PenaltyType == PenaltyType.Ban)
-        {
-            return (ControllerEnums.ProfileReturnState.NotModified, null);
-        }
+            return (ControllerEnums.ProfileReturnState.NoContent, null);
 
+        // If any penalties check and action
         var penalty = await _context.Penalties
             .AsTracking()
             .Where(inf =>
@@ -66,7 +65,7 @@ public class PenaltyService : IPenaltyService
                                         && inf.PenaltyStatus == PenaltyStatus.Active)
             .ToListAsync();
 
-        if (!penalty.Any())
+        if (penalty.Any())
         {
             switch (request.PenaltyType)
             {
@@ -81,7 +80,7 @@ public class PenaltyService : IPenaltyService
                     break;
                 // If they're already banned. We don't need to keep creating kick infractions.
                 case PenaltyType.Kick:
-                    return (ControllerEnums.ProfileReturnState.NotModified, null);
+                    return (ControllerEnums.ProfileReturnState.NoContent, null);
             }
         }
         else
@@ -90,7 +89,7 @@ public class PenaltyService : IPenaltyService
             {
                 // Trying to unban when no record of a ban exists.
                 case PenaltyType.Unban:
-                    return (ControllerEnums.ProfileReturnState.NotModified, null);
+                    return (ControllerEnums.ProfileReturnState.NoContent, null);
             }
         }
 
@@ -130,9 +129,10 @@ public class PenaltyService : IPenaltyService
         await _statisticService.UpdateDayStatistic(new StatisticBan
         {
             BanGuid = penaltyModel.PenaltyGuid,
-            Submitted = DateTimeOffset.UtcNow,
+            Submitted = DateTimeOffset.UtcNow
         });
-        await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.PenaltyCount);
+
+        await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.PenaltyCount, ControllerEnums.StatisticTypeAction.Add);
         _context.Add(penaltyModel);
         await _context.SaveChangesAsync();
 
@@ -179,6 +179,10 @@ public class PenaltyService : IPenaltyService
         var pagedData = await query
             .Skip(pagination.Page!.Value * pagination.PageSize!.Value)
             .Take(pagination.PageSize.Value)
+            .Where(x => x.PenaltyType == PenaltyType.Ban
+                        || x.PenaltyType == PenaltyType.TempBan
+                        || x.PenaltyType == PenaltyType.Kick
+                        || x.PenaltyType == PenaltyType.Unban)
             .Select(penalty => new PenaltyDto
             {
                 PenaltyGuid = penalty.PenaltyGuid,
@@ -258,6 +262,39 @@ public class PenaltyService : IPenaltyService
             }).ToListAsync();
 
         return bans;
+    }
+
+    public async Task<bool> RemovePenalty(PenaltyDto request, string requestingAdmin)
+    {
+        var penalty = await _context.Penalties.FirstOrDefaultAsync(x => x.PenaltyGuid == request.PenaltyGuid);
+        if (penalty is null) return false;
+
+        var penaltyInfo = await _context.Penalties
+            .Where(x => x.PenaltyGuid == penalty.PenaltyGuid)
+            .Select(x => new
+            {
+                AdminIdentity = x.Admin.Identity,
+                TargetIdentity = x.Target.Identity,
+                x.PenaltyGuid,
+                x.Reason,
+                x.Evidence
+            }).FirstOrDefaultAsync();
+
+        var message = penaltyInfo is null
+            ? $"Penalty **{penalty.PenaltyGuid}** was deleted by **{requestingAdmin}** but no information could be found."
+            : $"**Penalty**: {penaltyInfo.PenaltyGuid}\n" +
+              $"**Admin**: {penaltyInfo.AdminIdentity}\n" +
+              $"**Target**: {penaltyInfo.TargetIdentity}\n" +
+              $"**Reason**: {penaltyInfo.Reason}\n" +
+              $"**Evidence**: {penaltyInfo.Evidence ?? "None"}\n\n" +
+              $"**Deleted By**: {requestingAdmin}\n" +
+              $"**Deleted For**: {request.DeletionReason}";
+
+        _context.Penalties.Remove(penalty);
+        await _context.SaveChangesAsync();
+        await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.PenaltyCount, ControllerEnums.StatisticTypeAction.Remove);
+        await _discordWebhook.CreateAdminActionHook(message);
+        return true;
     }
 
     public async Task<bool> RevokeGlobalBan(PenaltyDto request)

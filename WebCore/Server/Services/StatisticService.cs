@@ -43,23 +43,48 @@ public class StatisticService : IStatisticService
         }
     }
 
-    public async Task UpdateStatistic(ControllerEnums.StatisticType statistic)
+    public async Task UpdateStatistic(ControllerEnums.StatisticType statistic, ControllerEnums.StatisticTypeAction action)
     {
         if (!_statisticsTracking.Loaded) await EnsureInitialised();
 
-        switch (statistic)
+        // TODO: Rewrite this. Ugh
+        switch (action)
         {
-            case ControllerEnums.StatisticType.PenaltyCount:
-                Interlocked.Increment(ref _statisticsTracking.Penalties);
+            case ControllerEnums.StatisticTypeAction.Add:
+                switch (statistic)
+                {
+                    case ControllerEnums.StatisticType.PenaltyCount:
+                        Interlocked.Increment(ref _statisticsTracking.Penalties);
+                        break;
+                    case ControllerEnums.StatisticType.ServerCount:
+                        Interlocked.Increment(ref _statisticsTracking.Servers);
+                        break;
+                    case ControllerEnums.StatisticType.InstanceCount:
+                        Interlocked.Increment(ref _statisticsTracking.Instances);
+                        break;
+                    case ControllerEnums.StatisticType.EntityCount:
+                        Interlocked.Increment(ref _statisticsTracking.Entities);
+                        break;
+                }
+
                 break;
-            case ControllerEnums.StatisticType.ServerCount:
-                Interlocked.Increment(ref _statisticsTracking.Servers);
-                break;
-            case ControllerEnums.StatisticType.InstanceCount:
-                Interlocked.Increment(ref _statisticsTracking.Instances);
-                break;
-            case ControllerEnums.StatisticType.EntityCount:
-                Interlocked.Increment(ref _statisticsTracking.Entities);
+            case ControllerEnums.StatisticTypeAction.Remove:
+                switch (statistic)
+                {
+                    case ControllerEnums.StatisticType.PenaltyCount:
+                        Interlocked.Decrement(ref _statisticsTracking.Penalties);
+                        break;
+                    case ControllerEnums.StatisticType.ServerCount:
+                        Interlocked.Decrement(ref _statisticsTracking.Servers);
+                        break;
+                    case ControllerEnums.StatisticType.InstanceCount:
+                        Interlocked.Decrement(ref _statisticsTracking.Instances);
+                        break;
+                    case ControllerEnums.StatisticType.EntityCount:
+                        Interlocked.Decrement(ref _statisticsTracking.Entities);
+                        break;
+                }
+
                 break;
         }
     }

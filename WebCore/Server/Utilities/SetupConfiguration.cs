@@ -57,6 +57,7 @@ public static class SetupConfiguration
             Version = newConfigVersion,
             PenaltyWebHook = configuration.PenaltyWebHook,
             InstanceWebHook = configuration.InstanceWebHook,
+            AdminActionWebHook = configuration.AdminActionWebHook,
             Database = configuration.Database
         };
 

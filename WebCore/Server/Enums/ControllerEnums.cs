@@ -11,8 +11,8 @@ public abstract class ControllerEnums
         Conflict,
         Accepted,
         Ok,
-        NotModified,
-        Unauthorized
+        Unauthorized,
+        NoContent
     }
 
     public enum StatisticType
@@ -21,5 +21,11 @@ public abstract class ControllerEnums
         ServerCount = -3,
         PenaltyCount = -2,
         InstanceCount = -1
+    }
+    
+    public enum StatisticTypeAction
+    {
+        Add,
+        Remove
     }
 }

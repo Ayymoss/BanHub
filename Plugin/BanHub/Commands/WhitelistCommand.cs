@@ -1,4 +1,5 @@
-﻿using SharedLibraryCore;
+﻿using BanHub.Managers;
+using SharedLibraryCore;
 using SharedLibraryCore.Commands;
 using SharedLibraryCore.Configuration;
 using SharedLibraryCore.Database.Models;
@@ -8,8 +9,12 @@ namespace BanHub.Commands;
 
 public class WhitelistCommand : Command
 {
-    public WhitelistCommand(CommandConfiguration config, ITranslationLookup layout) : base(config, layout)
+    private readonly WhitelistManager _whitelistManager;
+
+    public WhitelistCommand(CommandConfiguration config, ITranslationLookup layout, WhitelistManager whitelistManager) : base(config,
+        layout)
     {
+        _whitelistManager = whitelistManager;
         Name = "whitelist";
         Description = "Whitelists a global banned player";
         Alias = "wlist";
@@ -27,17 +32,7 @@ public class WhitelistCommand : Command
 
     public override async Task ExecuteAsync(GameEvent gameEvent)
     {
-        var clientGuid = Plugin.WhitelistedClientIds.Contains(gameEvent.Target.ClientId);
-
-        if (clientGuid)
-        {
-            Plugin.WhitelistedClientIds.Remove(gameEvent.Target.ClientId);
-            gameEvent.Origin.Tell($"Whitelisted: {gameEvent.Target.CleanedName}");
-        }
-        else
-        {
-            Plugin.WhitelistedClientIds.Add(gameEvent.Target.ClientId);
-            gameEvent.Origin.Tell($"Removed from Whitelist: {gameEvent.Target.CleanedName}");
-        }
+        var result = await _whitelistManager.ActionWhitelist(gameEvent.Target);
+        gameEvent.Origin.Tell($"{(result ? "Whitelisted" : "Removed from Whitelist")}: {gameEvent.Target.CleanedName}");
     }
 }
