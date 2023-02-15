@@ -20,9 +20,19 @@ public class EntityDto
     public DateTimeOffset? Created { get; set; }
 
     /// <summary>
+    /// Total time played
+    /// </summary>
+    public TimeSpan? PlayTime { get; set; }
+
+    /// <summary>
+    /// Total connections to any server
+    /// </summary>
+    public int? TotalConnections { get; set; }
+
+    /// <summary>
     /// Is the player globally banned via IP or GUID
     /// </summary>
-    public bool HasIdentityBan { get; set; }
+    public bool? HasIdentityBan { get; set; }
 
     /// <summary>
     /// The player's instance role

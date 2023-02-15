@@ -43,6 +43,7 @@ public class HeartBeatService : IHeartBeatService
         foreach (var profile in profiles)
         {
             profile.HeartBeat = DateTimeOffset.UtcNow;
+            profile.PlayTime = profile.PlayTime.Add(new TimeSpan(0, 0, 4, 0));
             _context.Entities.Update(profile);
         }
 

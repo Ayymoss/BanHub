@@ -42,6 +42,7 @@ public class EntityService : IEntityService
                         Id = note.Id,
                         Created = note.Created,
                         Message = note.Message,
+                        IsPrivate = note.IsPrivate,
                         Admin = new EntityDto
                         {
                             Identity = note.Admin.Identity,
@@ -100,17 +101,30 @@ public class EntityService : IEntityService
                     }).ToList(),
                 HeartBeat = profile.HeartBeat,
                 Created = profile.Created,
+                TotalConnections = profile.TotalConnections,
+                PlayTime = profile.PlayTime,
                 HasIdentityBan = false
             }).FirstOrDefaultAsync();
 
         if (entity is null) return null;
 
-        if (entity.Penalties is null)
+        if (entity.Penalties is null) // TODO: REDUNDANT CODE! :L
         {
             if (privileged) return entity;
             // Strip sensitive data if not privileged
             entity.Alias!.IpAddress = null;
-            entity.Notes = null;
+            if (entity.Notes is not null && entity.Notes.Any())
+            {
+                foreach (var note in entity.Notes.Where(x => x.IsPrivate == true).ToList())
+                {
+                    entity.Notes.Remove(note);
+                }
+            }
+            else
+            {
+                entity.Notes = null;
+            }
+
             return entity;
         }
 
@@ -121,10 +135,21 @@ public class EntityService : IEntityService
         entity.HasIdentityBan = hasActiveIdentityBan;
 
         // Strip sensitive data if not privileged
-        if (!privileged)
+        if (!privileged) // TODO: REDUNDANT CODE! :L
         {
             entity.Alias!.IpAddress = null;
-            entity.Notes = null;
+            if (entity.Notes is not null && entity.Notes.Any())
+            {
+                foreach (var note in entity.Notes.Where(x => x.IsPrivate == true).ToList())
+                {
+                    entity.Notes.Remove(note);
+                }
+            }
+            else
+            {
+                entity.Notes = null;
+            }
+
             foreach (var penalty in entity.Penalties!)
             {
                 penalty.Admin!.Alias!.IpAddress = null;
@@ -215,6 +240,7 @@ public class EntityService : IEntityService
             }
 
             user.HeartBeat = DateTimeOffset.UtcNow;
+            user.TotalConnections++;
             _context.Entities.Update(user);
             await _context.SaveChangesAsync();
 
@@ -228,7 +254,9 @@ public class EntityService : IEntityService
             HeartBeat = DateTimeOffset.UtcNow,
             WebRole = WebRole.WebUser,
             InstanceRole = request.InstanceRole!.Value,
-            Created = DateTimeOffset.UtcNow
+            Created = DateTimeOffset.UtcNow,
+            PlayTime = TimeSpan.Zero,
+            TotalConnections = 1
         };
 
         var alias = new EFAlias
@@ -256,7 +284,8 @@ public class EntityService : IEntityService
             _context.ServerConnections.Add(server);
         }
 
-        if (user is null) await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.EntityCount, ControllerEnums.StatisticTypeAction.Add);
+        if (user is null)
+            await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.EntityCount, ControllerEnums.StatisticTypeAction.Add);
 
         entity.CurrentAlias = currentAlias;
         _context.CurrentAliases.Add(currentAlias);

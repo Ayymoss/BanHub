@@ -16,6 +16,11 @@ public class NoteDto
     /// The associated note
     /// </summary>
     public string? Message { get; set; }
+    
+    /// <summary>
+    /// Is the note public
+    /// </summary>
+    public bool? IsPrivate { get; set; }
 
     /// <summary>
     /// The admin who issued the note
@@ -26,4 +31,6 @@ public class NoteDto
     /// The user who received the note
     /// </summary>
     public virtual EntityDto? Target { get; set; }
+
+    
 }

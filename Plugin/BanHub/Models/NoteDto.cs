@@ -18,6 +18,11 @@ public class NoteDto
     public virtual EntityDto? Admin { get; set; }
 
     /// <summary>
+    /// Is the note public
+    /// </summary>
+    public bool? IsPrivate { get; set; }
+
+    /// <summary>
     /// The user who received the note
     /// </summary>
     public virtual EntityDto? Target { get; set; }

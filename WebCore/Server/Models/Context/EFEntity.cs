@@ -19,6 +19,16 @@ public class EFEntity
     /// The last time the player was seen
     /// </summary>
     public required DateTimeOffset HeartBeat { get; set; }
+    
+    /// <summary>
+    /// Total time played
+    /// </summary>
+    public required TimeSpan PlayTime { get; set; }
+    
+    /// <summary>
+    /// Total connections to any server
+    /// </summary>
+    public required int TotalConnections { get; set; }
 
     /// <summary>
     /// The first time we saw them

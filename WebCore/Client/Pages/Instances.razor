@@ -3,7 +3,7 @@
 
 <PageTitle>Instances | Ban Hub</PageTitle>
 
-<MudText Typo="Typo.h4" GutterBottom="true">Verified Instances</MudText>
+<MudText Typo="Typo.h4" GutterBottom="true" Class="ml-6 mud-text-secondary">Verified Instances</MudText>
 
 <MudTable ServerData="@(new Func<TableState, Task<TableData<InstanceDto>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true" Hover="true" @ref="_table">
     <ToolBarContent>

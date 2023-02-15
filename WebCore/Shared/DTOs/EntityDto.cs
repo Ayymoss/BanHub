@@ -23,11 +23,21 @@ public class EntityDto
     /// The first time we saw the player
     /// </summary>
     public DateTimeOffset? Created { get; set; }
+    
+    /// <summary>
+    /// Total time played
+    /// </summary>
+    public TimeSpan? PlayTime { get; set; }
+    
+    /// <summary>
+    /// Total connections to any server
+    /// </summary>
+    public int? TotalConnections { get; set; }
 
     /// <summary>
     /// Is the player globally banned via IP or GUID
     /// </summary>
-    public bool HasIdentityBan { get; set; }
+    public bool? HasIdentityBan { get; set; }
 
     /// <summary>
     /// The player's instance role
@@ -63,4 +73,6 @@ public class EntityDto
     /// Server the client is connected to
     /// </summary>
     public virtual ServerDto? Server { get; set; }
+
+   
 }

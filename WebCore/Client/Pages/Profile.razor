@@ -6,102 +6,168 @@
 @inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>@_title | Profile | Ban Hub</PageTitle>
-
-@if (_entity is null)
+@if (_loading)
 {
-    <MudText Typo="Typo.h4" GutterBottom="true">Profile not found!</MudText>
-    <MudText Typo="Typo.body1" GutterBottom="true" Color="Color.Info">Provided identity doesn't exist.</MudText>
+    <MudText Typo="Typo.h4">Loading...</MudText>
+    <MudProgressLinear Color="Color.Info" Size="Size.Large" Indeterminate="true" Class="my-7"/>
 }
 else
 {
-    <MudText Typo="Typo.h4" GutterBottom="true">
-        Profile - @_entity.Alias.UserName (@_entity.Identity)
-        @if (_entity.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
-        {
-            <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Info">Online</MudChip>
-        }
-        else
-        {
-            <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Warning">Offline</MudChip>
-        }
-        @if (_isGlobalBanned)
-        {
-            <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Error">Globally Banned</MudChip>
-        }
-        else
-        {
-            <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Info">Not Globally Banned</MudChip>
-        }
-    </MudText>
-    <MudContainer Style="height: 600px" Class="mt-16 px-8" MaxWidth="MaxWidth.False">
-        <MudGrid>
-            <MudItem xs="12" sm="6">
-                <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
-                    @if (!_entity.Penalties.Any())
-                    {
-                        <MudText Align="Align.Center" Typo="Typo.h5">The user has no penalties.</MudText>
-                    }
-                    else
-                    {
-                        <MudText Typo="Typo.h6" Align="Align.Center">Click an penalty for info</MudText>
-                        <br/>
-                        <MudTable Items="@_entity.Penalties" Hover="true" FixedHeader="true" Height="100%" @ref="_mudTable" OnRowClick="RowClickEvent" T="PenaltyDto">
-                            <HeaderContent>
-                                <MudTh>
-                                    <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Admin.Alias.UserName)">Admin</MudTableSortLabel>
-                                </MudTh>
-                                <MudTh>
-                                    <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Reason)">Reason</MudTableSortLabel>
-                                </MudTh>
-                                <MudTh>
-                                    <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyType)">Type</MudTableSortLabel>
-                                </MudTh>
-                                <MudTh>
-                                    <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyScope)">Scope</MudTableSortLabel>
-                                </MudTh>
-                                <MudTh>
-                                    <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<PenaltyDto, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
-                                </MudTh>
-                                <MudTh></MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd DataLabel="Admin">@context.Admin.Alias.UserName</MudTd>
-                                <MudTd DataLabel="Reason">@context.Reason</MudTd>
-                                <MudTd DataLabel="Type">@context.PenaltyType.ToString()</MudTd>
-                                <MudTd DataLabel="Scope">@context.PenaltyScope.ToString()</MudTd>
-                                <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
-                                <MudTd DataLabel="View">
-                                    <MudChip Size="Size.Medium" Color="Color.Info">Click to View</MudChip>
-                                </MudTd>
-                            </RowTemplate>
-                        </MudTable>
-                    }
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="12" sm="6">
-                <MudGrid>
-                    <MudItem xs="12">
+    @if (_entity is null)
+    {
+        <MudText Typo="Typo.h4">Profile not found!</MudText>
+        <MudText Typo="Typo.body1" Color="Color.Info">Provided identity doesn't exist.</MudText>
+    }
+    else
+    {
+        <MudElement Class="d-flex align-center mx-6">
+            <MudElement Class="d-flex align-center">
+                <MudText Typo="Typo.h4" Class="mud-text-secondary d-flex align-center">
+                    @_entity.Alias.UserName
+                    <MudText Typo="Typo.h4" Color="Color.Info" Class="mx-1">&bull;</MudText>
+                    @_guid
+                    <MudText Typo="Typo.h4" Color="Color.Info" Class="mx-1">&bull;</MudText>
+                    @_gameName
+                </MudText>
+            </MudElement>
+            <MudSpacer/>
+            <MudElement>
+                @if (_entity.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
+                {
+                    <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Info">Online</MudChip>
+                }
+                else
+                {
+                    <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Warning">Offline</MudChip>
+                }
+                @if (_entity.IsGlobalBanned())
+                {
+                    <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Error">Globally Banned</MudChip>
+                }
+                else
+                {
+                    <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Info">Not Globally Banned</MudChip>
+                }
+            </MudElement>
+        </MudElement>
 
-                        <MudGrid Spacing="2" Justify="Justify.Center">
-                            <MudItem Class="flex-1">
-                                <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
-                                    <MudText Typo="Typo.subtitle1" Color="Color.Info">@_entity.Penalties.Count</MudText>
-                                    <MudText Class="mud-text-secondary">Penalties</MudText>
-                                </MudPaper>
-                            </MudItem>
-                            <MudItem Class="flex-1">
-                                <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
-                                    <MudText Typo="Typo.subtitle1" Color="Color.Info">@_lastConnectedServer</MudText>
-                                    <MudText Class="mud-text-secondary">Last Connected Server</MudText>
-                                </MudPaper>
-                            </MudItem>
-                        </MudGrid>
+
+        <MudElement Class="mt-4 d-flex flex-column">
+            <MudElement>
+                <MudGrid Spacing="2" Justify="Justify.FlexStart">
+                    <MudItem xs="3">
+                        <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
+                            <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.Penalties?.Count == 0 ? "None" : _entity.Penalties?.Count.ToString() ?? "None")</MudText>
+                            <MudText Class="mud-text-secondary">Penalties</MudText>
+                        </MudPaper>
                     </MudItem>
-                    @if (_hasNotes)
-                    {
-                        <MudItem xs="12">
-                            <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
+                    <MudItem xs="3">
+                        <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
+                            <MudText Typo="Typo.subtitle1" Color="Color.Info">@_lastConnectedServer</MudText>
+                            <MudText Class="mud-text-secondary">Last Connected Server</MudText>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
+                            <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.HeartBeat > DateTimeOffset.UtcNow.AddMinutes(5) ? "Online" : _entity.HeartBeat.Humanize())</MudText>
+                            <MudText Class="mud-text-secondary">Last Seen</MudText>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
+                            <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.TotalConnections == 0 ? "None" : _entity.TotalConnections)</MudText>
+                            <MudText Class="mud-text-secondary">Total Connections</MudText>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
+                            <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.PlayTime == TimeSpan.Zero ? "None" : _entity.PlayTime.Value.Humanize())</MudText>
+                            <MudText Class="mud-text-secondary">Total Playtime</MudText>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
+                            <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.TotalConnections == 0 || _entity.PlayTime == TimeSpan.Zero ? "None" : (_entity.PlayTime / _entity.TotalConnections).Value.Humanize())</MudText>
+                            <MudText Class="mud-text-secondary">Average Playtime</MudText>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
+                            <MudElement Class="d-flex">
+                                <MudElement Class="flex-grow-1">
+                                    <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.Notes?.Count == 0 ? "None" : _entity.Notes?.Count.ToString() ?? "None")</MudText>
+                                </MudElement>
+                                <MudElement Class="justify-center align-self-center">
+                                    <MudButton Variant="Variant.Outlined" Color="Color.Tertiary" Size="Size.Small">
+                                        <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Add"/>
+                                    </MudButton>
+                                </MudElement>
+                            </MudElement>
+                            <MudElement Class="d-flex">
+                                <MudText Class="mud-text-secondary">Notes</MudText>
+                            </MudElement>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </MudElement>
 
+            <MudElement Class="mt-4">
+                <MudTabs Position="Position.Left" Elevation="2" Rounded="true" PanelClass="d-flex flex-column ml-4" Color="Color.Inherit">
+                    <MudTabPanel Text="Penalties">
+                        <MudElement Class="flex-grow-1 d-flex flex-column">
+                            @if (!_entity.Penalties.Any())
+                            {
+                                <MudPaper Class="pa-4">
+                                    <MudText Align="Align.Center" Class="mud-text-disabled" Typo="Typo.h6">The user has no penalties.</MudText>
+                                </MudPaper>
+                            }
+                            else
+                            {
+                                <MudTable Items="@_entity.Penalties" Hover="true" Dense="true" FixedHeader="true" Height="100%" @ref="_mudTable" OnRowClick="RowClickEvent" T="PenaltyDto">
+                                    <HeaderContent>
+                                        <MudTh>
+                                            <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Admin.Alias.UserName)">Admin</MudTableSortLabel>
+                                        </MudTh>
+                                        <MudTh>
+                                            <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Reason)">Reason</MudTableSortLabel>
+                                        </MudTh>
+                                        <MudTh>
+                                            <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyType)">Type</MudTableSortLabel>
+                                        </MudTh>
+                                        <MudTh>
+                                            <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyScope)">Scope</MudTableSortLabel>
+                                        </MudTh>
+                                        <MudTh>
+                                            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<PenaltyDto, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
+                                        </MudTh>
+                                        <MudTh/>
+                                    </HeaderContent>
+                                    <RowTemplate>
+                                        <MudTd DataLabel="Admin">@context.Admin.Alias.UserName</MudTd>
+                                        <MudTd DataLabel="Reason">@context.Reason</MudTd>
+                                        <MudTd DataLabel="Type">@context.PenaltyType.ToString()</MudTd>
+                                        <MudTd DataLabel="Scope">@context.PenaltyScope.ToString()</MudTd>
+                                        <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
+                                        <MudTd DataLabel="View">
+                                            <MudChip Variant="Variant.Outlined" Size="Size.Small" Color="Color.Info">
+                                                <MudIcon Icon="@Icons.Material.Filled.RemoveRedEye"/>
+                                            </MudChip>
+                                        </MudTd>
+                                    </RowTemplate>
+                                </MudTable>
+                            }
+                        </MudElement>
+                    </MudTabPanel>
+                    <MudTabPanel Text="Notes">
+                        <MudElement Class="flex-grow-1 d-flex flex-column">
+                            @if (!_hasNotes)
+                            {
+                                <MudPaper Class="pa-4">
+                                    <MudText Align="Align.Center" Class="flex-grow-1 mud-text-disabled" Typo="Typo.h6">The user has no notes.</MudText>
+                                </MudPaper>
+                            }
+                            else
+                            {
                                 <MudSimpleTable Hover="true" Dense="true" FixedHeader="true" Style="height:300px;">
                                     <thead>
                                     <tr>
@@ -121,13 +187,13 @@ else
                                     }
                                     </tbody>
                                 </MudSimpleTable>
-                            </MudPaper>
-                        </MudItem>
-                    }
-                </MudGrid>
-            </MudItem>
-        </MudGrid>
-    </MudContainer>
+                            }
+                        </MudElement>
+                    </MudTabPanel>
+                </MudTabs>
+            </MudElement>
+        </MudElement>
+    }
 }
 
 @code
@@ -136,10 +202,12 @@ else
     public string? Identity { get; set; }
 
     private EntityDto? _entity;
-    private bool _isGlobalBanned;
     private bool _hasNotes;
     private string? _lastConnectedServer;
     private string _title = "Not Found";
+    private bool _loading = true;
+    private string _guid = string.Empty;
+    private string _gameName = string.Empty;
     private MudTable<PenaltyDto>? _mudTable;
 
     protected override async Task OnInitializedAsync()
@@ -151,13 +219,20 @@ else
         }
 
         var request = await Http.GetAsync($"api/v2/Entity?identity={Identity}");
-        if (!request.IsSuccessStatusCode) return;
+
+        if (!request.IsSuccessStatusCode)
+        {
+            _loading = false;
+            return;
+        }
 
         _entity = await request.Content.ReadFromJsonAsync<EntityDto>();
         if (_entity is not null)
         {
-            _isGlobalBanned = _entity.Penalties?.Any(x => x is {PenaltyStatus: PenaltyStatus.Active, PenaltyScope: PenaltyScope.Global}) ?? false;
             _hasNotes = _entity.Notes is not null && _entity.Notes.Count is not 0;
+            var nameSplit = _entity.Identity.ToUpper().Split(':');
+            _guid = nameSplit[0];
+            _gameName = nameSplit[1];
             _title = _entity.Alias.UserName;
         }
 
@@ -170,6 +245,8 @@ else
         {
             _lastConnectedServer = "None";
         }
+
+        _loading = false;
     }
 
     private async Task RowClickEvent(TableRowClickEventArgs<PenaltyDto> tableRowClickEventArgs)

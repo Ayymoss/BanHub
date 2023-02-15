@@ -3,7 +3,8 @@
 
 <PageTitle>Penalties | Ban Hub</PageTitle>
 
-<MudText Typo="Typo.h4" GutterBottom="true">Penalties</MudText>
+<MudText Typo="Typo.h4" GutterBottom="true" Class="ml-6 mud-text-secondary">Penalties</MudText>
+
 
 <MudTable ServerData="@(new Func<TableState, Task<TableData<PenaltyDto>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true" Hover="true" @ref="_table">
     <ToolBarContent>

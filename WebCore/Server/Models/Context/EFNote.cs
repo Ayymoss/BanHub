@@ -16,6 +16,11 @@ public class EFNote
     /// The associated note
     /// </summary>
     public required string Message { get; set; }
+    
+    /// <summary>
+    /// Is the note public
+    /// </summary>
+    public required bool IsPrivate { get; set; }
 
     /// <summary>
     /// The admin who issued the note

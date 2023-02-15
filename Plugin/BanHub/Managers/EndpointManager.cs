@@ -117,7 +117,7 @@ public class EndpointManager
         var globalBan = entity.Penalties?
             .Any(x => x is {PenaltyType: PenaltyType.Ban, PenaltyScope: PenaltyScope.Global, PenaltyStatus: PenaltyStatus.Active}) ?? false;
 
-        if (!entity.HasIdentityBan && (!globalBan || !client.IsIngame)) return;
+        if (!entity.HasIdentityBan!.Value && (!globalBan || !client.IsIngame)) return;
         
         client.Kick("^1Globally banned!^7\nBanHub.gg", Utilities.IW4MAdminClient(client.CurrentServer));
         _logger.LogInformation("{Name} globally banned. Referenced? {Association}", client.CleanedName, entity.HasIdentityBan);

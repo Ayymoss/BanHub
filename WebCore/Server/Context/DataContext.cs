@@ -64,7 +64,9 @@ public class DataContext : DbContext
             Created = DateTimeOffset.UtcNow,
             WebRole = WebRole.WebUser,
             InstanceRole = InstanceRole.InstanceUser,
-            Penalties = new List<EFPenalty>()
+            Penalties = new List<EFPenalty>(),
+            TotalConnections = 0,
+            PlayTime = TimeSpan.Zero
         };
 
         var adminCurrentAlias = new EFCurrentAlias
