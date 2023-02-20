@@ -8,6 +8,11 @@ public class EFNote
     [Key] public int Id { get; set; }
 
     /// <summary>
+    /// Identifier for note
+    /// </summary>
+    public required Guid NoteGuid { get; set; }
+
+    /// <summary>
     /// Time the note was issued
     /// </summary>
     public required DateTimeOffset Created { get; set; }

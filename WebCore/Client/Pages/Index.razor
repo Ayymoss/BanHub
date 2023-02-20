@@ -3,6 +3,12 @@
 
 <PageTitle>Index | Ban Hub</PageTitle>
 
+<MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true" Class="d-flex flex-column align-center">
+    <MudText Align="Align.Center">You're accessing this site from a mobile. </MudText>
+    <MudText Align="Align.Center">A lot of the pages have not yet been recreated for mobile views.</MudText>
+    <MudText Align="Align.Center">Please view this on a desktop.</MudText>
+</MudHidden>
+
 <MudContainer Class="mt-16 px-8" MaxWidth="MaxWidth.False">
     <MudGrid>
         <MudItem xs="12" sm="6">
@@ -22,7 +28,7 @@
                     <br/>
                     <MudTable Dense="true" Items="@_penaltyTable" Hover="true" FixedHeader="true" Height="100%" T="PenaltyDto">
                         <HeaderContent>
-                            <MudTh>Instance</MudTh>
+                            <MudTh>Community</MudTh>
                             <MudTh>Target</MudTh>
                             <MudTh>Reason</MudTh>
                             <MudTh>When?</MudTh>
@@ -46,36 +52,32 @@
         <MudItem xs="12" sm="6">
             <MudGrid>
                 <MudItem xs="12">
-                  
-                        <MudGrid Spacing="2" Justify="Justify.FlexStart">
-                            <MudItem xs="3">
-                                <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
-                                    <MudText Typo="Typo.subtitle1" Color="Color.Info">@_penalties</MudText>
-                                    <MudText Class="mud-text-secondary">Penalties</MudText>
-                                </MudPaper>
-                            </MudItem>
-                            <MudItem xs="3">
-                                <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
-                                    <MudText Typo="Typo.subtitle1" Color="Color.Info">@_entities</MudText>
-                                    <MudText Class="mud-text-secondary">Users</MudText>
-                                </MudPaper>
-                            </MudItem>
-                            <MudItem xs="3">
-                                <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
-                                    <MudText Typo="Typo.subtitle1" Color="Color.Info">@_instances</MudText>
-                                    <MudText Class="mud-text-secondary">Instances</MudText>
-                                </MudPaper>
-                            </MudItem>
-                            <MudItem xs="3">
-                                <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
-                                    <MudText Typo="Typo.subtitle1" Color="Color.Info">@_servers</MudText>
-                                    <MudText Class="mud-text-secondary">Servers</MudText>
-                                </MudPaper>
-                            </MudItem>
-                        </MudGrid>
-                        
-
-
+                    <MudGrid Spacing="2" Justify="Justify.FlexStart">
+                        <MudItem xs="3">
+                            <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
+                                <MudText Typo="Typo.subtitle1" Color="Color.Info">@_penalties</MudText>
+                                <MudText Class="mud-text-secondary">Penalties</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
+                                <MudText Typo="Typo.subtitle1" Color="Color.Info">@_entities</MudText>
+                                <MudText Class="mud-text-secondary">Users</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
+                                <MudText Typo="Typo.subtitle1" Color="Color.Info">@_instances</MudText>
+                                <MudText Class="mud-text-secondary">Communities</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
+                                <MudText Typo="Typo.subtitle1" Color="Color.Info">@_servers</MudText>
+                                <MudText Class="mud-text-secondary">Servers</MudText>
+                            </MudPaper>
+                        </MudItem>
+                    </MudGrid>
                 </MudItem>
                 <MudItem xs="12" class="align-self-stretch">
                     <MudPaper Elevation="2" Class="pa-4" Style="height: 100%;">

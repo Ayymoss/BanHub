@@ -19,7 +19,7 @@ public class SearchController : ControllerBase
     public async Task<ActionResult<List<SearchDto>>> Search([FromQuery] string query)
     {
         if (query.Length < 3) return BadRequest();
-        var result = await _searchService.Search(query);
+        var result = await _searchService.SearchAsync(query);
         return Ok(result);
     }
 }

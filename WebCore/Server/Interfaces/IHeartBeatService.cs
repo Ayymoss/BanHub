@@ -5,6 +5,6 @@ namespace BanHub.WebCore.Server.Interfaces;
 
 public interface IHeartBeatService
 {
-    Task<(ControllerEnums.ProfileReturnState, bool)> InstanceHeartbeat(InstanceDto request);
-    Task EntitiesHeartbeat(List<EntityDto> request);
+    Task<(ControllerEnums.ReturnState, bool)> InstanceHeartbeatAsync(InstanceDto request);
+    Task EntitiesHeartbeatAsync(List<EntityDto> request);
 }

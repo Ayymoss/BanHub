@@ -19,13 +19,13 @@ public class ServerService : IServerService
         _statisticService = statisticService;
     }
 
-    public async Task<ControllerEnums.ProfileReturnState> Add(ServerDto request)
+    public async Task<ControllerEnums.ReturnState> AddAsync(ServerDto request)
     {
         var instance = await _context.Instances.FirstOrDefaultAsync(x => x.InstanceGuid == request.Instance!.InstanceGuid);
-        if (instance is null) return ControllerEnums.ProfileReturnState.NotFound;
+        if (instance is null) return ControllerEnums.ReturnState.NotFound;
 
         var server = await _context.Servers.FirstOrDefaultAsync(x => x.ServerId == request.ServerId);
-        if (server is not null) return ControllerEnums.ProfileReturnState.Conflict;
+        if (server is not null) return ControllerEnums.ReturnState.Conflict;
 
         var efServer = new EFServer
         {
@@ -36,14 +36,14 @@ public class ServerService : IServerService
             InstanceId = instance.Id,
         };
 
-        await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.ServerCount, ControllerEnums.StatisticTypeAction.Add);
+        await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.ServerCount, ControllerEnums.StatisticTypeAction.Add);
         
         _context.Servers.Add(efServer);
         await _context.SaveChangesAsync();
-        return ControllerEnums.ProfileReturnState.Ok;
+        return ControllerEnums.ReturnState.Ok;
     }
 
-    public async Task<(ControllerEnums.ProfileReturnState, ServerDto?)> Get(string serverId)
+    public async Task<(ControllerEnums.ReturnState, ServerDto?)> GetAsync(string serverId)
     {
         var server = await _context.Servers
             .Where(x => x.ServerId == serverId)
@@ -56,6 +56,6 @@ public class ServerService : IServerService
             })
             .FirstOrDefaultAsync();
 
-        return server is null ? (ControllerEnums.ProfileReturnState.NotFound, null) : (ControllerEnums.ProfileReturnState.Ok, server);
+        return server is null ? (ControllerEnums.ReturnState.NotFound, null) : (ControllerEnums.ReturnState.Ok, server);
     }
 }

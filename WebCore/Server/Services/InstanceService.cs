@@ -24,7 +24,7 @@ public class InstanceService : IInstanceService
         _statisticService = statisticService;
     }
 
-    public async Task<(ControllerEnums.ProfileReturnState, string)> CreateOrUpdate(InstanceDto request, string? requestIpAddress)
+    public async Task<(ControllerEnums.ReturnState, string)> CreateOrUpdateAsync(InstanceDto request, string? requestIpAddress)
     {
         var instanceGuid = await _context.Instances
             .AsTracking()
@@ -48,21 +48,21 @@ public class InstanceService : IInstanceService
                 Created = DateTimeOffset.UtcNow
             });
 
-            await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.InstanceCount, ControllerEnums.StatisticTypeAction.Add);
+            await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.InstanceCount, ControllerEnums.StatisticTypeAction.Add);
             await _context.SaveChangesAsync();
 
-            return (ControllerEnums.ProfileReturnState.Created, $"Instance added {request.InstanceGuid}");
+            return (ControllerEnums.ReturnState.Created, $"Instance added {request.InstanceGuid}");
         }
 
         // TODO: Update this... It doesn't check a mismatch...
-        if (instanceGuid is null || instanceApi is null) return (ControllerEnums.ProfileReturnState.BadRequest, "GUID + API mismatch");
+        if (instanceGuid is null || instanceApi is null) return (ControllerEnums.ReturnState.BadRequest, "GUID + API mismatch");
         if (instanceGuid.Id != instanceApi.Id)
-            return (ControllerEnums.ProfileReturnState.Conflict, "Instance already exists with this API key.");
+            return (ControllerEnums.ReturnState.Conflict, "Instance already exists with this API key.");
 
         // Warn if IP address has changed... this really shouldn't happen.
         if (requestIpAddress is not null && requestIpAddress != instanceGuid.InstanceIp)
         {
-            await _discordWebhook.CreateIssueHook(instanceGuid.InstanceGuid, request.InstanceIp!, requestIpAddress);
+            await _discordWebhook.CreateIssueHookAsync(instanceGuid.InstanceGuid, request.InstanceIp!, requestIpAddress);
         }
 
         // Update existing record
@@ -72,19 +72,19 @@ public class InstanceService : IInstanceService
         await _context.SaveChangesAsync();
 
         return instanceGuid.Active
-            ? (ControllerEnums.ProfileReturnState.Accepted, "Instance exists, and is active.")
-            : (ControllerEnums.ProfileReturnState.Ok, "Instance exists, but is not active.");
+            ? (ControllerEnums.ReturnState.Accepted, "Instance exists, and is active.")
+            : (ControllerEnums.ReturnState.Ok, "Instance exists, but is not active.");
     }
 
-    public async Task<(ControllerEnums.ProfileReturnState, InstanceDto?)> GetInstance(string guid)
+    public async Task<(ControllerEnums.ReturnState, InstanceDto?)> GetInstanceAsync(string guid)
     {
         var guidParse = Guid.TryParse(guid, out var guidResult);
-        if (!guidParse) return (ControllerEnums.ProfileReturnState.BadRequest, null);
+        if (!guidParse) return (ControllerEnums.ReturnState.BadRequest, null);
 
         var result = await _context.Instances.SingleOrDefaultAsync(x => x.InstanceGuid == guidResult);
-        if (result is null) return (ControllerEnums.ProfileReturnState.NotFound, null);
+        if (result is null) return (ControllerEnums.ReturnState.NotFound, null);
 
-        return (ControllerEnums.ProfileReturnState.Ok, new InstanceDto
+        return (ControllerEnums.ReturnState.Ok, new InstanceDto
         {
             InstanceGuid = result.InstanceGuid,
             InstanceIp = result.InstanceIp,
@@ -93,7 +93,7 @@ public class InstanceService : IInstanceService
         });
     }
 
-    public async Task<List<InstanceDto>> Pagination(PaginationDto pagination)
+    public async Task<List<InstanceDto>> PaginationAsync(PaginationDto pagination)
     {
         var query = _context.Instances.AsQueryable();
 
@@ -132,18 +132,18 @@ public class InstanceService : IInstanceService
         return pagedData;
     }
 
-    public async Task<ControllerEnums.ProfileReturnState> IsInstanceActive(string instanceGuid)
+    public async Task<ControllerEnums.ReturnState> IsInstanceActiveAsync(string instanceGuid)
     {
         var guidParse = Guid.TryParse(instanceGuid, out var guidResult);
-        if (!guidParse) return ControllerEnums.ProfileReturnState.BadRequest;
+        if (!guidParse) return ControllerEnums.ReturnState.BadRequest;
         var result = await _context.Instances.SingleOrDefaultAsync(x => x.InstanceGuid == guidResult);
-        if (result is null) return ControllerEnums.ProfileReturnState.NotFound;
+        if (result is null) return ControllerEnums.ReturnState.NotFound;
 
         if (result.Active && _apiKeyCache.ApiKeys is not null && !_apiKeyCache.ApiKeys.Contains(result.ApiKey))
         {
             _apiKeyCache.ApiKeys.Add(result.ApiKey);
         }
 
-        return result.Active ? ControllerEnums.ProfileReturnState.Accepted : ControllerEnums.ProfileReturnState.Unauthorized;
+        return result.Active ? ControllerEnums.ReturnState.Accepted : ControllerEnums.ReturnState.Unauthorized;
     }
 }

@@ -1,0 +1,108 @@
+﻿@using System.Security.Claims
+@inject ISnackbar SnackbarService
+@inject HttpClient Http
+@inject AuthenticationStateProvider AuthStateProvider
+@attribute [Authorize(Roles = "WebAdmin, WebSuperAdmin, InstanceModerator, InstanceAdmin, InstanceSuperAdmin, InstanceOwner")]
+
+<MudDialog>
+    <DialogContent>
+        <MudElement Class="d-flex flex-column">
+            <MudText Typo="Typo.subtitle1">Note reason...</MudText>
+            <MudTextField @bind-Value="_noteMessage" AutoFocus="false" Immediate="true" MaxLength="256" Label="Reason" Variant="Variant.Text" Counter="256" AdornmentIcon="@Icons.Material.Filled.Warning" Adornment="Adornment.End"/>
+            <MudSwitch @bind-Checked="_isPrivateNote" Color="Color.Tertiary">Privatise this Note? (@(_isPrivateNote ? "Yes" : "No"))</MudSwitch>
+        </MudElement>
+        <MudElement Class="d-flex flex-column mb-3">
+            <MudDivider FlexItem="true" DividerType="DividerType.Inset" Class="mx-n6 mb-4 mt-8"/>
+            <MudElement Class="d-flex">
+                <MudSpacer/>
+                <MudButton Class="flex-shrink-1" Variant="Variant.Text" Size="Size.Small" OnClick="ToggleOpen">Close</MudButton>
+                <MudButton Class="flex-shrink-1 ml-2" Disabled="@_processing" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" ButtonType="ButtonType.Submit" OnClick="CreateNote">
+                    @if (_processing)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                        <MudText Class="ms-2">Loading...</MudText>
+                    }
+                    else
+                    {
+                        <MudText>Add</MudText>
+                    }
+                </MudButton>
+            </MudElement>
+        </MudElement>
+
+    </DialogContent>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public string Identity { get; set; } = null!;
+
+    private bool _isPrivateNote = true;
+    private string _noteMessage = string.Empty;
+
+    private bool _processing;
+
+    private void ToggleOpen() => MudDialog.Close();
+
+    private async Task CreateNote()
+    {
+        _processing = true;
+
+        if (_noteMessage.Length < 6)
+        {
+            SnackbarService.Add("Too short of a note", Severity.Warning);
+            _processing = false;
+            return;
+        }
+
+        var authenticatedUser = (await (AuthStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
+        var adminIdentity = authenticatedUser.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+        var adminName = authenticatedUser.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+
+        if (adminName is null || adminIdentity is null)
+        {
+            SnackbarService.Add("Failed to get admin identities!", Severity.Error);
+            _processing = false;
+            MudDialog.Cancel();
+            return;
+        }
+
+        var note = new NoteDto
+        {
+            Message = _noteMessage,
+            IsPrivate = _isPrivateNote,
+            Target = new EntityDto
+            {
+                Identity = Identity
+            },
+            Admin = new EntityDto
+            {
+                Alias = new AliasDto
+                {
+                    UserName = adminName
+                },
+                Identity = adminIdentity
+            },
+            Created = DateTimeOffset.UtcNow,
+            NoteGuid = Guid.NewGuid()
+        };
+
+        var request = await Http.PostAsJsonAsync("api/v2/Entity/AddNote", note);
+        if (!request.IsSuccessStatusCode)
+        {
+            SnackbarService.Add("Failed to add note!", Severity.Error);
+            _processing = false;
+            MudDialog.Cancel();
+            return;
+        }
+
+        SnackbarService.Add("Note added!", Severity.Success);
+        _processing = false;
+        MudDialog.Close(DialogResult.Ok(note));
+    }
+
+}

@@ -21,12 +21,12 @@ public class ServerController : ControllerBase
     [HttpPost, PluginAuthentication]
     public async Task<ActionResult> Add([FromQuery] string authToken, [FromBody] ServerDto request)
     {
-        var result = await _serverService.Add(request);
+        var result = await _serverService.AddAsync(request);
         return result switch
         {
-            ControllerEnums.ProfileReturnState.NotFound => NotFound(),
-            ControllerEnums.ProfileReturnState.Conflict => NoContent(),
-            ControllerEnums.ProfileReturnState.Ok => Ok(),
+            ControllerEnums.ReturnState.NotFound => NotFound(),
+            ControllerEnums.ReturnState.Conflict => NoContent(),
+            ControllerEnums.ReturnState.Ok => Ok(),
             _ => BadRequest() 
         };
     }
@@ -34,11 +34,11 @@ public class ServerController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<ServerDto>> Get([FromQuery] string serverId)
     {
-        var result = await _serverService.Get(serverId);
+        var result = await _serverService.GetAsync(serverId);
         return result.Item1 switch
         {
-            ControllerEnums.ProfileReturnState.NotFound => NotFound(),
-            ControllerEnums.ProfileReturnState.Ok => Ok(result.Item2),
+            ControllerEnums.ReturnState.NotFound => NotFound(),
+            ControllerEnums.ReturnState.Ok => Ok(result.Item2),
             _ => BadRequest() 
         };
     }

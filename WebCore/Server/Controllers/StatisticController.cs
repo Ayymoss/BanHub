@@ -18,7 +18,7 @@ public class StatisticController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<StatisticDto>> Statistics()
     {
-        var result = await _statisticService.GetStatistics();
+        var result = await _statisticService.GetStatisticsAsync();
         return Ok(result);
     }
 }

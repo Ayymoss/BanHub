@@ -6,8 +6,8 @@ namespace BanHub.WebCore.Server.Interfaces;
 
 public interface IStatisticService
 {
-    Task UpdateStatistic(ControllerEnums.StatisticType statistic, ControllerEnums.StatisticTypeAction action);
-    Task<StatisticDto> GetStatistics();
-    Task UpdateOnlineStatistic(StatisticUsersOnline statisticUsers);
-    Task UpdateDayStatistic(StatisticBan statisticBan);
+    Task UpdateStatisticAsync(ControllerEnums.StatisticType statistic, ControllerEnums.StatisticTypeAction action);
+    Task<StatisticDto> GetStatisticsAsync();
+    Task UpdateOnlineStatisticAsync(StatisticUsersOnline statisticUsers);
+    Task UpdateDayStatisticAsync(StatisticBan statisticBan);
 }

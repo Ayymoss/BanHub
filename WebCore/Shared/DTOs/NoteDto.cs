@@ -3,9 +3,9 @@
 public class NoteDto
 {
     /// <summary>
-    /// The database ID for the note
+    /// The database guid for the note
     /// </summary>
-    public int Id { get; set; }
+    public Guid? NoteGuid { get; set; }
     
     /// <summary>
     /// Time the note was issued
@@ -21,6 +21,11 @@ public class NoteDto
     /// Is the note public
     /// </summary>
     public bool? IsPrivate { get; set; }
+    
+    /// <summary>
+    /// Reason for the deletion (Web)
+    /// </summary>
+    public string? DeletionReason { get; set; }
 
     /// <summary>
     /// The admin who issued the note

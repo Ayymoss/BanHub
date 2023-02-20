@@ -18,20 +18,20 @@ public class HeartBeatService : IHeartBeatService
         _statisticService = statisticService;
     }
 
-    public async Task<(ControllerEnums.ProfileReturnState, bool)> InstanceHeartbeat(InstanceDto request)
+    public async Task<(ControllerEnums.ReturnState, bool)> InstanceHeartbeatAsync(InstanceDto request)
     {
         var instance = await _context.Instances
             .AsTracking()
             .FirstOrDefaultAsync(x => x.InstanceGuid == request.InstanceGuid && x.ApiKey == request.ApiKey);
-        if (instance is null) return (ControllerEnums.ProfileReturnState.NotFound, false);
+        if (instance is null) return (ControllerEnums.ReturnState.NotFound, false);
 
         instance.HeartBeat = DateTimeOffset.UtcNow;
         _context.Instances.Update(instance);
         await _context.SaveChangesAsync();
-        return (ControllerEnums.ProfileReturnState.Updated, instance.Active);
+        return (ControllerEnums.ReturnState.Updated, instance.Active);
     }
 
-    public async Task EntitiesHeartbeat(List<EntityDto> request)
+    public async Task EntitiesHeartbeatAsync(List<EntityDto> request)
     {
         var profiles = await _context.Entities
             .AsTracking()
@@ -50,7 +50,7 @@ public class HeartBeatService : IHeartBeatService
         var count = request.Count;
         if (count is not 0 && request[0].Instance is not null)
         {
-            await _statisticService.UpdateOnlineStatistic(new StatisticUsersOnline
+            await _statisticService.UpdateOnlineStatisticAsync(new StatisticUsersOnline
             {
                 InstanceGuid = request[0].Instance!.InstanceGuid,
                 Online = count,

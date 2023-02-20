@@ -5,11 +5,11 @@ namespace BanHub.WebCore.Server.Interfaces;
 
 public interface IPenaltyService
 {
-    Task<(ControllerEnums.ProfileReturnState, Guid?)> AddPenalty(PenaltyDto request);
-    Task<(ControllerEnums.ProfileReturnState, PenaltyDto?)> GetPenalty(string penaltyGuid);
-    Task<(ControllerEnums.ProfileReturnState, List<PenaltyDto>?)> GetPenalties();
-    Task<bool> SubmitEvidence(PenaltyDto request);
-    Task<List<PenaltyDto>> Pagination(PaginationDto pagination);
-    Task<List<PenaltyDto>> GetLatestThreeBans();
-    Task<bool> RemovePenalty(PenaltyDto request, string requestingAdmin);
+    Task<(ControllerEnums.ReturnState, Guid?)> AddPenaltyAsync(PenaltyDto request);
+    Task<(ControllerEnums.ReturnState, PenaltyDto?)> GetPenaltyAsync(string penaltyGuid);
+    Task<(ControllerEnums.ReturnState, List<PenaltyDto>?)> GetPenaltiesAsync();
+    Task<bool> SubmitEvidenceAsync(PenaltyDto request);
+    Task<List<PenaltyDto>> PaginationAsync(PaginationDto pagination);
+    Task<List<PenaltyDto>> GetLatestThreeBansAsync();
+    Task<bool> RemovePenaltyAsync(PenaltyDto request, string requestingAdmin);
 }

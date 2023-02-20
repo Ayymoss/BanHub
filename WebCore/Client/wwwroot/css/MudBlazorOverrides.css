@@ -1,0 +1,40 @@
+/* Change the stripe colour */
+:root .mud-table-striped .mud-table-container .mud-table-root .mud-table-body .mud-table-row:nth-of-type(odd) {
+    background-color: #ffffff0d !important;
+}
+
+/* Override the default colour for active */
+:root .mud-tab.mud-tab-active {
+    color: var(--mud-palette-info) !important;
+}
+:root .mud-tab.mud-tab-active:hover {
+    background-color: var(--mud-palette-info-hover) !important;
+}
+
+/* Remove dividers between rows in tables */
+:root .mud-table-cell {
+    border-bottom: unset !important;
+}
+
+/* Adding class names for the colours */
+.mud-theme-primary-darken {
+    background-color: var(--mud-palette-primary-darken) !important;
+}
+.mud-theme-secondary-darken {
+    background-color: var(--mud-palette-secondary-darken) !important;
+}
+.mud-theme-tertiary-darken {
+    background-color: var(--mud-palette-tertiary-darken) !important;
+}
+.mud-theme-info-darken {
+    background-color: var(--mud-palette-info-darken) !important;
+}
+.mud-theme-success-darken {
+    background-color: var(--mud-palette-success-darken) !important;
+}
+.mud-theme-warning-darken {
+    background-color: var(--mud-palette-warning-darken) !important;
+}
+.mud-theme-error-darken {
+    background-color: var(--mud-palette-error-darken) !important;
+}

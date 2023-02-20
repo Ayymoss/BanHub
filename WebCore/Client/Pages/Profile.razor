@@ -1,9 +1,11 @@
 ﻿@page "/Profile"
 @page "/Profile/{Identity}"
 @using System.Security.Claims
+@using BanHub.WebCore.Shared.Utilities
 @inject HttpClient Http
 @inject IDialogService DialogService
 @inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
 
 <PageTitle>@_title | Profile | Ban Hub</PageTitle>
 @if (_loading)
@@ -53,145 +55,218 @@ else
 
 
         <MudElement Class="mt-4 d-flex flex-column">
-            <MudElement>
-                <MudGrid Spacing="2" Justify="Justify.FlexStart">
-                    <MudItem xs="3">
-                        <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                            <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.Penalties?.Count == 0 ? "None" : _entity.Penalties?.Count.ToString() ?? "None")</MudText>
-                            <MudText Class="mud-text-secondary">Penalties</MudText>
-                        </MudPaper>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                            <MudText Typo="Typo.subtitle1" Color="Color.Info">@_lastConnectedServer</MudText>
-                            <MudText Class="mud-text-secondary">Last Connected Server</MudText>
-                        </MudPaper>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                            <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.HeartBeat > DateTimeOffset.UtcNow.AddMinutes(5) ? "Online" : _entity.HeartBeat.Humanize())</MudText>
-                            <MudText Class="mud-text-secondary">Last Seen</MudText>
-                        </MudPaper>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                            <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.TotalConnections == 0 ? "None" : _entity.TotalConnections)</MudText>
-                            <MudText Class="mud-text-secondary">Total Connections</MudText>
-                        </MudPaper>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                            <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.PlayTime == TimeSpan.Zero ? "None" : _entity.PlayTime.Value.Humanize())</MudText>
-                            <MudText Class="mud-text-secondary">Total Playtime</MudText>
-                        </MudPaper>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                            <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.TotalConnections == 0 || _entity.PlayTime == TimeSpan.Zero ? "None" : (_entity.PlayTime / _entity.TotalConnections).Value.Humanize())</MudText>
-                            <MudText Class="mud-text-secondary">Average Playtime</MudText>
-                        </MudPaper>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                            <MudElement Class="d-flex">
-                                <MudElement Class="flex-grow-1">
-                                    <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.Notes?.Count == 0 ? "None" : _entity.Notes?.Count.ToString() ?? "None")</MudText>
-                                </MudElement>
-                                <MudElement Class="justify-center align-self-center">
-                                    <MudButton Variant="Variant.Outlined" Color="Color.Tertiary" Size="Size.Small">
-                                        <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Add"/>
-                                    </MudButton>
-                                </MudElement>
+        <MudElement>
+            <MudGrid Spacing="2" Justify="Justify.FlexStart">
+                <MudItem xs="3">
+                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.Penalties?.Count == 0 ? "None" : _entity.Penalties?.Count.ToString() ?? "None")</MudText>
+                        <MudText Class="mud-text-secondary">Penalties</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="3">
+                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@_lastConnectedServer</MudText>
+                        <MudText Class="mud-text-secondary">Last Connected Server</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="3">
+                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.HeartBeat > DateTimeOffset.UtcNow.AddMinutes(5) ? "Online" : _entity.HeartBeat.Humanize())</MudText>
+                        <MudText Class="mud-text-secondary">Last Seen</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="3">
+                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.TotalConnections == 0 ? "None" : _entity.TotalConnections)</MudText>
+                        <MudText Class="mud-text-secondary">Total Connections</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="3">
+                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.PlayTime == TimeSpan.Zero ? "None" : _entity.PlayTime.Value.Humanize())</MudText>
+                        <MudText Class="mud-text-secondary">Total Playtime</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="3">
+                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.TotalConnections == 0 || _entity.PlayTime == TimeSpan.Zero ? "None" : (_entity.PlayTime / _entity.TotalConnections).Value.Humanize())</MudText>
+                        <MudText Class="mud-text-secondary">Average Playtime</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="3">
+                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
+                        <MudElement Class="d-flex">
+                            <MudElement Class="flex-grow-1">
+                                <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.Notes?.Count == 0 ? "None" : _entity.Notes?.Count.ToString() ?? "None")</MudText>
                             </MudElement>
-                            <MudElement Class="d-flex">
-                                <MudText Class="mud-text-secondary">Notes</MudText>
-                            </MudElement>
-                        </MudPaper>
-                    </MudItem>
-                </MudGrid>
-            </MudElement>
+                            <AuthorizeView Roles="InstanceModerator, InstanceAdministrator, InstanceSeniorAdmin, InstanceOwner, WebAdmin, WebSuperAdmin">
+                                <Authorized>
+                                    <MudElement Class="justify-center align-self-center">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Add" Title="Add Note" Color="Color.Tertiary" OnClick="AddNote"
+                                                       Size="Size.Small" ButtonType="ButtonType.Button" Variant="Variant.Outlined"/>
+                                    </MudElement>
+                                </Authorized>
+                            </AuthorizeView>
+                        </MudElement>
+                        <MudElement Class="d-flex">
+                            <MudText Class="mud-text-secondary">Notes</MudText>
+                        </MudElement>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudElement>
 
-            <MudElement Class="mt-4">
-                <MudTabs Position="Position.Left" Elevation="2" Rounded="true" PanelClass="d-flex flex-column ml-4" Color="Color.Inherit">
-                    <MudTabPanel Text="Penalties">
-                        <MudElement Class="flex-grow-1 d-flex flex-column">
-                            @if (!_entity.Penalties.Any())
-                            {
-                                <MudPaper Class="pa-4">
-                                    <MudText Align="Align.Center" Class="mud-text-disabled" Typo="Typo.h6">The user has no penalties.</MudText>
-                                </MudPaper>
-                            }
-                            else
-                            {
-                                <MudTable Items="@_entity.Penalties" Hover="true" Dense="true" FixedHeader="true" Height="100%" @ref="_mudTable" OnRowClick="RowClickEvent" T="PenaltyDto">
-                                    <HeaderContent>
-                                        <MudTh>
-                                            <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Admin.Alias.UserName)">Admin</MudTableSortLabel>
-                                        </MudTh>
-                                        <MudTh>
-                                            <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Reason)">Reason</MudTableSortLabel>
-                                        </MudTh>
-                                        <MudTh>
-                                            <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyType)">Type</MudTableSortLabel>
-                                        </MudTh>
-                                        <MudTh>
-                                            <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyScope)">Scope</MudTableSortLabel>
-                                        </MudTh>
-                                        <MudTh>
-                                            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<PenaltyDto, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
-                                        </MudTh>
-                                        <MudTh/>
-                                    </HeaderContent>
-                                    <RowTemplate>
-                                        <MudTd DataLabel="Admin">@context.Admin.Alias.UserName</MudTd>
-                                        <MudTd DataLabel="Reason">@context.Reason</MudTd>
-                                        <MudTd DataLabel="Type">@context.PenaltyType.ToString()</MudTd>
-                                        <MudTd DataLabel="Scope">@context.PenaltyScope.ToString()</MudTd>
-                                        <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
-                                        <MudTd DataLabel="View">
-                                            <MudChip Variant="Variant.Outlined" Size="Size.Small" Color="Color.Info">
-                                                <MudIcon Icon="@Icons.Material.Filled.RemoveRedEye"/>
-                                            </MudChip>
-                                        </MudTd>
-                                    </RowTemplate>
-                                </MudTable>
-                            }
-                        </MudElement>
-                    </MudTabPanel>
-                    <MudTabPanel Text="Notes">
-                        <MudElement Class="flex-grow-1 d-flex flex-column">
-                            @if (!_hasNotes)
-                            {
-                                <MudPaper Class="pa-4">
-                                    <MudText Align="Align.Center" Class="flex-grow-1 mud-text-disabled" Typo="Typo.h6">The user has no notes.</MudText>
-                                </MudPaper>
-                            }
-                            else
-                            {
-                                <MudSimpleTable Hover="true" Dense="true" FixedHeader="true" Style="height:300px;">
-                                    <thead>
-                                    <tr>
-                                        <th>Admin</th>
-                                        <th>Note</th>
-                                        <th>Created</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    @foreach (var note in _entity.Notes.OrderByDescending(x => x.Created))
+        <MudElement Class="mt-4">
+            <MudTabs Position="Position.Left" Elevation="2" Rounded="true" PanelClass="d-flex flex-column ml-4" SliderColor="Color.Info">
+                <MudTabPanel Text="Penalties">
+                    <MudElement Class="flex-grow-1 d-flex flex-column">
+                        @if (!_entity.Penalties.Any())
+                        {
+                            <MudPaper Class="pa-4">
+                                <MudText Align="Align.Center" Class="mud-text-secondary" Typo="Typo.h6">The user has no penalties.</MudText>
+                            </MudPaper>
+                        }
+                        else
+                        {
+                            <MudTable Striped="true" HeaderClass="mud-theme-info-darken" Outlined="false" Bordered="false"
+                                      Items="@_entity.Penalties" Dense="true" @ref="_penaltyTable"OnRowClick="PenaltyRowClickEvent"
+                                      T="PenaltyDto" RowsPerPage="10">
+                                <HeaderContent>
+                                    <MudTh Class="rounded-tl py-2">
+                                        <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Admin.Alias.UserName)">Admin</MudTableSortLabel>
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.Reason)">Reason</MudTableSortLabel>
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyType)">Type</MudTableSortLabel>
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudTableSortLabel SortBy="new Func<PenaltyDto, object>(x => x.PenaltyScope)">Scope</MudTableSortLabel>
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<PenaltyDto, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
+                                    </MudTh>
+                                    <MudTh Class="rounded-tr"/>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Admin">@context.Admin.Alias.UserName</MudTd>
+                                    <MudTd DataLabel="Reason">@context.Reason</MudTd>
+                                    <MudTd DataLabel="Type">@context.PenaltyType.ToString()</MudTd>
+                                    <MudTd DataLabel="Scope">@context.PenaltyScope.ToString()</MudTd>
+                                    <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
+                                    <MudTd DataLabel="View">
+                                        <MudChip Variant="Variant.Outlined" Size="Size.Small" Color="Color.Info">
+                                            <MudIcon Icon="@Icons.Material.Filled.RemoveRedEye"/>
+                                        </MudChip>
+                                    </MudTd>
+                                </RowTemplate>
+                                <PagerContent>
+                                    <MudTablePager/>
+                                </PagerContent>
+                            </MudTable>
+                        }
+                    </MudElement>
+                </MudTabPanel>
+
+                <MudTabPanel Text="Connections">
+                    <MudElement Class="flex-grow-1 d-flex flex-column">
+                        @if (!_hasConnections)
+                        {
+                            <MudPaper Class="pa-4">
+                                <MudText Align="Align.Center" Class="flex-grow-1 mud-text-secondary" Typo="Typo.h6">The user has no connections.</MudText>
+                            </MudPaper>
+                        }
+                        else
+                        {
+                            <MudTable Striped="true" HeaderClass="mud-theme-info-darken" Outlined="false" Bordered="false"
+                                      Items="@_entity.Servers" Dense="true" @ref="_connectionTable" T="ServerDto" RowsPerPage="10">
+                                <HeaderContent>
+                                    <MudTh Class="rounded-tl py-2">
+                                        <MudTableSortLabel SortBy="new Func<ServerDto, object>(x => x.ServerName)">Server</MudTableSortLabel>
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudTableSortLabel SortBy="new Func<ServerDto, object>(x => x.ServerId)">Server IP</MudTableSortLabel>
+                                    </MudTh>
+                                    <MudTh Class="rounded-tr">
+                                        <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<ServerDto, object>(x => x.Connected)">Connected</MudTableSortLabel>
+                                    </MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Server">@context.ServerName</MudTd>
+                                    <MudTd DataLabel="Server IP">@context.ServerId</MudTd>
+                                    <MudTd DataLabel="Connected">@context.Connected.Value.Humanize()</MudTd>
+                                </RowTemplate>
+                                <PagerContent>
+                                    <MudTablePager/>
+                                </PagerContent>
+                            </MudTable>
+                        }
+                    </MudElement>
+                </MudTabPanel>
+                <MudTabPanel Text="Notes">
+                    <MudElement Class="flex-grow-1 d-flex flex-column">
+                        @if (!_hasNotes)
+                        {
+                            <MudPaper Class="pa-4">
+                                <MudText Align="Align.Center" Class="flex-grow-1 mud-text-secondary" Typo="Typo.h6">The user has no notes.</MudText>
+                            </MudPaper>
+                        }
+                        else
+                        {
+                            <MudTable Striped="true" HeaderClass="mud-theme-info-darken" Outlined="false" Bordered="false" Items="@_entity.Notes" Dense="true" @ref="_noteTable"
+                                      OnRowClick="NoteRowClickEvent" T="NoteDto" RowsPerPage="10">
+                                <HeaderContent>
+                                    <MudTh Class="rounded-tl py-2">
+                                        <MudTableSortLabel SortBy="new Func<NoteDto, object>(x => x.Message)">Reason</MudTableSortLabel>
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudTableSortLabel SortBy="new Func<NoteDto, object>(x => x.Admin.Alias.UserName)">Admin</MudTableSortLabel>
+                                    </MudTh>
+                                    <MudTh Class="@(_authorisedView ? string.Empty : "rounded-tr")">
+                                        <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<NoteDto, object>(x => x.Created)">Created</MudTableSortLabel>
+                                    </MudTh>
+                                    @if (_authorisedView)
                                     {
-                                        <tr>
-                                            <td>@note.Admin.Alias.UserName</td>
-                                            <td>@note.Message</td>
-                                            <td>@note.Created.Humanize()</td>
-                                        </tr>
+                                        <MudTh Class="rounded-tr" Style="width: 100px;"/>
                                     }
-                                    </tbody>
-                                </MudSimpleTable>
-                            }
-                        </MudElement>
-                    </MudTabPanel>
-                </MudTabs>
-            </MudElement>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Reason">
+                                        <MudElement Class="d-flex align-center">
+                                            @if (!context.IsPrivate!.Value)
+                                            {
+                                                <MudElement Class="mr-2">
+                                                    <MudTooltip RootClass="d-flex" Arrow="true" Placement="Placement.Top" Text="Public Note">
+                                                        <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Public"/>
+                                                    </MudTooltip>
+                                                </MudElement>
+                                            }
+                                            <MudElement>@context.Message</MudElement>
+                                        </MudElement>
+                                    </MudTd>
+                                    <MudTd DataLabel="Admin">@context.Admin.Alias.UserName</MudTd>
+                                    <MudTd DataLabel="Created">@context.Created.Humanize()</MudTd>
+                                    @if (_authorisedView)
+                                    {
+                                        <MudTd DataLabel="Delete">
+                                            <MudElement Class="d-flex justify-center">
+                                                <MudChip Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error">
+                                                    <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Delete"/>
+                                                </MudChip>
+                                            </MudElement>
+                                        </MudTd>
+                                    }
+                                </RowTemplate>
+                                <PagerContent>
+                                    <MudTablePager/>
+                                </PagerContent>
+                            </MudTable>
+                        }
+                    </MudElement>
+                </MudTabPanel>
+            </MudTabs>
+        </MudElement>
         </MudElement>
     }
 }
@@ -203,23 +278,38 @@ else
 
     private EntityDto? _entity;
     private bool _hasNotes;
-    private string? _lastConnectedServer;
+    private bool _hasConnections;
+    private string _lastConnectedServer = "None";
     private string _title = "Not Found";
     private bool _loading = true;
     private string _guid = string.Empty;
     private string _gameName = string.Empty;
-    private MudTable<PenaltyDto>? _mudTable;
+    private bool _authorisedView;
+    private MudTable<PenaltyDto>? _penaltyTable;
+    private MudTable<NoteDto>? _noteTable;
+    private MudTable<ServerDto>? _connectionTable;
 
     protected override async Task OnInitializedAsync()
     {
-        if (Identity is null)
-        {
-            var user = (await (AuthStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
-            Identity = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-        }
+        NavigationManager.LocationChanged += OnLocationChanged;
+        await LoadProfile();
+    }
 
-        var request = await Http.GetAsync($"api/v2/Entity?identity={Identity}");
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        await LoadProfile();
+        _loading = true;
+        Identity = null;
+        StateHasChanged();
+    }
 
+    private async Task LoadProfile()
+    {
+        var user = (await (AuthStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
+        Identity ??= user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        _authorisedView = user.IsInAnyRole("WebAdmin", "WebSuperAdmin");
+
+        var request = await Http.GetAsync(Http.ParseUri("api/v2/Entity", new {Identity}));
         if (!request.IsSuccessStatusCode)
         {
             _loading = false;
@@ -230,6 +320,7 @@ else
         if (_entity is not null)
         {
             _hasNotes = _entity.Notes is not null && _entity.Notes.Count is not 0;
+            _hasConnections = _entity.Servers is not null && _entity.Servers.Count is not 0;
             var nameSplit = _entity.Identity.ToUpper().Split(':');
             _guid = nameSplit[0];
             _gameName = nameSplit[1];
@@ -241,15 +332,11 @@ else
             var server = _entity.Servers.MaxBy(x => x.Connected);
             _lastConnectedServer = $"({server?.Instance?.InstanceName ?? "NoSetName"}) {server?.ServerName ?? "Error"}";
         }
-        else
-        {
-            _lastConnectedServer = "None";
-        }
 
         _loading = false;
     }
 
-    private async Task RowClickEvent(TableRowClickEventArgs<PenaltyDto> tableRowClickEventArgs)
+    private async Task PenaltyRowClickEvent(TableRowClickEventArgs<PenaltyDto> tableRowClickEventArgs)
     {
         var parameters = new DialogParameters
         {
@@ -269,5 +356,44 @@ else
         }
     }
 
+    private async Task NoteRowClickEvent(TableRowClickEventArgs<NoteDto> clickEvent)
+    {
+        var parameters = new DialogParameters
+        {
+            {"Note", clickEvent.Item}
+        };
 
+        var options = new DialogOptions {CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Medium, CloseOnEscapeKey = true};
+
+        var dialog = await DialogService.ShowAsync<ProfileDeleteNoteDialog>("Delete Note?", parameters, options);
+        var result = await dialog.Result;
+
+        if (result?.Data is NoteDto note)
+        {
+            _entity!.Notes!.Remove(note);
+            _hasNotes = _entity.Notes.Count is not 0;
+            StateHasChanged();
+        }
+    }
+
+    private async Task AddNote()
+    {
+        var parameters = new DialogParameters
+        {
+            {"Identity", _entity!.Identity}
+        };
+
+        var options = new DialogOptions {CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Medium, CloseOnEscapeKey = true};
+        var dialog = await DialogService.ShowAsync<ProfileAddNoteDialog>("Add Note?", parameters, options);
+        var result = await dialog.Result;
+
+        if (result?.Data is NoteDto note)
+        {
+            _entity!.Notes!.Add(note);
+            _hasNotes = _entity.Notes.Count is not 0;
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose() => NavigationManager.LocationChanged -= OnLocationChanged;
 }

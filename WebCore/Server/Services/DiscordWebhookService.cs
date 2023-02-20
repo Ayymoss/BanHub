@@ -14,7 +14,7 @@ public class DiscordWebhookService : IDiscordWebhookService
         _configuration = configuration;
     }
 
-    public async Task CreatePenaltyHook(PenaltyScope scope, PenaltyType penaltyType, Guid penaltyGuid, string identity, 
+    public async Task CreatePenaltyHookAsync(PenaltyScope scope, PenaltyType penaltyType, Guid penaltyGuid, string identity, 
         string username, string reason)
     {
         Color color;
@@ -58,7 +58,7 @@ public class DiscordWebhookService : IDiscordWebhookService
         await SendWebhook(embedBuilder.Build(), _configuration.PenaltyWebHook);
     } 
     
-    public async Task CreateIssueHook(Guid instanceGuid, string ipOnRecord, string incomingIp)
+    public async Task CreateIssueHookAsync(Guid instanceGuid, string ipOnRecord, string incomingIp)
     {
         var embedBuilder = new EmbedBuilder
         {
@@ -72,11 +72,11 @@ public class DiscordWebhookService : IDiscordWebhookService
         await SendWebhook(embedBuilder.Build(), _configuration.InstanceWebHook);
     }
 
-    public async Task CreateAdminActionHook(string message)
+    public async Task CreateAdminActionHookAsync(string title, string message)
     {
         var embedBuilder = new EmbedBuilder
         {
-            Title = "Admin Action!",
+            Title = $"Admin Action - {title}",
             Description = message,
             Color = Color.DarkRed
         };

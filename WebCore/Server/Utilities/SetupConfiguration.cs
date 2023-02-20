@@ -6,7 +6,7 @@ namespace BanHub.WebCore.Server.Utilities;
 
 public static class SetupConfiguration
 {
-    public static async void InitConfiguration()
+    public static async void InitConfigurationAsync()
     {
         var workingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
@@ -41,13 +41,13 @@ public static class SetupConfiguration
 
         if (newConfigVersion > configuration.Version)
         {
-            MigrateConfiguration(configuration, newConfigVersion);
+            MigrateConfigurationAsync(configuration, newConfigVersion);
         }
 
         return configuration;
     }
 
-    private static async void MigrateConfiguration(Configuration configuration, byte newConfigVersion)
+    private static async void MigrateConfigurationAsync(Configuration configuration, byte newConfigVersion)
     {
         var workingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         File.Delete(Path.Join(workingDirectory, "GlobalConfiguration.json"));

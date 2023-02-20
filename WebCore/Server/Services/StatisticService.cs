@@ -20,7 +20,7 @@ public class StatisticService : IStatisticService
         _statisticsTracking = statisticsTracking;
     }
 
-    private async Task EnsureInitialised()
+    private async Task EnsureInitialisedAsync()
     {
         try
         {
@@ -28,7 +28,7 @@ public class StatisticService : IStatisticService
 
             if (!_statisticsTracking.Loaded)
             {
-                var result = await ReadStatistics();
+                var result = await ReadStatisticsAsync();
 
                 _statisticsTracking.Penalties = result.PenaltyCount!.Value;
                 _statisticsTracking.Servers = result.ServerCount!.Value;
@@ -43,9 +43,9 @@ public class StatisticService : IStatisticService
         }
     }
 
-    public async Task UpdateStatistic(ControllerEnums.StatisticType statistic, ControllerEnums.StatisticTypeAction action)
+    public async Task UpdateStatisticAsync(ControllerEnums.StatisticType statistic, ControllerEnums.StatisticTypeAction action)
     {
-        if (!_statisticsTracking.Loaded) await EnsureInitialised();
+        if (!_statisticsTracking.Loaded) await EnsureInitialisedAsync();
 
         // TODO: Rewrite this. Ugh
         switch (action)
@@ -89,9 +89,9 @@ public class StatisticService : IStatisticService
         }
     }
 
-    public async Task<StatisticDto> GetStatistics()
+    public async Task<StatisticDto> GetStatisticsAsync()
     {
-        if (!_statisticsTracking.Loaded) await EnsureInitialised();
+        if (!_statisticsTracking.Loaded) await EnsureInitialisedAsync();
 
         return new StatisticDto
         {
@@ -104,9 +104,9 @@ public class StatisticService : IStatisticService
         };
     }
 
-    public async Task UpdateOnlineStatistic(StatisticUsersOnline statisticUsers)
+    public async Task UpdateOnlineStatisticAsync(StatisticUsersOnline statisticUsers)
     {
-        if (!_statisticsTracking.Loaded) await EnsureInitialised();
+        if (!_statisticsTracking.Loaded) await EnsureInitialisedAsync();
 
         var instance = _statisticsTracking.UsersOnline
             .FirstOrDefault(x => x.InstanceGuid == statisticUsers.InstanceGuid);
@@ -128,9 +128,9 @@ public class StatisticService : IStatisticService
         _statisticsTracking.UsersOnlineCount = _statisticsTracking.UsersOnline.Sum(x => x.Online);
     }
 
-    public async Task UpdateDayStatistic(StatisticBan statisticBan)
+    public async Task UpdateDayStatisticAsync(StatisticBan statisticBan)
     {
-        if (!_statisticsTracking.Loaded) await EnsureInitialised();
+        if (!_statisticsTracking.Loaded) await EnsureInitialisedAsync();
 
         _statisticsTracking.BansDay.Add(statisticBan);
 
@@ -141,7 +141,7 @@ public class StatisticService : IStatisticService
         _statisticsTracking.BansDayCount = _statisticsTracking.BansDay.Count;
     }
 
-    private async Task<StatisticDto> ReadStatistics()
+    private async Task<StatisticDto> ReadStatisticsAsync()
     {
         var entity = await _context.Entities.CountAsync();
         var instance = await _context.Instances.CountAsync();

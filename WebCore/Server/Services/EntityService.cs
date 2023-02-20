@@ -1,7 +1,6 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Enums;
 using BanHub.WebCore.Server.Interfaces;
-using BanHub.WebCore.Server.Models;
 using BanHub.WebCore.Server.Models.Context;
 using BanHub.WebCore.Shared.DTOs;
 using BanHub.WebCore.Shared.Enums;
@@ -14,14 +13,16 @@ public class EntityService : IEntityService
 {
     private readonly DataContext _context;
     private readonly IStatisticService _statisticService;
+    private readonly IDiscordWebhookService _discordWebhook;
 
-    public EntityService(DataContext context, IStatisticService statisticService)
+    public EntityService(DataContext context, IStatisticService statisticService, IDiscordWebhookService discordWebhook)
     {
         _context = context;
         _statisticService = statisticService;
+        _discordWebhook = discordWebhook;
     }
 
-    public async Task<EntityDto?> GetUser(string identity, bool privileged)
+    public async Task<EntityDto?> GetUserAsync(string identity, bool privileged)
     {
         // Find profile
         var entity = await _context.Entities
@@ -39,7 +40,7 @@ public class EntityService : IEntityService
                     .Where(x => x.Target.Identity == identity)
                     .Select(note => new NoteDto
                     {
-                        Id = note.Id,
+                        NoteGuid = note.NoteGuid,
                         Created = note.Created,
                         Message = note.Message,
                         IsPrivate = note.IsPrivate,
@@ -184,7 +185,7 @@ public class EntityService : IEntityService
         return entity;
     }
 
-    public async Task<ControllerEnums.ProfileReturnState> CreateOrUpdate(EntityDto request)
+    public async Task<ControllerEnums.ReturnState> CreateOrUpdateAsync(EntityDto request)
     {
         var user = await _context.Entities
             .AsTracking()
@@ -244,7 +245,7 @@ public class EntityService : IEntityService
             _context.Entities.Update(user);
             await _context.SaveChangesAsync();
 
-            return ControllerEnums.ProfileReturnState.Updated;
+            return ControllerEnums.ReturnState.Updated;
         }
 
         // Create the user
@@ -285,18 +286,18 @@ public class EntityService : IEntityService
         }
 
         if (user is null)
-            await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.EntityCount, ControllerEnums.StatisticTypeAction.Add);
+            await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.EntityCount, ControllerEnums.StatisticTypeAction.Add);
 
         entity.CurrentAlias = currentAlias;
         _context.CurrentAliases.Add(currentAlias);
         await _context.SaveChangesAsync();
 
-        return ControllerEnums.ProfileReturnState.Created;
+        return ControllerEnums.ReturnState.Created;
     }
 
-    public async Task<bool> HasEntity(string identity) => await _context.Entities.AnyAsync(x => x.Identity == identity);
+    public async Task<bool> HasEntityAsync(string identity) => await _context.Entities.AnyAsync(x => x.Identity == identity);
 
-    public async Task<List<EntityDto>> Pagination(PaginationDto pagination)
+    public async Task<List<EntityDto>> PaginationAsync(PaginationDto pagination)
     {
         var query = _context.Entities.AsQueryable();
 
@@ -361,7 +362,7 @@ public class EntityService : IEntityService
         return pagedData;
     }
 
-    public async Task<string?> GetAuthenticationToken(EntityDto request)
+    public async Task<string?> GetAuthenticationTokenAsync(EntityDto request)
     {
         var entity = await _context.Entities.FirstOrDefaultAsync(x => x.Identity == request.Identity);
         if (entity is null) return null;
@@ -388,5 +389,58 @@ public class EntityService : IEntityService
         _context.AuthTokens.Add(token);
         await _context.SaveChangesAsync();
         return result;
+    }
+
+    public async Task<bool> AddNoteAsync(NoteDto request, string adminIdentity)
+    {
+        var admin = await _context.Entities.FirstOrDefaultAsync(x => x.Identity == adminIdentity);
+        var target = await _context.Entities.FirstOrDefaultAsync(x => x.Identity == request.Target!.Identity);
+        if (admin is null || target is null) return false;
+
+        var note = new EFNote
+        {
+            NoteGuid = request.NoteGuid ?? Guid.NewGuid(),
+            TargetId = target.Id,
+            AdminId = admin.Id,
+            Message = request.Message!,
+            IsPrivate = request.IsPrivate!.Value,
+            Created = DateTimeOffset.UtcNow,
+        };
+
+        _context.Notes.Add(note);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> RemoveNoteAsync(NoteDto request, string requestingAdmin)
+    {
+        var note = await _context.Notes.FirstOrDefaultAsync(x => x.NoteGuid == request.NoteGuid);
+        if (note is null) return false;
+
+        var noteInfo = await _context.Notes
+            .Where(x => x.NoteGuid == note.NoteGuid)
+            .Select(x => new
+            {
+                x.NoteGuid,
+                AdminIdentity = x.Admin.Identity,
+                TargetIdentity = x.Target.Identity,
+                x.Message,
+                x.IsPrivate,
+            }).FirstOrDefaultAsync();
+
+        var message = noteInfo is null
+            ? $"Penalty **{note.NoteGuid}** was deleted by **{requestingAdmin}** but no information could be found."
+            : $"**Penalty**: {noteInfo.NoteGuid}\n" +
+              $"**Admin**: {noteInfo.AdminIdentity}\n" +
+              $"**Target**: {noteInfo.TargetIdentity}\n" +
+              $"**Note**: {noteInfo.Message}\n" +
+              $"**Was Public?**: {(!noteInfo.IsPrivate ? "Yes" : "No")}\n\n" +
+              $"**Deleted By**: {requestingAdmin}\n" +
+              $"**Deleted For**: {request.DeletionReason}";
+
+        _context.Notes.Remove(note);
+        await _context.SaveChangesAsync();
+        await _discordWebhook.CreateAdminActionHookAsync("Note Deletion!", message);
+        return true;
     }
 }

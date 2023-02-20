@@ -1,27 +1,31 @@
-﻿@inject ISnackbar Snackbar
-@inject NavigationManager NavigationManager
-@inject HttpClient Http
+﻿@inject HttpClient Http
 @using BanHub.WebCore.Client.Theme
 @inherits LayoutComponentBase
+@implements IAsyncDisposable
 
 
 <MudThemeProvider IsDarkMode="true" Theme="_theme"/>
 <MudDialogProvider/>
 <MudSnackbarProvider/>
+<MudBreakpointProvider/>
 
 <MudLayout>
-    <MudAppBar Elevation="0">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(DrawerToggle)"/>
-        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Person" Color="Color.Info">Online: @_online</MudChip>
-        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Block" Color="Color.Error">Day Global Bans: @_bans</MudChip>
-        <MudSpacer/>
-        <MudText Color="Color.Error" Typo="Typo.h6">! Work In Progress !</MudText>
-        <MudSpacer/>
-        <MudItem xs="32" Class="mr-3">
-            <MudTextField @bind-Value="SearchValue" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" Placeholder="Search" Variant="Variant.Outlined" Adornment="Adornment.End" Margin="Margin.Dense" AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Info"/>
-        </MudItem>
-        <MudIconButton Icon="@Icons.Custom.Brands.Discord" Color="Color.Inherit" Link="https://discord.gg/Arruj6DWvp" Target="_blank"/>
-        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/Ayymoss/BanHub" Target="_blank"/>
+    <MudAppBar Elevation="0" Style="background-color:#151521">
+        <MudElement Class="flex-grow-1 d-flex align-center">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(DrawerToggle)"/>
+            <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="true" Class="d-flex align-center">
+                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Person" Color="Color.Info">Online &bull; @_online</MudChip>
+                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Block" Color="Color.Error">Day Global Bans &bull; @_bans</MudChip>
+                    <MudSpacer/>
+                    <MudText Color="Color.Error" Typo="Typo.h6">! Work In Progress !</MudText>
+                </MudHidden>
+            <MudSpacer/>
+            <MudIconButton Icon="@Icons.Custom.Brands.Discord" Color="Color.Inherit" Link="https://discord.gg/Arruj6DWvp" Target="_blank"/>
+            <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/Ayymoss/BanHub" Target="_blank"/>
+            <MudBadge Content="@_activeUserCount" Bordered="true" Color="Color.Primary" Overlap="true" Class="ml-3 mt-2">
+                <MudIcon Icon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Default"/>
+            </MudBadge>
+        </MudElement>
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
         <MudDrawerHeader Class="justify-center align-center flex-1">
@@ -39,42 +43,40 @@
 </MudLayout>
 
 @code {
-    private string? SearchValue { get; set; }
+
+    [Inject]
+    private ActiveUserService ActiveUserService { get; set; } = null!;
 
     private readonly MudTheme _theme = Theme.LandingPageTheme();
 
     private int _online;
     private int _bans;
-
     private bool _drawerOpen = true;
+    private int _activeUserCount;
 
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
     }
 
-    private async Task OnKeyPress(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter")
-        {
-            if (SearchValue is null || SearchValue?.Length < 3)
-            {
-                Snackbar.Add("Search must be at least 3 characters long.", Severity.Info);
-                return;
-            }
-
-            NavigationManager.NavigateTo($"/Search?q={SearchValue}");
-        }
-    }
-
     protected override async Task OnInitializedAsync()
     {
+        await ActiveUserService.Initialize();
+        ActiveUserService.ActiveUserCountChanged += count =>
+        {
+            _activeUserCount = count;
+            StateHasChanged();
+        };
+        _activeUserCount = ActiveUserService.ActiveUsers;
+
         var statistic = await Http.GetFromJsonAsync<StatisticDto>("/api/v2/Statistic");
         if (statistic is null) return;
         _online = statistic.OnlineCount;
         _bans = statistic.BanCount;
-        
+
         await base.OnInitializedAsync();
     }
+
+    public async ValueTask DisposeAsync() => await ActiveUserService.DecrementCountAsync();
 
 }

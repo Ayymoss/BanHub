@@ -23,6 +23,7 @@ builder.Services.AddScoped(sp => new HttpClient {BaseAddress = new Uri("https://
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddScoped<IApiService, ApiService>();
 builder.Services.AddScoped<CookieHandler>();
+builder.Services.AddSingleton<ActiveUserService>();
 
 builder.Services.AddMudServices(config =>
 {

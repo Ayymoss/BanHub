@@ -28,14 +28,14 @@ public class InstanceController : ControllerBase
         // This just doesn't work at all. Why!?
         //var requestIpAddress = Request.Headers["HTTP_X_FORWARDED_FOR"].ToString() ?? Request.Headers["REMOTE_ADDR"].ToString();
 
-        var result = await _instanceService.CreateOrUpdate(request, request.InstanceIp);
+        var result = await _instanceService.CreateOrUpdateAsync(request, request.InstanceIp);
         return result.Item1 switch
         {
-            ControllerEnums.ProfileReturnState.Created => StatusCode(StatusCodes.Status201Created, result.Item2), // New, added
-            ControllerEnums.ProfileReturnState.BadRequest => BadRequest(result.Item2), // ??
-            ControllerEnums.ProfileReturnState.Conflict => StatusCode(StatusCodes.Status409Conflict, result.Item2), // Conflicting GUIDs
-            ControllerEnums.ProfileReturnState.Accepted => StatusCode(StatusCodes.Status202Accepted, result.Item2), // Activated
-            ControllerEnums.ProfileReturnState.Ok => Ok(result.Item2), // Not activated
+            ControllerEnums.ReturnState.Created => StatusCode(StatusCodes.Status201Created, result.Item2), // New, added
+            ControllerEnums.ReturnState.BadRequest => BadRequest(result.Item2), // ??
+            ControllerEnums.ReturnState.Conflict => StatusCode(StatusCodes.Status409Conflict, result.Item2), // Conflicting GUIDs
+            ControllerEnums.ReturnState.Accepted => StatusCode(StatusCodes.Status202Accepted, result.Item2), // Activated
+            ControllerEnums.ReturnState.Ok => Ok(result.Item2), // Not activated
             _ => BadRequest() // Should never happen
         };
     }
@@ -43,13 +43,13 @@ public class InstanceController : ControllerBase
     [HttpGet("Active")]
     public async Task<ActionResult<bool>> IsInstanceActive([FromQuery] string guid)
     {
-        var result = await _instanceService.IsInstanceActive(guid);
+        var result = await _instanceService.IsInstanceActiveAsync(guid);
         return result switch
         {
-            ControllerEnums.ProfileReturnState.NotFound => NotFound(),
-            ControllerEnums.ProfileReturnState.BadRequest => BadRequest(),
-            ControllerEnums.ProfileReturnState.Accepted => Accepted(true), // Activated
-            ControllerEnums.ProfileReturnState.Unauthorized => Unauthorized(false),
+            ControllerEnums.ReturnState.NotFound => NotFound(),
+            ControllerEnums.ReturnState.BadRequest => BadRequest(),
+            ControllerEnums.ReturnState.Accepted => Accepted(true), // Activated
+            ControllerEnums.ReturnState.Unauthorized => Unauthorized(false),
             _ => BadRequest() // Should never happen
         };
     }
@@ -57,12 +57,12 @@ public class InstanceController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<InstanceDto>> GetInstance([FromQuery] string guid)
     {
-        var result = await _instanceService.GetInstance(guid);
+        var result = await _instanceService.GetInstanceAsync(guid);
         return result.Item1 switch
         {
-            ControllerEnums.ProfileReturnState.NotFound => NotFound("Instance not found"),
-            ControllerEnums.ProfileReturnState.BadRequest => BadRequest("Invalid guid"),
-            ControllerEnums.ProfileReturnState.Ok => Ok(result.Item2),
+            ControllerEnums.ReturnState.NotFound => NotFound("Instance not found"),
+            ControllerEnums.ReturnState.BadRequest => BadRequest("Invalid guid"),
+            ControllerEnums.ReturnState.Ok => Ok(result.Item2),
             _ => BadRequest() // Should never happen
         };
     }
@@ -70,7 +70,7 @@ public class InstanceController : ControllerBase
     [HttpPost("All")]
     public async Task<ActionResult<IEnumerable<InstanceDto>>> GetInstances([FromBody] PaginationDto pagination)
     {
-        return Ok(await _instanceService.Pagination(pagination));
+        return Ok(await _instanceService.PaginationAsync(pagination));
 
     }
 }

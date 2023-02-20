@@ -2,7 +2,7 @@
 
 public abstract class ControllerEnums
 {
-    public enum ProfileReturnState
+    public enum ReturnState
     {
         Updated,
         Created,

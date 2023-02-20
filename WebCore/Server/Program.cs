@@ -2,11 +2,12 @@ using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Middleware;
 using BanHub.WebCore.Server.Services;
+using BanHub.WebCore.Server.SignalR;
 using BanHub.WebCore.Server.Utilities;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
-SetupConfiguration.InitConfiguration();
+SetupConfiguration.InitConfigurationAsync();
 var configuration = SetupConfiguration.ReadConfiguration();
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,8 +43,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddLogging();
-
 builder.Services.AddSingleton(configuration);
 builder.Services.AddSingleton<ApiKeyCache>();
 builder.Services.AddSingleton<PluginAuthentication>();
@@ -59,11 +58,13 @@ builder.Services.AddScoped<IDiscordWebhookService, DiscordWebhookService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IStatisticService, StatisticService>();
 builder.Services.AddScoped<IServerService, ServerService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Logging.ClearProviders().AddConsole();
 
 // Add services to the container.
-
+builder.Services.AddLogging();
+builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddSwaggerGen();
@@ -95,6 +96,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.MapRazorPages();
+app.MapHub<ViewerCount>("/ActiveUsersHub");
 
 app.UseCors("CorsSpecs");
 app.UseAuthentication();

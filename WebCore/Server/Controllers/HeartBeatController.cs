@@ -20,15 +20,15 @@ public class HeartBeatController : ControllerBase
     [HttpPost("Instance")]
     public async Task<ActionResult> InstanceHeartbeat([FromBody] InstanceDto request)
     {
-        var result = await _heartBeatService.InstanceHeartbeat(request);
-        if (result.Item1 is ControllerEnums.ProfileReturnState.NotFound) return NotFound();
+        var result = await _heartBeatService.InstanceHeartbeatAsync(request);
+        if (result.Item1 is ControllerEnums.ReturnState.NotFound) return NotFound();
         return Ok();
     }
 
     [HttpPost("Entities"), PluginAuthentication]
     public async Task<ActionResult> EntitiesHeartbeat([FromQuery] string authToken, [FromBody] List<EntityDto> request)
     {
-        await _heartBeatService.EntitiesHeartbeat(request);
+        await _heartBeatService.EntitiesHeartbeatAsync(request);
         return Ok();
     }
 }

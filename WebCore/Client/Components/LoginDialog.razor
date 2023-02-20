@@ -31,6 +31,8 @@
     </DialogContent>
 </MudDialog>
 
+<MudForm></MudForm>
+
 @code {
 
     [CascadingParameter]
@@ -53,7 +55,7 @@
         _processing = true;
         _error = null;
 
-        if (_loginModel.Token is null || _loginModel.Token.Length is > 6 or < 6)
+        if (_loginModel.Token?.Length is not 6)
         {
             _error = "Invalid token length";
             _processing = false;
@@ -64,7 +66,7 @@
         if (message == "Success")
         {
             await LocalStorageService.SetItemAsStringAsync("IsAuthenticated", "true");
-            NavigationManager.NavigateTo("/", true);
+            NavigationManager.NavigateTo(NavigationManager.Uri, true);
         }
         else
         {

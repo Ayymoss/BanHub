@@ -1,25 +1,28 @@
-﻿@page "/Instances"
+﻿@page "/Communities"
 @inject HttpClient Http
 
-<PageTitle>Instances | Ban Hub</PageTitle>
+<PageTitle>Communities | Ban Hub</PageTitle>
 
-<MudText Typo="Typo.h4" GutterBottom="true" Class="ml-6 mud-text-secondary">Verified Instances</MudText>
-
-<MudTable ServerData="@(new Func<TableState, Task<TableData<InstanceDto>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true" Hover="true" @ref="_table">
-    <ToolBarContent>
-        <MudText Typo="Typo.h6">All instances</MudText>
-        <MudSpacer/>
-        <MudTextField T="string" ValueChanged="@(OnSearch)" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-    </ToolBarContent>
+<MudPaper Elevation="2" Class="d-flex flex-row justify-space-between align-center pa-4 rounded-b-0">
+    <MudText Typo="Typo.h4" Align="Align.Center" Class="mud-text-secondary">Verified Communities</MudText>
+    <MudElement Class="ml-2 mt-0">
+        <MudTextField T="string" ValueChanged="OnSearch" AutoFocus="false" Placeholder="Filter"
+                      Variant="Variant.Outlined" Adornment="Adornment.End" Margin="Margin.Dense" AdornmentIcon="@Icons.Material.Filled.Search"
+                      AdornmentColor="Color.Default"/>
+    </MudElement>
+</MudPaper>
+<MudTable Striped="true" HeaderClass="mud-theme-info-darken" Outlined="false" Bordered="false"
+          ServerData="@(new Func<TableState, Task<TableData<InstanceDto>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true"
+          @ref="_table">
     <HeaderContent>
-        <MudTh>
+        <MudTh Class="py-2">
             <MudTableSortLabel SortLabel="Id" T="InstanceDto">ID</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Instance Name" T="InstanceDto">Instance Name</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Instance Name" T="InstanceDto">Community Name</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Instance IP" T="InstanceDto">Instance IP</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Instance IP" T="InstanceDto">Community IP</MudTableSortLabel>
         </MudTh>
         <MudTh>
             <MudTableSortLabel SortLabel="Servers" T="InstanceDto">Servers</MudTableSortLabel>
@@ -43,13 +46,12 @@
         <MudText Class="mb-8" Color="Color.Warning">No instances found.</MudText>
     </NoRecordsContent>
     <LoadingContent>
-        <MudProgressLinear Color="Color.Success" Rounded="true" Size="Size.Large" Indeterminate="true"/>
+        <MudText>Loading...</MudText>
     </LoadingContent>
     <PagerContent>
         <MudTablePager PageSizeOptions="new[] {50, 100}"/>
     </PagerContent>
 </MudTable>
-
 
 @code
 {
@@ -77,7 +79,7 @@
         var result = await data.Content.ReadFromJsonAsync<List<InstanceDto>>();
 
         _pagedData = result!.ToArray();
-        _totalItems = statistics!.PenaltyCount!.Value;
+        _totalItems = statistics!.InstanceCount!.Value;
 
         return new TableData<InstanceDto> {TotalItems = _totalItems, Items = _pagedData};
     }

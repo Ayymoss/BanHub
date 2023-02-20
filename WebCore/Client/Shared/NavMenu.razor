@@ -1,9 +1,13 @@
-﻿<MudPaper Class="d-flex flex-column" Width="240px" Height="100%" Elevation="0">
+﻿@using BanHub.WebCore.Shared.Utilities
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<MudPaper Class="d-flex flex-column" Width="240px" Height="100%" Elevation="0">
     <MudNavMenu Rounded="true" Margin="Margin.Normal" Color="Color.Info" Class="pa-2">
         <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
         <MudNavLink Href="Players" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Players</MudNavLink>
         <MudNavLink Href="Penalties" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Report">Penalties</MudNavLink>
-        <MudNavLink Href="Instances" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Storage">Instances</MudNavLink>
+        <MudNavLink Href="Communities" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Storage">Communities</MudNavLink>
         <AuthorizeView>
             <Authorized>
                 <MudNavLink Href="Profile" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Person">My Profile</MudNavLink>
@@ -13,5 +17,40 @@
     <MudSpacer/>
     <MudElement Class="d-flex flex-column pa-4">
         <LoginComponent/>
+        <MudElement>
+            <MudTextField @bind-Value="_searchValue" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" Placeholder="Search"
+                          Variant="Variant.Outlined" Adornment="Adornment.End" Margin="Margin.Dense" AdornmentIcon="@Icons.Material.Filled.Search"
+                          AdornmentColor="Color.Info"/>
+        </MudElement>
+        <MudDivider Class="my-2" FlexItem="true" Light="true" DividerType="DividerType.FullWidth"/>
+        <MudElement Class="d-inline-flex align-center">
+            <MudElement>
+                <MudText Typo="Typo.caption" Class="mud-text-disabled">BanHub</MudText>
+            </MudElement>
+            <MudSpacer/>
+            <MudElement>
+                <MudText Typo="Typo.caption" Class="mud-text-disabled">@_versionNumber</MudText>
+            </MudElement>
+        </MudElement>
     </MudElement>
 </MudPaper>
+
+@code {
+    private string? _searchValue;
+    private string _versionNumber = Utilities.GetVersionAsString();
+
+    private void OnKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            if (_searchValue is null || _searchValue?.Length < 3)
+            {
+                Snackbar.Add("Search must be at least 3 characters long.", Severity.Info);
+                return;
+            }
+
+            NavigationManager.NavigateTo($"/Search?q={_searchValue}");
+        }
+    }
+
+}

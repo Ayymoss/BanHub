@@ -1,11 +1,11 @@
 ﻿using System.Security.Claims;
-using BanHub.WebCore.Server.Context;
+using BanHub.WebCore.Server.Enums;
+using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Shared.DTOs.WebEntity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Controllers;
 
@@ -13,55 +13,25 @@ namespace BanHub.WebCore.Server.Controllers;
 [Route("api/v2/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly DataContext _context;
+    private readonly IAuthService _authService;
 
-    public AuthController(DataContext context)
+    public AuthController(IAuthService authService)
     {
-        _context = context;
+        _authService = authService;
     }
 
     [HttpPost("Login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequest)
+    public async Task<IActionResult> LoginAsync([FromBody] LoginRequestDto loginRequest)
     {
-        var token = await _context.AuthTokens
-            .AsTracking()
-            .Where(x => x.Token == loginRequest.Token)
-            .FirstOrDefaultAsync();
-
-        if (token is null || token.Created + TimeSpan.FromMinutes(5) < DateTimeOffset.UtcNow || token.Used)
-            return Unauthorized("Token is invalid.");
-
-        var user = await _context.Entities
-            .Where(x => x.Id == token.EntityId)
-            .Select(x => new UserDto
-            {
-                UserName = x.CurrentAlias.Alias.UserName,
-                WebRole = x.WebRole.ToString(),
-                InstanceRole = x.InstanceRole.ToString(),
-                Identity = x.Identity
-            }).FirstOrDefaultAsync();
-
-        if (user is null) return Unauthorized("User is invalid.");
-
-        token.Used = true;
-        _context.AuthTokens.Update(token);
-        await _context.SaveChangesAsync();
-
-        var claims = new List<Claim>
+        var result = await _authService.LoginAsync(loginRequest);
+        switch (result.Item1)
         {
-            new(ClaimTypes.Name, user.UserName),
-            new(ClaimTypes.Role, user.WebRole),
-            new(ClaimTypes.Role, user.InstanceRole),
-            new(ClaimTypes.NameIdentifier, user.Identity),
-            new("UserId", token.EntityId.ToString())
-        };
-        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var authProperties = new AuthenticationProperties();
-
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-            new ClaimsPrincipal(claimsIdentity), authProperties);
-
-        return Ok("Success");
+            case ControllerEnums.ReturnState.Ok:
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(result.Item2), result.Item3);
+                return Ok("Success");
+        }
+        return Unauthorized("Token or User is invalid.");
     }
 
     [HttpGet("Profile"), Authorize]
@@ -72,26 +42,15 @@ public class AuthController : ControllerBase
             .Select(f => Convert.ToInt32(f.Value))
             .First();
 
-        var user = await _context.Entities
-            .Where(x => x.Id == userId)
-            .Select(f => new UserDto
-            {
-                UserName = f.CurrentAlias.Alias.UserName,
-                WebRole = f.WebRole.ToString(),
-                InstanceRole = f.InstanceRole.ToString(),
-                Identity = f.Identity
-            }).FirstOrDefaultAsync();
-
-        if (user is null) return BadRequest("User is invalid.");
-
-        return Ok(user);
+        var result = await _authService.UserProfileAsync(userId);
+        if (result is null) return BadRequest("User is invalid.");
+        return Ok(result);
     }
 
     [HttpPost("Logout"), Authorize]
-    public async Task<IActionResult> Logout()
+    public async Task<IActionResult> LogoutAsync()
     {
         await HttpContext.SignOutAsync();
         return Ok("Success");
     }
-    
 }

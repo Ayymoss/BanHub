@@ -4,5 +4,5 @@ namespace BanHub.WebCore.Server.Interfaces;
 
 public interface ISearchService
 {
-    Task<List<SearchDto>?> Search(string query);
+    Task<List<SearchDto>?> SearchAsync(string query);
 }

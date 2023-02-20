@@ -28,10 +28,10 @@ public class PenaltyService : IPenaltyService
         _entityService = entityService;
     }
 
-    public async Task<(ControllerEnums.ProfileReturnState, Guid?)> AddPenalty(PenaltyDto request)
+    public async Task<(ControllerEnums.ReturnState, Guid?)> AddPenaltyAsync(PenaltyDto request)
     {
-        await _entityService.CreateOrUpdate(request.Target!);
-        await _entityService.CreateOrUpdate(request.Admin!);
+        await _entityService.CreateOrUpdateAsync(request.Target!);
+        await _entityService.CreateOrUpdateAsync(request.Admin!);
 
         var user = await _context.Entities
             .AsTracking()
@@ -41,7 +41,7 @@ public class PenaltyService : IPenaltyService
         var admin = await _context.Entities
             .FirstOrDefaultAsync(profile => profile.Identity == request.Admin!.Identity);
 
-        if (user is null || admin is null) return (ControllerEnums.ProfileReturnState.NotFound, null);
+        if (user is null || admin is null) return (ControllerEnums.ReturnState.NotFound, null);
 
         // Check if the user has an existing ban and the incoming is an unban from the server that banned them
         var activeGlobalBan = await _context.Penalties
@@ -54,7 +54,7 @@ public class PenaltyService : IPenaltyService
 
         // Already global banned - don't want to create another
         if (activeGlobalBan is not null && request.PenaltyType == PenaltyType.Ban)
-            return (ControllerEnums.ProfileReturnState.NoContent, null);
+            return (ControllerEnums.ReturnState.NoContent, null);
 
         // If any penalties check and action
         var penalty = await _context.Penalties
@@ -80,7 +80,7 @@ public class PenaltyService : IPenaltyService
                     break;
                 // If they're already banned. We don't need to keep creating kick infractions.
                 case PenaltyType.Kick:
-                    return (ControllerEnums.ProfileReturnState.NoContent, null);
+                    return (ControllerEnums.ReturnState.NoContent, null);
             }
         }
         else
@@ -89,12 +89,12 @@ public class PenaltyService : IPenaltyService
             {
                 // Trying to unban when no record of a ban exists.
                 case PenaltyType.Unban:
-                    return (ControllerEnums.ProfileReturnState.NoContent, null);
+                    return (ControllerEnums.ReturnState.NoContent, null);
             }
         }
 
         var instance = await _context.Instances.FirstOrDefaultAsync(x => x.ApiKey == request.Instance!.ApiKey);
-        if (instance is null) return (ControllerEnums.ProfileReturnState.NotFound, null);
+        if (instance is null) return (ControllerEnums.ReturnState.NotFound, null);
 
         var penaltyModel = new EFPenalty
         {
@@ -126,19 +126,19 @@ public class PenaltyService : IPenaltyService
             _context.Add(identifier);
         }
 
-        await _statisticService.UpdateDayStatistic(new StatisticBan
+        await _statisticService.UpdateDayStatisticAsync(new StatisticBan
         {
             BanGuid = penaltyModel.PenaltyGuid,
             Submitted = DateTimeOffset.UtcNow
         });
 
-        await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.PenaltyCount, ControllerEnums.StatisticTypeAction.Add);
+        await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.PenaltyCount, ControllerEnums.StatisticTypeAction.Add);
         _context.Add(penaltyModel);
         await _context.SaveChangesAsync();
 
         try
         {
-            await _discordWebhook.CreatePenaltyHook(penaltyModel.PenaltyScope, penaltyModel.PenaltyType,
+            await _discordWebhook.CreatePenaltyHookAsync(penaltyModel.PenaltyScope, penaltyModel.PenaltyType,
                 penaltyModel.PenaltyGuid,
                 user.Identity, user.CurrentAlias.Alias.UserName, penaltyModel.Reason);
         }
@@ -147,10 +147,10 @@ public class PenaltyService : IPenaltyService
             Console.WriteLine(e);
         }
 
-        return (ControllerEnums.ProfileReturnState.Created, penaltyModel.PenaltyGuid);
+        return (ControllerEnums.ReturnState.Created, penaltyModel.PenaltyGuid);
     }
 
-    public async Task<List<PenaltyDto>> Pagination(PaginationDto pagination)
+    public async Task<List<PenaltyDto>> PaginationAsync(PaginationDto pagination)
     {
         var query = _context.Penalties.AsQueryable();
 
@@ -219,7 +219,7 @@ public class PenaltyService : IPenaltyService
         return pagedData;
     }
 
-    public async Task<List<PenaltyDto>> GetLatestThreeBans()
+    public async Task<List<PenaltyDto>> GetLatestThreeBansAsync()
     {
         var bans = await _context.Penalties
             .Where(x => x.PenaltyType == PenaltyType.Ban
@@ -264,7 +264,7 @@ public class PenaltyService : IPenaltyService
         return bans;
     }
 
-    public async Task<bool> RemovePenalty(PenaltyDto request, string requestingAdmin)
+    public async Task<bool> RemovePenaltyAsync(PenaltyDto request, string requestingAdmin)
     {
         var penalty = await _context.Penalties.FirstOrDefaultAsync(x => x.PenaltyGuid == request.PenaltyGuid);
         if (penalty is null) return false;
@@ -292,15 +292,15 @@ public class PenaltyService : IPenaltyService
 
         _context.Penalties.Remove(penalty);
         await _context.SaveChangesAsync();
-        await _statisticService.UpdateStatistic(ControllerEnums.StatisticType.PenaltyCount, ControllerEnums.StatisticTypeAction.Remove);
-        await _discordWebhook.CreateAdminActionHook(message);
+        await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.PenaltyCount, ControllerEnums.StatisticTypeAction.Remove);
+        await _discordWebhook.CreateAdminActionHookAsync("Penalty Deletion!", message);
         return true;
     }
 
     public async Task<bool> RevokeGlobalBan(PenaltyDto request)
     {
-        await _entityService.CreateOrUpdate(request.Target!);
-        await _entityService.CreateOrUpdate(request.Admin!);
+        await _entityService.CreateOrUpdateAsync(request.Target!);
+        await _entityService.CreateOrUpdateAsync(request.Admin!);
 
         var user = await _context.Entities
             .AsTracking()
@@ -333,10 +333,10 @@ public class PenaltyService : IPenaltyService
         return true;
     }
 
-    public async Task<(ControllerEnums.ProfileReturnState, PenaltyDto?)> GetPenalty(string penaltyGuid)
+    public async Task<(ControllerEnums.ReturnState, PenaltyDto?)> GetPenaltyAsync(string penaltyGuid)
     {
         var parseGuid = Guid.TryParse(penaltyGuid, out var guid);
-        if (!parseGuid) return (ControllerEnums.ProfileReturnState.BadRequest, null);
+        if (!parseGuid) return (ControllerEnums.ReturnState.BadRequest, null);
 
         var penalty = await _context.Penalties.Where(inf => inf.PenaltyGuid == guid).Select(inf => new PenaltyDto
         {
@@ -372,11 +372,11 @@ public class PenaltyService : IPenaltyService
         }).FirstOrDefaultAsync();
 
         return penalty is null
-            ? (ControllerEnums.ProfileReturnState.NotFound, null)
-            : (ControllerEnums.ProfileReturnState.Ok, penalty);
+            ? (ControllerEnums.ReturnState.NotFound, null)
+            : (ControllerEnums.ReturnState.Ok, penalty);
     }
 
-    public async Task<(ControllerEnums.ProfileReturnState, List<PenaltyDto>?)> GetPenalties()
+    public async Task<(ControllerEnums.ReturnState, List<PenaltyDto>?)> GetPenaltiesAsync()
     {
         var penalties = await _context.Penalties.Select(inf => new PenaltyDto
         {
@@ -414,11 +414,11 @@ public class PenaltyService : IPenaltyService
         penalties = penalties.OrderByDescending(x => x.Submitted).ToList();
 
         return penalties.Count is 0
-            ? (ControllerEnums.ProfileReturnState.Ok, new List<PenaltyDto>())
-            : (ControllerEnums.ProfileReturnState.Ok, penalties);
+            ? (ControllerEnums.ReturnState.Ok, new List<PenaltyDto>())
+            : (ControllerEnums.ReturnState.Ok, penalties);
     }
 
-    public async Task<bool> SubmitEvidence(PenaltyDto request)
+    public async Task<bool> SubmitEvidenceAsync(PenaltyDto request)
     {
         var penalty = await _context.Penalties
             .AsTracking()

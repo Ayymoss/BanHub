@@ -14,7 +14,7 @@ public class SearchService : ISearchService
         _context = context;
     }
 
-    public async Task<List<SearchDto>?> Search(string query)
+    public async Task<List<SearchDto>?> SearchAsync(string query)
     {
         var result = await _context.Entities
             .Where(x => x.CurrentAlias.Alias.UserName.Contains(query) || x.Identity.Contains(query))
