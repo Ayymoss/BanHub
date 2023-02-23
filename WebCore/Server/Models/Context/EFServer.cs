@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using BanHub.WebCore.Shared.Enums;
 
 namespace BanHub.WebCore.Server.Models.Context;
 
@@ -26,9 +27,14 @@ public class EFServer
     /// The port of the server
     /// </summary>
     public required int ServerPort { get; set; }
+    
+    /// <summary>
+    /// The game the server is running
+    /// </summary>
+    public required Game ServerGame { get; set; }
 
     /// <summary>
-    /// Current alias associated with entity.
+    /// Current server associated with instance.
     /// </summary>
     public int InstanceId { get; set; }
 

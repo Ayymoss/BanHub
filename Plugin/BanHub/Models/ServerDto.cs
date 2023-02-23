@@ -1,4 +1,6 @@
-﻿namespace BanHub.Models;
+﻿using BanHub.Enums;
+
+namespace BanHub.Models;
 
 public class ServerDto
 {
@@ -6,7 +8,7 @@ public class ServerDto
     /// The server Id
     /// </summary>
     public string ServerId { get; set; } = null!;
-    
+
     /// <summary>
     /// The server the client connected to
     /// </summary>
@@ -16,21 +18,24 @@ public class ServerDto
     /// The server IP the client connected to
     /// </summary>
     public string? ServerIp { get; set; }
-    
+
     /// <summary>
     /// The port of the server
     /// </summary>
     public int? ServerPort { get; set; }
 
     /// <summary>
+    /// The game the server is running
+    /// </summary>
+    public Game? ServerGame { get; set; }
+
+    /// <summary>
     /// When the connection happened
     /// </summary>
     public DateTimeOffset? Connected { get; set; }
-    
+
     /// <summary>
     /// Information related to the server the infraction was issued from
     /// </summary>
     public InstanceDto? Instance { get; set; }
-
-    
 }

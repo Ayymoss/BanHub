@@ -34,6 +34,7 @@ public class ServerService : IServerService
             ServerIp = request.ServerIp!,
             ServerPort = request.ServerPort!.Value,
             InstanceId = instance.Id,
+            ServerGame = request.ServerGame!.Value
         };
 
         await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.ServerCount, ControllerEnums.StatisticTypeAction.Add);
@@ -52,7 +53,8 @@ public class ServerService : IServerService
                 ServerId = x.ServerId,
                 ServerName = x.ServerName,
                 ServerIp = x.ServerIp,
-                ServerPort = x.ServerPort
+                ServerPort = x.ServerPort,
+                ServerGame = x.ServerGame
             })
             .FirstOrDefaultAsync();
 

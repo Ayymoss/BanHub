@@ -34,7 +34,7 @@
     <RowTemplate>
         <MudTd DataLabel="ID">@context.Identity</MudTd>
         <MudTd DataLabel="Name">
-            <a href="/Profile/@context.Identity">
+            <a href="/Players/@context.Identity">
                 <MudText Typo="Typo.body2" Color="Color.Info">
                     @context.Alias!.UserName
                 </MudText>
@@ -87,8 +87,8 @@
             SearchString = _searchString,
         };
 
-        var statistics = await Http.GetFromJsonAsync<StatisticDto>("/api/v2/Statistic");
-        var data = await Http.PostAsJsonAsync("/api/v2/Entity/All", paginationQuery);
+        var statistics = await Http.GetFromJsonAsync<StatisticDto>("/api/Statistic");
+        var data = await Http.PostAsJsonAsync("/api/Entity/All", paginationQuery);
         var result = await data.Content.ReadFromJsonAsync<List<EntityDto>>();
 
         _pagedData = result!.ToArray();

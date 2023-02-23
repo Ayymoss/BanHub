@@ -1,4 +1,6 @@
-﻿namespace BanHub.WebCore.Shared.DTOs;
+﻿using BanHub.WebCore.Shared.Enums;
+
+namespace BanHub.WebCore.Shared.DTOs;
 
 public class ServerDto
 {
@@ -21,6 +23,11 @@ public class ServerDto
     /// The port of the server
     /// </summary>
     public int? ServerPort { get; set; }
+    
+    /// <summary>
+    /// The game the server is running
+    /// </summary>
+    public Game? ServerGame { get; set; }
 
     /// <summary>
     /// When the connection happened

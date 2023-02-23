@@ -2,7 +2,6 @@
 using BanHub.WebCore.Server.Enums;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Services;
-using BanHub.WebCore.Server.Utilities;
 using BanHub.WebCore.Shared.DTOs;
 using BanHub.WebCore.Shared.Utilities;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BanHub.WebCore.Server.Controllers;
 
 [ApiController]
-[Route("api/v2/[controller]")]
+[Route("api/[controller]")]
 public class PenaltyController : ControllerBase
 {
     private readonly IPenaltyService _penaltyService;

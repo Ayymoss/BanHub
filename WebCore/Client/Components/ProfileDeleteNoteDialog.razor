@@ -57,7 +57,7 @@
             return;
         }
 
-        var request = await Http.PostAsJsonAsync("api/v2/Entity/RemoveNote", Note);
+        var request = await Http.PostAsJsonAsync("api/Entity/RemoveNote", Note);
 
         if (!request.IsSuccessStatusCode)
         {

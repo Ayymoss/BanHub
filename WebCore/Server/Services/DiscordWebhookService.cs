@@ -17,32 +17,21 @@ public class DiscordWebhookService : IDiscordWebhookService
     public async Task CreatePenaltyHookAsync(PenaltyScope scope, PenaltyType penaltyType, Guid penaltyGuid, string identity, 
         string username, string reason)
     {
-        Color color;
-        switch (penaltyType)
+        var color = penaltyType switch
         {
-            case PenaltyType.Unban:
-            case PenaltyType.Unmute:
-                color = Color.Blue;
-                break;
-            case PenaltyType.Report:
-            case PenaltyType.Warning:
-                color = Color.Default;
-                break;
-            case PenaltyType.TempMute:
-            case PenaltyType.Mute:
-            case PenaltyType.Kick:
-                color = Color.LightOrange;
-                break;
-            case PenaltyType.TempBan:
-                color = Color.Orange;
-                break;
-            case PenaltyType.Ban:
-            default:
-                color = Color.Red;
-                break;
-        }
+            PenaltyType.Unban => Color.Blue,
+            PenaltyType.Unmute => Color.Blue,
+            PenaltyType.Report => Color.Default,
+            PenaltyType.Warning => Color.Default,
+            PenaltyType.TempMute => Color.LightOrange,
+            PenaltyType.Mute => Color.LightOrange,
+            PenaltyType.Kick => Color.LightOrange,
+            PenaltyType.TempBan => Color.Orange,
+            PenaltyType.Ban => Color.Red,
+            _ => Color.Default
+        };
 
-        if (scope == PenaltyScope.Global) color = Color.DarkRed;
+        if (scope is PenaltyScope.Global) color = Color.DarkRed;
 
         var embedBuilder = new EmbedBuilder
         {

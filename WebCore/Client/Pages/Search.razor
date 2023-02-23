@@ -29,7 +29,7 @@ else
         <RowTemplate>
             <MudTd DataLabel="ID">@context.Identity</MudTd>
             <MudTd DataLabel="User">
-                <a href="/Profile/@context.Identity">
+                <a href="/Players/@context.Identity">
                     <MudText Typo="Typo.body2" Color="Color.Info">
                         @context.Username
                     </MudText>
@@ -50,7 +50,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _searchResults = await Http.GetFromJsonAsync<List<SearchDto>>(Http.ParseUri("/api/v2/Search", new {Query}));
+        _searchResults = await Http.GetFromJsonAsync<List<SearchDto>>(Http.ParseUri("/api/Search", new {Query}));
         if (_searchResults is null || !_searchResults.Any()) _empty = true;
     }
 

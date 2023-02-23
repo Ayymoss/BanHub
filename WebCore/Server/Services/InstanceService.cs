@@ -45,10 +45,13 @@ public class InstanceService : IInstanceService
                 ApiKey = request.ApiKey!.Value,
                 Active = false,
                 HeartBeat = DateTimeOffset.UtcNow,
-                Created = DateTimeOffset.UtcNow
+                Created = DateTimeOffset.UtcNow,
+                About = request.About,
+                Socials = request.Socials
             });
 
-            await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.InstanceCount, ControllerEnums.StatisticTypeAction.Add);
+            await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.InstanceCount,
+                ControllerEnums.StatisticTypeAction.Add);
             await _context.SaveChangesAsync();
 
             return (ControllerEnums.ReturnState.Created, $"Instance added {request.InstanceGuid}");
@@ -66,6 +69,8 @@ public class InstanceService : IInstanceService
         }
 
         // Update existing record
+        instanceGuid.About ??= request.About;
+        instanceGuid.Socials ??= request.Socials;
         instanceGuid.HeartBeat = DateTimeOffset.UtcNow;
         instanceGuid.InstanceName = request.InstanceName;
         _context.Instances.Update(instanceGuid);
@@ -81,16 +86,31 @@ public class InstanceService : IInstanceService
         var guidParse = Guid.TryParse(guid, out var guidResult);
         if (!guidParse) return (ControllerEnums.ReturnState.BadRequest, null);
 
-        var result = await _context.Instances.SingleOrDefaultAsync(x => x.InstanceGuid == guidResult);
-        if (result is null) return (ControllerEnums.ReturnState.NotFound, null);
+        var result = await _context.Instances
+            .Where(x => x.InstanceGuid == guidResult)
+            .Select(x => new InstanceDto
+            {
+                InstanceGuid = x.InstanceGuid,
+                InstanceIp = x.InstanceIp,
+                InstanceName = x.InstanceName,
+                About = x.About,
+                Socials = x.Socials,
+                Active = x.Active,
+                HeartBeat = x.HeartBeat,
+                Created = x.Created,
+                Servers = x.ServerConnections
+                    .Where(srv => srv.Instance.InstanceGuid == x.InstanceGuid)
+                    .Select(srv => new ServerDto
+                    {
+                        ServerId = srv.ServerId,
+                        ServerName = srv.ServerName,
+                        ServerIp = srv.ServerIp,
+                        ServerPort = srv.ServerPort,
+                        ServerGame = srv.ServerGame,
+                    }).ToList()
+            }).FirstOrDefaultAsync();
 
-        return (ControllerEnums.ReturnState.Ok, new InstanceDto
-        {
-            InstanceGuid = result.InstanceGuid,
-            InstanceIp = result.InstanceIp,
-            InstanceName = result.InstanceName,
-            Active = result.Active
-        });
+        return result is null ? (ControllerEnums.ReturnState.NotFound, null) : (ControllerEnums.ReturnState.Ok, result);
     }
 
     public async Task<List<InstanceDto>> PaginationAsync(PaginationDto pagination)
@@ -121,6 +141,7 @@ public class InstanceService : IInstanceService
             .Take(pagination.PageSize.Value)
             .Select(instance => new InstanceDto
             {
+                Active = instance.Active,
                 InstanceGuid = instance.InstanceGuid,
                 InstanceIp = instance.InstanceIp,
                 InstanceName = instance.InstanceName,

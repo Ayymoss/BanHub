@@ -58,16 +58,17 @@ public class EntityService : IEntityService
                 Servers = profile.ServerConnections
                     .Where(x => x.Entity.Identity == identity)
                     .OrderBy(x => x.Connected)
-                    .Take(10)
                     .Select(server => new ServerDto
                     {
                         ServerId = server.Server.ServerId,
                         ServerName = server.Server.ServerName,
                         ServerIp = server.Server.ServerIp,
                         ServerPort = server.Server.ServerPort,
+                        ServerGame = server.Server.ServerGame,
                         Connected = server.Connected,
                         Instance = new InstanceDto
                         {
+                            InstanceIp = server.Server.Instance.InstanceIp,
                             InstanceName = server.Server.Instance.InstanceName
                         }
                     }).ToList(),

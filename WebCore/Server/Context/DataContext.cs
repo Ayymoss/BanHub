@@ -95,14 +95,20 @@ public class DataContext : DbContext
             ApiKey = Guid.NewGuid(),
             Active = true,
             Created = DateTimeOffset.UtcNow,
+            About = "Some description about the instance.",
+            Socials = new Dictionary<string, string>
+            {
+                {"YouTube", "https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
+                {"Another YouTube", "https://www.youtube.com/watch?v=sFce1pBvSd4"}
+            },
         };
 
         var infraction = new EFPenalty
         {
             Id = -1,
-            PenaltyType = PenaltyType.Warning,
+            PenaltyType = PenaltyType.Ban,
             PenaltyStatus = PenaltyStatus.Active,
-            PenaltyScope = PenaltyScope.Local,
+            PenaltyScope = PenaltyScope.Global,
             PenaltyGuid = Guid.NewGuid(),
             Submitted = DateTimeOffset.UtcNow,
             Duration = null,

@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BanHub.WebCore.Server.Controllers;
 
 [ApiController]
-[Route("api/v2/[controller]")]
+[Route("api/[controller]")]
 public class EntityController : ControllerBase
 {
     private readonly IEntityService _entityService;

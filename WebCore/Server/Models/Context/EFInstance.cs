@@ -28,7 +28,17 @@ public class EFInstance
     /// The last the the instance has replied
     /// </summary>
     public required DateTimeOffset HeartBeat { get; set; }
-    
+
+    /// <summary>
+    /// Community description
+    /// </summary>
+    public required string? About { get; set; }
+
+    /// <summary>
+    /// Community socials
+    /// </summary>
+    public required Dictionary<string, string>? Socials { get; set; }
+
     /// <summary>
     /// When the instance was created
     /// </summary>

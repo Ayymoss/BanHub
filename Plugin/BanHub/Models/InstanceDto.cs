@@ -38,6 +38,16 @@ public class InstanceDto
     public bool? Active { get; set; }
     
     /// <summary>
+    /// Community description
+    /// </summary>
+    public string? About { get; set; }
+    
+    /// <summary>
+    /// Community socials
+    /// </summary>
+    public Dictionary<string, string>? Socials { get; set; }
+    
+    /// <summary>
     /// Count of child servers
     /// </summary>
     public int? ServerCount { get; set; }
@@ -51,4 +61,6 @@ public class InstanceDto
     /// A server reference to this instance
     /// </summary>
     public virtual ServerDto? Server { get; set; }
+
+    
 }

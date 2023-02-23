@@ -10,9 +10,9 @@ public class PenaltyEndpoint
     private readonly ConfigurationModel _configurationModel;
     private readonly HttpClient _httpClient = new();
 #if DEBUG
-    private const string ApiHost = "http://localhost:8123/api/v2";
+    private const string ApiHost = "http://localhost:8123/api";
 #else
-    private const string ApiHost = "https://banhub.gg/api/v2";
+    private const string ApiHost = "https://banhub.gg/api";
 #endif
 
     public PenaltyEndpoint(ConfigurationModel configurationModel)

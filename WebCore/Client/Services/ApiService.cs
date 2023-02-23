@@ -16,13 +16,13 @@ public class ApiService : IApiService
 
     public async Task<string> LoginAsync(LoginRequestDto login)
     {
-        var response = await _httpClient.PostAsJsonAsync("/api/v2/Auth/Login", login);
+        var response = await _httpClient.PostAsJsonAsync("/api/Auth/Login", login);
         return response.IsSuccessStatusCode ? "Success" : "Failed";
     }
 
     public async Task<(string, UserDto?)> UserProfileAsync()
     {
-        var response = await _httpClient.GetAsync("/api/v2/Auth/Profile");
+        var response = await _httpClient.GetAsync("/api/Auth/Profile");
         if (response.IsSuccessStatusCode)
         {
             UserDto? result;
@@ -43,7 +43,7 @@ public class ApiService : IApiService
 
     public async Task<string> LogoutAsync()
     {
-        var response = await _httpClient.PostAsync("/api/v2/Auth/Logout", null);
+        var response = await _httpClient.PostAsync("/api/Auth/Logout", null);
         return response.IsSuccessStatusCode ? "Success" : "Failed";
     }
 }

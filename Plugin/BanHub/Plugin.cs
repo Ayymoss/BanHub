@@ -19,12 +19,11 @@ public class Plugin : IPluginV2
     public string Version => Utilities.GetVersionAsString();
     public string Author => "Amos";
 
+    private InstanceDto Instance { get; }
+    private IManager Manager { get; set; }
     public static bool InstanceActive { get; set; }
     public static EndpointManager EndpointManager { get; set; } = null!;
     public static TranslationStrings Translations { get; set; } = null!;
-    private InstanceDto InstanceMeta { get; }
-    private IManager Manager { get; set; }
-
     private readonly HeartBeatManager _heartBeatManager;
     private readonly ConfigurationModel _config;
     private readonly ApplicationConfiguration _appConfig;
@@ -41,7 +40,7 @@ public class Plugin : IPluginV2
         _whitelistManager = whitelistManager;
         _heartBeatManager = heartBeatManager;
         EndpointManager = endpointManager;
-        InstanceMeta = instance;
+        Instance = instance;
 
         IGameServerEventSubscriptions.MonitoringStarted += OnMonitoringStarted;
         IManagementEventSubscriptions.Load += OnLoad;
@@ -75,7 +74,8 @@ public class Plugin : IPluginV2
             ServerName = startEvent.Server.ServerName.StripColors(),
             ServerIp = startEvent.Server.ListenAddress,
             ServerPort = startEvent.Server.ListenPort,
-            Instance = InstanceMeta
+            ServerGame = Enum.Parse<Game>(startEvent.Server.GameCode.ToString()),
+            Instance = Instance
         };
         await EndpointManager.OnStart(serverDto);
     }
@@ -120,20 +120,30 @@ public class Plugin : IPluginV2
 #else
         Console.WriteLine($"[{ConfigurationModel.Name}] Loading...");
 #endif
-        
+
         Manager = manager;
         Translations = _config.Translations;
 
-        // Update the instance and check its state
-        InstanceMeta.InstanceGuid = Guid.Parse(_appConfig.Id);
-        InstanceMeta.InstanceName = _config.InstanceNameOverride ?? _appConfig.WebfrontCustomBranding;
-        InstanceMeta.InstanceIp = manager.ExternalIPAddress;
-        InstanceMeta.ApiKey = _config.ApiKey;
-        InstanceMeta.HeartBeat = DateTimeOffset.UtcNow;
+        // Update the instance and check its state (Singleton)
+        Instance.InstanceGuid = Guid.Parse(_appConfig.Id);
+        Instance.InstanceIp = manager.ExternalIPAddress;
+        Instance.ApiKey = _config.ApiKey;
 
-        _pluginEnabled = await EndpointManager.UpdateInstance(InstanceMeta);
+        // We need a copy of this since we don't really want the other values being sent with each request.
+        var instanceCopy = new InstanceDto
+        {
+            InstanceGuid = Instance.InstanceGuid,
+            InstanceIp = Instance.InstanceIp,
+            InstanceName = _config.InstanceNameOverride ?? _appConfig.WebfrontCustomBranding,
+            HeartBeat = DateTimeOffset.UtcNow,
+            ApiKey = Instance.ApiKey,
+            About = _appConfig.CommunityInformation.Description,
+            Socials = _appConfig.CommunityInformation.SocialAccounts.ToDictionary(social => social.Title, social => social.Url),
+        };
 
-        // Unsubscribe from events if response is bad.
+        _pluginEnabled = await EndpointManager.UpdateInstance(instanceCopy);
+
+        // Unsubscribe from events if response is bad
         if (!_pluginEnabled)
         {
             IGameServerEventSubscriptions.MonitoringStarted -= OnMonitoringStarted;
@@ -147,8 +157,8 @@ public class Plugin : IPluginV2
             return;
         }
 
-        InstanceActive = await EndpointManager.IsInstanceActive(InstanceMeta);
-        InstanceMeta.Active = InstanceActive;
+        InstanceActive = await EndpointManager.IsInstanceActive(Instance);
+        Instance.Active = InstanceActive;
 
         if (InstanceActive)
         {

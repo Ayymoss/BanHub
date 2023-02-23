@@ -46,14 +46,14 @@
     <RowTemplate>
         <MudTd DataLabel="ID">@context.PenaltyGuid</MudTd>
         <MudTd DataLabel="Target Name">
-            <a href="/Profile/@context.Target!.Identity">
+            <a href="/Players/@context.Target!.Identity">
                 <MudText Typo="Typo.body2" Color="Color.Warning">
                     @context.Target!.Alias!.UserName
                 </MudText>
             </a>
         </MudTd>
         <MudTd DataLabel="Admin Name">
-            <a href="/Profile/@context.Admin!.Identity">
+            <a href="/Players/@context.Admin!.Identity">
                 <MudText Typo="Typo.body2" Color="Color.Info">
                     @context.Admin!.Alias!.UserName
                 </MudText>
@@ -147,8 +147,8 @@
             SearchString = _searchString
         };
 
-        var statistics = await Http.GetFromJsonAsync<StatisticDto>("/api/v2/Statistic");
-        var data = await Http.PostAsJsonAsync("/api/v2/Penalty/All", paginationQuery);
+        var statistics = await Http.GetFromJsonAsync<StatisticDto>("/api/Statistic");
+        var data = await Http.PostAsJsonAsync("/api/Penalty/All", paginationQuery);
         var result = await data.Content.ReadFromJsonAsync<List<PenaltyDto>>();
 
         _pagedData = result!.ToArray();

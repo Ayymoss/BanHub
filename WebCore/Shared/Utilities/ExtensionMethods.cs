@@ -11,6 +11,11 @@ public static class ExtensionMethods
     {
         var uriBuilder = new UriBuilder
         {
+#if DEBUG
+            Scheme = "http",
+#else
+            Scheme = "https",
+#endif
             Path = endPoint,
             Host = http.BaseAddress!.Host,
             Port = http.BaseAddress.Port,

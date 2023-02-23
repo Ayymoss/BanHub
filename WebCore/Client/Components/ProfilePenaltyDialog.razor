@@ -6,7 +6,6 @@
             <MudGrid Spacing="2" Class="d-flex flex-row">
                 <MudItem Class="d-flex flex-1 align-center flex-column">
                     <MudText Align="Align.Center" Color="Color.Info">Reason</MudText>
-                    <MudSpacer/>
                     <MudText Align="Align.Center" Class="mud-text-secondary">@Penalty.Reason</MudText>
                 </MudItem>
                 <MudDivider Vertical="true" FlexItem="true" DividerType="DividerType.Middle"/>
@@ -112,14 +111,11 @@
         </MudPaper>
     </DialogContent>
     <DialogActions>
-        <MudElement Class="mr-4 mb-4 d-flex align-content-center">
-            <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="Cancel">Close</MudButton>
-            <AuthorizeView Roles="WebAdmin, WebSuperAdmin">
-                <Authorized>
-                    <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" OnClick="OpenConfirmDialog">Delete Penalty</MudButton>
-                </Authorized>
-            </AuthorizeView>
-        </MudElement>
+        <AuthorizeView Roles="WebAdmin, WebSuperAdmin">
+            <Authorized>
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" OnClick="OpenConfirmDialog">Delete Penalty</MudButton>
+            </Authorized>
+        </AuthorizeView>
     </DialogActions>
 </MudDialog>
 
@@ -132,8 +128,6 @@
     public PenaltyDto Penalty { get; set; } = null!;
 
     private string? _videoId;
-
-    private void Cancel() => MudDialog.Cancel();
 
     private async Task OpenConfirmDialog()
     {

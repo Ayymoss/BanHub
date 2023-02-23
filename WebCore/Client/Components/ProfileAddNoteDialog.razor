@@ -7,8 +7,8 @@
 <MudDialog>
     <DialogContent>
         <MudElement Class="d-flex flex-column">
-            <MudText Typo="Typo.subtitle1">Note reason...</MudText>
-            <MudTextField @bind-Value="_noteMessage" AutoFocus="false" Immediate="true" MaxLength="256" Label="Reason" Variant="Variant.Text" Counter="256" AdornmentIcon="@Icons.Material.Filled.Warning" Adornment="Adornment.End"/>
+            <MudText Typo="Typo.subtitle1">Note message</MudText>
+            <MudTextField @bind-Value="_noteMessage" AutoFocus="false" Immediate="true" MaxLength="256" Label="Message" Variant="Variant.Text" Counter="256" AdornmentIcon="@Icons.Material.Filled.Warning" Adornment="Adornment.End"/>
             <MudSwitch @bind-Checked="_isPrivateNote" Color="Color.Tertiary">Privatise this Note? (@(_isPrivateNote ? "Yes" : "No"))</MudSwitch>
         </MudElement>
         <MudElement Class="d-flex flex-column mb-3">
@@ -91,7 +91,7 @@
             NoteGuid = Guid.NewGuid()
         };
 
-        var request = await Http.PostAsJsonAsync("api/v2/Entity/AddNote", note);
+        var request = await Http.PostAsJsonAsync("api/Entity/AddNote", note);
         if (!request.IsSuccessStatusCode)
         {
             SnackbarService.Add("Failed to add note!", Severity.Error);

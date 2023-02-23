@@ -3,22 +3,33 @@
 @inherits LayoutComponentBase
 @implements IAsyncDisposable
 
-
 <MudThemeProvider IsDarkMode="true" Theme="_theme"/>
 <MudDialogProvider/>
 <MudSnackbarProvider/>
 <MudBreakpointProvider/>
 
 <MudLayout>
-    <MudAppBar Elevation="0" Style="background-color:#151521">
-        <MudElement Class="flex-grow-1 d-flex align-center">
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(DrawerToggle)"/>
+    <MudAppBar DisableGutters="true" Elevation="1">
+        <MudElement Class="pa-4 flex-grow-1 d-flex align-center">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="DrawerToggle"/>
+            <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="true">
+                <MudElement Class="d-flex mr-4 align-center">
+                    <MudImage Height="23" Src="/images/logo.png" Alt="BH" Elevation="23" Class="pr-2 mb-1"/>
+                    <MudDivider Vertical="true" DividerType="DividerType.Middle" Class="mx-1 py-4"/>
+                    <MudText Typo="Typo.h5" Class="pl-2">Ban Hub</MudText>
+                </MudElement>
+            </MudHidden>
+            <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="false">
+                <MudElement Class="d-flex mr-4 align-center">
+                    <MudText Typo="Typo.h4" Class="pl-2">Ban Hub</MudText>
+                </MudElement>
+            </MudHidden>
             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="true" Class="d-flex align-center">
-                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Person" Color="Color.Info">Online &bull; @_online</MudChip>
-                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Block" Color="Color.Error">Day Global Bans &bull; @_bans</MudChip>
-                    <MudSpacer/>
-                    <MudText Color="Color.Error" Typo="Typo.h6">! Work In Progress !</MudText>
-                </MudHidden>
+                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Person" Color="Color.Info">Online &bull; @_online</MudChip>
+                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Block" Color="Color.Error">Day Global Bans &bull; @_bans</MudChip>
+                <MudSpacer/>
+                <MudText Color="Color.Error" Typo="Typo.h6">! Work In Progress !</MudText>
+            </MudHidden>
             <MudSpacer/>
             <MudIconButton Icon="@Icons.Custom.Brands.Discord" Color="Color.Inherit" Link="https://discord.gg/Arruj6DWvp" Target="_blank"/>
             <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/Ayymoss/BanHub" Target="_blank"/>
@@ -27,12 +38,7 @@
             </MudBadge>
         </MudElement>
     </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
-        <MudDrawerHeader Class="justify-center align-center flex-1">
-            <MudImage Height="23" Src="/images/logo.png" Alt="BH" Elevation="23" Class="pr-2 mb-1"/>
-            <MudDivider Vertical="true" FlexItem="true" DividerType="DividerType.Middle" Class="mx-1 py-4"/>
-            <MudText Typo="Typo.h5" Class="pl-2">Ban Hub</MudText>
-        </MudDrawerHeader>
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
         <NavMenu/>
     </MudDrawer>
     <MudMainContent>
@@ -69,7 +75,7 @@
         };
         _activeUserCount = ActiveUserService.ActiveUsers;
 
-        var statistic = await Http.GetFromJsonAsync<StatisticDto>("/api/v2/Statistic");
+        var statistic = await Http.GetFromJsonAsync<StatisticDto>("/api/Statistic");
         if (statistic is null) return;
         _online = statistic.OnlineCount;
         _bans = statistic.BanCount;

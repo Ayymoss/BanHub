@@ -36,7 +36,7 @@
                         <RowTemplate>
                             <MudTd DataLabel="Instance">@(context.Instance.InstanceName ?? context.Instance.InstanceGuid.ToString())</MudTd>
                             <MudTd DataLabel="Target">
-                                <a href="/Profile/@context.Target!.Identity">
+                                <a href="/Players/@context.Target!.Identity">
                                     <MudText Typo="Typo.body2" Color="Color.Info">
                                         @context.Target!.Alias!.UserName
                                     </MudText>
@@ -53,25 +53,25 @@
             <MudGrid>
                 <MudItem xs="12">
                     <MudGrid Spacing="2" Justify="Justify.FlexStart">
-                        <MudItem xs="3">
+                        <MudItem xs="12" sm="4" xl="3">
                             <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
                                 <MudText Typo="Typo.subtitle1" Color="Color.Info">@_penalties</MudText>
                                 <MudText Class="mud-text-secondary">Penalties</MudText>
                             </MudPaper>
                         </MudItem>
-                        <MudItem xs="3">
+                        <MudItem xs="12" sm="4" xl="3">
                             <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
                                 <MudText Typo="Typo.subtitle1" Color="Color.Info">@_entities</MudText>
-                                <MudText Class="mud-text-secondary">Users</MudText>
+                                <MudText Class="mud-text-secondary">Players</MudText>
                             </MudPaper>
                         </MudItem>
-                        <MudItem xs="3">
+                        <MudItem xs="12" sm="4" xl="3">
                             <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
                                 <MudText Typo="Typo.subtitle1" Color="Color.Info">@_instances</MudText>
                                 <MudText Class="mud-text-secondary">Communities</MudText>
                             </MudPaper>
                         </MudItem>
-                        <MudItem xs="3">
+                        <MudItem xs="12" sm="4" xl="3">
                             <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
                                 <MudText Typo="Typo.subtitle1" Color="Color.Info">@_servers</MudText>
                                 <MudText Class="mud-text-secondary">Servers</MudText>
@@ -80,14 +80,24 @@
                     </MudGrid>
                 </MudItem>
                 <MudItem xs="12" class="align-self-stretch">
-                    <MudPaper Elevation="2" Class="pa-4" Style="height: 100%;">
-                        <MudText Typo="Typo.h6" GutterBottom="true">Follow us</MudText>
-                        <MudChip Size="Size.Large" Icon="@Icons.Custom.Brands.Discord" Label="true" Color="Color.Primary">
-                            <a href="https://discord.gg/39rMB7YE2R">Discord</a>
-                        </MudChip>
-                        <MudChip Size="Size.Large" Icon="@Icons.Custom.Brands.GitHub" Label="true" Color="Color.Info">
-                            <a href="https://github.com/Ayymoss/BanHub">GitHub</a>
-                        </MudChip>
+                    <MudPaper Elevation="2" Class="pa-4 d-flex flex-column">
+                        <MudText Typo="Typo.h6">Requirements for Activating Server for Read-Write Access to BanHub</MudText>
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">&bull; <b>Daily Client Count:</b> Minimum of 750 unique clients seen daily.</MudText>
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">&bull; <b>Minimum Clients:</b> Above 50,000 clients.</MudText>
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">&bull; <b>Community Age:</b> Active for at least 3 months with no long periods of inactivity.</MudText>
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">&bull; <b>Staff Presence:</b> Active staff presence. Responsible staff for global ban(s) to respond within reasonable period. (~3 working days)</MudText>
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">&bull; <b>No Unjustified Bans:</b> Server must not be known for imposing bans on players without proper justification or in a discriminatory manner.</MudText>
+                        <MudText Class="mt-2">If all of these requirements are met, the server will be deemed sufficiently established, well-managed, and dependable, making it eligible for read-write access to BanHub.</MudText>
+
+                        <MudText Typo="Typo.h6" Class="my-2">Follow us</MudText>
+                        <MudElement>
+                            <MudChip Size="Size.Large" Icon="@Icons.Custom.Brands.Discord" Label="true" Color="Color.Primary">
+                                <a href="https://discord.gg/39rMB7YE2R">Discord</a>
+                            </MudChip>
+                            <MudChip Size="Size.Large" Icon="@Icons.Custom.Brands.GitHub" Label="true" Color="Color.Info">
+                                <a href="https://github.com/Ayymoss/BanHub">GitHub</a>
+                            </MudChip>
+                        </MudElement>
                     </MudPaper>
                 </MudItem>
             </MudGrid>
@@ -107,10 +117,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var penalty = await Http.GetFromJsonAsync<List<PenaltyDto>>("/api/v2/Penalty/Index");
+        var penalty = await Http.GetFromJsonAsync<List<PenaltyDto>>("/api/Penalty/Index");
         if (penalty is not null) _penaltyTable = penalty;
 
-        var statistic = await Http.GetFromJsonAsync<StatisticDto>("/api/v2/Statistic");
+        var statistic = await Http.GetFromJsonAsync<StatisticDto>("/api/Statistic");
         if (statistic is null) return;
 
         _entities = $"{statistic.EntityCount:N0}";

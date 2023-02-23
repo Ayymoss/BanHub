@@ -1,16 +1,18 @@
 ﻿@using BanHub.WebCore.Shared.Utilities
+@using System.Security.Claims
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
 
 <MudPaper Class="d-flex flex-column" Width="240px" Height="100%" Elevation="0">
     <MudNavMenu Rounded="true" Margin="Margin.Normal" Color="Color.Info" Class="pa-2">
         <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-        <MudNavLink Href="Players" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Players</MudNavLink>
         <MudNavLink Href="Penalties" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Report">Penalties</MudNavLink>
+        <MudNavLink Href="Players" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Players</MudNavLink>
         <MudNavLink Href="Communities" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Storage">Communities</MudNavLink>
         <AuthorizeView>
             <Authorized>
-                <MudNavLink Href="Profile" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Person">My Profile</MudNavLink>
+                <MudNavLink Href="@($"Players/{_identity}")" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Person">My Profile</MudNavLink>
             </Authorized>
         </AuthorizeView>
     </MudNavMenu>
@@ -36,6 +38,7 @@
 </MudPaper>
 
 @code {
+    private string? _identity;
     private string? _searchValue;
     private string _versionNumber = Utilities.GetVersionAsString();
 
@@ -51,6 +54,12 @@
 
             NavigationManager.NavigateTo($"/Search?q={_searchValue}");
         }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await (AuthStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
+        _identity ??= user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
     }
 
 }

@@ -1,8 +1,3 @@
-/* Change the stripe colour */
-:root .mud-table-striped .mud-table-container .mud-table-root .mud-table-body .mud-table-row:nth-of-type(odd) {
-    background-color: #ffffff0d !important;
-}
-
 /* Override the default colour for active */
 :root .mud-tab.mud-tab-active {
     color: var(--mud-palette-info) !important;
@@ -11,9 +6,16 @@
     background-color: var(--mud-palette-info-hover) !important;
 }
 
-/* Remove dividers between rows in tables */
-:root .mud-table-cell {
-    border-bottom: unset !important;
+/* Remove dividers between rows in tables TODO: The media breaks don't work */
+@media (max-width: 600px) {
+    :root .mud-table-cell {
+        border-bottom: 1px solid var(--mud-palette-table-lines) !important;
+    }
+}
+@media (min-width: 601px) {
+    :root .mud-table-cell {
+        border-bottom: unset !important;
+    }
 }
 
 /* Adding class names for the colours */

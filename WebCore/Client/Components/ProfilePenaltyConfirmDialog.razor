@@ -55,7 +55,7 @@
             return;
         }
 
-        var request = await Http.PostAsJsonAsync("api/v2/Penalty/Remove", Penalty);
+        var request = await Http.PostAsJsonAsync("api/Penalty/Remove", Penalty);
         
 
         if (!request.IsSuccessStatusCode)

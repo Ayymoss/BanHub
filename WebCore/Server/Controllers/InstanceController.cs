@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BanHub.WebCore.Server.Controllers;
 
 [ApiController]
-[Route("api/v2/[controller]")]
+[Route("api/[controller]")]
 public class InstanceController : ControllerBase
 {
     private readonly IInstanceService _instanceService;
@@ -25,9 +25,6 @@ public class InstanceController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<string>> CreateOrUpdate([FromBody] InstanceDto request)
     {
-        // This just doesn't work at all. Why!?
-        //var requestIpAddress = Request.Headers["HTTP_X_FORWARDED_FOR"].ToString() ?? Request.Headers["REMOTE_ADDR"].ToString();
-
         var result = await _instanceService.CreateOrUpdateAsync(request, request.InstanceIp);
         return result.Item1 switch
         {
