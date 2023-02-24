@@ -35,6 +35,11 @@ public class ServerDto
     public DateTimeOffset? Connected { get; set; }
 
     /// <summary>
+    /// When we last received an update from this server.
+    /// </summary>
+    public DateTimeOffset? Updated { get; set; }
+
+    /// <summary>
     /// Information related to the server the infraction was issued from
     /// </summary>
     public InstanceDto? Instance { get; set; }

@@ -12,4 +12,6 @@ public interface IEntityService
     Task<string?> GetAuthenticationTokenAsync(EntityDto request);
     Task<bool> AddNoteAsync(NoteDto request, string adminIdentity);
     Task<bool> RemoveNoteAsync(NoteDto request, string adminIdentity);
+
+    Task<EntityDto> TestTest(string identity);
 }

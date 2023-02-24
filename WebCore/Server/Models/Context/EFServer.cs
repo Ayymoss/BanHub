@@ -32,6 +32,11 @@ public class EFServer
     /// The game the server is running
     /// </summary>
     public required Game ServerGame { get; set; }
+    
+    /// <summary>
+    /// When we last received an update from this server.
+    /// </summary>
+    public required DateTimeOffset Updated { get; set; }
 
     /// <summary>
     /// Current server associated with instance.

@@ -11,9 +11,9 @@ public class SubmitEvidenceCommand : Command
 {
     public SubmitEvidenceCommand(CommandConfiguration config, ITranslationLookup layout) : base(config, layout)
     {
-        Name = "submitevidence";
+        Name = "bhevidence";
         Description = "Submit evidence for a players ban";
-        Alias = "evi";
+        Alias = "bhe";
         Permission = EFClient.Permission.SeniorAdmin;
         RequiresTarget = false;
         Arguments = new[]

@@ -10,5 +10,10 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\..\_Cloned\IW4M-Admin\SharedLibraryCore\SharedLibraryCore.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Polly" Version="7.2.3" />
+      <PackageReference Include="RestEase" Version="1.6.1" />
+    </ItemGroup>
     
 </Project>

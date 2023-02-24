@@ -91,4 +91,11 @@ public class EntityController : ControllerBase
             false => BadRequest("Error removing note")
         };
     }
+    
+    [HttpGet("Test")]
+    public async Task<ActionResult<EntityDto>> TestTest([FromQuery] string identity)
+    {
+        var result = await _entityService.TestTest(identity);
+        return Ok(result);
+    }
 }

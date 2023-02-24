@@ -1,4 +1,6 @@
-﻿using BanHub.WebCore.Server.Context;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Enums;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Models.Context;
@@ -14,12 +16,14 @@ public class EntityService : IEntityService
     private readonly DataContext _context;
     private readonly IStatisticService _statisticService;
     private readonly IDiscordWebhookService _discordWebhook;
+    private readonly IMapper _mapper;
 
-    public EntityService(DataContext context, IStatisticService statisticService, IDiscordWebhookService discordWebhook)
+    public EntityService(DataContext context, IStatisticService statisticService, IDiscordWebhookService discordWebhook, IMapper mapper)
     {
         _context = context;
         _statisticService = statisticService;
         _discordWebhook = discordWebhook;
+        _mapper = mapper;
     }
 
     public async Task<EntityDto?> GetUserAsync(string identity, bool privileged)
@@ -287,7 +291,8 @@ public class EntityService : IEntityService
         }
 
         if (user is null)
-            await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.EntityCount, ControllerEnums.StatisticTypeAction.Add);
+            await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.EntityCount,
+                ControllerEnums.StatisticTypeAction.Add);
 
         entity.CurrentAlias = currentAlias;
         _context.CurrentAliases.Add(currentAlias);
@@ -443,5 +448,28 @@ public class EntityService : IEntityService
         await _context.SaveChangesAsync();
         await _discordWebhook.CreateAdminActionHookAsync("Note Deletion!", message);
         return true;
+    }
+
+    public async Task<EntityDto> TestTest(string identity)
+    {
+        var test = await _context.Entities.FirstOrDefaultAsync(x => x.Identity == identity);
+        var newEntity = await _context.Entities
+            .Include(x => x.CurrentAlias)
+            .ThenInclude(x => x.Alias)
+            .Include(x => x.Notes)
+            .ThenInclude(x => x.Admin)
+            .ThenInclude(x => x.CurrentAlias)
+            .ThenInclude(x => x.Alias)
+            .Include(x => x.ServerConnections)
+            .ThenInclude(x => x.Server)
+            .ThenInclude(x => x.Instance)
+            .Include(x => x.Penalties)
+            .ThenInclude(x => x.Admin)
+            .ThenInclude(x => x.CurrentAlias)
+            .ThenInclude(x => x.Alias)
+            .Where(x => x.Identity == identity)
+            .ProjectTo<EntityDto>(_mapper.ConfigurationProvider)
+            .FirstOrDefaultAsync();
+        return newEntity ?? _mapper.Map<EntityDto>(test);
     }
 }

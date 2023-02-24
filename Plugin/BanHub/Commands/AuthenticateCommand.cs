@@ -9,9 +9,9 @@ public class AuthenticateCommand : Command
 {
     public AuthenticateCommand(CommandConfiguration config, ITranslationLookup layout) : base(config, layout)
     {
-        Name = "banhubauth";
+        Name = "bhauthenticate";
         Description = "Get an authentication code";
-        Alias = "bhauth";
+        Alias = "bha";
         Permission = EFClient.Permission.Moderator;
         RequiresTarget = false;
     }

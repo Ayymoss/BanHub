@@ -15,9 +15,9 @@ public class WhitelistCommand : Command
         layout)
     {
         _whitelistManager = whitelistManager;
-        Name = "whitelist";
+        Name = "bhwhitelist";
         Description = "Whitelists a global banned player";
-        Alias = "wlist";
+        Alias = "bhwl";
         Permission = EFClient.Permission.SeniorAdmin;
         RequiresTarget = true;
         Arguments = new[]

@@ -174,13 +174,12 @@ public class Plugin : IPluginV2
         manager.QueueEvent(new NotifyAfterDelayRequestEvent
         {
             Source = "BanHub",
-            DelayMs = 240_000,
+            DelayMs = 240_000
         });
     }
 
     private async Task OnNotifyAfterDelayCompleted(NotifyAfterDelayCompleteEvent notifyEvent, CancellationToken token)
     {
-        Console.WriteLine($"[{ConfigurationModel.Name}] Notify Event Fired");
         if (notifyEvent.Source is not "BanHub") return;
         await _heartBeatManager.InstanceHeartBeat();
         await _heartBeatManager.ClientHeartBeat();

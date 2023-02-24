@@ -107,6 +107,7 @@ public class InstanceService : IInstanceService
                         ServerIp = srv.ServerIp,
                         ServerPort = srv.ServerPort,
                         ServerGame = srv.ServerGame,
+                        Updated = srv.Updated
                     }).ToList()
             }).FirstOrDefaultAsync();
 

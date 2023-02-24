@@ -1,6 +1,8 @@
+using AutoMapper;
 using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Middleware;
+using BanHub.WebCore.Server.Models.AutoMappers;
 using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Server.SignalR;
 using BanHub.WebCore.Server.Utilities;
@@ -19,7 +21,7 @@ builder.WebHost.ConfigureKestrel(options => { options.ListenAnyIP(configuration.
 #endif
 
 // TODO: TOGGLE MANUALLY - Migrations don't seem to honour build state
-configuration.Database.Database = "BanHubDev4";
+configuration.Database.Database = "BanHub";
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
@@ -30,19 +32,19 @@ builder.Services.AddDbContext<DataContext>(options =>
                       $"Database={configuration.Database.Database}");
 });
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
-builder.Services.AddCors(options =>
+var mapperConfig = new MapperConfiguration(map =>
 {
-    options.AddPolicy("CorsSpecs", corsPolicyBuilder =>
-    {
-        corsPolicyBuilder
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .SetIsOriginAllowed(_ => true)
-            .AllowCredentials();
-    });
+    map.AddProfile(new AliasMapping());
+    map.AddProfile(new EntityMapping());
+    map.AddProfile(new InstanceMapping());
+    map.AddProfile(new NoteMapping());
+    map.AddProfile(new PenaltyMapping());
+    map.AddProfile(new ServerMapping());
+    map.AddProfile(new CurrentAliasMapping());
+    map.AddProfile(new ServerConnectionMapping());
 });
 
+builder.Services.AddSingleton(mapperConfig.CreateMapper());
 builder.Services.AddSingleton(configuration);
 builder.Services.AddSingleton<ApiKeyCache>();
 builder.Services.AddSingleton<PluginAuthentication>();
@@ -60,14 +62,27 @@ builder.Services.AddScoped<IStatisticService, StatisticService>();
 builder.Services.AddScoped<IServerService, ServerService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-builder.Logging.ClearProviders().AddConsole();
-
 // Add services to the container.
 builder.Services.AddLogging();
 builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddSwaggerGen();
+
+builder.Logging.ClearProviders().AddConsole();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsSpecs", corsPolicyBuilder =>
+    {
+        corsPolicyBuilder
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .SetIsOriginAllowed(_ => true)
+            .AllowCredentials();
+    });
+});
 
 var app = builder.Build();
 
@@ -104,7 +119,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapFallbackToFile("index.html");
-
 
 
 app.Run();

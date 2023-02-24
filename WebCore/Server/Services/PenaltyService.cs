@@ -74,7 +74,7 @@ public class PenaltyService : IPenaltyService
                     foreach (var inf in penalty)
                     {
                         inf.PenaltyStatus = PenaltyStatus.Revoked;
-                        _context.Update(penalty);
+                        _context.Penalties.Update(inf);
                     }
 
                     break;
@@ -139,8 +139,7 @@ public class PenaltyService : IPenaltyService
         try
         {
             await _discordWebhook.CreatePenaltyHookAsync(penaltyModel.PenaltyScope, penaltyModel.PenaltyType,
-                penaltyModel.PenaltyGuid,
-                user.Identity, user.CurrentAlias.Alias.UserName, penaltyModel.Reason);
+                penaltyModel.PenaltyGuid, user.Identity, user.CurrentAlias.Alias.UserName, penaltyModel.Reason);
         }
         catch (Exception e)
         {
@@ -292,7 +291,8 @@ public class PenaltyService : IPenaltyService
 
         _context.Penalties.Remove(penalty);
         await _context.SaveChangesAsync();
-        await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.PenaltyCount, ControllerEnums.StatisticTypeAction.Remove);
+        await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.PenaltyCount,
+            ControllerEnums.StatisticTypeAction.Remove);
         await _discordWebhook.CreateAdminActionHookAsync("Penalty Deletion!", message);
         return true;
     }
@@ -425,6 +425,7 @@ public class PenaltyService : IPenaltyService
             .FirstOrDefaultAsync(x => x.PenaltyGuid == request.PenaltyGuid);
 
         if (penalty is null) return false;
+        // Someone has already submitted evidence. Don't overwrite it.
         if (penalty.Evidence is not null) return false;
 
         penalty.Evidence = request.Evidence;

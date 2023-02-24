@@ -25,7 +25,15 @@ public class ServerService : IServerService
         if (instance is null) return ControllerEnums.ReturnState.NotFound;
 
         var server = await _context.Servers.FirstOrDefaultAsync(x => x.ServerId == request.ServerId);
-        if (server is not null) return ControllerEnums.ReturnState.Conflict;
+        if (server is not null)
+        {
+            server.Updated = DateTimeOffset.UtcNow;
+            server.ServerName = request.ServerName!;
+            server.ServerGame = request.ServerGame!.Value;
+            _context.Servers.Update(server);
+            await _context.SaveChangesAsync();
+            return ControllerEnums.ReturnState.NoContent;
+        }
 
         var efServer = new EFServer
         {
@@ -34,11 +42,12 @@ public class ServerService : IServerService
             ServerIp = request.ServerIp!,
             ServerPort = request.ServerPort!.Value,
             InstanceId = instance.Id,
-            ServerGame = request.ServerGame!.Value
+            ServerGame = request.ServerGame!.Value,
+            Updated = DateTimeOffset.UtcNow
         };
 
         await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.ServerCount, ControllerEnums.StatisticTypeAction.Add);
-        
+
         _context.Servers.Add(efServer);
         await _context.SaveChangesAsync();
         return ControllerEnums.ReturnState.Ok;

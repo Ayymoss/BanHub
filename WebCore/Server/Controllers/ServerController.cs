@@ -25,7 +25,7 @@ public class ServerController : ControllerBase
         return result switch
         {
             ControllerEnums.ReturnState.NotFound => NotFound(),
-            ControllerEnums.ReturnState.Conflict => NoContent(),
+            ControllerEnums.ReturnState.NoContent => NoContent(),
             ControllerEnums.ReturnState.Ok => Ok(),
             _ => BadRequest() 
         };

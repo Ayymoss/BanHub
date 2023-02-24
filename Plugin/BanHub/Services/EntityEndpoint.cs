@@ -1,34 +1,54 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
 using BanHub.Configuration;
+using BanHub.Interfaces;
 using BanHub.Models;
+using Polly;
+using Polly.Retry;
+using RestEase;
 
 namespace BanHub.Services;
 
 public class EntityEndpoint
 {
-    private readonly ConfigurationModel _configurationModel;
-    private readonly HttpClient _httpClient = new();
 #if DEBUG
     private const string ApiHost = "http://localhost:8123/api";
 #else
     private const string ApiHost = "https://banhub.gg/api";
 #endif
 
+    private readonly IEntityService _api;
+    private readonly ConfigurationModel _configurationModel;
+    private readonly HttpClient _httpClient = new();
+
+    private readonly AsyncRetryPolicy _retryPolicy = Policy.Handle<HttpRequestException>()
+        .WaitAndRetryAsync(
+            retryCount: 3,
+            sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+            onRetry: (exception, retryCount, context) =>
+            {
+                Console.WriteLine(
+                    $"[{ConfigurationModel.Name}] Error sending heartbeat: {exception.Message}. Retrying ({retryCount}/{context["retryCount"]})...");
+            });
+
     public EntityEndpoint(ConfigurationModel configurationModel)
     {
         _configurationModel = configurationModel;
+        _api = RestClient.For<IEntityService>(ApiHost);
     }
 
     public async Task<EntityDto?> GetEntity(string identity)
     {
         try
         {
-            var response = await _httpClient.GetAsync($"{ApiHost}/Entity?identity={identity}");
-            if (!response.IsSuccessStatusCode) return null;
-            return await response.Content.ReadFromJsonAsync<EntityDto>();
+            return await _retryPolicy.ExecuteAsync(async () =>
+            {
+                var response = await _api.GetEntity(identity);
+                if (!response.IsSuccessStatusCode) return null;
+                return await response.Content.ReadFromJsonAsync<EntityDto>();
+            });
         }
-        catch (HttpRequestException e)
+        catch (ApiException e)
         {
             Console.WriteLine($"[{ConfigurationModel.Name}] Error getting entity: {e.Message}");
         }
@@ -40,12 +60,15 @@ public class EntityEndpoint
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync($"{ApiHost}/Entity/GetToken?authToken={_configurationModel.ApiKey}", entity);
-            if (!response.IsSuccessStatusCode) return null;
-            var result = await response.Content.ReadAsStringAsync();
-            return string.IsNullOrEmpty(result) ? null : result;
+            return await _retryPolicy.ExecuteAsync(async () =>
+            {
+                var response = await _api.GetToken(entity, _configurationModel.ApiKey.ToString());
+                if (!response.IsSuccessStatusCode) return null;
+                var result = await response.Content.ReadAsStringAsync();
+                return string.IsNullOrEmpty(result) ? null : result;
+            });
         }
-        catch (HttpRequestException e)
+        catch (ApiException e)
         {
             Console.WriteLine($"[{ConfigurationModel.Name}] Error getting token: {e.Message}");
         }
@@ -57,38 +80,25 @@ public class EntityEndpoint
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync($"{ApiHost}/Entity?authToken={_configurationModel.ApiKey}", entity);
-
-            if (!response.IsSuccessStatusCode && _configurationModel.DebugMode)
+            return await _retryPolicy.ExecuteAsync(async () =>
             {
-                Console.WriteLine($"\n[{ConfigurationModel.Name}] Error posting evidence {entity.Identity}\nSC: {response.StatusCode}\n" +
-                                  $"RP: {response.ReasonPhrase}\nB: {await response.Content.ReadAsStringAsync()}\nJSON: {JsonSerializer.Serialize(entity)}\n" +
-                                  $"[{ConfigurationModel.Name}] End of error");
-            }
+                var response = await _api.UpdateEntity(entity, _configurationModel.ApiKey.ToString());
+                if (!response.IsSuccessStatusCode && _configurationModel.DebugMode)
+                {
+                    Console.WriteLine($"\n[{ConfigurationModel.Name}] Error posting evidence {entity.Identity}\n" +
+                                      $"SC: {response.StatusCode}\n" +
+                                      $"RP: {response.ReasonPhrase}\n" +
+                                      $"B: {await response.Content.ReadAsStringAsync()}\n" +
+                                      $"JSON: {JsonSerializer.Serialize(entity)}\n" +
+                                      $"[{ConfigurationModel.Name}] End of error");
+                }
 
-            return response.IsSuccessStatusCode;
+                return response.IsSuccessStatusCode;
+            });
         }
-        catch (HttpRequestException e)
+        catch (ApiException e)
         {
             Console.WriteLine($"[{ConfigurationModel.Name}] Error updating entity: {e.Message}");
-        }
-
-        return false;
-    }
-
-    public async Task<bool> HasEntity(string identity)
-    {
-        try
-        {
-            var response = await _httpClient.GetAsync($"{ApiHost}/Entity/Exists?identity={identity}");
-            if (!response.IsSuccessStatusCode) return false;
-            var content = await response.Content.ReadAsStringAsync();
-            var boolParse = bool.TryParse(content, out var result);
-            return boolParse && result;
-        }
-        catch (HttpRequestException e)
-        {
-            Console.WriteLine($"[{ConfigurationModel.Name}] Error sending instance heartbeat: {e.Message}");
         }
 
         return false;

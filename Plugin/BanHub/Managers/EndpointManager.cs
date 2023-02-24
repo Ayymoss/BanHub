@@ -140,7 +140,7 @@ public class EndpointManager
     {
         var parsedPenaltyType = Enum.TryParse<PenaltyType>(sourcePenaltyType, out var penaltyType);
         if (!parsedPenaltyType || !Plugin.InstanceActive) return (false, null);
-        if (penaltyType is PenaltyType.Kick or PenaltyType.Warning && origin.ClientId == 1) return (false, null);
+        if (penaltyType is not PenaltyType.Ban && origin.ClientId is 1) return (false, null);
 
         var antiCheatReason = origin.AdministeredPenalties?.FirstOrDefault()?.AutomatedOffense;
         var globalAntiCheatBan = false;

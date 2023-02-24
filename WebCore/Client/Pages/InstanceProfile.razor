@@ -101,8 +101,11 @@ else
                                         <MudTh>
                                             <MudTableSortLabel SortBy="new Func<ServerDto, object>(x => x.ServerId)">IP</MudTableSortLabel>
                                         </MudTh>
-                                        <MudTh Class="rounded-tr">
+                                        <MudTh>
                                             <MudTableSortLabel SortBy="new Func<ServerDto, object>(x => x.ServerGame)">Game</MudTableSortLabel>
+                                        </MudTh>
+                                        <MudTh Class="rounded-tr">
+                                            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<ServerDto, object>(x => x.Updated)">Updated</MudTableSortLabel>
                                         </MudTh>
                                     </HeaderContent>
                                     <RowTemplate>
@@ -118,6 +121,7 @@ else
                                             }
                                         </MudTd>
                                         <MudTd DataLabel="Game">@(context.ServerGame?.GetGameName() ?? "Unknown")</MudTd>
+                                        <MudTd DataLabel="Updated">@context.Updated.Humanize()</MudTd>
                                     </RowTemplate>
                                     <PagerContent>
                                         <MudTablePager/>

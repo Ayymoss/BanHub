@@ -11,7 +11,7 @@ public class GlobalBanCommand : Command
 {
     public GlobalBanCommand(CommandConfiguration config, ITranslationLookup layout) : base(config, layout)
     {
-        Name = "globalban";
+        Name = "bhglobalban";
         Description = "Bans a player from all servers";
         Alias = "gban";
         Permission = EFClient.Permission.SeniorAdmin;
