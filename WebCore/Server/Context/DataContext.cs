@@ -1,6 +1,5 @@
-﻿using BanHub.WebCore.Server.Models;
-using BanHub.WebCore.Server.Models.Context;
-using BanHub.WebCore.Shared.Enums;
+﻿using BanHub.WebCore.Server.Models.Context;
+using Data.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Context;
@@ -12,7 +11,7 @@ public class DataContext : DbContext
     }
 
     public DbSet<EFInstance> Instances { get; set; }
-    public DbSet<EFEntity> Entities { get; set; }
+    public DbSet<EFPlayer> Players { get; set; }
     public DbSet<EFAlias> Aliases { get; set; }
     public DbSet<EFCurrentAlias> CurrentAliases { get; set; }
     public DbSet<EFPenalty> Penalties { get; set; }
@@ -25,7 +24,7 @@ public class DataContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<EFInstance>().ToTable("EFInstances");
-        modelBuilder.Entity<EFEntity>().ToTable("EFEntities");
+        modelBuilder.Entity<EFPlayer>().ToTable("EFPlayers");
         modelBuilder.Entity<EFAlias>().ToTable("EFAliases");
         modelBuilder.Entity<EFPenalty>().ToTable("EFPenalties");
         modelBuilder.Entity<EFCurrentAlias>().ToTable("EFCurrentAliases");
@@ -56,7 +55,7 @@ public class DataContext : DbContext
             Changed = DateTimeOffset.UtcNow
         };
 
-        var adminProfile = new EFEntity
+        var adminProfile = new EFPlayer
         {
             Id = -1,
             Identity = "0:UKN",
@@ -76,7 +75,7 @@ public class DataContext : DbContext
             AliasId = -1
         };
 
-        modelBuilder.Entity<EFEntity>().HasData(adminProfile);
+        modelBuilder.Entity<EFPlayer>().HasData(adminProfile);
         modelBuilder.Entity<EFAlias>().HasData(adminAlias);
         modelBuilder.Entity<EFCurrentAlias>().HasData(adminCurrentAlias);
 
@@ -116,7 +115,8 @@ public class DataContext : DbContext
             Evidence = "Seed Evidence",
             AdminId = -1,
             TargetId = -1,
-            InstanceId = -1
+            InstanceId = -1,
+            Automated = true
         };
 
         modelBuilder.Entity<EFInstance>().HasData(instance);

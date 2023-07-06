@@ -22,7 +22,7 @@ public class EFInstance
     /// <summary>
     /// The IW4MAdmin name
     /// </summary>
-    public required string? InstanceName { get; set; }
+    public required string InstanceName { get; set; }
 
     /// <summary>
     /// The last the the instance has replied

@@ -27,5 +27,5 @@ public class EFAuthToken
     /// </summary>
     public int EntityId { get; set; }
 
-    [ForeignKey(nameof(EntityId))] public EFEntity Entity { get; set; } = null!;
+    [ForeignKey(nameof(EntityId))] public EFPlayer Player { get; set; } = null!;
 }

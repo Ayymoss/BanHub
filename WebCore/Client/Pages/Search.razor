@@ -1,5 +1,6 @@
 ﻿@page "/Search"
 @using BanHub.WebCore.Shared.Utilities
+@using Data.Domains
 @inject HttpClient Http
 
 <PageTitle>Search | Ban Hub</PageTitle>
@@ -45,12 +46,12 @@ else
     [Parameter, SupplyParameterFromQuery(Name = "q")]
     public string? Query { get; set; }
 
-    private List<SearchDto>? _searchResults;
+    private List<Data.Domains.Search>? _searchResults;
     private bool _empty;
 
     protected override async Task OnInitializedAsync()
     {
-        _searchResults = await Http.GetFromJsonAsync<List<SearchDto>>(Http.ParseUri("/api/Search", new {Query}));
+        _searchResults = await Http.GetFromJsonAsync<List<Data.Domains.Search>>(Http.ParseUri("/api/Search", new {Query}));
         if (_searchResults is null || !_searchResults.Any()) _empty = true;
     }
 

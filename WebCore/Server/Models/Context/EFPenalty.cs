@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using BanHub.WebCore.Shared.Enums;
+using Data.Enums;
 
 namespace BanHub.WebCore.Server.Models.Context;
 
@@ -47,9 +47,9 @@ public class EFPenalty
     public required string Reason { get; set; }
 
     /// <summary>
-    /// The AntiCheat detection for the infraction
+    /// Automated penalty
     /// </summary>
-    public string? AntiCheatReason { get; set; }
+    public required bool Automated { get; set; }
 
     /// <summary>
     /// The uploaded evidence for the infraction
@@ -66,14 +66,14 @@ public class EFPenalty
     /// </summary>
     public int AdminId { get; set; }
 
-    [ForeignKey(nameof(AdminId))] public EFEntity Admin { get; set; } = null!;
+    [ForeignKey(nameof(AdminId))] public EFPlayer Admin { get; set; } = null!;
 
     /// <summary>
     /// The user GUID who received the infraction
     /// </summary>
     public int TargetId { get; set; }
 
-    [ForeignKey(nameof(TargetId))] public EFEntity Target { get; set; } = null!;
+    [ForeignKey(nameof(TargetId))] public EFPlayer Target { get; set; } = null!;
 
     /// <summary>
     /// The server reference this infraction

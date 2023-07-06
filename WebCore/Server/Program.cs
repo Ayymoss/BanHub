@@ -1,13 +1,33 @@
-using AutoMapper;
 using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Middleware;
-using BanHub.WebCore.Server.Models.AutoMappers;
 using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Server.SignalR;
 using BanHub.WebCore.Server.Utilities;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+
+
+/*
+ *
+ *
+ *Join -> Send info of player
+Return -> ID
+ID -> Give me penalties 
+
+
+Create or Update - Don't GET then Create
+If Exists -> Create Command (CQRS) -> Create or Update?
+
+
+
+CLIENT -> 
+Create/Update -> Return ID
+
+
+ *
+ * 
+ */
 
 SetupConfiguration.InitConfigurationAsync();
 var configuration = SetupConfiguration.ReadConfiguration();
@@ -21,7 +41,7 @@ builder.WebHost.ConfigureKestrel(options => { options.ListenAnyIP(configuration.
 #endif
 
 // TODO: TOGGLE MANUALLY - Migrations don't seem to honour build state
-configuration.Database.Database = "BanHub";
+configuration.Database.Database = "BanHubDev";
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
@@ -32,19 +52,6 @@ builder.Services.AddDbContext<DataContext>(options =>
                       $"Database={configuration.Database.Database}");
 });
 
-var mapperConfig = new MapperConfiguration(map =>
-{
-    map.AddProfile(new AliasMapping());
-    map.AddProfile(new EntityMapping());
-    map.AddProfile(new InstanceMapping());
-    map.AddProfile(new NoteMapping());
-    map.AddProfile(new PenaltyMapping());
-    map.AddProfile(new ServerMapping());
-    map.AddProfile(new CurrentAliasMapping());
-    map.AddProfile(new ServerConnectionMapping());
-});
-
-builder.Services.AddSingleton(mapperConfig.CreateMapper());
 builder.Services.AddSingleton(configuration);
 builder.Services.AddSingleton<ApiKeyCache>();
 builder.Services.AddSingleton<PluginAuthentication>();
@@ -52,8 +59,8 @@ builder.Services.AddSingleton<StatisticsTracking>();
 
 builder.Services.AddTransient<ApiKeyMiddleware>();
 
-builder.Services.AddScoped<IEntityService, EntityService>();
-builder.Services.AddScoped<IHeartBeatService, HeartBeatService>();
+builder.Services.AddScoped<IPlayerService, PlayerService>();
+builder.Services.AddScoped<IHeartbeatService, HeartbeatService>();
 builder.Services.AddScoped<IPenaltyService, PenaltyService>();
 builder.Services.AddScoped<IInstanceService, InstanceService>();
 builder.Services.AddScoped<IDiscordWebhookService, DiscordWebhookService>();
@@ -68,10 +75,23 @@ builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddSwaggerGen();
+builder.Services.AddMediatR(cfg => { cfg.RegisterServicesFromAssembly(typeof(Program).Assembly); });
+
 
 builder.Logging.ClearProviders().AddConsole();
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(opt =>
+    {
+        opt.Cookie.Name = "BanHubAccount";
+#if DEBUG
+        opt.LogoutPath = "/";
+        opt.LoginPath = "/";
+#else
+        opt.LogoutPath = "https://banhub.gg/";
+        opt.LoginPath = "https://banhub.gg/";
+#endif
+    });
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsSpecs", corsPolicyBuilder =>

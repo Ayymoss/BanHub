@@ -1,5 +1,5 @@
-﻿using BanHub.WebCore.Shared.DTOs;
-using BanHub.WebCore.Shared.Enums;
+﻿using Data.Domains;
+using Data.Enums;
 
 namespace BanHub.WebCore.Client.Utilities;
 
@@ -42,6 +42,6 @@ public static class ExtensionMethod
         };
     }
 
-    public static bool IsGlobalBanned(this EntityDto entity) =>
+    public static bool IsGlobalBanned(this Player entity) =>
         entity.Penalties?.Any(x => x is {PenaltyStatus: PenaltyStatus.Active, PenaltyScope: PenaltyScope.Global}) ?? false;
 }

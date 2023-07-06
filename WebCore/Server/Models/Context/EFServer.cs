@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using BanHub.WebCore.Shared.Enums;
+using Data.Enums;
 
 namespace BanHub.WebCore.Server.Models.Context;
 

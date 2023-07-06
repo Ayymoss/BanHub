@@ -1,4 +1,5 @@
 ﻿@page "/Players"
+@using Data.Domains
 @inject HttpClient Http
 
 <PageTitle>Players | Ban Hub</PageTitle>
@@ -12,23 +13,23 @@
     </MudElement>
 </MudPaper>
 <MudTable Striped="true" HeaderClass="mud-theme-info-darken" Outlined="false" Bordered="false" 
-          ServerData="@(new Func<TableState, Task<TableData<EntityDto>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true" 
+          ServerData="@(new Func<TableState, Task<TableData<Player>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true" 
           Hover="true" @ref="_table">
     <HeaderContent>
         <MudTh Class="py-2">
-            <MudTableSortLabel SortLabel="Id" T="EntityDto">ID</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Id" T="Player">ID</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Name" T="EntityDto">Name</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Name" T="Player">Name</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Penalty" T="EntityDto">Penalties</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Penalty" T="Player">Penalties</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="Online" T="EntityDto">Online?</MudTableSortLabel>
+            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="Online" T="Player">Online?</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Created" T="EntityDto">Created</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Created" T="Player">Created</MudTableSortLabel>
         </MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -42,7 +43,7 @@
         </MudTd>
         <MudTd DataLabel="Penalty">@(context.Penalties?.Count != 0 ? context.Penalties!.Count.ToString() : "None")</MudTd>
         <MudTd DataLabel="Online?">
-            <MudTooltip Arrow="true" Placement="Placement.Top" Text="@context.HeartBeat!.Value.ToString("yyyy-MM-dd HH:mm:ss")">
+            <MudTooltip Arrow="true" Placement="Placement.Top" Text="@context.HeartBeat.ToString("yyyy-MM-dd HH:mm:ss")">
                 @if (context.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
                 {
                     <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Online</MudChip>
@@ -53,7 +54,7 @@
                 }
             </MudTooltip>
         </MudTd>
-        <MudTd DataLabel="Created">@context.Created!.Value.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
+        <MudTd DataLabel="Created">@context.Created.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
     </RowTemplate>
     <NoRecordsContent>
         <MudText Class="mb-8" Color="Color.Warning">No players found.</MudText>
@@ -71,14 +72,14 @@
     [Parameter, SupplyParameterFromQuery(Name = "search")]
     public string? SearchString { get; set; }
 
-    private MudTable<EntityDto>? _table;
-    private IEnumerable<EntityDto>? _pagedData;
+    private MudTable<Player>? _table;
+    private IEnumerable<Player>? _pagedData;
     private string? _searchString;
     private int _totalItems;
 
-    private async Task<TableData<EntityDto>> ServerReload(TableState state)
+    private async Task<TableData<Player>> ServerReload(TableState state)
     {
-        var paginationQuery = new PaginationDto
+        var paginationQuery = new Pagination
         {
             Page = state.Page,
             PageSize = state.PageSize,
@@ -87,14 +88,14 @@
             SearchString = _searchString,
         };
 
-        var statistics = await Http.GetFromJsonAsync<StatisticDto>("/api/Statistic");
+        var statistics = await Http.GetFromJsonAsync<Statistic>("/api/Statistic");
         var data = await Http.PostAsJsonAsync("/api/Entity/All", paginationQuery);
-        var result = await data.Content.ReadFromJsonAsync<List<EntityDto>>();
+        var result = await data.Content.ReadFromJsonAsync<List<Player>>();
 
         _pagedData = result!.ToArray();
-        _totalItems = statistics!.EntityCount!.Value;
+        _totalItems = statistics!.EntityCount;
         
-        return new TableData<EntityDto> {TotalItems = _totalItems, Items = _pagedData};
+        return new TableData<Player> {TotalItems = _totalItems, Items = _pagedData};
     }
 
     private void OnSearch(string text)

@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using BanHub.WebCore.Shared.DTOs.WebEntity;
+using Data.Domains.WebEntity;
 using Microsoft.AspNetCore.Components.Authorization;
 
 namespace BanHub.WebCore.Client.Providers;
@@ -13,14 +13,14 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         return new AuthenticationState(_claimsPrincipal);
     }
 
-    public void SetAuthInfo(UserDto userProfile)
+    public void SetAuthInfo(WebUser webUserProfile)
     {
         var identity = new ClaimsIdentity(new[]
         {
-            new Claim(ClaimTypes.Role, userProfile.WebRole),
-            new Claim(ClaimTypes.Role, userProfile.InstanceRole),
-            new Claim(ClaimTypes.Name, userProfile.UserName),
-            new Claim(ClaimTypes.NameIdentifier, userProfile.Identity)
+            new Claim(ClaimTypes.Role, webUserProfile.WebRole),
+            new Claim(ClaimTypes.Role, webUserProfile.InstanceRole),
+            new Claim(ClaimTypes.Name, webUserProfile.UserName),
+            new Claim(ClaimTypes.NameIdentifier, webUserProfile.Identity)
         }, "AuthCookie");
 
         _claimsPrincipal = new ClaimsPrincipal(identity);

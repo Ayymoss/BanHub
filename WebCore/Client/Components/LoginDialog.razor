@@ -1,4 +1,5 @@
-﻿@inject NavigationManager NavigationManager
+﻿@using Data.Domains.WebEntity
+@inject NavigationManager NavigationManager
 @inject IApiService ApiLogic
 @inject ILocalStorageService LocalStorageService
 
@@ -8,7 +9,7 @@
             <MudElement>
                 <MudText Align="Align.Center" Typo="Typo.h4">Enter your token</MudText>
                 <MudText Align="Align.Center" Typo="Typo.body1"><MudElement Style="color:#878686">Generate a new token in-game with </MudElement><MudElement Style="color:#3496b7">!BHAuth</MudElement></MudText>
-                <MudTextField @bind-Value="_loginModel.Token" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" MaxLength="6" Label="Token" Variant="Variant.Text" Counter="6" AdornmentIcon="@Icons.Material.Filled.Person" Adornment="Adornment.End" AdornmentColor="Color.Info"/>
+                <MudTextField @bind-Value="_webLoginModel.Token" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" MaxLength="6" Label="Token" Variant="Variant.Text" Counter="6" AdornmentIcon="@Icons.Material.Filled.Person" Adornment="Adornment.End" AdornmentColor="Color.Info"/>
             </MudElement>
             <MudElement Class="d-flex">
                 <MudButton Disabled="@_processing" Color="Color.Tertiary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" OnClick="UserLogin">
@@ -38,7 +39,7 @@
     [CascadingParameter]
     MudDialogInstance MudDialog { get; set; }
 
-    private LoginRequestDto _loginModel = new();
+    private WebLoginRequest _webLoginModel = new();
     private bool _processing;
     private string? _error;
     
@@ -55,14 +56,14 @@
         _processing = true;
         _error = null;
 
-        if (_loginModel.Token?.Length is not 6)
+        if (_webLoginModel.Token?.Length is not 6)
         {
             _error = "Invalid token length";
             _processing = false;
             return;
         }
 
-        var message = await ApiLogic.LoginAsync(_loginModel);
+        var message = await ApiLogic.LoginAsync(_webLoginModel);
         if (message == "Success")
         {
             await LocalStorageService.SetItemAsStringAsync("IsAuthenticated", "true");

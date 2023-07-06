@@ -1,5 +1,6 @@
 ﻿@page "/Communities/{Identity}"
 @using System.Security.Claims
+@using Data.Domains
 @inject HttpClient Http
 @inject AuthenticationStateProvider AuthStateProvider
 
@@ -84,7 +85,7 @@ else
                 <MudTabs Position="Position.Left" Elevation="2" Rounded="true" PanelClass="d-flex flex-column ml-4" SliderColor="Color.Info">
                     <MudTabPanel Text="Servers">
                         <MudElement Class="flex-grow-1 d-flex flex-column">
-                            @if (_instance.ServerCount is null or 0)
+                            @if (_instance.ServerCount is 0)
                             {
                                 <MudPaper Class="pa-4 flex-1 d-flex align-center justify-center">
                                     <MudText Align="Align.Center" Class="mud-text-secondary" Typo="Typo.h6">The community has no servers.</MudText>
@@ -93,19 +94,19 @@ else
                             else
                             {
                                 <MudTable Striped="true" HeaderClass="mud-theme-info-darken" Outlined="false" Bordered="false"
-                                          Items="@_instance.Servers" Dense="true" @ref="_serverTable" T="ServerDto" RowsPerPage="10">
+                                          Items="@_instance.Servers" Dense="true" @ref="_serverTable" T="Server" RowsPerPage="10">
                                     <HeaderContent>
                                         <MudTh Class="rounded-tl py-2">
-                                            <MudTableSortLabel SortBy="new Func<ServerDto, object>(x => x.ServerName)">Name</MudTableSortLabel>
+                                            <MudTableSortLabel SortBy="new Func<Server, object>(x => x.ServerName)">Name</MudTableSortLabel>
                                         </MudTh>
                                         <MudTh>
-                                            <MudTableSortLabel SortBy="new Func<ServerDto, object>(x => x.ServerId)">IP</MudTableSortLabel>
+                                            <MudTableSortLabel SortBy="new Func<Server, object>(x => x.ServerId)">IP</MudTableSortLabel>
                                         </MudTh>
                                         <MudTh>
-                                            <MudTableSortLabel SortBy="new Func<ServerDto, object>(x => x.ServerGame)">Game</MudTableSortLabel>
+                                            <MudTableSortLabel SortBy="new Func<Server, object>(x => x.ServerGame)">Game</MudTableSortLabel>
                                         </MudTh>
                                         <MudTh Class="rounded-tr">
-                                            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<ServerDto, object>(x => x.Updated)">Updated</MudTableSortLabel>
+                                            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<Server, object>(x => x.Updated)">Updated</MudTableSortLabel>
                                         </MudTh>
                                     </HeaderContent>
                                     <RowTemplate>
@@ -120,7 +121,7 @@ else
                                                 <MudText Typo="Typo.body2">@context.ServerId</MudText>
                                             }
                                         </MudTd>
-                                        <MudTd DataLabel="Game">@(context.ServerGame?.GetGameName() ?? "Unknown")</MudTd>
+                                        <MudTd DataLabel="Game">@(context.ServerGame.GetGameName())</MudTd>
                                         <MudTd DataLabel="Updated">@context.Updated.Humanize()</MudTd>
                                     </RowTemplate>
                                     <PagerContent>
@@ -141,11 +142,11 @@ else
     [Parameter]
     public string? Identity { get; set; }
 
-    private InstanceDto? _instance;
+    private Instance? _instance;
     private string _title = "Not Found";
     private bool _loading = true;
     private bool _authorisedView;
-    private MudTable<ServerDto>? _serverTable;
+    private MudTable<Server>? _serverTable;
 
     protected override async Task OnInitializedAsync()
     {
@@ -160,7 +161,7 @@ else
             return;
         }
 
-        _instance = await request.Content.ReadFromJsonAsync<InstanceDto>();
+        _instance = await request.Content.ReadFromJsonAsync<Instance>();
         if (_instance is not null)
         {
             _instance.ServerCount = _instance.Servers?.Count ?? 0;

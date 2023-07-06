@@ -17,24 +17,22 @@
         </AuthorizeView>
     </MudNavMenu>
     <MudSpacer/>
-    <MudElement Class="d-flex flex-column pa-4">
+    <MudStack Spacing="2" Class="pa-2">
         <LoginComponent/>
-        <MudElement>
-            <MudTextField @bind-Value="_searchValue" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" Placeholder="Search"
+        <MudTextField @bind-Value="_searchValue" Disabled="true" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" Placeholder="Search"
                           Variant="Variant.Outlined" Adornment="Adornment.End" Margin="Margin.Dense" AdornmentIcon="@Icons.Material.Filled.Search"
                           AdornmentColor="Color.Info"/>
-        </MudElement>
-        <MudDivider Class="my-2" FlexItem="true" Light="true" DividerType="DividerType.FullWidth"/>
-        <MudElement Class="d-inline-flex align-center">
+        <MudDivider Class="mb-1" FlexItem="true" Light="true" DividerType="DividerType.FullWidth"/>
+        <MudElement Class="d-inline-flex align-center mb-n1">
             <MudElement>
-                <MudText Typo="Typo.caption" Class="mud-text-disabled">BanHub</MudText>
+                <MudText Typo="Typo.caption" Class="mud-text-disabled">BanHub by Amos</MudText>
             </MudElement>
             <MudSpacer/>
             <MudElement>
                 <MudText Typo="Typo.caption" Class="mud-text-disabled">@_versionNumber</MudText>
             </MudElement>
         </MudElement>
-    </MudElement>
+    </MudStack>
 </MudPaper>
 
 @code {

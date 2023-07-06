@@ -1,6 +1,6 @@
-﻿using BanHub.WebCore.Server.Enums;
+﻿using Data.Enums;
 using BanHub.WebCore.Server.Interfaces;
-using BanHub.WebCore.Shared.DTOs;
+using Data.Domains;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BanHub.WebCore.Server.Controllers;
@@ -23,7 +23,7 @@ public class InstanceController : ControllerBase
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPost]
-    public async Task<ActionResult<string>> CreateOrUpdate([FromBody] InstanceDto request)
+    public async Task<ActionResult<string>> CreateOrUpdate([FromBody] Instance request)
     {
         var result = await _instanceService.CreateOrUpdateAsync(request, request.InstanceIp);
         return result.Item1 switch
@@ -52,7 +52,7 @@ public class InstanceController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<InstanceDto>> GetInstance([FromQuery] string guid)
+    public async Task<ActionResult<Instance>> GetInstance([FromQuery] string guid)
     {
         var result = await _instanceService.GetInstanceAsync(guid);
         return result.Item1 switch
@@ -65,7 +65,7 @@ public class InstanceController : ControllerBase
     }
     
     [HttpPost("All")]
-    public async Task<ActionResult<IEnumerable<InstanceDto>>> GetInstances([FromBody] PaginationDto pagination)
+    public async Task<ActionResult<IEnumerable<Instance>>> GetInstances([FromBody] Pagination pagination)
     {
         return Ok(await _instanceService.PaginationAsync(pagination));
 

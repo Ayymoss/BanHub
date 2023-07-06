@@ -1,8 +1,8 @@
 ﻿using BanHub.WebCore.Server.Context;
-using BanHub.WebCore.Server.Enums;
+using Data.Enums;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Models;
-using BanHub.WebCore.Shared.DTOs;
+using Data.Domains;
 using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Services;
@@ -30,10 +30,10 @@ public class StatisticService : IStatisticService
             {
                 var result = await ReadStatisticsAsync();
 
-                _statisticsTracking.Penalties = result.PenaltyCount!.Value;
-                _statisticsTracking.Servers = result.ServerCount!.Value;
-                _statisticsTracking.Instances = result.InstanceCount!.Value;
-                _statisticsTracking.Entities = result.EntityCount!.Value;
+                _statisticsTracking.Penalties = result.PenaltyCount;
+                _statisticsTracking.Servers = result.ServerCount;
+                _statisticsTracking.Instances = result.InstanceCount;
+                _statisticsTracking.Entities = result.EntityCount;
                 _statisticsTracking.Loaded = true;
             }
         }
@@ -47,53 +47,28 @@ public class StatisticService : IStatisticService
     {
         if (!_statisticsTracking.Loaded) await EnsureInitialisedAsync();
 
-        // TODO: Rewrite this. Ugh
-        switch (action)
+        var actionMapping = new Dictionary<ControllerEnums.StatisticTypeAction, Action<int>>
         {
-            case ControllerEnums.StatisticTypeAction.Add:
-                switch (statistic)
-                {
-                    case ControllerEnums.StatisticType.PenaltyCount:
-                        Interlocked.Increment(ref _statisticsTracking.Penalties);
-                        break;
-                    case ControllerEnums.StatisticType.ServerCount:
-                        Interlocked.Increment(ref _statisticsTracking.Servers);
-                        break;
-                    case ControllerEnums.StatisticType.InstanceCount:
-                        Interlocked.Increment(ref _statisticsTracking.Instances);
-                        break;
-                    case ControllerEnums.StatisticType.EntityCount:
-                        Interlocked.Increment(ref _statisticsTracking.Entities);
-                        break;
-                }
+            {ControllerEnums.StatisticTypeAction.Add, x => Interlocked.Add(ref x, 1)},
+            {ControllerEnums.StatisticTypeAction.Remove, x => Interlocked.Add(ref x, -1)}
+        };
 
-                break;
-            case ControllerEnums.StatisticTypeAction.Remove:
-                switch (statistic)
-                {
-                    case ControllerEnums.StatisticType.PenaltyCount:
-                        Interlocked.Decrement(ref _statisticsTracking.Penalties);
-                        break;
-                    case ControllerEnums.StatisticType.ServerCount:
-                        Interlocked.Decrement(ref _statisticsTracking.Servers);
-                        break;
-                    case ControllerEnums.StatisticType.InstanceCount:
-                        Interlocked.Decrement(ref _statisticsTracking.Instances);
-                        break;
-                    case ControllerEnums.StatisticType.EntityCount:
-                        Interlocked.Decrement(ref _statisticsTracking.Entities);
-                        break;
-                }
+        var statisticMapping = new Dictionary<ControllerEnums.StatisticType, Action>
+        {
+            {ControllerEnums.StatisticType.PenaltyCount, () => actionMapping[action](_statisticsTracking.Penalties)},
+            {ControllerEnums.StatisticType.ServerCount, () => actionMapping[action](_statisticsTracking.Servers)},
+            {ControllerEnums.StatisticType.InstanceCount, () => actionMapping[action](_statisticsTracking.Instances)},
+            {ControllerEnums.StatisticType.EntityCount, () => actionMapping[action](_statisticsTracking.Entities)}
+        };
 
-                break;
-        }
+        statisticMapping[statistic]();
     }
 
-    public async Task<StatisticDto> GetStatisticsAsync()
+    public async Task<Statistic> GetStatisticsAsync()
     {
         if (!_statisticsTracking.Loaded) await EnsureInitialisedAsync();
 
-        return new StatisticDto
+        return new Statistic
         {
             PenaltyCount = _statisticsTracking.Penalties,
             ServerCount = _statisticsTracking.Servers,
@@ -141,14 +116,14 @@ public class StatisticService : IStatisticService
         _statisticsTracking.BansDayCount = _statisticsTracking.BansDay.Count;
     }
 
-    private async Task<StatisticDto> ReadStatisticsAsync()
+    private async Task<Statistic> ReadStatisticsAsync()
     {
-        var entity = await _context.Entities.CountAsync();
+        var entity = await _context.Players.CountAsync();
         var instance = await _context.Instances.CountAsync();
         var server = await _context.Servers.CountAsync();
         var penalty = await _context.Penalties.CountAsync();
 
-        var statistics = new StatisticDto
+        var statistics = new Statistic
         {
             EntityCount = entity,
             InstanceCount = instance,

@@ -32,12 +32,12 @@ public class EFNote
     /// </summary>
     public int AdminId { get; set; }
 
-    [ForeignKey(nameof(AdminId))] public EFEntity Admin { get; set; } = null!;
+    [ForeignKey(nameof(AdminId))] public EFPlayer Admin { get; set; } = null!;
 
     /// <summary>
     /// The user who received the note
     /// </summary>
     public int TargetId { get; set; }
 
-    [ForeignKey(nameof(TargetId))] public EFEntity Target { get; set; } = null!;
+    [ForeignKey(nameof(TargetId))] public EFPlayer Target { get; set; } = null!;
 }

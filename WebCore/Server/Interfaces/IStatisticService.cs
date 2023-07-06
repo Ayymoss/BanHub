@@ -1,13 +1,13 @@
-﻿using BanHub.WebCore.Server.Enums;
+﻿using Data.Enums;
 using BanHub.WebCore.Server.Models;
-using BanHub.WebCore.Shared.DTOs;
+using Data.Domains;
 
 namespace BanHub.WebCore.Server.Interfaces;
 
 public interface IStatisticService
 {
     Task UpdateStatisticAsync(ControllerEnums.StatisticType statistic, ControllerEnums.StatisticTypeAction action);
-    Task<StatisticDto> GetStatisticsAsync();
+    Task<Statistic> GetStatisticsAsync();
     Task UpdateOnlineStatisticAsync(StatisticUsersOnline statisticUsers);
     Task UpdateDayStatisticAsync(StatisticBan statisticBan);
 }

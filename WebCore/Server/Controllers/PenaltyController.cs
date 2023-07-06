@@ -1,9 +1,13 @@
 ﻿using System.Security.Claims;
-using BanHub.WebCore.Server.Enums;
+using Data.Enums;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Services;
-using BanHub.WebCore.Shared.DTOs;
 using BanHub.WebCore.Shared.Utilities;
+using Data.Commands;
+using Data.Commands.Penalty;
+using Data.Commands.Player;
+using Data.Domains;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BanHub.WebCore.Server.Controllers;
@@ -13,46 +17,47 @@ namespace BanHub.WebCore.Server.Controllers;
 public class PenaltyController : ControllerBase
 {
     private readonly IPenaltyService _penaltyService;
+    private readonly IMediator _mediator;
 
-    public PenaltyController(IPenaltyService penaltyService)
+    public PenaltyController(IPenaltyService penaltyService, IMediator mediator)
     {
         _penaltyService = penaltyService;
+        _mediator = mediator;
     }
 
     [HttpPost, PluginAuthentication]
-    public async Task<ActionResult<string>> AddPenalty([FromQuery] string authToken, [FromBody] PenaltyDto request)
+    public async Task<IActionResult> AddPenalty([FromQuery] string authToken, [FromBody] AddPlayerPenaltyCommand request)
     {
-        var result = await _penaltyService.AddPenaltyAsync(request);
+        var result = await _mediator.Send(request);
         return result.Item1 switch
         {
             ControllerEnums.ReturnState.Created => Ok(result.Item2.HasValue ? result.Item2.Value : "Error"),
             ControllerEnums.ReturnState.NotFound => NotFound(),
-            ControllerEnums.ReturnState.BadRequest => BadRequest(),
-            ControllerEnums.ReturnState.Conflict => Conflict("Infraction already exists"),
-            ControllerEnums.ReturnState.NoContent => NoContent(),
-            _ => BadRequest() // Should never happen
+            ControllerEnums.ReturnState.Ok => Ok(),
+            _ => BadRequest()
         };
     }
 
-    [HttpPost("Evidence"), PluginAuthentication]
-    public async Task<ActionResult<bool>> SubmitEvidence([FromQuery] string authToken, [FromBody] PenaltyDto request)
+    [HttpPatch("SubmitEvidence"), PluginAuthentication]
+    public async Task<IActionResult> SubmitEvidenceAsync([FromQuery] string authToken, [FromBody] AddPlayerPenaltyEvidenceCommand request)
     {
-        var result = await _penaltyService.SubmitEvidenceAsync(request);
+        var result = await _mediator.Send(request);
 
         return result switch
         {
-            true => Ok(true),
-            false => BadRequest(false)
+            ControllerEnums.ReturnState.NotFound => NotFound(),
+            ControllerEnums.ReturnState.Conflict => Conflict(),
+            _ => Ok()
         };
     }
 
     [HttpGet]
-    public async Task<ActionResult<InstanceDto>> GetPenalty([FromQuery] string guid)
+    public async Task<ActionResult<Instance>> GetPenalty([FromQuery] string guid)
     {
-        var result = await _penaltyService.GetPenaltyAsync(guid);
+        var result = await _penaltyService.GetPenaltiesAsync(guid);
         return result.Item1 switch
         {
-            ControllerEnums.ReturnState.Ok => Ok(result.Item2),
+            ControllerEnums.ReturnState.Ok => Ok(result.Item2?.FirstOrDefault()),
             ControllerEnums.ReturnState.NotFound => NotFound(),
             ControllerEnums.ReturnState.BadRequest => BadRequest(),
             _ => BadRequest() // Should never happen
@@ -60,19 +65,19 @@ public class PenaltyController : ControllerBase
     }
 
     [HttpPost("All")]
-    public async Task<ActionResult<IEnumerable<PenaltyDto>>> GetPenalties([FromBody] PaginationDto pagination)
+    public async Task<ActionResult<IEnumerable<Penalty>>> GetPenalties([FromBody] Pagination pagination)
     {
         return Ok(await _penaltyService.PaginationAsync(pagination));
     }
 
     [HttpGet("Index")]
-    public async Task<ActionResult<IEnumerable<PenaltyDto>>> GetRecentPenalties()
+    public async Task<ActionResult<IEnumerable<Penalty>>> GetRecentPenalties()
     {
         return Ok(await _penaltyService.GetLatestThreeBansAsync());
     }
 
     [HttpPost("Remove")] // Authorised endpoint
-    public async Task<ActionResult<bool>> RemovePenalty([FromBody] PenaltyDto request)
+    public async Task<ActionResult<bool>> RemovePenalty([FromBody] Penalty request)
     {
         var privileged = User.IsInAnyRole("WebAdmin", "WebSuperAdmin");
         var adminIdentity = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;

@@ -1,4 +1,5 @@
 ﻿@page "/Communities"
+@using Data.Domains
 @inject HttpClient Http
 
 <PageTitle>Communities | Ban Hub</PageTitle>
@@ -12,26 +13,26 @@
     </MudElement>
 </MudPaper>
 <MudTable Striped="true" HeaderClass="mud-theme-info-darken" Outlined="false" Bordered="false"
-          ServerData="@(new Func<TableState, Task<TableData<InstanceDto>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true"
+          ServerData="@(new Func<TableState, Task<TableData<Instance>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true"
           @ref="_table">
     <HeaderContent>
         <MudTh Class="py-2">
-            <MudTableSortLabel SortLabel="Id" T="InstanceDto">ID</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Id" T="Instance">ID</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Instance Name" T="InstanceDto">Community Name</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Instance Name" T="Instance">Community Name</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Instance IP" T="InstanceDto">Community IP</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Instance IP" T="Instance">Community IP</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Servers" T="InstanceDto">Servers</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Servers" T="Instance">Servers</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="HeartBeat" T="InstanceDto">Heart Beat</MudTableSortLabel>
+            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="HeartBeat" T="Instance">Heart Beat</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Created" T="InstanceDto">Created</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Created" T="Instance">Created</MudTableSortLabel>
         </MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -64,8 +65,8 @@
         </MudTd>
         <MudTd DataLabel="Instance IP">@context.InstanceIp</MudTd>
         <MudTd DataLabel="Servers">@context.ServerCount</MudTd>
-        <MudTd DataLabel="HeartBeat">@context.HeartBeat!.Value.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
-        <MudTd DataLabel="Created">@context.Created!.Value.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
+        <MudTd DataLabel="HeartBeat">@context.HeartBeat.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
+        <MudTd DataLabel="Created">@context.Created.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
     </RowTemplate>
     <NoRecordsContent>
         <MudText Class="mb-8" Color="Color.Warning">No instances found.</MudText>
@@ -83,14 +84,14 @@
     [Parameter, SupplyParameterFromQuery(Name = "search")]
     public string? SearchString { get; set; }
 
-    private MudTable<InstanceDto>? _table;
-    private IEnumerable<InstanceDto>? _pagedData;
+    private MudTable<Instance>? _table;
+    private IEnumerable<Instance>? _pagedData;
     private string? _searchString;
     private int _totalItems;
 
-    private async Task<TableData<InstanceDto>> ServerReload(TableState state)
+    private async Task<TableData<Instance>> ServerReload(TableState state)
     {
-        var paginationQuery = new PaginationDto
+        var paginationQuery = new Pagination
         {
             Page = state.Page,
             PageSize = state.PageSize,
@@ -99,14 +100,14 @@
             SearchString = _searchString
         };
 
-        var statistics = await Http.GetFromJsonAsync<StatisticDto>("/api/Statistic");
+        var statistics = await Http.GetFromJsonAsync<Statistic>("/api/Statistic");
         var data = await Http.PostAsJsonAsync("/api/Instance/All", paginationQuery);
-        var result = await data.Content.ReadFromJsonAsync<List<InstanceDto>>();
+        var result = await data.Content.ReadFromJsonAsync<List<Instance>>();
 
         _pagedData = result!.ToArray();
-        _totalItems = statistics!.InstanceCount!.Value;
+        _totalItems = statistics!.InstanceCount;
 
-        return new TableData<InstanceDto> {TotalItems = _totalItems, Items = _pagedData};
+        return new TableData<Instance> {TotalItems = _totalItems, Items = _pagedData};
     }
 
     private void OnSearch(string text)

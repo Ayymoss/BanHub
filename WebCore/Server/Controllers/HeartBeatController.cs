@@ -1,7 +1,9 @@
-﻿using BanHub.WebCore.Server.Enums;
-using BanHub.WebCore.Server.Interfaces;
+﻿using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Services;
-using BanHub.WebCore.Shared.DTOs;
+using Data.Commands.Heartbeat;
+using Data.Domains;
+using Data.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BanHub.WebCore.Server.Controllers;
@@ -10,25 +12,29 @@ namespace BanHub.WebCore.Server.Controllers;
 [Route("api/[controller]")]
 public class HeartBeatController : ControllerBase
 {
-    private readonly IHeartBeatService _heartBeatService;
+    private readonly IMediator _mediator;
 
-    public HeartBeatController(IHeartBeatService heartBeatService)
+    public HeartBeatController(IMediator mediator)
     {
-        _heartBeatService = heartBeatService;
+        _mediator = mediator;
     }
 
     [HttpPost("Instance")]
-    public async Task<ActionResult> InstanceHeartbeat([FromBody] InstanceDto request)
+    public async Task<IActionResult> InstanceHeartbeat([FromBody] InstanceHeartbeatCommand request)
     {
-        var result = await _heartBeatService.InstanceHeartbeatAsync(request);
-        if (result.Item1 is ControllerEnums.ReturnState.NotFound) return NotFound();
-        return Ok();
+        var result = await _mediator.Send(request);
+        return result switch
+        {
+            ControllerEnums.ReturnState.Accepted => Accepted(),
+            ControllerEnums.ReturnState.Ok => Ok(),
+            _ => NotFound()
+        };
     }
 
-    [HttpPost("Entities"), PluginAuthentication]
-    public async Task<ActionResult> EntitiesHeartbeat([FromQuery] string authToken, [FromBody] List<EntityDto> request)
+    [HttpPost("Players"), PluginAuthentication]
+    public async Task<IActionResult> EntitiesHeartbeat([FromQuery] string authToken, [FromBody] PlayersHeartbeartCommand request)
     {
-        await _heartBeatService.EntitiesHeartbeatAsync(request);
+        await _mediator.Send(request);
         return Ok();
     }
 }

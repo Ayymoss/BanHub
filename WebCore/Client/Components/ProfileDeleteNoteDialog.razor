@@ -1,4 +1,5 @@
-﻿@inject ISnackbar SnackbarService
+﻿@using Data.Domains
+@inject ISnackbar SnackbarService
 @inject HttpClient Http
 @attribute [Authorize(Roles = "WebAdmin, WebSuperAdmin")]
 
@@ -40,7 +41,7 @@
     MudDialogInstance MudDialog { get; set; }
 
     [Parameter]
-    public NoteDto Note { get; set; } = null!;
+    public Note Note { get; set; } = null!;
 
     private bool _processing;
 

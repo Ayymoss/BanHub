@@ -1,10 +1,10 @@
-﻿using BanHub.WebCore.Shared.DTOs.WebEntity;
+﻿using Data.Domains.WebEntity;
 
 namespace BanHub.WebCore.Client.Interfaces;
 
 public interface IApiService
 {
-    Task<string> LoginAsync(LoginRequestDto login);
-    Task<(string, UserDto?)> UserProfileAsync();
+    Task<string> LoginAsync(WebLoginRequest webLogin);
+    Task<(string, WebUser?)> UserProfileAsync();
     Task<string> LogoutAsync();
 }

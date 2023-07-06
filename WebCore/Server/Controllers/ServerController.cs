@@ -1,7 +1,6 @@
-﻿using BanHub.WebCore.Server.Enums;
+﻿using Data.Enums;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Services;
-using BanHub.WebCore.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BanHub.WebCore.Server.Controllers;
@@ -19,7 +18,7 @@ public class ServerController : ControllerBase
     }
     
     [HttpPost, PluginAuthentication]
-    public async Task<ActionResult> Add([FromQuery] string authToken, [FromBody] ServerDto request)
+    public async Task<ActionResult> Add([FromQuery] string authToken, [FromBody] Data.Domains.Server request)
     {
         var result = await _serverService.AddAsync(request);
         return result switch
@@ -32,7 +31,7 @@ public class ServerController : ControllerBase
     }
     
     [HttpGet]
-    public async Task<ActionResult<ServerDto>> Get([FromQuery] string serverId)
+    public async Task<ActionResult<Data.Domains.Server>> Get([FromQuery] string serverId)
     {
         var result = await _serverService.GetAsync(serverId);
         return result.Item1 switch

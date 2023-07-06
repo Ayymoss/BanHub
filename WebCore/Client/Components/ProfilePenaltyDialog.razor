@@ -1,4 +1,6 @@
-﻿@inject IDialogService DialogService
+﻿@using Data.Domains
+@using Data.Enums
+@inject IDialogService DialogService
 
 <MudDialog>
     <DialogContent>
@@ -90,8 +92,8 @@
             <MudItem Class="flex-1">
                 <MudPaper Class="d-flex justify-center flex-column align-center align-self-center pa-4" Elevation="2">
                     <MudText Typo="Typo.subtitle2" Color="Color.Info">
-                        <MudTooltip Arrow="true" Placement="Placement.Top" Text="@Penalty.Submitted.Value.ToString("yyyy-MM-dd HH:mm:ss")">
-                            @(Penalty.Submitted.Value.Humanize().Titleize())
+                        <MudTooltip Arrow="true" Placement="Placement.Top" Text="@Penalty.Submitted.ToString("yyyy-MM-dd HH:mm:ss")">
+                            @(Penalty.Submitted.Humanize().Titleize())
                         </MudTooltip>
                     </MudText>
                     <MudText Typo="Typo.body2" Class="mud-text-secondary">Submitted</MudText>
@@ -125,7 +127,7 @@
     MudDialogInstance MudDialog { get; set; }
 
     [Parameter]
-    public PenaltyDto Penalty { get; set; } = null!;
+    public Penalty Penalty { get; set; } = null!;
 
     private string? _videoId;
 

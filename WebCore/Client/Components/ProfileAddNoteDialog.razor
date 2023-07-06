@@ -1,4 +1,5 @@
 ﻿@using System.Security.Claims
+@using Data.Domains
 @inject ISnackbar SnackbarService
 @inject HttpClient Http
 @inject AuthenticationStateProvider AuthStateProvider
@@ -71,17 +72,17 @@
             return;
         }
 
-        var note = new NoteDto
+        var note = new Note
         {
             Message = _noteMessage,
             IsPrivate = _isPrivateNote,
-            Target = new EntityDto
+            Target = new Player
             {
                 Identity = Identity
             },
-            Admin = new EntityDto
+            Admin = new Player
             {
-                Alias = new AliasDto
+                Alias = new Alias
                 {
                     UserName = adminName
                 },

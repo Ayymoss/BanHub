@@ -1,5 +1,5 @@
 ﻿using BanHub.WebCore.Server.Interfaces;
-using BanHub.WebCore.Shared.Enums;
+using Data.Enums;
 using Discord;
 using Discord.Webhook;
 

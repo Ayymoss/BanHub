@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using Data.Domains
 @inject HttpClient Http
 
 <PageTitle>Index | Ban Hub</PageTitle>
@@ -26,7 +27,7 @@
                 {
                     <MudText Align="Align.Center" Typo="Typo.h6">Latest 3 global bans</MudText>
                     <br/>
-                    <MudTable Dense="true" Items="@_penaltyTable" Hover="true" FixedHeader="true" Height="100%" T="PenaltyDto">
+                    <MudTable Dense="true" Items="@_penaltyTable" Hover="true" FixedHeader="true" Height="100%" T="Penalty">
                         <HeaderContent>
                             <MudTh>Community</MudTh>
                             <MudTh>Target</MudTh>
@@ -113,14 +114,14 @@
     private string? _entities;
     private string? _servers;
 
-    private List<PenaltyDto> _penaltyTable = new();
+    private List<Penalty> _penaltyTable = new();
 
     protected override async Task OnInitializedAsync()
     {
-        var penalty = await Http.GetFromJsonAsync<List<PenaltyDto>>("/api/Penalty/Index");
+        var penalty = await Http.GetFromJsonAsync<List<Penalty>>("/api/Penalty/Index");
         if (penalty is not null) _penaltyTable = penalty;
 
-        var statistic = await Http.GetFromJsonAsync<StatisticDto>("/api/Statistic");
+        var statistic = await Http.GetFromJsonAsync<Statistic>("/api/Statistic");
         if (statistic is null) return;
 
         _entities = $"{statistic.EntityCount:N0}";

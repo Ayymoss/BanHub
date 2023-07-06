@@ -1,8 +1,8 @@
 ﻿using BanHub.WebCore.Server.Context;
-using BanHub.WebCore.Server.Enums;
+using Data.Enums;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Models.Context;
-using BanHub.WebCore.Shared.DTOs;
+using Data.Domains;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 
@@ -24,7 +24,7 @@ public class InstanceService : IInstanceService
         _statisticService = statisticService;
     }
 
-    public async Task<(ControllerEnums.ReturnState, string)> CreateOrUpdateAsync(InstanceDto request, string? requestIpAddress)
+    public async Task<(ControllerEnums.ReturnState, string)> CreateOrUpdateAsync(Instance request, string? requestIpAddress)
     {
         var instanceGuid = await _context.Instances
             .AsTracking()
@@ -42,7 +42,7 @@ public class InstanceService : IInstanceService
                 InstanceGuid = request.InstanceGuid,
                 InstanceIp = ipAddress!,
                 InstanceName = request.InstanceName,
-                ApiKey = request.ApiKey!.Value,
+                ApiKey = request.ApiKey,
                 Active = false,
                 HeartBeat = DateTimeOffset.UtcNow,
                 Created = DateTimeOffset.UtcNow,
@@ -81,14 +81,14 @@ public class InstanceService : IInstanceService
             : (ControllerEnums.ReturnState.Ok, "Instance exists, but is not active.");
     }
 
-    public async Task<(ControllerEnums.ReturnState, InstanceDto?)> GetInstanceAsync(string guid)
+    public async Task<(ControllerEnums.ReturnState, Instance?)> GetInstanceAsync(string guid)
     {
         var guidParse = Guid.TryParse(guid, out var guidResult);
         if (!guidParse) return (ControllerEnums.ReturnState.BadRequest, null);
 
         var result = await _context.Instances
             .Where(x => x.InstanceGuid == guidResult)
-            .Select(x => new InstanceDto
+            .Select(x => new Instance
             {
                 InstanceGuid = x.InstanceGuid,
                 InstanceIp = x.InstanceIp,
@@ -100,7 +100,7 @@ public class InstanceService : IInstanceService
                 Created = x.Created,
                 Servers = x.ServerConnections
                     .Where(srv => srv.Instance.InstanceGuid == x.InstanceGuid)
-                    .Select(srv => new ServerDto
+                    .Select(srv => new Data.Domains.Server
                     {
                         ServerId = srv.ServerId,
                         ServerName = srv.ServerName,
@@ -114,7 +114,7 @@ public class InstanceService : IInstanceService
         return result is null ? (ControllerEnums.ReturnState.NotFound, null) : (ControllerEnums.ReturnState.Ok, result);
     }
 
-    public async Task<List<InstanceDto>> PaginationAsync(PaginationDto pagination)
+    public async Task<List<Instance>> PaginationAsync(Pagination pagination)
     {
         var query = _context.Instances.AsQueryable();
 
@@ -138,9 +138,9 @@ public class InstanceService : IInstanceService
         };
 
         var pagedData = await query
-            .Skip(pagination.Page!.Value * pagination.PageSize!.Value)
-            .Take(pagination.PageSize.Value)
-            .Select(instance => new InstanceDto
+            .Skip(pagination.Page * pagination.PageSize)
+            .Take(pagination.PageSize)
+            .Select(instance => new Instance
             {
                 Active = instance.Active,
                 InstanceGuid = instance.InstanceGuid,
@@ -158,8 +158,8 @@ public class InstanceService : IInstanceService
     {
         var guidParse = Guid.TryParse(instanceGuid, out var guidResult);
         if (!guidParse) return ControllerEnums.ReturnState.BadRequest;
-        var result = await _context.Instances.SingleOrDefaultAsync(x => x.InstanceGuid == guidResult);
-        if (result is null) return ControllerEnums.ReturnState.NotFound;
+        if (await _context.Instances.SingleOrDefaultAsync(x => x.InstanceGuid == guidResult) is not { } result)
+            return ControllerEnums.ReturnState.NotFound;
 
         if (result.Active && _apiKeyCache.ApiKeys is not null && !_apiKeyCache.ApiKeys.Contains(result.ApiKey))
         {

@@ -3,7 +3,7 @@ IW4MAdmin project for global penalties to share between communities with a overa
 
 Please see this project's [progress board](https://github.com/users/Ayymoss/projects/1)
 
-**Website:** [Ban Hub](https://banhub.gg/) !! WIP !!
+**Website:** [Ban Hub](https://banhub.gg/)
 
 **Ban Hub Discord:** https://discord.gg/39rMB7YE2R 
 

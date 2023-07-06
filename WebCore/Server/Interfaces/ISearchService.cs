@@ -1,8 +1,8 @@
-﻿using BanHub.WebCore.Shared.DTOs;
+﻿using Data.Domains;
 
 namespace BanHub.WebCore.Server.Interfaces;
 
 public interface ISearchService
 {
-    Task<List<SearchDto>?> SearchAsync(string query);
+    Task<List<Search>?> SearchAsync(string query);
 }

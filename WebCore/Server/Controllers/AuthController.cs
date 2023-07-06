@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
-using BanHub.WebCore.Server.Enums;
 using BanHub.WebCore.Server.Interfaces;
-using BanHub.WebCore.Shared.DTOs.WebEntity;
+using Data.Domains.WebEntity;
+using Data.Enums;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -21,9 +21,9 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("Login")]
-    public async Task<IActionResult> LoginAsync([FromBody] LoginRequestDto loginRequest)
+    public async Task<IActionResult> LoginAsync([FromBody] WebLoginRequest webLoginRequest)
     {
-        var result = await _authService.LoginAsync(loginRequest);
+        var result = await _authService.LoginAsync(webLoginRequest);
         switch (result.Item1)
         {
             case ControllerEnums.ReturnState.Ok:
@@ -35,7 +35,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("Profile"), Authorize]
-    public async Task<ActionResult<UserDto>> UserProfileAsync()
+    public async Task<ActionResult<WebUser>> UserProfileAsync()
     {
         var userId = HttpContext.User.Claims
             .Where(x => x.Type == "UserId")

@@ -1,5 +1,4 @@
 ﻿using BanHub.WebCore.Server.Models;
-using BanHub.WebCore.Shared.DTOs;
 
 namespace BanHub.WebCore.Server.Services;
 

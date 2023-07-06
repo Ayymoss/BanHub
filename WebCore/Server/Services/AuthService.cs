@@ -1,8 +1,8 @@
 ﻿using System.Security.Claims;
 using BanHub.WebCore.Server.Context;
-using BanHub.WebCore.Server.Enums;
+using Data.Enums;
 using BanHub.WebCore.Server.Interfaces;
-using BanHub.WebCore.Shared.DTOs.WebEntity;
+using Data.Domains.WebEntity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -18,19 +18,19 @@ public class AuthService : IAuthService
         _context = context;
     }
 
-    public async Task<(ControllerEnums.ReturnState, ClaimsIdentity, AuthenticationProperties)> LoginAsync(LoginRequestDto loginRequest)
+    public async Task<(ControllerEnums.ReturnState, ClaimsIdentity, AuthenticationProperties)> LoginAsync(WebLoginRequest webLoginRequest)
     {
         var token = await _context.AuthTokens
             .AsTracking()
-            .Where(x => x.Token == loginRequest.Token)
+            .Where(x => x.Token == webLoginRequest.Token)
             .FirstOrDefaultAsync();
 
         if (token is null || token.Created + TimeSpan.FromMinutes(5) < DateTimeOffset.UtcNow || token.Used)
             return (ControllerEnums.ReturnState.Unauthorized, null, null)!;
 
-        var user = await _context.Entities
+        var user = await _context.Players
             .Where(x => x.Id == token.EntityId)
-            .Select(x => new UserDto
+            .Select(x => new WebUser
             {
                 UserName = x.CurrentAlias.Alias.UserName,
                 WebRole = x.WebRole.ToString(),
@@ -58,11 +58,11 @@ public class AuthService : IAuthService
         return (ControllerEnums.ReturnState.Ok, claimsIdentity, authProperties);
     }
 
-    public async Task<UserDto?> UserProfileAsync(int userId)
+    public async Task<WebUser?> UserProfileAsync(int userId)
     {
-        var user = await _context.Entities
+        var user = await _context.Players
             .Where(x => x.Id == userId)
-            .Select(f => new UserDto
+            .Select(f => new WebUser
             {
                 UserName = f.CurrentAlias.Alias.UserName,
                 WebRole = f.WebRole.ToString(),

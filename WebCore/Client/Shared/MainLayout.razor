@@ -1,5 +1,6 @@
 ﻿@inject HttpClient Http
 @using BanHub.WebCore.Client.Theme
+@using Data.Domains
 @inherits LayoutComponentBase
 @implements IAsyncDisposable
 
@@ -8,9 +9,9 @@
 <MudSnackbarProvider/>
 <MudBreakpointProvider/>
 
-<MudLayout>
+<MudLayout Style="height:100vh">
     <MudAppBar DisableGutters="true" Elevation="1">
-        <MudElement Class="pa-4 flex-grow-1 d-flex align-center">
+        <MudElement Class="px-6 flex-grow-1 d-flex align-center">
             <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="DrawerToggle"/>
             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="true">
                 <MudElement Class="d-flex mr-4 align-center">
@@ -27,8 +28,6 @@
             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="true" Class="d-flex align-center">
                 <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Person" Color="Color.Info">Online &bull; @_online</MudChip>
                 <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Block" Color="Color.Error">Day Global Bans &bull; @_bans</MudChip>
-                <MudSpacer/>
-                <MudText Color="Color.Error" Typo="Typo.h6">! Work In Progress !</MudText>
             </MudHidden>
             <MudSpacer/>
             <MudIconButton Icon="@Icons.Custom.Brands.Discord" Color="Color.Inherit" Link="https://discord.gg/Arruj6DWvp" Target="_blank"/>
@@ -41,10 +40,14 @@
     <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
         <NavMenu/>
     </MudDrawer>
-    <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="my-8 pt-8">
-            @Body
-        </MudContainer>
+    <MudMainContent Style="height: 100%;">
+        <MudStack Style="height: 100%;">
+            <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="my-8 pt-8">
+                @Body
+            </MudContainer>
+            <MudSpacer/>
+            <MudAlert Class="ma-2" Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">Site in Active Development</MudAlert>
+        </MudStack>
     </MudMainContent>
 </MudLayout>
 
@@ -60,10 +63,7 @@
     private bool _drawerOpen = true;
     private int _activeUserCount;
 
-    void DrawerToggle()
-    {
-        _drawerOpen = !_drawerOpen;
-    }
+    void DrawerToggle() => _drawerOpen = !_drawerOpen;
 
     protected override async Task OnInitializedAsync()
     {
@@ -75,7 +75,7 @@
         };
         _activeUserCount = ActiveUserService.ActiveUsers;
 
-        var statistic = await Http.GetFromJsonAsync<StatisticDto>("/api/Statistic");
+        var statistic = await Http.GetFromJsonAsync<Statistic>("/api/Statistic");
         if (statistic is null) return;
         _online = statistic.OnlineCount;
         _bans = statistic.BanCount;

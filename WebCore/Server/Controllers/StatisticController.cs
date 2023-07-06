@@ -1,5 +1,5 @@
 ﻿using BanHub.WebCore.Server.Interfaces;
-using BanHub.WebCore.Shared.DTOs;
+using Data.Domains;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BanHub.WebCore.Server.Controllers;
@@ -16,7 +16,7 @@ public class StatisticController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<StatisticDto>> Statistics()
+    public async Task<ActionResult<Statistic>> Statistics()
     {
         var result = await _statisticService.GetStatisticsAsync();
         return Ok(result);

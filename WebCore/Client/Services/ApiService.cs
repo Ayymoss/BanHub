@@ -1,7 +1,7 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
 using BanHub.WebCore.Client.Interfaces;
-using BanHub.WebCore.Shared.DTOs.WebEntity;
+using Data.Domains.WebEntity;
 
 namespace BanHub.WebCore.Client.Services;
 
@@ -14,21 +14,21 @@ public class ApiService : IApiService
         _httpClient = httpClient;
     }
 
-    public async Task<string> LoginAsync(LoginRequestDto login)
+    public async Task<string> LoginAsync(WebLoginRequest webLogin)
     {
-        var response = await _httpClient.PostAsJsonAsync("/api/Auth/Login", login);
+        var response = await _httpClient.PostAsJsonAsync("/api/Auth/Login", webLogin);
         return response.IsSuccessStatusCode ? "Success" : "Failed";
     }
 
-    public async Task<(string, UserDto?)> UserProfileAsync()
+    public async Task<(string, WebUser?)> UserProfileAsync()
     {
         var response = await _httpClient.GetAsync("/api/Auth/Profile");
         if (response.IsSuccessStatusCode)
         {
-            UserDto? result;
+            WebUser? result;
             try
             {
-                result = await response.Content.ReadFromJsonAsync<UserDto>();
+                result = await response.Content.ReadFromJsonAsync<WebUser>();
             }
             catch (JsonException)
             {
