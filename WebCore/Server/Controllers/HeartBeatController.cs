@@ -1,8 +1,7 @@
 ﻿using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Services;
-using Data.Commands.Heartbeat;
-using Data.Domains;
-using Data.Enums;
+using BanHubData.Commands.Heartbeat;
+using BanHubData.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,7 +31,7 @@ public class HeartBeatController : ControllerBase
     }
 
     [HttpPost("Players"), PluginAuthentication]
-    public async Task<IActionResult> EntitiesHeartbeat([FromQuery] string authToken, [FromBody] PlayersHeartbeartCommand request)
+    public async Task<IActionResult> EntitiesHeartbeat([FromQuery] string authToken, [FromBody] PlayersHeartbeatCommand request)
     {
         await _mediator.Send(request);
         return Ok();

@@ -1,12 +1,14 @@
 ﻿using System.Security.Claims;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Services;
+using BanHub.WebCore.Shared.Commands.PlayerProfile;
+using BanHub.WebCore.Shared.Commands.Players;
 using BanHub.WebCore.Shared.Utilities;
-using Data.Commands;
-using Data.Commands.Player;
-using Data.Domains;
+using BanHubData.Commands.Player;
+using BanHubData.Domains;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Player = BanHub.WebCore.Shared.Models.PlayersView.Player;
 
 namespace BanHub.WebCore.Server.Controllers;
 
@@ -30,22 +32,31 @@ public class PlayerController : ControllerBase
         return Ok(id);
     }
 
-    [HttpPost("All")]
-    public async Task<ActionResult<IEnumerable<Player>>> GetEntitiesAsync([FromBody] Pagination pagination)
+    [HttpPost("Players")]
+    public async Task<ActionResult<IEnumerable<Player>>> GetPlayersPaginationAsync([FromBody] GetPlayersPaginationCommand playersPagination)
     {
-        return Ok(await _playerService.PaginationAsync(pagination));
+        var result = await _mediator.Send(playersPagination);
+        return Ok(result);
     }
+    
+    [HttpGet("Profile/{identity}")]
+    public async Task<ActionResult<Player>> GetProfileAsync([FromQuery] string identity)
+    {
+        var result = await _mediator.Send(new GetProfileCommand{Identity = identity});
+        return Ok(result);
+    }
+    
 
-    //[HttpGet] // Disabled - This needs to be rewritten using Mediator. The return value used to return Player.
-    //public async Task<IActionResult> GetEntityAsync([FromQuery] string identity)
-    //{
-    //    var privileged = User.IsInAnyRole("InstanceModerator", "InstanceAdministrator", "InstanceSeniorAdmin",
-    //        "InstanceOwner", "WebAdmin",
-    //        "WebSuperAdmin");
-    //    var result = await _entityService.GetUserAsync(identity, privileged);
-    //    if (result is null) return NotFound();
-    //    return Ok(result);
-    //}
+    [HttpGet] // Disabled - This needs to be rewritten using Mediator. The return value used to return Player.
+    public async Task<IActionResult> GetEntityAsync([FromQuery] string identity)
+    {
+        var privileged = User.IsInAnyRole("InstanceModerator", "InstanceAdministrator", "InstanceSeniorAdmin",
+            "InstanceOwner", "WebAdmin",
+            "WebSuperAdmin");
+        var result = await _playerService.GetUserAsync(identity, privileged);
+        if (result is null) return NotFound();
+        return Ok(result);
+    }
 
     [HttpGet("IsBanned")]
     public async Task<IActionResult> IsPlayerBannedAsync([FromBody] IsPlayerBannedCommand request)
@@ -70,34 +81,4 @@ public class PlayerController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("AddNote")] // Authorised endpoint
-    public async Task<ActionResult<Note>> AddNoteAsync([FromBody] Note request)
-    {
-        var privileged = User.IsInAnyRole("InstanceModerator", "InstanceAdministrator", "InstanceSeniorAdmin", 
-            "InstanceOwner", "WebAdmin", "WebSuperAdmin");
-        var adminIdentity = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-        if (!privileged || adminIdentity is null) return Unauthorized("You are not authorised to perform this action");
-
-        var result = await _playerService.AddNoteAsync(request, adminIdentity);
-        return result switch
-        {
-            true => Ok("Created note"),
-            false => BadRequest("Failed to create note")
-        };
-    }
-
-    [HttpPost("RemoveNote")] // Authorised endpoint
-    public async Task<ActionResult<bool>> RemoveNoteAsync([FromBody] Note request)
-    {
-        var privileged = User.IsInAnyRole("WebAdmin", "WebSuperAdmin");
-        var adminIdentity = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-        if (!privileged || adminIdentity is null) return Unauthorized("You are not authorised to perform this action");
-
-        var result = await _playerService.RemoveNoteAsync(request, adminIdentity);
-        return result switch
-        {
-            true => Ok("Note deleted!"),
-            false => BadRequest("Error removing note")
-        };
-    }
 }

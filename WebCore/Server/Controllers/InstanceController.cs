@@ -1,6 +1,9 @@
-﻿using Data.Enums;
-using BanHub.WebCore.Server.Interfaces;
-using Data.Domains;
+﻿using BanHub.WebCore.Server.Interfaces;
+using BanHub.WebCore.Shared.Models.Shared;
+using BanHubData.Commands.Instance;
+using BanHubData.Domains;
+using BanHubData.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BanHub.WebCore.Server.Controllers;
@@ -10,11 +13,12 @@ namespace BanHub.WebCore.Server.Controllers;
 public class InstanceController : ControllerBase
 {
     private readonly IInstanceService _instanceService;
+    private readonly IMediator _mediator;
 
-
-    public InstanceController(IInstanceService instanceService)
+    public InstanceController(IInstanceService instanceService, IMediator mediator)
     {
         _instanceService = instanceService;
+        _mediator = mediator;
     }
 
     /// <summary>
@@ -23,32 +27,28 @@ public class InstanceController : ControllerBase
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPost]
-    public async Task<ActionResult<string>> CreateOrUpdate([FromBody] Instance request)
+    public async Task<IActionResult> CreateOrUpdate([FromBody] CreateOrUpdateInstanceCommand request)
     {
-        var result = await _instanceService.CreateOrUpdateAsync(request, request.InstanceIp);
-        return result.Item1 switch
+        
+        // HttpContext.Request.Headers["X-Forwarded-For"]
+        var result = await _mediator.Send(request);
+
+        return result switch
         {
-            ControllerEnums.ReturnState.Created => StatusCode(StatusCodes.Status201Created, result.Item2), // New, added
-            ControllerEnums.ReturnState.BadRequest => BadRequest(result.Item2), // ??
-            ControllerEnums.ReturnState.Conflict => StatusCode(StatusCodes.Status409Conflict, result.Item2), // Conflicting GUIDs
-            ControllerEnums.ReturnState.Accepted => StatusCode(StatusCodes.Status202Accepted, result.Item2), // Activated
-            ControllerEnums.ReturnState.Ok => Ok(result.Item2), // Not activated
+            ControllerEnums.ReturnState.Created => StatusCode(StatusCodes.Status201Created), // New, added
+            ControllerEnums.ReturnState.Conflict => Conflict(), // Conflicting GUIDs
+            ControllerEnums.ReturnState.Accepted => Accepted(), // Activated
+            ControllerEnums.ReturnState.Ok => Ok(), // Not activated
             _ => BadRequest() // Should never happen
         };
     }
 
     [HttpGet("Active")]
-    public async Task<ActionResult<bool>> IsInstanceActive([FromQuery] string guid)
+    public async Task<ActionResult<bool>> IsInstanceActive([FromBody] IsInstanceActiveCommand guid)
     {
-        var result = await _instanceService.IsInstanceActiveAsync(guid);
-        return result switch
-        {
-            ControllerEnums.ReturnState.NotFound => NotFound(),
-            ControllerEnums.ReturnState.BadRequest => BadRequest(),
-            ControllerEnums.ReturnState.Accepted => Accepted(true), // Activated
-            ControllerEnums.ReturnState.Unauthorized => Unauthorized(false),
-            _ => BadRequest() // Should never happen
-        };
+        var result = await _mediator.Send(guid);
+        if (!result) return Unauthorized();
+        return Accepted();
     }
 
     [HttpGet]
@@ -58,16 +58,14 @@ public class InstanceController : ControllerBase
         return result.Item1 switch
         {
             ControllerEnums.ReturnState.NotFound => NotFound("Instance not found"),
-            ControllerEnums.ReturnState.BadRequest => BadRequest("Invalid guid"),
             ControllerEnums.ReturnState.Ok => Ok(result.Item2),
             _ => BadRequest() // Should never happen
         };
     }
-    
+
     [HttpPost("All")]
     public async Task<ActionResult<IEnumerable<Instance>>> GetInstances([FromBody] Pagination pagination)
     {
         return Ok(await _instanceService.PaginationAsync(pagination));
-
     }
 }

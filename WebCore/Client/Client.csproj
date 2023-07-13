@@ -18,10 +18,11 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.8" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
     <PackageReference Include="MudBlazor" Version="6.6.0" />
+    <PackageReference Include="RestEase" Version="1.6.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Data\Data\Data.csproj" />
+    <ProjectReference Include="..\..\Data\BanHubData\BanHubData.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 

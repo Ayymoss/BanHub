@@ -1,4 +1,5 @@
 ﻿using System.Security.Principal;
+using System.Text.Json;
 using System.Web;
 
 namespace BanHub.WebCore.Shared.Utilities;
@@ -28,5 +29,18 @@ public static class ExtensionMethods
         };
 
         return uriBuilder.Uri;
+    }
+
+    public static async Task<TResponse?> DeserializeHttpResponseContentAsync<TResponse>(this HttpResponseMessage response)
+        where TResponse : class
+    {
+        var jsonSerializerOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        if (!response.IsSuccessStatusCode) return null;
+        var json = await response.Content.ReadAsStringAsync();
+        return string.IsNullOrEmpty(json) ? null : JsonSerializer.Deserialize<TResponse>(json, jsonSerializerOptions);
     }
 }

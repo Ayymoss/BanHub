@@ -1,8 +1,9 @@
 ﻿@using System.Security.Claims
-@using Data.Domains
+@using BanHub.WebCore.Shared.Commands.PlayerProfile
+@using BanHubData.Domains
 @inject ISnackbar SnackbarService
-@inject HttpClient Http
 @inject AuthenticationStateProvider AuthStateProvider
+@inject NoteService NoteService
 @attribute [Authorize(Roles = "WebAdmin, WebSuperAdmin, InstanceModerator, InstanceAdmin, InstanceSuperAdmin, InstanceOwner")]
 
 <MudDialog>
@@ -72,28 +73,16 @@
             return;
         }
 
-        var note = new Note
+        var request = await NoteService.AddNoteAsync(new AddNoteCommand
         {
             Message = _noteMessage,
             IsPrivate = _isPrivateNote,
-            Target = new Player
-            {
-                Identity = Identity
-            },
-            Admin = new Player
-            {
-                Alias = new Alias
-                {
-                    UserName = adminName
-                },
-                Identity = adminIdentity
-            },
-            Created = DateTimeOffset.UtcNow,
-            NoteGuid = Guid.NewGuid()
-        };
+            TargetIdentity = Identity,
+            AdminIdentity = adminIdentity,
+            AdminUserName = adminName
+        });
 
-        var request = await Http.PostAsJsonAsync("api/Entity/AddNote", note);
-        if (!request.IsSuccessStatusCode)
+        if (!request)
         {
             SnackbarService.Add("Failed to add note!", Severity.Error);
             _processing = false;
@@ -103,7 +92,7 @@
 
         SnackbarService.Add("Note added!", Severity.Success);
         _processing = false;
-        MudDialog.Close(DialogResult.Ok(note));
+        MudDialog.Close();
     }
 
 }

@@ -1,6 +1,7 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Interfaces;
-using Data.Domains;
+using BanHubData.Domains;
+using BanHubData.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Services;

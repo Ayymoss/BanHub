@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using Data.Domains.WebEntity;
+using BanHub.WebCore.Shared.Models.Shared;
 using Microsoft.AspNetCore.Components.Authorization;
 
 namespace BanHub.WebCore.Client.Providers;

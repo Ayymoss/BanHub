@@ -1,5 +1,5 @@
-﻿using Data.Domains;
-using Data.Enums;
+﻿using BanHubData.Domains;
+using BanHubData.Enums;
 
 namespace BanHub.WebCore.Client.Utilities;
 

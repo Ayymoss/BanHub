@@ -1,6 +1,6 @@
-﻿using Data.Enums;
-using BanHub.WebCore.Server.Models;
-using Data.Domains;
+﻿using BanHub.WebCore.Server.Models;
+using BanHub.WebCore.Shared.ViewModels;
+using BanHubData.Enums;
 
 namespace BanHub.WebCore.Server.Interfaces;
 

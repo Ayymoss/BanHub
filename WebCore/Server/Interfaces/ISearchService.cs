@@ -1,4 +1,5 @@
-﻿using Data.Domains;
+﻿using BanHubData.Domains;
+using BanHubData.Models;
 
 namespace BanHub.WebCore.Server.Interfaces;
 

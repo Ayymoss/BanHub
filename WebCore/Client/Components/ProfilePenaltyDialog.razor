@@ -1,6 +1,4 @@
-﻿@using Data.Domains
-@using Data.Enums
-@inject IDialogService DialogService
+﻿@inject IDialogService DialogService
 
 <MudDialog>
     <DialogContent>
@@ -70,7 +68,7 @@
         <MudGrid Spacing="2" Justify="Justify.Center">
             <MudItem Class="flex-1">
                 <MudPaper Class="d-flex justify-center flex-column align-center align-self-center pa-4" Elevation="2">
-                    <MudText Typo="Typo.subtitle2" Color="Color.Info">@Penalty.Admin.Alias.UserName</MudText>
+                    <MudText Typo="Typo.subtitle2" Color="Color.Info">@Penalty.AdminUserName</MudText>
                     <MudText Typo="Typo.body2" Class="mud-text-secondary">Admin</MudText>
                 </MudPaper>
             </MudItem>
@@ -85,7 +83,7 @@
             }
             <MudItem Class="flex-1">
                 <MudPaper Class="d-flex justify-center flex-column align-center align-self-center pa-4" Elevation="2">
-                    <MudText Typo="Typo.subtitle2" Color="Color.Info">@(Penalty.Instance.InstanceName ?? Penalty.Instance.InstanceGuid.ToString())</MudText>
+                    <MudText Typo="Typo.subtitle2" Color="Color.Info">@(Penalty.InstanceName ?? Penalty.InstanceGuid.ToString())</MudText>
                     <MudText Typo="Typo.body2" Class="mud-text-secondary">Server</MudText>
                 </MudPaper>
             </MudItem>

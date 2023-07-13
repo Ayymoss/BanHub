@@ -10,11 +10,10 @@ public static class Utilities
         return Assembly.GetCallingAssembly().GetName().Version?.ToString() ?? "Unknown";
     }
 
-    public static bool IsInternal(this string toTest)
+    public static bool IsInternal(this string ipAddress)
     {
-        if (toTest.StartsWith("127.0.0")) return true;
-        
-        var address = IPAddress.Parse(toTest);
+        if (ipAddress.StartsWith("127.0.0")) return true;
+        if (!IPAddress.TryParse(ipAddress, out var address)) return true;
         var bytes = address.GetAddressBytes();
 
         return bytes[0] switch

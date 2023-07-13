@@ -1,8 +1,8 @@
 ﻿using BanHub.WebCore.Server.Context;
-using Data.Enums;
 using BanHub.WebCore.Server.Interfaces;
-using BanHub.WebCore.Server.Models.Context;
-using Data.Domains;
+using BanHub.WebCore.Shared.Models.Shared;
+using BanHubData.Domains;
+using BanHubData.Enums;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 
@@ -12,74 +12,14 @@ public class InstanceService : IInstanceService
 {
     private readonly DataContext _context;
     private readonly ApiKeyCache _apiKeyCache;
-    private readonly IDiscordWebhookService _discordWebhook;
-    private readonly IStatisticService _statisticService;
 
-    public InstanceService(DataContext context, ApiKeyCache apiKeyCache, IDiscordWebhookService discordWebhook,
-        IStatisticService statisticService)
+    public InstanceService(DataContext context, ApiKeyCache apiKeyCache)
     {
         _context = context;
         _apiKeyCache = apiKeyCache;
-        _discordWebhook = discordWebhook;
-        _statisticService = statisticService;
+
     }
-
-    public async Task<(ControllerEnums.ReturnState, string)> CreateOrUpdateAsync(Instance request, string? requestIpAddress)
-    {
-        var instanceGuid = await _context.Instances
-            .AsTracking()
-            .FirstOrDefaultAsync(server => server.InstanceGuid == request.InstanceGuid);
-        var instanceApi = await _context.Instances
-            .FirstOrDefaultAsync(server => server.ApiKey == request.ApiKey);
-
-        var ipAddress = requestIpAddress ?? request.InstanceIp;
-
-        // New instance
-        if (instanceApi is null && instanceGuid is null)
-        {
-            _context.Instances.Add(new EFInstance
-            {
-                InstanceGuid = request.InstanceGuid,
-                InstanceIp = ipAddress!,
-                InstanceName = request.InstanceName,
-                ApiKey = request.ApiKey,
-                Active = false,
-                HeartBeat = DateTimeOffset.UtcNow,
-                Created = DateTimeOffset.UtcNow,
-                About = request.About,
-                Socials = request.Socials
-            });
-
-            await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.InstanceCount,
-                ControllerEnums.StatisticTypeAction.Add);
-            await _context.SaveChangesAsync();
-
-            return (ControllerEnums.ReturnState.Created, $"Instance added {request.InstanceGuid}");
-        }
-
-        // TODO: Update this... It doesn't check a mismatch...
-        if (instanceGuid is null || instanceApi is null) return (ControllerEnums.ReturnState.BadRequest, "GUID + API mismatch");
-        if (instanceGuid.Id != instanceApi.Id)
-            return (ControllerEnums.ReturnState.Conflict, "Instance already exists with this API key.");
-
-        // Warn if IP address has changed... this really shouldn't happen.
-        if (requestIpAddress is not null && requestIpAddress != instanceGuid.InstanceIp)
-        {
-            await _discordWebhook.CreateIssueHookAsync(instanceGuid.InstanceGuid, request.InstanceIp!, requestIpAddress);
-        }
-
-        // Update existing record
-        instanceGuid.About ??= request.About;
-        instanceGuid.Socials ??= request.Socials;
-        instanceGuid.HeartBeat = DateTimeOffset.UtcNow;
-        instanceGuid.InstanceName = request.InstanceName;
-        _context.Instances.Update(instanceGuid);
-        await _context.SaveChangesAsync();
-
-        return instanceGuid.Active
-            ? (ControllerEnums.ReturnState.Accepted, "Instance exists, and is active.")
-            : (ControllerEnums.ReturnState.Ok, "Instance exists, but is not active.");
-    }
+    
 
     public async Task<(ControllerEnums.ReturnState, Instance?)> GetInstanceAsync(string guid)
     {
@@ -100,7 +40,7 @@ public class InstanceService : IInstanceService
                 Created = x.Created,
                 Servers = x.ServerConnections
                     .Where(srv => srv.Instance.InstanceGuid == x.InstanceGuid)
-                    .Select(srv => new Data.Domains.Server
+                    .Select(srv => new BanHubData.Domains.Server
                     {
                         ServerId = srv.ServerId,
                         ServerName = srv.ServerName,
@@ -152,20 +92,5 @@ public class InstanceService : IInstanceService
             }).ToListAsync();
 
         return pagedData;
-    }
-
-    public async Task<ControllerEnums.ReturnState> IsInstanceActiveAsync(string instanceGuid)
-    {
-        var guidParse = Guid.TryParse(instanceGuid, out var guidResult);
-        if (!guidParse) return ControllerEnums.ReturnState.BadRequest;
-        if (await _context.Instances.SingleOrDefaultAsync(x => x.InstanceGuid == guidResult) is not { } result)
-            return ControllerEnums.ReturnState.NotFound;
-
-        if (result.Active && _apiKeyCache.ApiKeys is not null && !_apiKeyCache.ApiKeys.Contains(result.ApiKey))
-        {
-            _apiKeyCache.ApiKeys.Add(result.ApiKey);
-        }
-
-        return result.Active ? ControllerEnums.ReturnState.Accepted : ControllerEnums.ReturnState.Unauthorized;
     }
 }

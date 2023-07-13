@@ -1,7 +1,8 @@
 ﻿@page "/Penalties"
-@using Data.Domains
-@using Data.Enums
-@inject HttpClient Http
+@using Penalty = BanHub.WebCore.Shared.Models.PenaltiesView.Penalty
+@using BanHub.WebCore.Shared.Commands.Penalty
+@inject StatisticService StatisticService
+@inject PenaltyService PenaltyService
 
 <PageTitle>Penalties | Ban Hub</PageTitle>
 
@@ -48,16 +49,16 @@
     <RowTemplate>
         <MudTd DataLabel="ID">@context.PenaltyGuid</MudTd>
         <MudTd DataLabel="Target Name">
-            <a href="/Players/@context.Target!.Identity">
+            <a href="/Players/@context.TargetIdentity">
                 <MudText Typo="Typo.body2" Color="Color.Warning">
-                    @context.Target!.Alias!.UserName
+                    @context.TargetUserName
                 </MudText>
             </a>
         </MudTd>
         <MudTd DataLabel="Admin Name">
-            <a href="/Players/@context.Admin!.Identity">
+            <a href="/Players/@context.AdminIdentity">
                 <MudText Typo="Typo.body2" Color="Color.Info">
-                    @context.Admin!.Alias!.UserName
+                    @context.AdminUserName
                 </MudText>
             </a>
         </MudTd>
@@ -113,7 +114,7 @@
                     break;
             }
         </MudTd>
-        <MudTd DataLabel="Instance">@(context.Instance.InstanceName ?? context.Instance.InstanceGuid.ToString())</MudTd>
+        <MudTd DataLabel="Instance">@(context.InstanceName ?? context.InstanceGuid.ToString())</MudTd>
         <MudTd DataLabel="Submitted">@context.Submitted.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
     </RowTemplate>
     <NoRecordsContent>
@@ -140,7 +141,7 @@
 
     private async Task<TableData<Penalty>> ServerReload(TableState state)
     {
-        var paginationQuery = new Pagination
+        var paginationQuery = new GetPenaltiesPaginationCommand
         {
             Page = state.Page,
             PageSize = state.PageSize,
@@ -149,12 +150,10 @@
             SearchString = _searchString
         };
 
-        var statistics = await Http.GetFromJsonAsync<Statistic>("/api/Statistic");
-        var data = await Http.PostAsJsonAsync("/api/Penalty/All", paginationQuery);
-        var result = await data.Content.ReadFromJsonAsync<List<Penalty>>();
-
-        _pagedData = result!.ToArray();
-        _totalItems = statistics!.PenaltyCount;
+        var statistics = await StatisticService.GetStatisticAsync();
+        var data = await PenaltyService.GetPenaltiesPaginationAsync(paginationQuery);
+        _pagedData = data.ToArray();
+        _totalItems = statistics.PenaltyCount;
 
         return new TableData<Penalty> {TotalItems = _totalItems, Items = _pagedData};
     }

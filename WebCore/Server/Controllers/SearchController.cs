@@ -1,5 +1,6 @@
 ﻿using BanHub.WebCore.Server.Interfaces;
-using Data.Domains;
+using BanHubData.Domains;
+using BanHubData.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BanHub.WebCore.Server.Controllers;
@@ -15,7 +16,7 @@ public class SearchController : ControllerBase
         _searchService = searchService;
     }
 
-    [HttpGet]
+    [HttpGet("{query}")]
     public async Task<ActionResult<List<Search>>> Search([FromQuery] string query)
     {
         if (query.Length < 3) return BadRequest();

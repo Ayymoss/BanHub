@@ -1,5 +1,5 @@
-﻿using BanHub.WebCore.Server.Models.Context;
-using Data.Enums;
+﻿using BanHub.WebCore.Server.Models.Domains;
+using BanHubData.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Context;

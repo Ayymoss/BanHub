@@ -13,7 +13,7 @@ public class PluginAuthentication : Attribute, IAuthorizationFilter
     /// </summary>  
     public void OnAuthorization(AuthorizationFilterContext? filterContext)
     {
-        if (filterContext == null) return;
+        if (filterContext is null) return;
 
         filterContext.HttpContext.Request.Query.TryGetValue("authToken", out var authTokens);
         var token = authTokens.FirstOrDefault();

@@ -1,6 +1,5 @@
 ﻿@page "/"
-@using Data.Domains
-@inject HttpClient Http
+@using Penalty = BanHub.WebCore.Shared.Models.IndexView.Penalty
 
 <PageTitle>Index | Ban Hub</PageTitle>
 
@@ -35,11 +34,11 @@
                             <MudTh>When?</MudTh>
                         </HeaderContent>
                         <RowTemplate>
-                            <MudTd DataLabel="Instance">@(context.Instance.InstanceName ?? context.Instance.InstanceGuid.ToString())</MudTd>
+                            <MudTd DataLabel="Instance">@(context.InstanceName ?? context.InstanceGuid.ToString())</MudTd>
                             <MudTd DataLabel="Target">
-                                <a href="/Players/@context.Target!.Identity">
+                                <a href="/Players/@context.TargetIdentity">
                                     <MudText Typo="Typo.body2" Color="Color.Info">
-                                        @context.Target!.Alias!.UserName
+                                        @context.TargetUserName
                                     </MudText>
                                 </a>
                             </MudTd>

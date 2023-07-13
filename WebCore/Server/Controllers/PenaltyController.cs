@@ -1,12 +1,16 @@
 ﻿using System.Security.Claims;
-using Data.Enums;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Services;
+using BanHub.WebCore.Shared.Commands;
+using BanHub.WebCore.Shared.Commands.Penalty;
+using BanHub.WebCore.Shared.Commands.PlayerProfile;
+using BanHub.WebCore.Shared.Models;
+using BanHub.WebCore.Shared.Models.PenaltiesView;
 using BanHub.WebCore.Shared.Utilities;
-using Data.Commands;
-using Data.Commands.Penalty;
-using Data.Commands.Player;
-using Data.Domains;
+using BanHub.WebCore.Shared.ViewModels;
+using BanHubData.Commands.Penalty;
+using BanHubData.Domains;
+using BanHubData.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,12 +20,10 @@ namespace BanHub.WebCore.Server.Controllers;
 [Route("api/[controller]")]
 public class PenaltyController : ControllerBase
 {
-    private readonly IPenaltyService _penaltyService;
     private readonly IMediator _mediator;
 
-    public PenaltyController(IPenaltyService penaltyService, IMediator mediator)
+    public PenaltyController(IMediator mediator)
     {
-        _penaltyService = penaltyService;
         _mediator = mediator;
     }
 
@@ -51,43 +53,40 @@ public class PenaltyController : ControllerBase
         };
     }
 
-    [HttpGet]
-    public async Task<ActionResult<Instance>> GetPenalty([FromQuery] string guid)
+    [HttpPost("Penalties")]
+    public async Task<ActionResult<IEnumerable<Penalty>>> GetPenaltiesPaginationAsync([FromBody] GetPenaltiesPaginationCommand penaltiesPagination)
     {
-        var result = await _penaltyService.GetPenaltiesAsync(guid);
-        return result.Item1 switch
-        {
-            ControllerEnums.ReturnState.Ok => Ok(result.Item2?.FirstOrDefault()),
-            ControllerEnums.ReturnState.NotFound => NotFound(),
-            ControllerEnums.ReturnState.BadRequest => BadRequest(),
-            _ => BadRequest() // Should never happen
-        };
+        var result = await _mediator.Send(penaltiesPagination);
+        return Ok(result);
     }
 
-    [HttpPost("All")]
-    public async Task<ActionResult<IEnumerable<Penalty>>> GetPenalties([FromBody] Pagination pagination)
+    [HttpGet("Penalties/{identity}")]
+    public async Task<ActionResult<IEnumerable<Shared.Models.PlayerProfileView.Penalty>>> GetProfilePenaltiesAsync(string identity)
     {
-        return Ok(await _penaltyService.PaginationAsync(pagination));
+        var result = await _mediator.Send(new GetProfilePenaltiesCommand {Identity = identity});
+        return Ok(result);
     }
 
     [HttpGet("Index")]
-    public async Task<ActionResult<IEnumerable<Penalty>>> GetRecentPenalties()
+    public async Task<ActionResult<IEnumerable<PenaltyIndex>>> GetRecentPenalties()
     {
-        return Ok(await _penaltyService.GetLatestThreeBansAsync());
+        var result = await _mediator.Send(new GetLatestBansCommand());
+        return Ok(result);
     }
 
-    [HttpPost("Remove")] // Authorised endpoint
-    public async Task<ActionResult<bool>> RemovePenalty([FromBody] Penalty request)
+    [HttpDelete("Profile/Delete")] // Authorised endpoint
+    public async Task<IActionResult> RemovePenaltyAsync([FromBody] RemovePenaltyCommand request)
     {
-        var privileged = User.IsInAnyRole("WebAdmin", "WebSuperAdmin");
-        var adminIdentity = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-        if (!privileged || adminIdentity is null) return Unauthorized("You are not authorised to perform this action");
-        
-        var result = await _penaltyService.RemovePenaltyAsync(request, adminIdentity);
+        var privileged = User.IsInAnyRole("WebAdmin", "WebSuperAdmin"); // TODO THIS IS REALLY INSECURE - GET FROM USER MANAGER
+        var adminUserName = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+        if (!privileged || adminUserName is null) return Unauthorized("You are not authorised to perform this action");
+
+        request.AdminUserName = adminUserName;
+        var result = await _mediator.Send(request);
         return result switch
         {
-            true => Ok("Penalty deleted!"),
-            false => BadRequest("Error removing penalty")
+            true => Ok(),
+            false => BadRequest()
         };
     }
 }

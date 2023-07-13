@@ -1,4 +1,4 @@
-﻿using Data.Enums;
+﻿using BanHubData.Enums;
 
 namespace BanHub.WebCore.Server.Interfaces;
 

@@ -60,14 +60,10 @@ builder.Services.AddSingleton<StatisticsTracking>();
 builder.Services.AddTransient<ApiKeyMiddleware>();
 
 builder.Services.AddScoped<IPlayerService, PlayerService>();
-builder.Services.AddScoped<IHeartbeatService, HeartbeatService>();
-builder.Services.AddScoped<IPenaltyService, PenaltyService>();
 builder.Services.AddScoped<IInstanceService, InstanceService>();
 builder.Services.AddScoped<IDiscordWebhookService, DiscordWebhookService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IStatisticService, StatisticService>();
-builder.Services.AddScoped<IServerService, ServerService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Add services to the container.
 builder.Services.AddLogging();

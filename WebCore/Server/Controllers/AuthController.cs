@@ -1,7 +1,8 @@
 ﻿using System.Security.Claims;
-using BanHub.WebCore.Server.Interfaces;
-using Data.Domains.WebEntity;
-using Data.Enums;
+using BanHub.WebCore.Shared.Commands.Web;
+using BanHub.WebCore.Shared.Models.Shared;
+using BanHubData.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -13,25 +14,23 @@ namespace BanHub.WebCore.Server.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly IAuthService _authService;
+    private readonly IMediator _mediator;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IMediator mediator)
     {
-        _authService = authService;
+        _mediator = mediator;
     }
 
     [HttpPost("Login")]
-    public async Task<IActionResult> LoginAsync([FromBody] WebLoginRequest webLoginRequest)
+    public async Task<IActionResult> LoginAsync([FromBody] WebTokenLoginCommand webLoginRequest)
     {
-        var result = await _authService.LoginAsync(webLoginRequest);
-        switch (result.Item1)
-        {
-            case ControllerEnums.ReturnState.Ok:
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-                    new ClaimsPrincipal(result.Item2), result.Item3);
-                return Ok("Success");
-        }
-        return Unauthorized("Token or User is invalid.");
+        var result = await _mediator.Send(webLoginRequest);
+
+        if (result.ReturnState is not ControllerEnums.ReturnState.Ok) return Unauthorized("Token or User is invalid.");
+
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+            new ClaimsPrincipal(result.ClaimsIdentity!), result.AuthenticationProperties as AuthenticationProperties);
+        return Ok("Success");
     }
 
     [HttpGet("Profile"), Authorize]
@@ -42,7 +41,7 @@ public class AuthController : ControllerBase
             .Select(f => Convert.ToInt32(f.Value))
             .First();
 
-        var result = await _authService.UserProfileAsync(userId);
+        var result = await _mediator.Send(new GetUserProfileCommand {UserId = userId});
         if (result is null) return BadRequest("User is invalid.");
         return Ok(result);
     }
