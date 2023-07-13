@@ -360,7 +360,7 @@ else
 
         if (result?.Data is Penalty penalty)
         {
-            _penalties.Remove(penalty);
+            _penalties?.Remove(penalty);
             StateHasChanged();
         }
     }
@@ -381,7 +381,7 @@ else
 
         if (result?.Data is Note note)
         {
-            _notes.Remove(note);
+            _notes?.Remove(note);
             StateHasChanged();
         }
     }

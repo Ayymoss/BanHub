@@ -1,5 +1,4 @@
-﻿using BanHub.WebCore.Server.Interfaces;
-using BanHub.WebCore.Server.Services;
+﻿using BanHub.WebCore.Server.Services;
 using BanHubData.Commands.Instance.Server;
 using BanHubData.Enums;
 using MediatR;
@@ -19,7 +18,7 @@ public class ServerController : ControllerBase
     }
 
     [HttpPost, PluginAuthentication]
-    public async Task<ActionResult> Add([FromQuery] string authToken, [FromBody] CreateOrUpdateServerCommand request)
+    public async Task<IActionResult> CreateOrUpdateServerAsync([FromQuery] string authToken, [FromBody] CreateOrUpdateServerCommand request)
     {
         var result = await _mediator.Send(request);
         return result switch
@@ -30,16 +29,4 @@ public class ServerController : ControllerBase
             _ => BadRequest()
         };
     }
-
-    //[HttpGet] // TODO: Check if used
-    //public async Task<ActionResult<BanHubData.Domains.Server>> Get([FromQuery] string serverId)
-    //{
-    //    var result = await _serverService.GetAsync(serverId);
-    //    return result.Item1 switch
-    //    {
-    //        ControllerEnums.ReturnState.NotFound => NotFound(),
-    //        ControllerEnums.ReturnState.Ok => Ok(result.Item2),
-    //        _ => BadRequest()
-    //    };
-    //}
 }

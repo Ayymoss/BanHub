@@ -25,7 +25,7 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
 
     public async Task<(ControllerEnums.ReturnState, Guid?)> Handle(AddPlayerPenaltyCommand request, CancellationToken cancellationToken)
     {
-              var result = await (
+        var result = await (
             from player in _context.Players.AsTracking().Include(x => x.CurrentAlias.Alias)
             where player.Identity == request.TargetIdentity
             from admin in _context.Players

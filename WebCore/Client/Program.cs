@@ -3,12 +3,16 @@ using BanHub.WebCore.Client.Handlers;
 using BanHub.WebCore.Client.Interfaces;
 using BanHub.WebCore.Client.Providers;
 using BanHub.WebCore.Client.Services;
+using BanHub.WebCore.Client.Services.RestEase;
+using BanHub.WebCore.Client.Services.RestEase.Pages;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 using MudBlazor.Services;
+
+// TODO: LOGGING!!!!
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -24,6 +28,15 @@ builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>
 builder.Services.AddScoped<IApiService, ApiService>();
 builder.Services.AddScoped<CookieHandler>();
 builder.Services.AddSingleton<ActiveUserService>();
+
+builder.Services.AddSingleton<InstanceService>();
+builder.Services.AddSingleton<NoteService>();
+builder.Services.AddSingleton<PenaltyService>();
+builder.Services.AddSingleton<PlayerProfileService>();
+builder.Services.AddSingleton<PlayersService>();
+builder.Services.AddSingleton<SearchService>();
+builder.Services.AddSingleton<ServerService>();
+builder.Services.AddSingleton<StatisticService>();
 
 builder.Services.AddMudServices(config =>
 {

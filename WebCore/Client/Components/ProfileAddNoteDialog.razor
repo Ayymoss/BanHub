@@ -1,7 +1,4 @@
-﻿@using System.Security.Claims
-@using BanHub.WebCore.Shared.Commands.PlayerProfile
-@using BanHubData.Domains
-@inject ISnackbar SnackbarService
+﻿@inject ISnackbar SnackbarService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NoteService NoteService
 @attribute [Authorize(Roles = "WebAdmin, WebSuperAdmin, InstanceModerator, InstanceAdmin, InstanceSuperAdmin, InstanceOwner")]

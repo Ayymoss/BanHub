@@ -1,5 +1,5 @@
 ﻿using BanHub.WebCore.Shared.Commands;
-using BanHub.WebCore.Shared.ViewModels;
+using BanHub.WebCore.Shared.Models.Shared;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

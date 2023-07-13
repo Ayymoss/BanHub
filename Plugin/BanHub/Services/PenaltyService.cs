@@ -9,7 +9,7 @@ using RestEase;
 
 namespace BanHub.Services;
 
-public class PenaltyEndpoint
+public class PenaltyService
 {
 #if DEBUG
     private const string ApiHost = "http://localhost:8123/api";
@@ -31,7 +31,7 @@ public class PenaltyEndpoint
             });
 
 
-    public PenaltyEndpoint(BanHubConfiguration banHubConfiguration)
+    public PenaltyService(BanHubConfiguration banHubConfiguration)
     {
         _banHubConfiguration = banHubConfiguration;
         _api = RestClient.For<IPenaltyService>(ApiHost);
@@ -43,7 +43,7 @@ public class PenaltyEndpoint
         {
             return await _retryPolicy.ExecuteAsync(async () =>
             {
-                var response = await _api.PostPenalty(_banHubConfiguration.ApiKey.ToString(), penalty);
+                var response = await _api.AddPlayerPenaltyAsync(_banHubConfiguration.ApiKey.ToString(), penalty);
                 var preGuid = await response.Content.ReadAsStringAsync();
                 var parsedState = Guid.TryParse(preGuid.Replace("\"", ""), out var guid);
 
@@ -72,7 +72,7 @@ public class PenaltyEndpoint
     {
         try
         {
-            var response = await _api.SubmitEvidence(_banHubConfiguration.ApiKey.ToString(), penalty);
+            var response = await _api.AddPlayerPenaltyEvidenceAsync(_banHubConfiguration.ApiKey.ToString(), penalty);
 
             if (!response.IsSuccessStatusCode && _banHubConfiguration.DebugMode)
             {

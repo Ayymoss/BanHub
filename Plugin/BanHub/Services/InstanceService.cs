@@ -9,7 +9,7 @@ using RestEase;
 
 namespace BanHub.Services;
 
-public class InstanceEndpoint
+public class InstanceService
 {
 #if DEBUG
     private const string ApiHost = "http://localhost:8123/api";
@@ -30,7 +30,7 @@ public class InstanceEndpoint
                     $"[{BanHubConfiguration.Name}] Error sending heartbeat: {exception.Message}. Retrying ({retryCount}/{context["retryCount"]})...");
             });
 
-    public InstanceEndpoint(BanHubConfiguration banHubConfiguration)
+    public InstanceService(BanHubConfiguration banHubConfiguration)
     {
         _banHubConfiguration = banHubConfiguration;
         _api = RestClient.For<IInstanceService>(ApiHost);
@@ -42,7 +42,7 @@ public class InstanceEndpoint
         {
             return await _retryPolicy.ExecuteAsync(async () =>
             {
-                var response = await _api.PostInstance(instance);
+                var response = await _api.CreateOrUpdateInstanceAsync(instance);
                 if (!response.IsSuccessStatusCode && _banHubConfiguration.DebugMode)
                 {
                     Console.WriteLine($"\n[{BanHubConfiguration.Name}] Error posting instance {instance.InstanceGuid}\n" +
@@ -64,13 +64,13 @@ public class InstanceEndpoint
         return false;
     }
 
-    public async Task<bool> IsInstanceActive(IsInstanceActiveCommand guid)
+    public async Task<bool> IsInstanceActive(string guid)
     {
         try
         {
             return await _retryPolicy.ExecuteAsync(async () =>
             {
-                var response = await _api.IsInstanceActive(guid);
+                var response = await _api.IsInstanceActiveAsync(guid);
                 return response.StatusCode is HttpStatusCode.Accepted;
             });
         }

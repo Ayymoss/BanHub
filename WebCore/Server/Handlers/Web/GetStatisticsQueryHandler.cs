@@ -1,6 +1,6 @@
 ﻿using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Shared.Commands;
-using BanHub.WebCore.Shared.ViewModels;
+using BanHub.WebCore.Shared.Models.Shared;
 using MediatR;
 
 namespace BanHub.WebCore.Server.Handlers.Web;

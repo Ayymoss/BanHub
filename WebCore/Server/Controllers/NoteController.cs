@@ -1,7 +1,9 @@
 ﻿using System.Security.Claims;
+using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Shared.Commands.PlayerProfile;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
 using BanHub.WebCore.Shared.Utilities;
+using BanHubData.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,19 +14,34 @@ namespace BanHub.WebCore.Server.Controllers;
 public class NoteController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly SignedInUsers _signedInUsers;
 
-    public NoteController(IMediator mediator)
+    public NoteController(IMediator mediator, SignedInUsers signedInUsers)
     {
         _mediator = mediator;
+        _signedInUsers = signedInUsers;
     }
 
     [HttpPost] // Authorised endpoint
     public async Task<IActionResult> AddNoteAsync([FromBody] AddNoteCommand request)
     {
-        var privileged = User.IsInAnyRole("InstanceModerator", "InstanceAdministrator", "InstanceSeniorAdmin",
-            "InstanceOwner", "WebAdmin", "WebSuperAdmin");
-        var adminIdentity = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-        if (!privileged || adminIdentity is null) return Unauthorized("You are not authorised to perform this action");
+        var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
+        if (adminSignInGuid is null) return Unauthorized("You are not authorised to perform this action");
+
+        var instanceRoleAssigned = _signedInUsers.IsUserInAnyInstanceRole(adminSignInGuid, new[]
+        {
+            InstanceRole.InstanceModerator,
+            InstanceRole.InstanceAdministrator,
+            InstanceRole.InstanceSeniorAdmin,
+            InstanceRole.InstanceOwner
+        });
+        var webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
+        {
+            WebRole.WebAdmin,
+            WebRole.WebSuperAdmin
+        });
+
+        if (!instanceRoleAssigned || !webRoleAssigned) return Unauthorized("You are not authorised to perform this action");
 
         var result = await _mediator.Send(request);
         return result switch
@@ -37,9 +54,23 @@ public class NoteController : ControllerBase
     [HttpDelete] // Authorised endpoint
     public async Task<IActionResult> RemoveNoteAsync([FromBody] DeleteNoteCommand request)
     {
-        var privileged = User.IsInAnyRole("WebAdmin", "WebSuperAdmin");
-        var adminIdentity = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-        if (!privileged || adminIdentity is null) return Unauthorized("You are not authorised to perform this action");
+        var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
+        if (adminSignInGuid is null) return Unauthorized("You are not authorised to perform this action");
+
+        var instanceRoleAssigned = _signedInUsers.IsUserInAnyInstanceRole(adminSignInGuid, new[]
+        {
+            InstanceRole.InstanceModerator,
+            InstanceRole.InstanceAdministrator,
+            InstanceRole.InstanceSeniorAdmin,
+            InstanceRole.InstanceOwner
+        });
+        var webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
+        {
+            WebRole.WebAdmin,
+            WebRole.WebSuperAdmin
+        });
+
+        if (!instanceRoleAssigned || !webRoleAssigned) return Unauthorized("You are not authorised to perform this action");
 
         var result = await _mediator.Send(request);
         return result switch
@@ -49,10 +80,33 @@ public class NoteController : ControllerBase
         };
     }
 
-    [HttpGet()]
+    [HttpGet("{identity}")]
     public async Task<ActionResult<IEnumerable<Note>>> GetNotesAsync([FromQuery] string identity)
     {
-        var result = await _mediator.Send(new GetNotesCommand {Identity = identity});
+        var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
+
+        var instanceRoleAssigned = false;
+        var webRoleAssigned = false;
+
+        if (adminSignInGuid is not null)
+        {
+            instanceRoleAssigned = _signedInUsers.IsUserInAnyInstanceRole(adminSignInGuid, new[]
+            {
+                InstanceRole.InstanceModerator,
+                InstanceRole.InstanceAdministrator,
+                InstanceRole.InstanceSeniorAdmin,
+                InstanceRole.InstanceOwner
+            });
+            webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
+            {
+                WebRole.WebAdmin,
+                WebRole.WebSuperAdmin
+            });
+        }
+
+        var authorised = instanceRoleAssigned || webRoleAssigned;
+
+        var result = await _mediator.Send(new GetNotesCommand {Identity = identity, Authorised = authorised});
         return Ok(result);
     }
 }

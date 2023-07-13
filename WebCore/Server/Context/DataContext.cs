@@ -49,7 +49,7 @@ public class DataContext : DbContext
         var adminAlias = new EFAlias
         {
             Id = -1,
-            EntityId = -1,
+            PlayerId = -1,
             UserName = "IW4MAdmin",
             IpAddress = "0.0.0.0",
             Changed = DateTimeOffset.UtcNow
@@ -71,7 +71,7 @@ public class DataContext : DbContext
         var adminCurrentAlias = new EFCurrentAlias
         {
             Id = -1,
-            EntityId = -1,
+            PlayerId = -1,
             AliasId = -1
         };
 

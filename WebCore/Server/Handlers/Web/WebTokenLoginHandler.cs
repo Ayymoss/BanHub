@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using BanHub.WebCore.Server.Context;
+using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Shared.Commands;
 using BanHub.WebCore.Shared.Commands.Web;
 using BanHub.WebCore.Shared.Models.Shared;
@@ -14,10 +15,12 @@ namespace BanHub.WebCore.Server.Handlers.Web;
 public class WebTokenLoginHandler : IRequestHandler<WebTokenLoginCommand, WebTokenLoginCommandResponse>
 {
     private readonly DataContext _context;
+    private readonly SignedInUsers _signedInUsers;
 
-    public WebTokenLoginHandler(DataContext context)
+    public WebTokenLoginHandler(DataContext context, SignedInUsers signedInUsers)
     {
         _context = context;
+        _signedInUsers = signedInUsers;
     }
 
     public async Task<WebTokenLoginCommandResponse> Handle(WebTokenLoginCommand request, CancellationToken cancellationToken)
@@ -36,13 +39,14 @@ public class WebTokenLoginHandler : IRequestHandler<WebTokenLoginCommand, WebTok
             };
 
         var user = await _context.Players
-            .Where(x => x.Id == token.EntityId)
+            .Where(x => x.Id == token.PlayerId)
             .Select(x => new WebUser
             {
                 UserName = x.CurrentAlias.Alias.UserName,
                 WebRole = x.WebRole.ToString(),
                 InstanceRole = x.InstanceRole.ToString(),
-                Identity = x.Identity
+                Identity = x.Identity,
+                SignedInGuid = Guid.NewGuid().ToString()
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         if (user is null)
@@ -63,11 +67,12 @@ public class WebTokenLoginHandler : IRequestHandler<WebTokenLoginCommand, WebTok
             new(ClaimTypes.Role, user.WebRole),
             new(ClaimTypes.Role, user.InstanceRole),
             new(ClaimTypes.NameIdentifier, user.Identity),
-            new("UserId", token.EntityId.ToString())
+            new("SignedInGuid", user.SignedInGuid),
         };
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var authProperties = new AuthenticationProperties();
 
+        _signedInUsers.AddUser(user);
         return new WebTokenLoginCommandResponse
         {
             ReturnState = ControllerEnums.ReturnState.Ok,

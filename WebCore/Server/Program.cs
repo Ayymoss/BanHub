@@ -9,24 +9,41 @@ using Microsoft.EntityFrameworkCore;
 
 
 /*
- *
- *
- *Join -> Send info of player
-Return -> ID
-ID -> Give me penalties 
+// TODO: LOGGING!!!!
 
+Web [Post("/Instance/Instances")]
+Web [Get("/Instance/{identity}")]
+Plugin [Get("/Instance/Active/{identity}")]
+Plugin [Post("/Instance")]
 
-Create or Update - Don't GET then Create
-If Exists -> Create Command (CQRS) -> Create or Update?
+Plugin [Post("/HeartBeat/Instance")]
+Plugin [Post("/HeartBeat/Players")]
 
+Web [Post("/Note")]
+Web [Delete("/Note")]
+Web [Get("/Note/{identity}")]
 
+Web [Delete("/Penalty/Delete")]
+Web [Get("/Penalty/Penalties/{identity}")]
+Web [Post("/Penalty/Penalties")]
+Web [Get("/Penalty/Latest")]
+Plugin [Post("/Penalty")]
+Plugin [Patch("/Penalty/Evidence")]
 
-CLIENT -> 
-Create/Update -> Return ID
+Web [Get("/Player/Profile/{identity}")]
+Web [Get("/Player/Profile/Connections/{identity}")]
+Web [Post("/Player/Players")]
+Plugin [Post("/Player")]
+Plugin [Post("/Player/IsBanned")]
+Plugin [Post("/Player/GetToken")]
 
+Web [Get("/Search/{query}")]
 
- *
- * 
+Web [Get("/Instance/Profile/Servers/{identity}")]
+Plugin [Post("/Server")]
+
+Web [Get("/Statistic")]
+
  */
 
 SetupConfiguration.InitConfigurationAsync();
@@ -54,15 +71,13 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 builder.Services.AddSingleton(configuration);
 builder.Services.AddSingleton<ApiKeyCache>();
+builder.Services.AddSingleton<SignedInUsers>();
 builder.Services.AddSingleton<PluginAuthentication>();
 builder.Services.AddSingleton<StatisticsTracking>();
 
 builder.Services.AddTransient<ApiKeyMiddleware>();
 
-builder.Services.AddScoped<IPlayerService, PlayerService>();
-builder.Services.AddScoped<IInstanceService, InstanceService>();
 builder.Services.AddScoped<IDiscordWebhookService, DiscordWebhookService>();
-builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IStatisticService, StatisticService>();
 
 // Add services to the container.

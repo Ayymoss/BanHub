@@ -9,7 +9,7 @@ using RestEase;
 
 namespace BanHub.Services;
 
-public class EntityEndpoint
+public class PlayerService
 {
 #if DEBUG
     private const string ApiHost = "http://localhost:8123/api";
@@ -30,7 +30,7 @@ public class EntityEndpoint
                     $"[{BanHubConfiguration.Name}] Error sending heartbeat: {exception.Message}. Retrying ({retryCount}/{context["retryCount"]})...");
             });
 
-    public EntityEndpoint(BanHubConfiguration banHubConfiguration)
+    public PlayerService(BanHubConfiguration banHubConfiguration)
     {
         _banHubConfiguration = banHubConfiguration;
         _api = RestClient.For<IPlayerService>(ApiHost);
@@ -86,7 +86,7 @@ public class EntityEndpoint
         {
             return await _retryPolicy.ExecuteAsync(async () =>
             {
-                var response = await _api.CreateOrUpdateAsync(_banHubConfiguration.ApiKey.ToString(), player );
+                var response = await _api.CreateOrUpdatePlayerAsync(_banHubConfiguration.ApiKey.ToString(), player );
                 if (!response.IsSuccessStatusCode && _banHubConfiguration.DebugMode)
                 {
                     Console.WriteLine($"\n[{BanHubConfiguration.Name}] Error posting evidence {player.PlayerIdentity}\n" +

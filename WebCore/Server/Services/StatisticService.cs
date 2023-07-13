@@ -1,8 +1,7 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Models;
-using BanHub.WebCore.Shared.ViewModels;
-using BanHubData.Domains;
+using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -69,7 +68,7 @@ public class StatisticService : IStatisticService
     {
         if (!_statisticsTracking.Loaded) await EnsureInitialisedAsync();
 
-        return new Statistic()
+        return new Statistic
         {
             PenaltyCount = _statisticsTracking.Penalties,
             ServerCount = _statisticsTracking.Servers,

@@ -1,5 +1,4 @@
-﻿using BanHubData.Domains;
-using BanHubData.Enums;
+﻿using BanHubData.Enums;
 
 namespace BanHub.WebCore.Client.Utilities;
 
@@ -21,7 +20,7 @@ public static class ExtensionMethod
             _ => "Unknown"
         };
     }
-    
+
     public static string GetGameName(this Game game)
     {
         return game switch
@@ -41,7 +40,4 @@ public static class ExtensionMethod
             _ => "Unknown"
         };
     }
-
-    public static bool IsGlobalBanned(this Player entity) =>
-        entity.Penalties?.Any(x => x is {PenaltyStatus: PenaltyStatus.Active, PenaltyScope: PenaltyScope.Global}) ?? false;
 }

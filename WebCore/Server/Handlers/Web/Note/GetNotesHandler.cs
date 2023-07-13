@@ -17,8 +17,10 @@ public class GetNotesHandler : IRequestHandler<GetNotesCommand, IEnumerable<Shar
     public async Task<IEnumerable<Shared.Models.PlayerProfileView.Note>> Handle(GetNotesCommand request,
         CancellationToken cancellationToken)
     {
-        var notes = await _context.Notes.Where(x => x.Target.Identity == request.Identity).Select(x =>
-            new Shared.Models.PlayerProfileView.Note
+        var notes = await _context.Notes
+            .Where(x => x.Target.Identity == request.Identity)
+            .Where(x => request.Authorised || !x.IsPrivate)
+            .Select(x => new Shared.Models.PlayerProfileView.Note
             {
                 NoteGuid = x.NoteGuid,
                 Message = x.Message,
@@ -26,7 +28,6 @@ public class GetNotesHandler : IRequestHandler<GetNotesCommand, IEnumerable<Shar
                 Created = x.Created,
                 IsPrivate = x.IsPrivate
             }).ToListAsync(cancellationToken: cancellationToken);
-
         return notes;
     }
 }

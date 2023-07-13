@@ -5,12 +5,12 @@ namespace BanHub.Interfaces;
 
 public interface IPlayerService
 {
-    [Get("/Player/IsBanned")]
-    Task<HttpResponseMessage> IsPlayerBannedAsync([Query("identity")] IsPlayerBannedCommand identity);
+    [Post("/Player/IsBanned")]
+    Task<HttpResponseMessage> IsPlayerBannedAsync([Body] IsPlayerBannedCommand identity);
 
-    [Post("/Player/CreateUpdate")]
-    Task<HttpResponseMessage> CreateOrUpdateAsync([Query("authToken")] string authToken, [Body] CreateOrUpdatePlayerCommand entities);
+    [Post("/Player")]
+    Task<HttpResponseMessage> CreateOrUpdatePlayerAsync([Query("authToken")] string authToken, [Body] CreateOrUpdatePlayerCommand entities);
 
     [Post("/Player/GetToken")]
-    Task<HttpResponseMessage> GetTokenAsync([Query("authToken")] string authToken, [Query] GetPlayerTokenCommand identity);
+    Task<HttpResponseMessage> GetTokenAsync([Query("authToken")] string authToken, [Body] GetPlayerTokenCommand identity);
 }

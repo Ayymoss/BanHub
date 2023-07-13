@@ -8,7 +8,7 @@ using RestEase;
 
 namespace BanHub.Services;
 
-public class ServerEndpoint
+public class ServerService
 {
 #if DEBUG
     private const string ApiHost = "http://localhost:8123/api";
@@ -29,7 +29,7 @@ public class ServerEndpoint
                                   $"Retrying ({retryCount}/{context["retryCount"]})...");
             });
 
-    public ServerEndpoint(BanHubConfiguration banHubConfiguration)
+    public ServerService(BanHubConfiguration banHubConfiguration)
     {
         _banHubConfiguration = banHubConfiguration;
         _api = RestClient.For<IServerService>(ApiHost);
@@ -41,7 +41,7 @@ public class ServerEndpoint
         {
             return await _retryPolicy.ExecuteAsync(async () =>
             {
-                var response = await _api.PostServer(_banHubConfiguration.ApiKey.ToString(), server);
+                var response = await _api.CreateOrUpdateServerAsync(_banHubConfiguration.ApiKey.ToString(), server);
                 if (!response.IsSuccessStatusCode && _banHubConfiguration.DebugMode)
                 {
                     Console.WriteLine($"\n[{BanHubConfiguration.Name}] Error posting server {server.ServerName}\n" +

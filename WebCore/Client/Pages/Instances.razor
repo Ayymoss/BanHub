@@ -1,5 +1,6 @@
 ﻿@page "/Communities"
-@using BanHubData.Domains
+@inject StatisticService StatisticService
+@inject InstanceService InstanceService
 
 <PageTitle>Communities | Ban Hub</PageTitle>
 
@@ -12,26 +13,27 @@
     </MudElement>
 </MudPaper>
 <MudTable Striped="true" HeaderClass="mud-theme-info-darken" Outlined="false" Bordered="false"
-          ServerData="@(new Func<TableState, Task<TableData<Instance>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true"
+          ServerData="@(new Func<TableState, Task<TableData<WebCore.Shared.Models.InstancesView.Instance>>>(ServerReload))"
+          Elevation="2" RowsPerPage="20" Dense="true"
           @ref="_table">
     <HeaderContent>
         <MudTh Class="py-2">
-            <MudTableSortLabel SortLabel="Id" T="Instance">ID</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Id" T="WebCore.Shared.Models.InstancesView.Instance">ID</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Instance Name" T="Instance">Community Name</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Instance Name" T="WebCore.Shared.Models.InstancesView.Instance">Community Name</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Instance IP" T="Instance">Community IP</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Instance IP" T="WebCore.Shared.Models.InstancesView.Instance">Community IP</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Servers" T="Instance">Servers</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Servers" T="WebCore.Shared.Models.InstancesView.Instance">Servers</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="HeartBeat" T="Instance">Heart Beat</MudTableSortLabel>
+            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="HeartBeat" T="WebCore.Shared.Models.InstancesView.Instance">Heart Beat</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Created" T="Instance">Created</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Created" T="WebCore.Shared.Models.InstancesView.Instance">Created</MudTableSortLabel>
         </MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -83,14 +85,14 @@
     [Parameter, SupplyParameterFromQuery(Name = "search")]
     public string? SearchString { get; set; }
 
-    private MudTable<Instance>? _table;
-    private IEnumerable<Instance>? _pagedData;
+    private MudTable<WebCore.Shared.Models.InstancesView.Instance>? _table;
+    private IEnumerable<WebCore.Shared.Models.InstancesView.Instance>? _pagedData;
     private string? _searchString;
     private int _totalItems;
 
-    private async Task<TableData<Instance>> ServerReload(TableState state)
+    private async Task<TableData<WebCore.Shared.Models.InstancesView.Instance>> ServerReload(TableState state)
     {
-        var paginationQuery = new Pagination
+        var paginationQuery = new GetInstancesPaginationCommand
         {
             Page = state.Page,
             PageSize = state.PageSize,
@@ -99,14 +101,11 @@
             SearchString = _searchString
         };
 
-        var statistics = await Http.GetFromJsonAsync<Statistic>("/api/Statistic");
-        var data = await Http.PostAsJsonAsync("/api/Instance/All", paginationQuery);
-        var result = await data.Content.ReadFromJsonAsync<List<Instance>>();
+        var statistics = await StatisticService.GetStatisticAsync();
+        _pagedData = await InstanceService.GetInstancesPaginationAsync(paginationQuery);
+        _totalItems = statistics.InstanceCount;
 
-        _pagedData = result!.ToArray();
-        _totalItems = statistics!.InstanceCount;
-
-        return new TableData<Instance> {TotalItems = _totalItems, Items = _pagedData};
+        return new TableData<WebCore.Shared.Models.InstancesView.Instance> {TotalItems = _totalItems, Items = _pagedData};
     }
 
     private void OnSearch(string text)

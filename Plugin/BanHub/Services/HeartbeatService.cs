@@ -8,7 +8,7 @@ using RestEase;
 
 namespace BanHub.Services;
 
-public class HeartBeatEndpoint
+public class HeartbeatService
 {
 #if DEBUG
     private const string ApiHost = "http://localhost:8123/api";
@@ -16,7 +16,7 @@ public class HeartBeatEndpoint
     private const string ApiHost = "https://banhub.gg/api";
 #endif
 
-    private readonly IHeartBeatService _api;
+    private readonly IHeartbeatService _api;
     private readonly BanHubConfiguration _banHubConfiguration;
 
     private readonly AsyncRetryPolicy _retryPolicy = Policy.Handle<HttpRequestException>()
@@ -29,10 +29,10 @@ public class HeartBeatEndpoint
                     $"[{BanHubConfiguration.Name}] Error sending heartbeat: {exception.Message}. Retrying ({retryCount}/{context["retryCount"]})...");
             });
 
-    public HeartBeatEndpoint(BanHubConfiguration banHubConfiguration)
+    public HeartbeatService(BanHubConfiguration banHubConfiguration)
     {
         _banHubConfiguration = banHubConfiguration;
-        _api = RestClient.For<IHeartBeatService>(ApiHost);
+        _api = RestClient.For<IHeartbeatService>(ApiHost);
     }
 
     public async Task<bool> PostInstanceHeartBeat(InstanceHeartbeatCommand instance)
@@ -41,7 +41,7 @@ public class HeartBeatEndpoint
         {
             return await _retryPolicy.ExecuteAsync(async () =>
             {
-                var response = await _api.PostInstanceHeartBeat(instance);
+                var response = await _api.PostInstanceHeartBeatAsync(instance);
                 if (!response.IsSuccessStatusCode && _banHubConfiguration.DebugMode)
                 {
                     Console.WriteLine($"\n[{BanHubConfiguration.Name}] Error posting instance heartbeat.\n" +
@@ -69,7 +69,7 @@ public class HeartBeatEndpoint
         {
             return await _retryPolicy.ExecuteAsync(async () =>
             {
-                var response = await _api.PostPlayersHeartBeat(players, _banHubConfiguration.ApiKey.ToString());
+                var response = await _api.PostPlayersHeartBeatAsync(players, _banHubConfiguration.ApiKey.ToString());
                 if (!response.IsSuccessStatusCode && _banHubConfiguration.DebugMode)
                 {
                     Console.WriteLine($"\n[{BanHubConfiguration.Name}] Error posting entity heartbeat.\n" +

@@ -17,31 +17,30 @@ public class EndpointManager
 {
     public readonly ConcurrentDictionary<EFClient, string> Profiles = new();
     private readonly ILogger<EndpointManager> _logger;
-    private readonly EntityEndpoint _entity;
+    private readonly PlayerService _player;
     private readonly BanHubConfiguration _banHubConfiguration;
     private readonly InstanceSlim _instanceSlim;
-    private readonly InstanceEndpoint _instance;
-    private readonly PenaltyEndpoint _penalty;
-    private readonly ServerEndpoint _server;
+    private readonly InstanceService _instance;
+    private readonly PenaltyService _penalty;
+    private readonly ServerService _server;
 
     public EndpointManager(BanHubConfiguration banHubConfiguration, InstanceSlim instanceSlim,
-        EntityEndpoint entityEndpoint, InstanceEndpoint instanceEndpoint, PenaltyEndpoint penaltyEndpoint,
-        ServerEndpoint serverEndpoint,
+        PlayerService playerService, InstanceService instanceService, PenaltyService penaltyService,
+        ServerService serverService,
         ILogger<EndpointManager> logger)
     {
         _banHubConfiguration = banHubConfiguration;
         _instanceSlim = instanceSlim;
-        _entity = entityEndpoint;
-        _instance = instanceEndpoint;
-        _penalty = penaltyEndpoint;
-        _server = serverEndpoint;
+        _player = playerService;
+        _instance = instanceService;
+        _penalty = penaltyService;
+        _server = serverService;
         _logger = logger;
     }
 
     public async Task<bool> UpdateInstance(CreateOrUpdateInstanceCommand instance) => await _instance.PostInstance(instance);
 
-    public async Task<bool> IsInstanceActive(Guid guid) =>
-        await _instance.IsInstanceActive(new IsInstanceActiveCommand {InstanceGuid = guid});
+    public async Task<bool> IsInstanceActive(Guid guid) => await _instance.IsInstanceActive(guid.ToString());
 
     private string EntityToPlayerIdentity(EFClient client)
     {
@@ -78,22 +77,29 @@ public class EndpointManager
             ServerId = player.CurrentServer.Id
         };
 
-        // TODO: Penalties should be expired after update
-        if (await _entity.UpdateEntityAsync(createOrUpdate) is not { } identity)
+        if (await _player.UpdateEntityAsync(createOrUpdate) is not { } identity)
         {
             _logger.LogError("Failed to update entity {Identity}", createOrUpdate.PlayerIdentity);
             return;
         }
 
-        var isBanned = await _entity.IsPlayerBannedAsync(new IsPlayerBannedCommand {Identity = identity});
-        ProcessEntity(isBanned, player); // TODO: Remove tag
+        var isBanned = await _player.IsPlayerBannedAsync(new IsPlayerBannedCommand
+        {
+            Identity = identity,
+            IpAddress = player.IPAddressString
+        });
+
+        if (isBanned)
+        {
+            ProcessEntity(player);
+            return;
+        }
+
         Profiles.TryAdd(player, identity);
     }
 
-    private void ProcessEntity(bool isBanned, EFClient client)
+    private void ProcessEntity(EFClient client)
     {
-        if (!isBanned) return;
-
         client.Kick("^1Globally banned!^7\nBanHub.gg",
             SharedLibraryCore.Utilities.IW4MAdminClient(client.CurrentServer));
         _logger.LogInformation("{Name} globally banned", client.CleanedName);
@@ -166,6 +172,6 @@ public class EndpointManager
     public async Task<string?> GenerateToken(EFClient client)
     {
         var identity = EntityToPlayerIdentity(client);
-        return await _entity.GetTokenAsync(new GetPlayerTokenCommand {Identity = identity});
+        return await _player.GetTokenAsync(new GetPlayerTokenCommand {Identity = identity});
     }
 }

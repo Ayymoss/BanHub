@@ -24,7 +24,7 @@ public class GetPlayerTokenHandler : IRequestHandler<GetPlayerTokenCommand, stri
         var utcTimeNow = DateTimeOffset.UtcNow;
 
         var hasActiveToken = await _context.AuthTokens.FirstOrDefaultAsync(x =>
-            x.EntityId == entity.Id && x.Created + TimeSpan.FromMinutes(5) > utcTimeNow && !x.Used, cancellationToken: cancellationToken);
+            x.PlayerId == entity.Id && x.Created + TimeSpan.FromMinutes(5) > utcTimeNow && !x.Used, cancellationToken: cancellationToken);
         if (hasActiveToken is not null) return hasActiveToken.Token;
 
         const string characters = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
@@ -38,7 +38,7 @@ public class GetPlayerTokenHandler : IRequestHandler<GetPlayerTokenCommand, stri
         {
             Token = result.ToString(),
             Created = utcTimeNow,
-            EntityId = entity.Id,
+            PlayerId = entity.Id,
             Used = false
         };
 

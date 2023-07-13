@@ -59,7 +59,7 @@ public class EFPenalty
     /// <summary>
     /// Penalty's identifiers
     /// </summary>
-    public EFPenaltyIdentifier Identifier { get; set; } = null!; // TODO: this seems like it should replace AdminId/TargetId/InstanceId
+    public EFPenaltyIdentifier Identifier { get; set; } = null!;
 
     /// <summary>
     /// The admin GUID who issued the infraction

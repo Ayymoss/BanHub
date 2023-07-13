@@ -1,15 +1,8 @@
 ﻿using System.Security.Claims;
-using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Services;
-using BanHub.WebCore.Shared.Commands;
 using BanHub.WebCore.Shared.Commands.Penalty;
-using BanHub.WebCore.Shared.Commands.PlayerProfile;
-using BanHub.WebCore.Shared.Models;
 using BanHub.WebCore.Shared.Models.PenaltiesView;
-using BanHub.WebCore.Shared.Utilities;
-using BanHub.WebCore.Shared.ViewModels;
 using BanHubData.Commands.Penalty;
-using BanHubData.Domains;
 using BanHubData.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -21,14 +14,16 @@ namespace BanHub.WebCore.Server.Controllers;
 public class PenaltyController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly SignedInUsers _signedInUsers;
 
-    public PenaltyController(IMediator mediator)
+    public PenaltyController(IMediator mediator, SignedInUsers signedInUsers)
     {
         _mediator = mediator;
+        _signedInUsers = signedInUsers;
     }
 
     [HttpPost, PluginAuthentication]
-    public async Task<IActionResult> AddPenalty([FromQuery] string authToken, [FromBody] AddPlayerPenaltyCommand request)
+    public async Task<IActionResult> AddPlayerPenaltyAsync([FromQuery] string authToken, [FromBody] AddPlayerPenaltyCommand request)
     {
         var result = await _mediator.Send(request);
         return result.Item1 switch
@@ -40,8 +35,9 @@ public class PenaltyController : ControllerBase
         };
     }
 
-    [HttpPatch("SubmitEvidence"), PluginAuthentication]
-    public async Task<IActionResult> SubmitEvidenceAsync([FromQuery] string authToken, [FromBody] AddPlayerPenaltyEvidenceCommand request)
+    [HttpPatch("Evidence"), PluginAuthentication]
+    public async Task<IActionResult> AddPlayerPenaltyEvidenceAsync([FromQuery] string authToken,
+        [FromBody] AddPlayerPenaltyEvidenceCommand request)
     {
         var result = await _mediator.Send(request);
 
@@ -61,25 +57,33 @@ public class PenaltyController : ControllerBase
     }
 
     [HttpGet("Penalties/{identity}")]
-    public async Task<ActionResult<IEnumerable<Shared.Models.PlayerProfileView.Penalty>>> GetProfilePenaltiesAsync(string identity)
+    public async Task<ActionResult<IEnumerable<Shared.Models.PlayerProfileView.Penalty>>> GetProfilePenaltiesAsync([FromQuery] string identity)
     {
         var result = await _mediator.Send(new GetProfilePenaltiesCommand {Identity = identity});
         return Ok(result);
     }
 
-    [HttpGet("Index")]
-    public async Task<ActionResult<IEnumerable<PenaltyIndex>>> GetRecentPenalties()
+    [HttpGet("Latest")]
+    public async Task<ActionResult<IEnumerable<Shared.Models.IndexView.Penalty>>> GetLatestBansAsync()
     {
         var result = await _mediator.Send(new GetLatestBansCommand());
         return Ok(result);
     }
 
-    [HttpDelete("Profile/Delete")] // Authorised endpoint
+    [HttpDelete("Delete")] // Authorised endpoint
     public async Task<IActionResult> RemovePenaltyAsync([FromBody] RemovePenaltyCommand request)
     {
-        var privileged = User.IsInAnyRole("WebAdmin", "WebSuperAdmin"); // TODO THIS IS REALLY INSECURE - GET FROM USER MANAGER
         var adminUserName = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-        if (!privileged || adminUserName is null) return Unauthorized("You are not authorised to perform this action");
+        var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
+        if (adminUserName is null || adminSignInGuid is null) return Unauthorized("You are not authorised to perform this action");
+        
+        var webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
+        {
+            WebRole.WebAdmin,
+            WebRole.WebSuperAdmin
+        });
+
+        if (!webRoleAssigned) return Unauthorized("You are not authorised to perform this action");
 
         request.AdminUserName = adminUserName;
         var result = await _mediator.Send(request);

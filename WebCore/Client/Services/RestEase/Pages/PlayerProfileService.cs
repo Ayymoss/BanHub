@@ -41,7 +41,7 @@ public class PlayerProfileService
     {
         try
         {
-            var response = await _api.GetConnectionsAsync(identity);
+            var response = await _api.GetProfileConnectionsAsync(identity);
             var result = await response.DeserializeHttpResponseContentAsync<IEnumerable<Connection>>();
             return result ?? new List<Connection>();
         }

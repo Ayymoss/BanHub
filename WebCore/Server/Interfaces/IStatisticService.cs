@@ -1,5 +1,5 @@
 ﻿using BanHub.WebCore.Server.Models;
-using BanHub.WebCore.Shared.ViewModels;
+using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Enums;
 
 namespace BanHub.WebCore.Server.Interfaces;

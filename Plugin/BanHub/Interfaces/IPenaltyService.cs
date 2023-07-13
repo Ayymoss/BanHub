@@ -6,8 +6,8 @@ namespace BanHub.Interfaces;
 public interface IPenaltyService
 {
     [Post("/Penalty")]
-    Task<HttpResponseMessage> PostPenalty([Query("authToken")] string authToken, [Body] AddPlayerPenaltyCommand penalty);
+    Task<HttpResponseMessage> AddPlayerPenaltyAsync([Query("authToken")] string authToken, [Body] AddPlayerPenaltyCommand penalty);
 
-    [Post("/Penalty/Evidence")]
-    Task<HttpResponseMessage> SubmitEvidence([Query("authToken")] string authToken, [Body] AddPlayerPenaltyEvidenceCommand evidence);
+    [Patch("/Penalty/Evidence")]
+    Task<HttpResponseMessage> AddPlayerPenaltyEvidenceAsync([Query("authToken")] string authToken, [Body] AddPlayerPenaltyEvidenceCommand evidence);
 }

@@ -3,7 +3,7 @@ using MediatR;
 
 namespace BanHub.WebCore.Shared.Commands.PlayerProfile;
 
-public class GetProfileCommand : IRequest<Player>
+public class GetProfileCommand : IRequest<Player?>
 {
     public string Identity { get; set; }
 }

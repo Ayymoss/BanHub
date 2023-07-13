@@ -151,8 +151,7 @@
         };
 
         var statistics = await StatisticService.GetStatisticAsync();
-        var data = await PenaltyService.GetPenaltiesPaginationAsync(paginationQuery);
-        _pagedData = data.ToArray();
+        _pagedData = await PenaltyService.GetPenaltiesPaginationAsync(paginationQuery);
         _totalItems = statistics.PenaltyCount;
 
         return new TableData<Penalty> {TotalItems = _totalItems, Items = _pagedData};

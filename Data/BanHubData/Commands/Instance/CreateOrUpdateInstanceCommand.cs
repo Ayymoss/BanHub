@@ -9,6 +9,7 @@ public class CreateOrUpdateInstanceCommand : IRequest<ControllerEnums.ReturnStat
     public Guid InstanceApiKey { get; set; }
     public string InstanceName { get; set; }
     public string InstanceIp { get; set; }
+    public string? HeaderIp { get; set; }
     public string About { get; set; }
     public Dictionary<string, string> Socials { get; set; }
 }

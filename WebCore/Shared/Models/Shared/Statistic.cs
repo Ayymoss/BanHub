@@ -1,4 +1,4 @@
-﻿namespace BanHub.WebCore.Shared.ViewModels;
+﻿namespace BanHub.WebCore.Shared.Models.Shared;
 
 public class Statistic
 {

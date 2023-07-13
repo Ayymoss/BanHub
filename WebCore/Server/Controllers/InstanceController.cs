@@ -1,7 +1,6 @@
 ﻿using BanHub.WebCore.Server.Interfaces;
-using BanHub.WebCore.Shared.Models.Shared;
+using BanHub.WebCore.Shared.Commands.Instance;
 using BanHubData.Commands.Instance;
-using BanHubData.Domains;
 using BanHubData.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -12,12 +11,10 @@ namespace BanHub.WebCore.Server.Controllers;
 [Route("api/[controller]")]
 public class InstanceController : ControllerBase
 {
-    private readonly IInstanceService _instanceService;
     private readonly IMediator _mediator;
 
-    public InstanceController(IInstanceService instanceService, IMediator mediator)
+    public InstanceController(IMediator mediator)
     {
-        _instanceService = instanceService;
         _mediator = mediator;
     }
 
@@ -27,10 +24,12 @@ public class InstanceController : ControllerBase
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPost]
-    public async Task<IActionResult> CreateOrUpdate([FromBody] CreateOrUpdateInstanceCommand request)
+    public async Task<IActionResult> CreateOrUpdateInstanceAsync([FromBody] CreateOrUpdateInstanceCommand request)
     {
-        
-        // HttpContext.Request.Headers["X-Forwarded-For"]
+        var headerIp = HttpContext.Request.Headers["X-Forwarded-For"]; // TODO Implement and test
+
+        Console.WriteLine($"X-Forwarded-For: {headerIp}, InstanceIP: {request.InstanceIp}");
+        request.HeaderIp = headerIp;
         var result = await _mediator.Send(request);
 
         return result switch
@@ -44,28 +43,34 @@ public class InstanceController : ControllerBase
     }
 
     [HttpGet("Active")]
-    public async Task<ActionResult<bool>> IsInstanceActive([FromBody] IsInstanceActiveCommand guid)
+    public async Task<ActionResult> IsInstanceActiveAsync([FromQuery] string identity)
     {
-        var result = await _mediator.Send(guid);
+        if (Guid.TryParse(identity, out var guid)) return BadRequest();
+        var result = await _mediator.Send(new IsInstanceActiveCommand {InstanceGuid = guid});
         if (!result) return Unauthorized();
         return Accepted();
     }
 
-    [HttpGet]
-    public async Task<ActionResult<Instance>> GetInstance([FromQuery] string guid)
+    [HttpGet("{identity}")]
+    public async Task<ActionResult<BanHub.WebCore.Shared.Models.InstanceProfileView.Instance>> GetInstance([FromQuery] string identity)
     {
-        var result = await _instanceService.GetInstanceAsync(guid);
-        return result.Item1 switch
-        {
-            ControllerEnums.ReturnState.NotFound => NotFound("Instance not found"),
-            ControllerEnums.ReturnState.Ok => Ok(result.Item2),
-            _ => BadRequest() // Should never happen
-        };
+        var result = await _mediator.Send(new GetInstanceCommand {InstanceGuid = identity});
+        if (result is null) return NotFound();
+        return Ok(result);
     }
 
-    [HttpPost("All")]
-    public async Task<ActionResult<IEnumerable<Instance>>> GetInstances([FromBody] Pagination pagination)
+    [HttpPost("Instances")]
+    public async Task<ActionResult<IEnumerable<Shared.Models.InstancesView.Instance>>> GetInstancesAsync([FromBody] GetInstancesPaginationCommand pagination)
     {
-        return Ok(await _instanceService.PaginationAsync(pagination));
+        var result = await _mediator.Send(pagination);
+        return Ok(result);
     }
+    
+    [HttpGet("Profile/Servers/{identity}")]
+    public async Task<ActionResult<IEnumerable<BanHub.WebCore.Shared.Models.InstanceProfileView.Instance>>> GetInstanceProfileServersAsync([FromQuery] string identity)
+    {
+        if (Guid.TryParse(identity, out var guid)) return BadRequest();
+        var result = await _mediator.Send(new GetInstanceProfileServersCommand {Identity = guid});
+        return Ok(result);
+    } // 
 }

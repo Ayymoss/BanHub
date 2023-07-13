@@ -1,4 +1,4 @@
-﻿@using Data.Domains.WebEntity
+﻿@using BanHub.WebCore.Shared.Commands.Web
 @inject NavigationManager NavigationManager
 @inject IApiService ApiLogic
 @inject ILocalStorageService LocalStorageService
@@ -32,14 +32,12 @@
     </DialogContent>
 </MudDialog>
 
-<MudForm></MudForm>
-
 @code {
 
     [CascadingParameter]
-    MudDialogInstance MudDialog { get; set; }
+    MudDialogInstance? MudDialog { get; set; }
 
-    private WebLoginRequest _webLoginModel = new();
+    private readonly WebTokenLoginCommand _webLoginModel = new();
     private bool _processing;
     private string? _error;
     
@@ -56,7 +54,7 @@
         _processing = true;
         _error = null;
 
-        if (_webLoginModel.Token?.Length is not 6)
+        if (_webLoginModel.Token.Length is not 6)
         {
             _error = "Invalid token length";
             _processing = false;

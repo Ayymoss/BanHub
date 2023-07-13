@@ -7,13 +7,13 @@ namespace BanHub.Managers;
 public class HeartBeatManager
 {
     private readonly InstanceSlim _instanceSlim;
-    private readonly HeartBeatEndpoint _heartBeatEndpoint;
+    private readonly HeartbeatService _heartbeatService;
     private readonly EndpointManager _endpointManager;
 
-    public HeartBeatManager(InstanceSlim instanceSlim, HeartBeatEndpoint heartBeatEndpoint, EndpointManager endpointManager)
+    public HeartBeatManager(InstanceSlim instanceSlim, HeartbeatService heartbeatService, EndpointManager endpointManager)
     {
         _instanceSlim = instanceSlim;
-        _heartBeatEndpoint = heartBeatEndpoint;
+        _heartbeatService = heartbeatService;
         _endpointManager = endpointManager;
     }
     
@@ -21,7 +21,7 @@ public class HeartBeatManager
     {
         try
         {
-            await _heartBeatEndpoint.PostInstanceHeartBeat(new InstanceHeartbeatCommand
+            await _heartbeatService.PostInstanceHeartBeat(new InstanceHeartbeatCommand
             {
                 ApiKey = _instanceSlim.ApiKey,
                 InstanceGuid = _instanceSlim.InstanceGuid
@@ -40,7 +40,7 @@ public class HeartBeatManager
         {
             if (_endpointManager.Profiles.Count is 0) return;
             var players = _endpointManager.Profiles.Select(x => x.Value).ToList();
-            await _heartBeatEndpoint.PostEntityHeartBeat(new PlayersHeartbeatCommand
+            await _heartbeatService.PostEntityHeartBeat(new PlayersHeartbeatCommand
             {
                 InstanceGuid = _instanceSlim.InstanceGuid,
                 PlayerIdentities = players

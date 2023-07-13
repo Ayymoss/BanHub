@@ -1,5 +1,7 @@
 ﻿@page "/"
 @using Penalty = BanHub.WebCore.Shared.Models.IndexView.Penalty
+@inject StatisticService StatisticService
+@inject PenaltyService PenaltyService
 
 <PageTitle>Index | Ban Hub</PageTitle>
 
@@ -105,7 +107,6 @@
     </MudGrid>
 </MudContainer>
 
-
 @code {
 
     private string? _instances;
@@ -117,17 +118,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var penalty = await Http.GetFromJsonAsync<List<Penalty>>("/api/Penalty/Index");
-        if (penalty is not null) _penaltyTable = penalty;
+        var statistics = await StatisticService.GetStatisticAsync();
+        _entities = $"{statistics.EntityCount:N0}";
+        _instances = $"{statistics.InstanceCount:N0}";
+        _penalties = $"{statistics.PenaltyCount:N0}";
+        _servers = $"{statistics.ServerCount:N0}";
 
-        var statistic = await Http.GetFromJsonAsync<Statistic>("/api/Statistic");
-        if (statistic is null) return;
-
-        _entities = $"{statistic.EntityCount:N0}";
-        _instances = $"{statistic.InstanceCount:N0}";
-        _penalties = $"{statistic.PenaltyCount:N0}";
-        _servers = $"{statistic.ServerCount:N0}";
-
+        _penaltyTable = (await PenaltyService.GetLatestBansAsync()).ToList();
         await base.OnInitializedAsync();
     }
 

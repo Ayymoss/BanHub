@@ -15,9 +15,9 @@ public class EFServerConnection
     /// <summary>
     /// Entity associated with the connection
     /// </summary>
-    public int EntityId { get; set; }
+    public int PlayerId { get; set; }
 
-    [ForeignKey(nameof(EntityId))] public EFPlayer Player { get; set; } = null!;
+    [ForeignKey(nameof(PlayerId))] public EFPlayer Player { get; set; } = null!;
 
     /// <summary>
     /// The server they connected to

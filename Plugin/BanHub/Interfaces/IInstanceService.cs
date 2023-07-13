@@ -6,8 +6,8 @@ namespace BanHub.Interfaces;
 public interface IInstanceService
 {
     [Post("/Instance")]
-    Task<HttpResponseMessage> PostInstance([Body] CreateOrUpdateInstanceCommand instance);
+    Task<HttpResponseMessage> CreateOrUpdateInstanceAsync([Body] CreateOrUpdateInstanceCommand instance);
 
-    [Get("/Instance/Active")]
-    Task<HttpResponseMessage> IsInstanceActive([Body("guid")] IsInstanceActiveCommand guid); // TODO: Validate!
+    [Get("/Instance/Active/{identity}")]
+    Task<HttpResponseMessage> IsInstanceActiveAsync([Path("identity")] string identity);
 }

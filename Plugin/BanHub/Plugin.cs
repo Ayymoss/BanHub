@@ -15,6 +15,8 @@ using SharedLibraryCore.Interfaces.Events;
 
 namespace BanHub;
 
+// TODO: LOGGING!!!!
+
 public class Plugin : IPluginV2
 {
     public string Name => "Ban Hub";
@@ -53,11 +55,11 @@ public class Plugin : IPluginV2
     {
         serviceCollection.AddConfiguration("BanHubSettings", new BanHubConfiguration());
 
-        serviceCollection.AddSingleton<HeartBeatEndpoint>();
-        serviceCollection.AddSingleton<EntityEndpoint>();
-        serviceCollection.AddSingleton<PenaltyEndpoint>();
-        serviceCollection.AddSingleton<InstanceEndpoint>();
-        serviceCollection.AddSingleton<ServerEndpoint>();
+        serviceCollection.AddSingleton<HeartbeatService>();
+        serviceCollection.AddSingleton<PlayerService>();
+        serviceCollection.AddSingleton<PenaltyService>();
+        serviceCollection.AddSingleton<InstanceService>();
+        serviceCollection.AddSingleton<ServerService>();
         serviceCollection.AddSingleton(new InstanceSlim());
         serviceCollection.AddSingleton<HeartBeatManager>();
         serviceCollection.AddSingleton<EndpointManager>();

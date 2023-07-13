@@ -69,4 +69,20 @@ public class PenaltyService
 
         return new List<WebCore.Shared.Models.PenaltiesView.Penalty>();
     }
+
+    public async Task<IEnumerable<WebCore.Shared.Models.IndexView.Penalty>> GetLatestBansAsync()
+    {
+        try
+        {
+            var response = await _api.GetLatestBansAsync();
+            var result = await response.DeserializeHttpResponseContentAsync<IEnumerable<WebCore.Shared.Models.IndexView.Penalty>>();
+            return result ?? new List<WebCore.Shared.Models.IndexView.Penalty>();
+        }
+        catch (ApiException e)
+        {
+            Console.WriteLine($"API->Failed to get penalties: {e.Message}");
+        }
+
+        return new List<WebCore.Shared.Models.IndexView.Penalty>();
+    }
 }

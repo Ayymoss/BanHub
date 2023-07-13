@@ -13,9 +13,9 @@ public class EFCurrentAlias
     /// <summary>
     /// Entity associated with current alias.
     /// </summary>
-    public int EntityId { get; set; }
+    public int PlayerId { get; set; }
 
-    [ForeignKey(nameof(EntityId))] public EFPlayer Player { get; set; } = null!;
+    [ForeignKey(nameof(PlayerId))] public EFPlayer Player { get; set; } = null!;
 
     /// <summary>
     /// Current alias associated with entity.

@@ -1,6 +1,6 @@
-﻿using BanHub.WebCore.Server.Interfaces;
-using BanHubData.Domains;
-using BanHubData.Models;
+﻿using BanHub.WebCore.Shared.Commands.Search;
+using BanHub.WebCore.Shared.Models.SearchView;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BanHub.WebCore.Server.Controllers;
@@ -9,18 +9,18 @@ namespace BanHub.WebCore.Server.Controllers;
 [Route("api/[controller]")]
 public class SearchController : ControllerBase
 {
-    private readonly ISearchService _searchService;
+    private readonly IMediator _mediator;
 
-    public SearchController(ISearchService searchService)
+    public SearchController(IMediator mediator)
     {
-        _searchService = searchService;
+        _mediator = mediator;
     }
 
     [HttpGet("{query}")]
-    public async Task<ActionResult<List<Search>>> Search([FromQuery] string query)
+    public async Task<ActionResult<IEnumerable<Search>>> Search([FromQuery] string query)
     {
         if (query.Length < 3) return BadRequest();
-        var result = await _searchService.SearchAsync(query);
+        var result = await _mediator.Send(new GetSearchCommand {Query = query});
         return Ok(result);
     }
 }

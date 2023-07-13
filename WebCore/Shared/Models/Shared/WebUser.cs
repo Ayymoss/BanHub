@@ -6,4 +6,5 @@ public class WebUser
     public string WebRole { get; set; }
     public string InstanceRole { get; set; }
     public string Identity { get; set; }
+    public string SignedInGuid { get; set; }
 }

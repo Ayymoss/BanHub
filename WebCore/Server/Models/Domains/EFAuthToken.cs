@@ -25,7 +25,7 @@ public class EFAuthToken
     /// <summary>
     /// Entity associated with current token.
     /// </summary>
-    public int EntityId { get; set; }
+    public int PlayerId { get; set; }
 
-    [ForeignKey(nameof(EntityId))] public EFPlayer Player { get; set; } = null!;
+    [ForeignKey(nameof(PlayerId))] public EFPlayer Player { get; set; } = null!;
 }

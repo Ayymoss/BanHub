@@ -1,6 +1,6 @@
 ﻿using BanHub.WebCore.Client.Interfaces.RestEase;
+using BanHub.WebCore.Shared.Models.Shared;
 using BanHub.WebCore.Shared.Utilities;
-using BanHub.WebCore.Shared.ViewModels;
 using RestEase;
 
 namespace BanHub.WebCore.Client.Services.RestEase;

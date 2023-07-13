@@ -28,6 +28,6 @@ public class EFAlias
     /// <summary>
     /// The associated entity
     /// </summary>
-    public int EntityId { get; set; }
-    [ForeignKey(nameof(EntityId))] public EFPlayer Player { get; set; } = null!;
+    public int PlayerId { get; set; }
+    [ForeignKey(nameof(PlayerId))] public EFPlayer Player { get; set; } = null!;
 }
