@@ -59,7 +59,7 @@
         }
 
         var authenticatedUser = (await (AuthStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
-        var adminIdentity = authenticatedUser.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+        var adminIdentity = authenticatedUser.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         var adminName = authenticatedUser.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
 
         if (adminName is null || adminIdentity is null)

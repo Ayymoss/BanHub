@@ -3,6 +3,7 @@ namespace BanHub.WebCore.Shared.Models.InstanceProfileView;
 
 public class Instance
 {
+    public Guid InstanceGuid { get; set; }
     public string? InstanceName { get; set; }
     public string InstanceIp { get; set; }
     public DateTimeOffset HeartBeat { get; set; }
@@ -11,5 +12,4 @@ public class Instance
     public Dictionary<string, string>? Socials { get; set; }
     public DateTimeOffset Created { get; set; }
     public int ServerCount { get; set; }
-    public Guid InstanceGuid { get; set; }
 }

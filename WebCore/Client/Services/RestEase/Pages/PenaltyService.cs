@@ -4,6 +4,7 @@ using BanHub.WebCore.Shared.Commands.PlayerProfile;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHub.WebCore.Shared.Utilities;
+using BanHubData.Commands.Penalty;
 using RestEase;
 
 namespace BanHub.WebCore.Client.Services.RestEase.Pages;
@@ -22,11 +23,26 @@ public class PenaltyService
         _api = RestClient.For<IPenaltyService>(ApiHost);
     }
 
-    public async Task<bool> RemovePenaltyAsync(RemovePenaltyCommand penaltyToRemove)
+    public async Task<bool> DeletePenaltyAsync(RemovePenaltyCommand penaltyToRemove)
     {
         try
         {
-            var response = await _api.RemovePenaltyAsync(penaltyToRemove);
+            var response = await _api.DeletePenaltyAsync(penaltyToRemove);
+            return response.IsSuccessStatusCode;
+        }
+        catch (ApiException e)
+        {
+            Console.WriteLine($"API->Failed to get player profile: {e.Message}");
+        }
+
+        return false;
+    }
+
+    public async Task<bool> AddPlayerPenaltyEvidenceAsync(AddPlayerPenaltyEvidenceCommand evidence)
+    {
+        try
+        {
+            var response = await _api.AddPlayerPenaltyEvidenceAsync(evidence);
             return response.IsSuccessStatusCode;
         }
         catch (ApiException e)
@@ -84,5 +100,22 @@ public class PenaltyService
         }
 
         return new List<WebCore.Shared.Models.IndexView.Penalty>();
+    }
+
+    public async Task<IEnumerable<WebCore.Shared.Models.InstanceProfileView.Penalty>> GetInstancePenaltiesAsync(string identity)
+    {
+        try
+        {
+            var response = await _api.GetInstancePenaltiesAsync(identity);
+            var result =
+                await response.DeserializeHttpResponseContentAsync<IEnumerable<WebCore.Shared.Models.InstanceProfileView.Penalty>>();
+            return result ?? new List<WebCore.Shared.Models.InstanceProfileView.Penalty>();
+        }
+        catch (ApiException e)
+        {
+            Console.WriteLine($"API->Failed to get player penalties: {e.Message}");
+        }
+
+        return new List<WebCore.Shared.Models.InstanceProfileView.Penalty>();
     }
 }

@@ -40,16 +40,14 @@
 
     private void OnKeyPress(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter")
+        if (e.Key != "Enter") return;
+        if (_searchValue is null || _searchValue?.Length < 3)
         {
-            if (_searchValue is null || _searchValue?.Length < 3)
-            {
-                Snackbar.Add("Search must be at least 3 characters long.", Severity.Info);
-                return;
-            }
-
-            NavigationManager.NavigateTo($"/Search?q={_searchValue}");
+            Snackbar.Add("Search must be at least 3 characters long.", Severity.Info);
+            return;
         }
+
+        NavigationManager.NavigateTo($"/Search?q={_searchValue}");
     }
 
     protected override async Task OnInitializedAsync()

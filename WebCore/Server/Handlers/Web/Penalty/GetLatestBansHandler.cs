@@ -31,7 +31,11 @@ public class GetLatestBansHandler : IRequestHandler<GetLatestBansCommand, IEnume
                 TargetUserName = penalty.Target.CurrentAlias.Alias.UserName,
                 InstanceGuid = penalty.Instance.InstanceGuid,
                 InstanceName = penalty.Instance.InstanceName,
-                Reason = penalty.Reason
+                Reason = request.Privileged && penalty.Automated
+                    ? penalty.Reason
+                    : penalty.Automated
+                        ? "Automated Detection"
+                        : penalty.Reason,
             }).ToListAsync(cancellationToken: cancellationToken);
 
         return bans;

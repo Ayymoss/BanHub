@@ -12,5 +12,5 @@ public interface INoteService
     Task<HttpResponseMessage> RemoveNoteAsync([Body] DeleteNoteCommand noteToRemove);
 
     [Get("/Note/{identity}")]
-    Task<HttpResponseMessage> GetNotesAsync([Query("identity")] string identity);
+    Task<HttpResponseMessage> GetNotesAsync([Path("identity")] string identity);
 }

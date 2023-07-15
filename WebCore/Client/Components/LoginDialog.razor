@@ -61,8 +61,8 @@
             return;
         }
 
-        var message = await ApiLogic.LoginAsync(_webLoginModel);
-        if (message == "Success")
+        var success = await ApiLogic.LoginAsync(_webLoginModel);
+        if (success)
         {
             await LocalStorageService.SetItemAsStringAsync("IsAuthenticated", "true");
             NavigationManager.NavigateTo(NavigationManager.Uri, true);

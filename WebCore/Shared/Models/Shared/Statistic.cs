@@ -28,7 +28,7 @@ public class Statistic
     public int OnlineCount { get; set; }
 
     /// <summary>
-    /// The count of how many bans there are in last 24hr
+    /// The count of how many bans there are in last 7d
     /// </summary>
     public int BanCount { get; set; }
 }

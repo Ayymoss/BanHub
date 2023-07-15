@@ -2,7 +2,6 @@
 using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Shared.Commands.PlayerProfile;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
-using BanHub.WebCore.Shared.Utilities;
 using BanHubData.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -41,7 +40,7 @@ public class NoteController : ControllerBase
             WebRole.WebSuperAdmin
         });
 
-        if (!instanceRoleAssigned || !webRoleAssigned) return Unauthorized("You are not authorised to perform this action");
+        if (!instanceRoleAssigned && !webRoleAssigned) return Unauthorized("You are not authorised to perform this action");
 
         var result = await _mediator.Send(request);
         return result switch
@@ -52,10 +51,12 @@ public class NoteController : ControllerBase
     }
 
     [HttpDelete] // Authorised endpoint
-    public async Task<IActionResult> RemoveNoteAsync([FromBody] DeleteNoteCommand request)
+    public async Task<IActionResult> DeleteNoteAsync([FromBody] DeleteNoteCommand request)
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
-        if (adminSignInGuid is null) return Unauthorized("You are not authorised to perform this action");
+        var adminName = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+        var adminNameIdentity = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        if (adminSignInGuid is null || adminName is null || adminNameIdentity is null) return Unauthorized("You are not authorised to perform this action");
 
         var instanceRoleAssigned = _signedInUsers.IsUserInAnyInstanceRole(adminSignInGuid, new[]
         {
@@ -70,21 +71,19 @@ public class NoteController : ControllerBase
             WebRole.WebSuperAdmin
         });
 
-        if (!instanceRoleAssigned || !webRoleAssigned) return Unauthorized("You are not authorised to perform this action");
+        if (!instanceRoleAssigned && !webRoleAssigned) return Unauthorized("You are not authorised to perform this action");
 
+        request.ActionAdminUserName = adminName;
+        request.ActionAdminIdentity = adminNameIdentity;
         var result = await _mediator.Send(request);
-        return result switch
-        {
-            true => Ok("Note deleted!"),
-            false => BadRequest("Error removing note")
-        };
+        if (!result) return BadRequest();
+        return Ok();
     }
 
     [HttpGet("{identity}")]
-    public async Task<ActionResult<IEnumerable<Note>>> GetNotesAsync([FromQuery] string identity)
+    public async Task<ActionResult<IEnumerable<Note>>> GetNotesAsync([FromRoute] string identity)
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
-
         var instanceRoleAssigned = false;
         var webRoleAssigned = false;
 
@@ -105,7 +104,6 @@ public class NoteController : ControllerBase
         }
 
         var authorised = instanceRoleAssigned || webRoleAssigned;
-
         var result = await _mediator.Send(new GetNotesCommand {Identity = identity, Authorised = authorised});
         return Ok(result);
     }

@@ -38,7 +38,7 @@ public class AuthenticateCommand : Command
             return;
         }
 
-        var token = await _endpointManager.GenerateToken(gameEvent.Origin);
+        var token = await _endpointManager.GetTokenAsync(gameEvent.Origin);
         if (token is null)
         {
             gameEvent.Origin.Tell(_bhConfig.Translations.TokenGenerationFailed);

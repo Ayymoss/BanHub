@@ -1,0 +1,89 @@
+﻿@using Penalty = BanHub.WebCore.Shared.Models.PlayerProfileView.Penalty
+@using BanHubData.Commands.Penalty
+@using System.Text.RegularExpressions
+@inject ISnackbar SnackbarService
+@inject PenaltyService PenaltyService
+@attribute [Authorize(Roles = "WebAdmin, WebSuperAdmin")]
+
+<MudDialog>
+    <DialogContent>
+        <MudElement Class="d-flex flex-column">
+            <MudText Typo="Typo.subtitle1">Please enter a YouTube URL</MudText>
+            <MudTextField @bind-Value="_evidence" AutoFocus="false" Immediate="true" MaxLength="128" Label="YouTube URL"
+                          Variant="Variant.Text" Counter="128" AdornmentIcon="@Icons.Custom.Brands.YouTube" Adornment="Adornment.End"/>
+        </MudElement>
+        <MudElement Class="d-flex flex-column mb-3">
+            <MudDivider FlexItem="true" DividerType="DividerType.Inset" Class="mx-n6 mb-4 mt-8"/>
+            <MudElement Class="d-flex">
+                <MudText Class="align-self-center" Typo="Typo.caption" Align="Align.Center" Color="Color.Error">This action is logged</MudText>
+                <MudSpacer/>
+                <MudButton Class="flex-shrink-1" Variant="Variant.Text" Size="Size.Small" OnClick="ToggleOpen">Cancel</MudButton>
+                <MudButton Class="flex-shrink-1 ml-2" Disabled="@_processing" Variant="Variant.Outlined"
+                           Size="Size.Small" Color="Color.Error" ButtonType="ButtonType.Submit" OnClick="SubmitEvidence">
+                    @if (_processing)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                        <MudText Class="ms-2">Submitting...</MudText>
+                    }
+                    else
+                    {
+                        <MudText>Submit</MudText>
+                    }
+                </MudButton>
+            </MudElement>
+        </MudElement>
+
+    </DialogContent>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public Penalty Penalty { get; set; } = null!;
+
+    private string _evidence = string.Empty;
+    private bool _processing;
+
+    private void ToggleOpen() => MudDialog.Close();
+
+    private async Task SubmitEvidence()
+    {
+        _processing = true;
+
+        const string youtubeRegex = @"^(((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?)$";
+        const string videoId = @"v=([^&]+)";
+        var youTubeMatch = Regex.Match(_evidence, youtubeRegex);
+        var videoIdMatch = Regex.Match(_evidence, videoId);
+
+        if (!youTubeMatch.Success)
+        {
+            SnackbarService.Add("The URL provided doesn't match. Expecting YouTube.", Severity.Warning);
+            _processing = false;
+            return;
+        }
+
+        var evidenceCommand = new AddPlayerPenaltyEvidenceCommand
+        {
+            PenaltyGuid = Penalty.PenaltyGuid,
+            Evidence = videoIdMatch.Groups[1].ToString()
+        };
+
+        var request = await PenaltyService.AddPlayerPenaltyEvidenceAsync(evidenceCommand);
+
+        if (!request)
+        {
+            SnackbarService.Add("Failed to add evidence!", Severity.Error);
+            _processing = false;
+            MudDialog.Cancel();
+            return;
+        }
+
+        SnackbarService.Add("Evidence added!", Severity.Success);
+        _processing = false;
+        MudDialog.Close(DialogResult.Ok(evidenceCommand));
+    }
+
+}

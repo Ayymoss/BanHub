@@ -1,4 +1,5 @@
-﻿@inject ISnackbar SnackbarService
+﻿@using Penalty = BanHub.WebCore.Shared.Models.PlayerProfileView.Penalty
+@inject ISnackbar SnackbarService
 @inject PenaltyService PenaltyService
 @attribute [Authorize(Roles = "WebAdmin, WebSuperAdmin")]
 
@@ -57,7 +58,12 @@
             return;
         }
 
-        var request = await PenaltyService.RemovePenaltyAsync(new RemovePenaltyCommand {DeletionReason = _deletionReason, PenaltyGuid = Penalty.PenaltyGuid});
+        var request = await PenaltyService.DeletePenaltyAsync(new RemovePenaltyCommand
+        {
+            DeletionReason = _deletionReason,
+            PenaltyGuid = Penalty.PenaltyGuid
+        });
+
         if (!request)
         {
             SnackbarService.Add("Failed to delete penalty!", Severity.Error);

@@ -40,7 +40,7 @@ public class PluginAuthentication : Attribute, IAuthorizationFilter
                 {
                     Status = "Error",
                     Message = "Unauthorized"
-                },
+                }
             };
         }
         else
@@ -54,7 +54,7 @@ public class PluginAuthentication : Attribute, IAuthorizationFilter
                 {
                     Status = "Error",
                     Message = "Authenticated endpoint. Provide token"
-                },
+                }
             };
         }
     }
@@ -62,7 +62,7 @@ public class PluginAuthentication : Attribute, IAuthorizationFilter
     private static bool IsValidToken(string authToken, ApiKeyCache apiKeyCache)
     {
         if (!Guid.TryParse(authToken, out var guid)) return false;
-        var exists = apiKeyCache.ApiKeys?.Contains(guid);
+        var exists = apiKeyCache.ApiKeys?.Any(x => x.Value == guid);
         return exists ?? false;
     }
 }

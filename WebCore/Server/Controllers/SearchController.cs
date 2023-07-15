@@ -17,7 +17,7 @@ public class SearchController : ControllerBase
     }
 
     [HttpGet("{query}")]
-    public async Task<ActionResult<IEnumerable<Search>>> Search([FromQuery] string query)
+    public async Task<ActionResult<IEnumerable<Search>>> Search([FromRoute] string query)
     {
         if (query.Length < 3) return BadRequest();
         var result = await _mediator.Send(new GetSearchCommand {Query = query});

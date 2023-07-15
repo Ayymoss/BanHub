@@ -15,10 +15,10 @@ public class ApiService : IApiService
         _httpClient = httpClient;
     }
 
-    public async Task<string> LoginAsync(WebTokenLoginCommand webLogin)
+    public async Task<bool> LoginAsync(WebTokenLoginCommand webLogin)
     {
         var response = await _httpClient.PostAsJsonAsync("/api/Auth/Login", webLogin);
-        return response.IsSuccessStatusCode ? "Success" : "Failed";
+        return response.IsSuccessStatusCode;
     }
 
     public async Task<(string, WebUser?)> UserProfileAsync()

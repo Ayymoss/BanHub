@@ -1,4 +1,5 @@
-﻿using BanHub.WebCore.Server.Context;
+﻿using System.Collections.Concurrent;
+using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,9 +18,14 @@ public class ApiKeyMiddleware : IMiddleware
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
-        _apiKeyCache.ApiKeys ??= await _dataContext.Instances
-            .Where(x => x.Active)
-            .Select(x => x.ApiKey).ToListAsync();
+        if (_apiKeyCache.ApiKeys is null)
+        {
+            var keys = await _dataContext.Instances
+                .Where(x => x.Active)
+                .ToDictionaryAsync(x => x.InstanceGuid, x => x.ApiKey);
+
+            _apiKeyCache.ApiKeys = new ConcurrentDictionary<Guid, Guid>(keys);
+        }
 
         await next(context);
     }

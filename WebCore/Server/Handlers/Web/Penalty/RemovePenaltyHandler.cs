@@ -1,4 +1,5 @@
 ﻿using BanHub.WebCore.Server.Context;
+using BanHub.WebCore.Server.Events.DiscordWebhook;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Shared.Commands.Penalty;
 using BanHub.WebCore.Shared.Commands.PlayerProfile;
@@ -12,13 +13,11 @@ public class RemovePenaltyHandler : IRequestHandler<RemovePenaltyCommand, bool>
 {
     private readonly DataContext _context;
     private readonly IStatisticService _statisticService;
-    private readonly IDiscordWebhookService _discordWebhookService;
 
-    public RemovePenaltyHandler(DataContext context, IStatisticService statisticService, IDiscordWebhookService discordWebhookService)
+    public RemovePenaltyHandler(DataContext context, IStatisticService statisticService)
     {
         _context = context;
         _statisticService = statisticService;
-        _discordWebhookService = discordWebhookService;
     }
 
     public async Task<bool> Handle(RemovePenaltyCommand request, CancellationToken cancellationToken)
@@ -50,9 +49,12 @@ public class RemovePenaltyHandler : IRequestHandler<RemovePenaltyCommand, bool>
 
         _context.Penalties.Remove(penalty);
         await _context.SaveChangesAsync(cancellationToken);
-        await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.PenaltyCount,
-            ControllerEnums.StatisticTypeAction.Remove);
-        await _discordWebhookService.CreateAdminActionHookAsync("Penalty Deletion!", message);
+        await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.PenaltyCount, ControllerEnums.StatisticTypeAction.Remove);
+        IDiscordWebhookSubscriptions.InvokeEvent(new CreateAdminActionEvent
+        {
+            Title = "Penalty Deletion!",
+            Message = message
+        }, cancellationToken);
         return true;
     }
 }

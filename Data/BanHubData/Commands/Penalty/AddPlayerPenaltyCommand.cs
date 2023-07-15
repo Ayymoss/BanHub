@@ -13,6 +13,4 @@ public class AddPlayerPenaltyCommand : IRequest<(ControllerEnums.ReturnState, Gu
     public string AdminIdentity { get; set; }
     public string TargetIdentity { get; set; }
     public Guid InstanceGuid { get; set; }
-    public Guid InstanceApiKey { get; set; }
-
 }

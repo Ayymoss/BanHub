@@ -13,9 +13,9 @@ public class EFAuthToken
     public required string Token { get; set; }
 
     /// <summary>
-    /// When the token was created
+    /// When the token expires
     /// </summary>
-    public required DateTimeOffset Created { get; set; }
+    public required DateTimeOffset Expiration { get; set; }
 
     /// <summary>
     /// If the token has been used

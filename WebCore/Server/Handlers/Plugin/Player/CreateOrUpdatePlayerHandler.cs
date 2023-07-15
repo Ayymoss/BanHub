@@ -31,6 +31,7 @@ public class CreateOrUpdatePlayerHandler : IRequestHandler<CreateOrUpdatePlayerC
 
         var utcTimeNow = DateTimeOffset.UtcNow;
 
+        // TODO: If someone changes server and isn't admin they'll be demoted here. Need to think of a way to keep people in the same role.
         // Update existing user
         if (user is not null)
         {

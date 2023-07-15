@@ -2,7 +2,7 @@
 
 namespace BanHub.WebCore.Shared.Commands.Instance;
 
-public class GetInstanceCommand : IRequest<BanHub.WebCore.Shared.Models.InstanceProfileView.Instance?>
+public class ToggleInstanceActivationCommand : IRequest<bool>
 {
     public Guid InstanceGuid { get; set; }
 }

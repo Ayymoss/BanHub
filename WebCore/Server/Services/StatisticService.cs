@@ -110,7 +110,7 @@ public class StatisticService : IStatisticService
         _statisticsTracking.BansDay.Add(statisticBan);
 
         _statisticsTracking.BansDay = _statisticsTracking.BansDay
-            .Where(x => x.Submitted > DateTimeOffset.UtcNow.AddDays(-1))
+            .Where(x => x.Submitted > DateTimeOffset.UtcNow.AddDays(-7))
             .ToList();
 
         _statisticsTracking.BansDayCount = _statisticsTracking.BansDay.Count;

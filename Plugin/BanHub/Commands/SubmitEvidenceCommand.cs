@@ -22,7 +22,7 @@ public class SubmitEvidenceCommand : Command
         Name = "bhevidence";
         Description = "Submit evidence for a players ban";
         Alias = "bhe";
-        Permission = EFClient.Permission.SeniorAdmin;
+        Permission = EFClient.Permission.Moderator;
         RequiresTarget = false;
         Arguments = new[]
         {
@@ -47,21 +47,18 @@ public class SubmitEvidenceCommand : Command
             return;
         }
 
-        // TODO: Report type
-        // TODO: remove warns/reports/kicks from infractions list
-
-
-        const string regex =
-            @"^([0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}) (((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?)$";
-        var match = Regex.Match(gameEvent.Data, regex);
+        const string youtubeRegex = @"^([0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}) (((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?)$";
+        const string videoId = @"v=([^&]+)";
+        var regex = Regex.Match(gameEvent.Data, youtubeRegex);
+        var videoIdMatch = Regex.Match(gameEvent.Data, videoId);
         bool result;
 
-        if (match.Success)
+        if (regex.Success)
         {
-            var guidCheck = Guid.TryParse(match.Groups[1].ToString(), out var guid);
-            var evidence = match.Groups[3].ToString();
+            var guidCheck = Guid.TryParse(regex.Groups[1].ToString(), out var guid);
+            var evidence = videoIdMatch.Groups[1].ToString();
 
-            if (guidCheck) result = await _endpointManager.SubmitInformation(guid, evidence);
+            if (guidCheck) result = await _endpointManager.AddPlayerPenaltyEvidenceAsync(guid, evidence, gameEvent.Origin);
             else result = false;
         }
         else

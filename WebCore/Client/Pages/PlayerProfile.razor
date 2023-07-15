@@ -2,12 +2,14 @@
 @using Note = BanHub.WebCore.Shared.Models.PlayerProfileView.Note
 @using Penalty = BanHub.WebCore.Shared.Models.PlayerProfileView.Penalty
 @using Player = BanHub.WebCore.Shared.Models.PlayerProfileView.Player
+@using BanHubData.Commands.Penalty
 @inject IDialogService DialogService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 @inject PlayerProfileService PlayerProfileService
 @inject NoteService NoteService
 @inject PenaltyService PenaltyService
+@implements IAsyncDisposable
 
 <PageTitle>@_title | Profile | Ban Hub</PageTitle>
 @if (_loading)
@@ -36,32 +38,30 @@ else
             </MudElement>
             <MudSpacer/>
             <MudElement>
-                @if (_entity.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
-                {
-                    <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Info">Online</MudChip>
-                }
-                else
-                {
-                    <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Warning">Offline</MudChip>
-                }
                 @if (_entity.IsGloballyBanned)
                 {
-                    <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Error">Globally Banned</MudChip>
+                    <MudButton Class="mr-2" Href="https://discord.gg/UHdqh6ZfjM" Target="_blank" StartIcon="@Icons.Material.Filled.Blind" 
+                               IconSize="Size.Large" Color="Color.Error" IconColor="Color.Error" Size="Size.Large" Variant="Variant.Outlined">
+                        Appeal!
+                    </MudButton>
                 }
-                else
-                {
-                    <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Info">Not Globally Banned</MudChip>
-                }
+                <MudChip Variant="Variant.Text" Size="Size.Large"
+                         Color="@(_entity.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow ? Color.Info : Color.Warning)">
+                    @(_entity.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow ? "Online" : "Offline")
+                </MudChip>
+                <MudChip Variant="Variant.Text" Size="Size.Large"
+                         Color="@(_entity.IsGloballyBanned ? Color.Error : Color.Info)">
+                    @(_entity.IsGloballyBanned ? "Globally Banned" : "Compliant")
+                </MudChip>
             </MudElement>
         </MudElement>
-
 
         <MudElement Class="mt-4 d-flex flex-column">
         <MudElement>
             <MudGrid Spacing="2" Justify="Justify.FlexStart">
                 <MudItem xs="12" sm="4" xl="3" xxl="2">
                     <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(!_penalties.Any() ? "None" : _penalties.Count().ToString())</MudText>
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(!_penalties.Any() ? "None" : _penalties.Count.ToString())</MudText>
                         <MudText Class="mud-text-secondary">Penalties</MudText>
                     </MudPaper>
                 </MudItem>
@@ -79,7 +79,7 @@ else
                 </MudItem>
                 <MudItem xs="12" sm="4" xl="3" xxl="2">
                     <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.TotalConnections == 0 ? "None" : _entity.TotalConnections)</MudText>
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.TotalConnections is 0 ? "None" : _entity.TotalConnections)</MudText>
                         <MudText Class="mud-text-secondary">Total Connections</MudText>
                     </MudPaper>
                 </MudItem>
@@ -91,7 +91,7 @@ else
                 </MudItem>
                 <MudItem xs="12" sm="4" xl="3" xxl="2">
                     <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.TotalConnections == 0 || _entity.PlayTime == TimeSpan.Zero ? "None" : (_entity.PlayTime / _entity.TotalConnections).Humanize())</MudText>
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.TotalConnections is 0 || _entity.PlayTime == TimeSpan.Zero ? "None" : (_entity.PlayTime / _entity.TotalConnections).Humanize())</MudText>
                         <MudText Class="mud-text-secondary">Average Playtime</MudText>
                     </MudPaper>
                 </MudItem>
@@ -99,7 +99,7 @@ else
                     <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
                         <MudElement Class="d-flex">
                             <MudElement Class="flex-grow-1">
-                                <MudText Typo="Typo.subtitle1" Color="Color.Info">@(!_notes.Any() ? "None" : _notes.Count().ToString())</MudText>
+                                <MudText Typo="Typo.subtitle1" Color="Color.Info">@(!_notes.Any() ? "None" : _notes.Count.ToString())</MudText>
                             </MudElement>
                             <AuthorizeView Roles="InstanceModerator, InstanceAdministrator, InstanceSeniorAdmin, InstanceOwner, WebAdmin, WebSuperAdmin">
                                 <Authorized>
@@ -152,6 +152,9 @@ else
                                         <MudTableSortLabel SortBy="new Func<Penalty, object>(x => x.PenaltyScope)">Scope</MudTableSortLabel>
                                     </MudTh>
                                     <MudTh>
+                                        <MudTableSortLabel SortBy="new Func<Penalty, object>(x => x.PenaltyStatus)">Status</MudTableSortLabel>
+                                    </MudTh>
+                                    <MudTh>
                                         <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<Penalty, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
                                     </MudTh>
                                     <MudTh Class="rounded-tr" Style="width: 100px;"/>
@@ -161,6 +164,7 @@ else
                                     <MudTd DataLabel="Reason">@context.Reason</MudTd>
                                     <MudTd DataLabel="Type">@context.PenaltyType.ToString()</MudTd>
                                     <MudTd DataLabel="Scope">@context.PenaltyScope.ToString()</MudTd>
+                                    <MudTd DataLabel="Scope">@context.PenaltyStatus.ToString()</MudTd>
                                     <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
                                     <MudTd DataLabel="View">
                                         <MudChip Variant="Variant.Outlined" Size="Size.Small" Color="Color.Info">
@@ -189,7 +193,7 @@ else
                                       Items="@_connections" Dense="true" @ref="_connectionTable" T="Connection" RowsPerPage="10">
                                 <HeaderContent>
                                     <MudTh Class="rounded-tl py-2">
-                                        <MudTableSortLabel SortBy="new Func<Connection, object>(x => x.ServerName)">Server Name</MudTableSortLabel>
+                                        <MudTableSortLabel SortBy="new Func<Connection, object>(x => x.ServerName ?? x.InstanceIp)">Server Name</MudTableSortLabel>
                                     </MudTh>
                                     <MudTh>
                                         <MudTableSortLabel SortBy="new Func<Connection, object>(x => x.ServerGame)">Server Game</MudTableSortLabel>
@@ -318,14 +322,22 @@ else
 
     private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
+        var relativeUri = NavigationManager.ToBaseRelativePath(new Uri(e.Location).AbsoluteUri);
+
+        var uriParts = relativeUri.Split('/');
+        if (uriParts.Length < 2 || uriParts[0] != "Players") return;
+
+        Identity = uriParts[1];
+        if (string.IsNullOrEmpty(Identity)) return;
+
         _loading = true;
-        Identity = e.Location.Split('/').Last();
         await LoadProfile();
         StateHasChanged();
     }
 
     private async Task LoadProfile()
     {
+        if (string.IsNullOrEmpty(Identity)) return;
         _entity = await PlayerProfileService.GetProfileAsync(Identity!);
         _connections = (await PlayerProfileService.GetConnectionsAsync(Identity!)).ToList();
         _notes = (await NoteService.GetNotesAsync(Identity!)).ToList();
@@ -353,15 +365,21 @@ else
         };
 
         var options = new DialogOptions {CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Medium, CloseOnEscapeKey = true};
-        var title = $"{tableRowClickEventArgs.Item.PenaltyType} - {_entity.UserName} - {tableRowClickEventArgs.Item.Submitted.Humanize().Titleize()}";
+        var title = $"{tableRowClickEventArgs.Item.PenaltyType} - {_entity?.UserName} - {tableRowClickEventArgs.Item.Submitted.Humanize().Titleize()}";
 
         var dialog = await DialogService.ShowAsync<ProfilePenaltyDialog>(title, parameters, options);
         var result = await dialog.Result;
 
-        if (result?.Data is Penalty penalty)
+        switch (result?.Data)
         {
-            _penalties?.Remove(penalty);
-            StateHasChanged();
+            case Penalty penalty:
+                _penalties?.Remove(penalty);
+                StateHasChanged();
+                break;
+            case AddPlayerPenaltyEvidenceCommand:
+                _penalties = (await PenaltyService.GetProfilePenaltiesAsync(Identity!)).ToList();
+                StateHasChanged();
+                break;
         }
     }
 
@@ -390,14 +408,19 @@ else
     {
         var parameters = new DialogParameters
         {
-            {"Identity", _entity.Identity}
+            {"Identity", _entity?.Identity}
         };
 
         var options = new DialogOptions {CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Medium, CloseOnEscapeKey = true};
-        await DialogService.ShowAsync<ProfileAddNoteDialog>("Add Note?", parameters, options);
+        var result = await DialogService.ShowAsync<ProfileAddNoteDialog>("Add Note?", parameters, options);
+        await result.Result;
         _notes = (await NoteService.GetNotesAsync(Identity!)).ToList();
         StateHasChanged();
     }
-}
 
+    public ValueTask DisposeAsync()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        return ValueTask.CompletedTask;
+    }
 }

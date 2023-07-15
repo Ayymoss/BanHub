@@ -1,26 +1,26 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Shared.Commands.Penalty;
-using BanHubData.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Handlers.Web.Penalty;
 
-public class GetProfilePenaltiesHandler : IRequestHandler<GetProfilePenaltiesCommand, IEnumerable<Shared.Models.PlayerProfileView.Penalty>>
+public class GetInstancePenaltiesHandler : IRequestHandler<GetInstancePenaltiesCommand,
+    IEnumerable<Shared.Models.InstanceProfileView.Penalty>>
 {
     private readonly DataContext _context;
 
-    public GetProfilePenaltiesHandler(DataContext context)
+    public GetInstancePenaltiesHandler(DataContext context)
     {
         _context = context;
     }
 
-    public async Task<IEnumerable<Shared.Models.PlayerProfileView.Penalty>> Handle(GetProfilePenaltiesCommand request,
+    public async Task<IEnumerable<Shared.Models.InstanceProfileView.Penalty>> Handle(GetInstancePenaltiesCommand request,
         CancellationToken cancellationToken)
     {
         var results = await _context.Penalties
-            .Where(x => x.Target.Identity == request.Identity)
-            .Select(x => new Shared.Models.PlayerProfileView.Penalty
+            .Where(x => x.Instance.InstanceGuid == request.Identity)
+            .Select(x => new Shared.Models.InstanceProfileView.Penalty
             {
                 PenaltyGuid = x.PenaltyGuid,
                 AdminUserName = x.Admin.CurrentAlias.Alias.UserName,
@@ -30,7 +30,7 @@ public class GetProfilePenaltiesHandler : IRequestHandler<GetProfilePenaltiesCom
                         ? "Automated Detection"
                         : x.Reason,
                 Evidence = x.Evidence,
-                InstanceName = x.Instance.InstanceName,
+                TargetUserName = x.Target.CurrentAlias.Alias.UserName,
                 InstanceGuid = x.Instance.InstanceGuid,
                 Duration = x.Duration,
                 PenaltyType = x.PenaltyType,

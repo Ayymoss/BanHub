@@ -35,7 +35,7 @@ public class PlayerController : ControllerBase
     }
 
     [HttpGet("Profile/{identity}")]
-    public async Task<ActionResult<Player>> GetProfileAsync([FromQuery] string identity)
+    public async Task<ActionResult<Player>> GetProfileAsync([FromRoute] string identity)
     {
         var result = await _mediator.Send(new GetProfileCommand {Identity = identity});
         if (result is null) return NotFound();
@@ -58,7 +58,7 @@ public class PlayerController : ControllerBase
     }
     
     [HttpGet("Profile/Connections/{identity}")]
-    public async Task<ActionResult<IEnumerable<Shared.Models.PlayerProfileView.Connection>>> GetProfileConnectionsAsync([FromQuery] string identity)
+    public async Task<ActionResult<IEnumerable<Shared.Models.PlayerProfileView.Connection>>> GetProfileConnectionsAsync([FromRoute] string identity)
     {
         var result = await _mediator.Send(new GetProfileConnectionsCommand {Identity = identity});
         return Ok(result);

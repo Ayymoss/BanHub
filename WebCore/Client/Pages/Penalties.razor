@@ -16,7 +16,7 @@
 </MudPaper>
 <MudTable Striped="true" HeaderClass="mud-theme-info-darken" Outlined="false" Bordered="false"
           ServerData="@(new Func<TableState, Task<TableData<Penalty>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true"
-          Hover="true" @ref="_table">
+          @ref="_table">
     <HeaderContent>
         <MudTh Class="py-2">
             <MudTableSortLabel SortLabel="Id" T="Penalty">ID</MudTableSortLabel>
@@ -40,7 +40,7 @@
             <MudTableSortLabel SortLabel="Scope" T="Penalty">Scope</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Instance" T="Penalty">Instance</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Instance" T="Penalty">Community</MudTableSortLabel>
         </MudTh>
         <MudTh>
             <MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="Submitted" T="Penalty">Submitted</MudTableSortLabel>

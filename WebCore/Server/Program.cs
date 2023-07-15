@@ -6,45 +6,9 @@ using BanHub.WebCore.Server.SignalR;
 using BanHub.WebCore.Server.Utilities;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
-
-/*
 // TODO: LOGGING!!!!
-
-Web [Post("/Instance/Instances")]
-Web [Get("/Instance/{identity}")]
-Plugin [Get("/Instance/Active/{identity}")]
-Plugin [Post("/Instance")]
-
-Plugin [Post("/HeartBeat/Instance")]
-Plugin [Post("/HeartBeat/Players")]
-
-Web [Post("/Note")]
-Web [Delete("/Note")]
-Web [Get("/Note/{identity}")]
-
-Web [Delete("/Penalty/Delete")]
-Web [Get("/Penalty/Penalties/{identity}")]
-Web [Post("/Penalty/Penalties")]
-Web [Get("/Penalty/Latest")]
-Plugin [Post("/Penalty")]
-Plugin [Patch("/Penalty/Evidence")]
-
-Web [Get("/Player/Profile/{identity}")]
-Web [Get("/Player/Profile/Connections/{identity}")]
-Web [Post("/Player/Players")]
-Plugin [Post("/Player")]
-Plugin [Post("/Player/IsBanned")]
-Plugin [Post("/Player/GetToken")]
-
-Web [Get("/Search/{query}")]
-
-Web [Get("/Instance/Profile/Servers/{identity}")]
-Plugin [Post("/Server")]
-
-Web [Get("/Statistic")]
-
- */
 
 SetupConfiguration.InitConfigurationAsync();
 var configuration = SetupConfiguration.ReadConfiguration();
@@ -74,10 +38,10 @@ builder.Services.AddSingleton<ApiKeyCache>();
 builder.Services.AddSingleton<SignedInUsers>();
 builder.Services.AddSingleton<PluginAuthentication>();
 builder.Services.AddSingleton<StatisticsTracking>();
+builder.Services.AddSingleton(new DiscordWebhookService(configuration));
 
 builder.Services.AddTransient<ApiKeyMiddleware>();
 
-builder.Services.AddScoped<IDiscordWebhookService, DiscordWebhookService>();
 builder.Services.AddScoped<IStatisticService, StatisticService>();
 
 // Add services to the container.
@@ -85,9 +49,12 @@ builder.Services.AddLogging();
 builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(genOptions =>
+{
+    genOptions.SwaggerDoc("v1", new OpenApiInfo {Title = "BanHub API", Version = "v1"});
+    genOptions.CustomSchemaIds(type => type.FullName);
+});
 builder.Services.AddMediatR(cfg => { cfg.RegisterServicesFromAssembly(typeof(Program).Assembly); });
-
 
 builder.Logging.ClearProviders().AddConsole();
 

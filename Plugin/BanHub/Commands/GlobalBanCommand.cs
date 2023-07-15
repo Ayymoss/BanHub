@@ -47,25 +47,26 @@ public class GlobalBanCommand : Command
             return;
         }
 
-        if (gameEvent.Target.ClientId == 1)
+        if (gameEvent.Target.ClientId is 1)
         {
             gameEvent.Origin.Tell(_bhConfig.Translations.CannotTargetServer);
             return;
         }
 
         var result = await _endpointManager
-            .NewPenalty(PenaltyType.Ban.ToString(), gameEvent.Origin, gameEvent.Target, gameEvent.Data, scope: PenaltyScope.Global);
+            .AddPlayerPenaltyAsync(PenaltyType.Ban.ToString(), gameEvent.Origin, gameEvent.Target, gameEvent.Data,
+                scope: PenaltyScope.Global);
 
-        switch (result.Item1)
+        if (!result.Item1)
         {
-            case true:
-                gameEvent.Origin.Tell(_bhConfig.Translations.GlobalBanCommandSuccess.FormatExt(gameEvent.Target.CleanedName, gameEvent.Data, result.Item2));
-                gameEvent.Origin.Tell(_bhConfig.Translations.GlobalBanCommandSuccessFollow);
-                gameEvent.Target.Ban("^1Globally banned!^7\nBanHub.gg", SharedLibraryCore.Utilities.IW4MAdminClient(gameEvent.Target.CurrentServer), false);
-                break;
-            case false:
-                gameEvent.Origin.Tell(_bhConfig.Translations.GlobalBanCommandFail);
-                break;
+            gameEvent.Origin.Tell(_bhConfig.Translations.GlobalBanCommandFail);
+            return;
         }
+
+        gameEvent.Origin.Tell(_bhConfig.Translations.GlobalBanCommandSuccess
+            .FormatExt(gameEvent.Target.CleanedName, gameEvent.Data, result.Item2));
+        gameEvent.Origin.Tell(_bhConfig.Translations.GlobalBanCommandSuccessFollow);
+        gameEvent.Target.Ban("^1Globally banned!^7\nBanHub.gg",
+            SharedLibraryCore.Utilities.IW4MAdminClient(gameEvent.Target.CurrentServer), false);
     }
 }

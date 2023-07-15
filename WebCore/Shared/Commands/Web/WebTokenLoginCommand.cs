@@ -13,5 +13,4 @@ public class WebTokenLoginCommandResponse
 {
     public ControllerEnums.ReturnState ReturnState { get; set; }
     public ClaimsIdentity? ClaimsIdentity { get; set; }
-    public object? AuthenticationProperties { get; set; }
 }

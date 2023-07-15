@@ -9,8 +9,11 @@ public interface IInstanceService
     Task<HttpResponseMessage> GetInstancesPaginationAsync([Body] GetInstancesPaginationCommand penaltiesPaginationQuery);
 
     [Get("/Instance/{identity}")]
-    Task<HttpResponseMessage> GetInstanceAsync([Query("identity")] string identity);
+    Task<HttpResponseMessage> GetInstanceAsync([Path("identity")] string identity);
 
     [Get("/Instance/Profile/Servers/{identity}")]
-    Task<HttpResponseMessage> GetInstanceServersAsync([Query("identity")] string identity);
+    Task<HttpResponseMessage> GetInstanceProfileServersAsync([Path("identity")] string identity);
+
+    [Patch("/Instance/Activation/{identity}")]
+    Task<HttpResponseMessage> ToggleInstanceActivationAsync([Path("identity")] string identity);
 }

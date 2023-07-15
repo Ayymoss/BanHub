@@ -16,11 +16,11 @@ public class GetInstanceHandler : IRequestHandler<GetInstanceCommand, BanHub.Web
 
     public async Task<Shared.Models.InstanceProfileView.Instance?> Handle(GetInstanceCommand request, CancellationToken cancellationToken)
     {
-        var guidParse = Guid.TryParse(request.InstanceGuid, out var guidResult);
-        if (!guidParse) return null;
+        var serverCount = await _context.Servers
+            .CountAsync(x => x.Instance.InstanceGuid == request.InstanceGuid, cancellationToken: cancellationToken);
 
         var result = await _context.Instances
-            .Where(x => x.InstanceGuid == guidResult)
+            .Where(x => x.InstanceGuid == request.InstanceGuid)
             .Select(x => new Shared.Models.InstanceProfileView.Instance
             {
                 InstanceGuid = x.InstanceGuid,
@@ -30,7 +30,8 @@ public class GetInstanceHandler : IRequestHandler<GetInstanceCommand, BanHub.Web
                 Socials = x.Socials,
                 Active = x.Active,
                 HeartBeat = x.HeartBeat,
-                Created = x.Created
+                Created = x.Created,
+                ServerCount = serverCount,
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         return result;

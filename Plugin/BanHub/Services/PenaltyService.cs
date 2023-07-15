@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 using BanHub.Commands;
 using BanHub.Configuration;
 using BanHub.Interfaces;
@@ -37,7 +38,7 @@ public class PenaltyService
         _api = RestClient.For<IPenaltyService>(ApiHost);
     }
 
-    public async Task<(bool, Guid?)> PostPenalty(AddPlayerPenaltyCommand penalty)
+    public async Task<(bool, Guid?)> AddPlayerPenaltyAsync(AddPlayerPenaltyCommand penalty)
     {
         try
         {
@@ -47,7 +48,7 @@ public class PenaltyService
                 var preGuid = await response.Content.ReadAsStringAsync();
                 var parsedState = Guid.TryParse(preGuid.Replace("\"", ""), out var guid);
 
-                if ((!response.IsSuccessStatusCode && _banHubConfiguration.DebugMode) || !parsedState)
+                if (response.StatusCode is HttpStatusCode.BadRequest && _banHubConfiguration.DebugMode)
                 {
                     Console.WriteLine($"\n[{BanHubConfiguration.Name}] Error posting penalty {penalty.Reason}\n" +
                                       $"SC: {response.StatusCode}\n" +

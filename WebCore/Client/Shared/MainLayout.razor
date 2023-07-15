@@ -1,4 +1,4 @@
-﻿@inject HttpClient Http
+﻿@inject StatisticService StatisticService
 @inherits LayoutComponentBase
 @implements IAsyncDisposable
 
@@ -25,7 +25,7 @@
             </MudHidden>
             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="true" Class="d-flex align-center">
                 <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Person" Color="Color.Info">Online &bull; @_online</MudChip>
-                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Block" Color="Color.Error">Day Global Bans &bull; @_bans</MudChip>
+                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Block" Color="Color.Error">7d Global Bans &bull; @_bans</MudChip>
             </MudHidden>
             <MudSpacer/>
             <MudIconButton Icon="@Icons.Custom.Brands.Discord" Color="Color.Inherit" Link="https://discord.gg/Arruj6DWvp" Target="_blank"/>
@@ -73,10 +73,9 @@
         };
         _activeUserCount = ActiveUserService.ActiveUsers;
 
-        var statistic = await Http.GetFromJsonAsync<Statistic>("/api/Statistic");
-        if (statistic is null) return;
-        _online = statistic.OnlineCount;
-        _bans = statistic.BanCount;
+        var statistics = await StatisticService.GetStatisticAsync();
+        _online = statistics.OnlineCount;
+        _bans = statistics.BanCount;
 
         await base.OnInitializedAsync();
     }

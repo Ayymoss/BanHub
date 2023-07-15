@@ -1,6 +1,9 @@
 ﻿@page "/Communities/{Identity}"
 @using Server = BanHub.WebCore.Shared.Models.InstanceProfileView.Server
 @inject InstanceService InstanceService
+@inject ISnackbar SnackbarService
+@inject PenaltyService PenaltyService
+@inject IDialogService DialogService
 
 <PageTitle>@_title | Community | Ban Hub</PageTitle>
 
@@ -34,26 +37,27 @@ else
                 </MudElement>
                 <MudSpacer/>
                 <MudElement>
-                    @if (_instance.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
-                    {
-                        <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Info">Connected</MudChip>
-                    }
-                    else
-                    {
-                        <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Warning">Disconnected</MudChip>
-                    }
-                    @if (_instance.Active is true)
-                    {
-                        <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Info">Active</MudChip>
-                    }
-                    else
-                    {
-                        <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Error">Not Active</MudChip>
-                    }
+                    <MudChip Variant="Variant.Text" Size="Size.Large"
+                             Color="@(_instance.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow ? Color.Info : Color.Warning)">
+                        @(_instance.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow ? "Connected" : "Disconnected")
+                    </MudChip>
+                    <MudChip Variant="Variant.Text" Size="Size.Large"
+                             Color="@(_instance.Active ? Color.Info : Color.Error)">
+                        @(_instance.Active ? "Activated" : "Not Activated")
+                    </MudChip>
+                    <AuthorizeView Roles="WebSuperAdmin">
+                        <Authorized>
+                            <MudIconButton Icon="@(_instance.Active ? Icons.Material.Filled.RemoveModerator : Icons.Material.Filled.AddModerator)"
+                                           Title="@(_instance.Active ? "Deauthorise" : "Authorise")"
+                                           Color="@(_instance.Active ? Color.Warning : Color.Default)"
+                                           OnClick="AuthoriseInstanceAsync" Size="Size.Large" ButtonType="ButtonType.Button"
+                                           Class="ml-1" Variant="Variant.Filled"/>
+                        </Authorized>
+                    </AuthorizeView>
                 </MudElement>
             </MudElement>
             <MudElement Class="mt-4 d-flex flex-column">
-                <MudStack Row="true" Spacing="2">
+                <MudStack Row="true" Spacing="4">
                     <MudPaper Class="pa-4 d-flex flex-grow-1 flex-column">
                         <MudText Typo="Typo.h6" Class="mb-4">About</MudText>
                         <MudText>@_instance.About</MudText>
@@ -85,7 +89,7 @@ else
                         </MudItem>
                     </MudGrid>
                 </MudElement>
-    
+
                 <MudElement Class="mt-4">
                     <MudTabs Position="Position.Left" Elevation="2" Rounded="true" PanelClass="d-flex flex-column ml-4" SliderColor="Color.Info">
                         <MudTabPanel Text="Servers">
@@ -117,11 +121,69 @@ else
                                         <RowTemplate>
                                             <MudTd DataLabel="Name">@context.ServerName</MudTd>
                                             <MudTd DataLabel="IP">
-    
+
                                                 <MudText Typo="Typo.body2">@(context.ServerIp.IsInternal() ? _instance.InstanceIp : context.ServerIp):@context.ServerPort</MudText>
                                             </MudTd>
                                             <MudTd DataLabel="Game">@(context.ServerGame.GetGameName())</MudTd>
                                             <MudTd DataLabel="Updated">@context.Updated.Humanize()</MudTd>
+                                        </RowTemplate>
+                                        <PagerContent>
+                                            <MudTablePager/>
+                                        </PagerContent>
+                                    </MudTable>
+                                }
+                            </MudElement>
+                        </MudTabPanel>
+                        <MudTabPanel Text="Penalties">
+                            <MudElement Class="flex-grow-1 d-flex flex-column">
+                                @if (!_penalties.Any())
+                                {
+                                    <MudPaper Class="pa-4 flex-1 d-flex align-center justify-center">
+                                        <MudText Align="Align.Center" Class="mud-text-secondary" Typo="Typo.h6">The user has no penalties.</MudText>
+                                    </MudPaper>
+                                }
+                                else
+                                {
+                                    <MudTable Striped="true" HeaderClass="mud-theme-info-darken" Outlined="false" Bordered="false"
+                                              Items="@_penalties" Dense="true" @ref="_penaltyTable" OnRowClick="PenaltyRowClickEvent"
+                                              T="WebCore.Shared.Models.InstanceProfileView.Penalty" RowsPerPage="10">
+                                        <HeaderContent>
+                                            <MudTh Class="rounded-tl py-2">
+                                                <MudTableSortLabel SortBy="new Func<WebCore.Shared.Models.InstanceProfileView.Penalty, object>(x => x.TargetUserName)">Target</MudTableSortLabel>
+                                            </MudTh>
+                                            <MudTh>
+                                                <MudTableSortLabel SortBy="new Func<WebCore.Shared.Models.InstanceProfileView.Penalty, object>(x => x.AdminUserName)">Admin</MudTableSortLabel>
+                                            </MudTh>
+                                            <MudTh>
+                                                <MudTableSortLabel SortBy="new Func<WebCore.Shared.Models.InstanceProfileView.Penalty, object>(x => x.Reason)">Reason</MudTableSortLabel>
+                                            </MudTh>
+                                            <MudTh>
+                                                <MudTableSortLabel SortBy="new Func<WebCore.Shared.Models.InstanceProfileView.Penalty, object>(x => x.PenaltyType)">Type</MudTableSortLabel>
+                                            </MudTh>
+                                            <MudTh>
+                                                <MudTableSortLabel SortBy="new Func<WebCore.Shared.Models.InstanceProfileView.Penalty, object>(x => x.PenaltyScope)">Scope</MudTableSortLabel>
+                                            </MudTh>
+                                            <MudTh>
+                                                <MudTableSortLabel SortBy="new Func<WebCore.Shared.Models.InstanceProfileView.Penalty, object>(x => x.PenaltyStatus)">Status</MudTableSortLabel>
+                                            </MudTh>
+                                            <MudTh>
+                                                <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<WebCore.Shared.Models.InstanceProfileView.Penalty, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
+                                            </MudTh>
+                                            <MudTh Class="rounded-tr" Style="width: 100px;"/>
+                                        </HeaderContent>
+                                        <RowTemplate>
+                                            <MudTd DataLabel="Target">@context.TargetUserName</MudTd>
+                                            <MudTd DataLabel="Admin">@context.AdminUserName</MudTd>
+                                            <MudTd DataLabel="Reason">@context.Reason</MudTd>
+                                            <MudTd DataLabel="Type">@context.PenaltyType.ToString()</MudTd>
+                                            <MudTd DataLabel="Scope">@context.PenaltyScope.ToString()</MudTd>
+                                            <MudTd DataLabel="Scope">@context.PenaltyStatus.ToString()</MudTd>
+                                            <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
+                                            <MudTd DataLabel="View">
+                                                <MudChip Variant="Variant.Outlined" Size="Size.Small" Color="Color.Info">
+                                                    <MudIcon Icon="@Icons.Material.Filled.RemoveRedEye"/>
+                                                </MudChip>
+                                            </MudTd>
                                         </RowTemplate>
                                         <PagerContent>
                                             <MudTablePager/>
@@ -142,27 +204,87 @@ else
     [Parameter]
     public string? Identity { get; set; }
 
-    private WebCore.Shared.Models.InstanceProfileView.Instance? _instance;
+    private Instance? _instance;
     private IEnumerable<Server>? _instanceServers;
     private string _title = "Not Found";
     private bool _loading = true;
-    private MudTable<Server>? _serverTable;
     private bool _error;
+    private MudTable<Server>? _serverTable;
+    private List<WebCore.Shared.Models.InstanceProfileView.Penalty>? _penalties;
+    private MudTable<WebCore.Shared.Models.InstanceProfileView.Penalty>? _penaltyTable;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadInstanceAsync();
+    }
+
+    private async Task LoadInstanceAsync()
+    {
         if (string.IsNullOrEmpty(Identity))
         {
-            _title = "???";
+            _title = "Unknown Instance";
             _loading = false;
             _error = true;
             return;
         }
 
+        _penalties = (await PenaltyService.GetInstancePenaltiesAsync(Identity!)).ToList();
         _instance = await InstanceService.GetInstanceAsync(Identity);
-        _instanceServers = await InstanceService.GetInstanceServersAsync(Identity);
+        _instanceServers = await InstanceService.GetInstanceProfileServersAsync(Identity);
         _title = _instance.InstanceName ?? _instance.InstanceGuid.ToString();
         _loading = false;
+        StateHasChanged();
     }
 
+    private async Task AuthoriseInstanceAsync()
+    {
+        if (_instance is null || string.IsNullOrEmpty(Identity)) return;
+
+        var state = _instance.Active ? "deactivate" : "activate";
+        var result = await InstanceService.ToggleInstanceActivationAsync(Identity);
+        if (!result)
+        {
+            SnackbarService.Add($"Failed to {state} instance!", Severity.Error);
+            return;
+        }
+
+        await LoadInstanceAsync();
+        SnackbarService.Add($"Success! Instance has been {state}d!", Severity.Success);
+    }
+
+    private async Task PenaltyRowClickEvent(TableRowClickEventArgs<WebCore.Shared.Models.InstanceProfileView.Penalty> clickArg)
+    {
+        if (_instance is null) return;
+        var convertedPenalty = new BanHub.WebCore.Shared.Models.PlayerProfileView.Penalty
+        {
+            PenaltyGuid = clickArg.Item.PenaltyGuid,
+            AdminUserName = clickArg.Item.AdminUserName,
+            Reason = clickArg.Item.Reason,
+            Evidence = clickArg.Item.Evidence,
+            InstanceName = _instance.InstanceName,
+            InstanceGuid = _instance.InstanceGuid,
+            Duration = clickArg.Item.Duration,
+            PenaltyType = clickArg.Item.PenaltyType,
+            PenaltyScope = clickArg.Item.PenaltyScope,
+            PenaltyStatus = clickArg.Item.PenaltyStatus,
+            Submitted = clickArg.Item.Submitted
+        };
+
+        var parameters = new DialogParameters
+        {
+            {"Penalty", convertedPenalty}
+        };
+
+        var options = new DialogOptions {CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Medium, CloseOnEscapeKey = true};
+        var title = $"{clickArg.Item.PenaltyType} - {clickArg.Item.TargetUserName} - {clickArg.Item.Submitted.Humanize().Titleize()}";
+
+        var dialog = await DialogService.ShowAsync<ProfilePenaltyDialog>(title, parameters, options);
+        var result = await dialog.Result;
+
+        if (result?.Data is BanHub.WebCore.Shared.Models.PlayerProfileView.Penalty penalty)
+        {
+            _penalties?.Remove(clickArg.Item);
+            StateHasChanged();
+        }
+    }
 }

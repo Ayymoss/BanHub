@@ -5,8 +5,8 @@ namespace BanHub.WebCore.Client.Interfaces.RestEase.Pages;
 public interface IPlayerProfileService
 {
     [Get("/Player/Profile/{identity}")]
-    Task<HttpResponseMessage> GetProfileAsync([Query("identity")] string identity);
+    Task<HttpResponseMessage> GetProfileAsync([Path("identity")] string identity);
 
     [Get("/Player/Profile/Connections/{identity}")]
-    Task<HttpResponseMessage> GetProfileConnectionsAsync([Query("identity")] string identity);
+    Task<HttpResponseMessage> GetProfileConnectionsAsync([Path("identity")] string identity);
 }

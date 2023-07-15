@@ -29,19 +29,16 @@ public class AuthController : ControllerBase
         if (result.ReturnState is not ControllerEnums.ReturnState.Ok) return Unauthorized("Token or User is invalid.");
 
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-            new ClaimsPrincipal(result.ClaimsIdentity!), result.AuthenticationProperties as AuthenticationProperties);
+            new ClaimsPrincipal(result.ClaimsIdentity!), new AuthenticationProperties());
         return Ok("Success");
     }
 
     [HttpGet("Profile"), Authorize]
     public async Task<ActionResult<WebUser>> UserProfileAsync()
     {
-        var userId = HttpContext.User.Claims
-            .Where(x => x.Type == "UserId")
-            .Select(f => Convert.ToInt32(f.Value))
-            .First();
-
-        var result = await _mediator.Send(new GetUserProfileCommand {UserId = userId});
+        var signedInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
+        if (signedInGuid is null) return Unauthorized("You are not authorised to perform this action");
+        var result = await _mediator.Send(new GetUserProfileCommand {SignedInGuid = signedInGuid});
         if (result is null) return BadRequest("User is invalid.");
         return Ok(result);
     }

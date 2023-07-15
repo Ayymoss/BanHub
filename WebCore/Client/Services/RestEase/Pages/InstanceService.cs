@@ -53,11 +53,11 @@ public class InstanceService
         return new BanHub.WebCore.Shared.Models.InstanceProfileView.Instance();
     }
     
-    public async Task<IEnumerable<Server>> GetInstanceServersAsync(string identity)
+    public async Task<IEnumerable<Server>> GetInstanceProfileServersAsync(string identity)
     {
         try
         {
-            var response = await _api.GetInstanceServersAsync(identity);
+            var response = await _api.GetInstanceProfileServersAsync(identity);
             var result = await response.DeserializeHttpResponseContentAsync<IEnumerable<Server>>();
             return result ?? new List<Server>();
         }
@@ -67,5 +67,20 @@ public class InstanceService
         }
 
         return new List<Server>();
+    }
+    
+    public async Task<bool> ToggleInstanceActivationAsync(string identity)
+    {
+        try
+        {
+            var response = await _api.ToggleInstanceActivationAsync(identity);
+            return response.IsSuccessStatusCode;
+        }
+        catch (ApiException e)
+        {
+            Console.WriteLine($"API->Failed to toggle instance activation: {e.Message}");
+        }
+
+        return false;
     }
 }

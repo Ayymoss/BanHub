@@ -80,7 +80,7 @@ public class PlayerService
         return null;
     }
 
-    public async Task<string?> UpdateEntityAsync(CreateOrUpdatePlayerCommand player)
+    public async Task<string?> CreateOrUpdatePlayerAsync(CreateOrUpdatePlayerCommand player)
     {
         try
         {

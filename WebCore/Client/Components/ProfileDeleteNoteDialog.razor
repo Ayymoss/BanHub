@@ -8,8 +8,8 @@
         <MudElement Class="d-flex flex-column">
             <MudText Typo="Typo.subtitle1">You're about to delete this note</MudText>
             <MudText Class="mud-text-secondary" Typo="Typo.subtitle2">@Note.Message by @Note.AdminUserName</MudText>
-            <MudTextField @bind-Value="_deletionReason" AutoFocus="false" Immediate="true" MaxLength="32" Label="Reason"
-                          Variant="Variant.Text" Counter="32" AdornmentIcon="@Icons.Material.Filled.Warning" Adornment="Adornment.End"/>
+            <MudTextField @bind-Value="_deletionReason" AutoFocus="false" Immediate="true" MaxLength="64" Label="Reason"
+                          Variant="Variant.Text" Counter="64" AdornmentIcon="@Icons.Material.Filled.Warning" Adornment="Adornment.End"/>
         </MudElement>
         <MudElement Class="d-flex flex-column mb-3">
             <MudDivider FlexItem="true" DividerType="DividerType.Inset" Class="mx-n6 mb-4 mt-8"/>
@@ -59,7 +59,11 @@
             return;
         }
 
-        var request = await NoteService.DeleteNoteAsync(new DeleteNoteCommand() {DeletionReason = _deletionReason, NoteGuid = Note.NoteGuid});
+        var request = await NoteService.DeleteNoteAsync(new DeleteNoteCommand
+        {
+            ActionDeletionReason = _deletionReason, 
+            NoteGuid = Note.NoteGuid
+        });
         if (!request)
         {
             SnackbarService.Add("Failed to delete note!", Severity.Error);

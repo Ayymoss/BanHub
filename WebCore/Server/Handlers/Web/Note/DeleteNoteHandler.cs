@@ -1,4 +1,5 @@
 ﻿using BanHub.WebCore.Server.Context;
+using BanHub.WebCore.Server.Events.DiscordWebhook;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Shared.Commands.PlayerProfile;
 using MediatR;
@@ -9,12 +10,10 @@ namespace BanHub.WebCore.Server.Handlers.Web.Note;
 public class DeleteNoteHandler : IRequestHandler<DeleteNoteCommand, bool>
 {
     private readonly DataContext _context;
-    private readonly IDiscordWebhookService _discordWebhook;
 
-    public DeleteNoteHandler(DataContext context, IDiscordWebhookService discordWebhook)
+    public DeleteNoteHandler(DataContext context)
     {
         _context = context;
-        _discordWebhook = discordWebhook;
     }
     public async Task<bool> Handle(DeleteNoteCommand request, CancellationToken cancellationToken)
     {
@@ -33,18 +32,22 @@ public class DeleteNoteHandler : IRequestHandler<DeleteNoteCommand, bool>
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         var message = noteInfo is null
-            ? $"Penalty **{note.NoteGuid}** was deleted by **{request.AdminUserName}** but no information could be found."
-            : $"**Penalty**: {noteInfo.NoteGuid}\n" +
+            ? $"Note **{note.NoteGuid}** was deleted by **{request.ActionAdminUserName}** but no information could be found."
+            : $"**Note**: {noteInfo.NoteGuid}\n" +
               $"**Admin**: {noteInfo.AdminIdentity}\n" +
               $"**Target**: {noteInfo.TargetIdentity}\n" +
               $"**Note**: {noteInfo.Message}\n" +
               $"**Was Public?**: {(!noteInfo.IsPrivate ? "Yes" : "No")}\n\n" +
-              $"**Deleted By**: {request.AdminUserName}\n" +
-              $"**Deleted For**: {request.DeletionReason}";
+              $"**Deleted By**: {request.ActionAdminUserName} ({request.ActionAdminIdentity})\n" +
+              $"**Deleted For**: {request.ActionDeletionReason}";
 
         _context.Notes.Remove(note);
         await _context.SaveChangesAsync(cancellationToken);
-        await _discordWebhook.CreateAdminActionHookAsync("Note Deletion!", message);
+        IDiscordWebhookSubscriptions.InvokeEvent(new CreateAdminActionEvent
+        {
+            Title = "Note Deletion!",
+            Message = message
+        }, cancellationToken);
         return true;
     }
 }

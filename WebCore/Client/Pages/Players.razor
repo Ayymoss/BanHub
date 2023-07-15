@@ -15,7 +15,7 @@
 </MudPaper>
 <MudTable Striped="true" HeaderClass="mud-theme-info-darken" Outlined="false" Bordered="false"
           ServerData="@(new Func<TableState, Task<TableData<Player>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true"
-          Hover="true" @ref="_table">
+          @ref="_table">
     <HeaderContent>
         <MudTh Class="py-2">
             <MudTableSortLabel SortLabel="Id" T="Player">ID</MudTableSortLabel>

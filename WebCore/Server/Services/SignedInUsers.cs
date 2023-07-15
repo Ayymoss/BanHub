@@ -28,4 +28,5 @@ public class SignedInUsers
     }
 
     public bool IsUserSignedIn(string signedInGuid) => _users.ContainsKey(signedInGuid);
+    public WebUser? GetSignedInUser(string signedInGuid) => !_users.TryGetValue(signedInGuid, out var profile) ? null : profile;
 }

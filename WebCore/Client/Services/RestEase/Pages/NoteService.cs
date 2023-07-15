@@ -19,7 +19,7 @@ public class NoteService
     {
         _api = RestClient.For<INoteService>(ApiHost);
     }
-    
+
     public async Task<bool> AddNoteAsync(AddNoteCommand noteToAdd)
     {
         try
@@ -34,6 +34,7 @@ public class NoteService
 
         return false;
     }
+
     public async Task<bool> DeleteNoteAsync(DeleteNoteCommand noteToRemove)
     {
         try
@@ -48,7 +49,7 @@ public class NoteService
 
         return false;
     }
-    
+
     public async Task<IEnumerable<Note>> GetNotesAsync(string identity)
     {
         try
@@ -64,5 +65,4 @@ public class NoteService
 
         return new List<Note>();
     }
-    
 }

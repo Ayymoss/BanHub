@@ -38,15 +38,12 @@ public class EndpointManager
         _logger = logger;
     }
 
-    public async Task<bool> UpdateInstance(CreateOrUpdateInstanceCommand instance) => await _instance.PostInstance(instance);
+    public async Task<bool> CreateOrUpdateInstanceAsync(CreateOrUpdateInstanceCommand instance) =>
+        await _instance.CreateOrUpdateInstanceAsync(instance);
 
     public async Task<bool> IsInstanceActive(Guid guid) => await _instance.IsInstanceActive(guid.ToString());
 
-    private string EntityToPlayerIdentity(EFClient client)
-    {
-        var identity = $"{client.GuidString}:{client.GameName.ToString()}";
-        return identity;
-    }
+    private static string EntityToPlayerIdentity(EFClient client) => $"{client.GuidString}:{client.GameName.ToString()}";
 
     public async Task OnStart(CreateOrUpdateServerCommand server)
     {
@@ -59,11 +56,31 @@ public class EndpointManager
         // We don't want to act on anything if they're not authenticated
         if (!_instanceSlim.Active) return;
 
+        var result = await CreateOrUpdatePlayerAsync(player);
+        if (!result.Success) return;
+
+        var isBanned = await _player.IsPlayerBannedAsync(new IsPlayerBannedCommand
+        {
+            Identity = result.Identity,
+            IpAddress = player.IPAddressString
+        });
+
+        if (isBanned)
+        {
+            ProcessPlayer(player);
+            return;
+        }
+
+        Profiles.TryAdd(player, result.Identity);
+    }
+
+    private async Task<(bool Success, string Identity)> CreateOrUpdatePlayerAsync(EFClient player)
+    {
         var createOrUpdate = new CreateOrUpdatePlayerCommand
         {
             PlayerIdentity = $"{player.GuidString}:{player.GameName.ToString()}",
             PlayerAliasUserName = player.CleanedName,
-            PlayerAliasIpAddress = player.IPAddressString,
+            PlayerAliasIpAddress = player.ClientId is not 0 ? player.IPAddressString : "0.0.0.0",
             PlayerInstanceRole = player.ClientPermission.Level switch
             {
                 Data.Models.Client.EFClient.Permission.Trusted => InstanceRole.InstanceTrusted,
@@ -74,31 +91,16 @@ public class EndpointManager
                 _ => InstanceRole.InstanceUser
             },
             InstanceGuid = _instanceSlim.InstanceGuid,
-            ServerId = player.CurrentServer.Id
+            ServerId = player.CurrentServer?.Id
         };
 
-        if (await _player.UpdateEntityAsync(createOrUpdate) is not { } identity)
-        {
-            _logger.LogError("Failed to update entity {Identity}", createOrUpdate.PlayerIdentity);
-            return;
-        }
+        if (await _player.CreateOrUpdatePlayerAsync(createOrUpdate) is { } identity) return (true, identity);
 
-        var isBanned = await _player.IsPlayerBannedAsync(new IsPlayerBannedCommand
-        {
-            Identity = identity,
-            IpAddress = player.IPAddressString
-        });
-
-        if (isBanned)
-        {
-            ProcessEntity(player);
-            return;
-        }
-
-        Profiles.TryAdd(player, identity);
+        _logger.LogError("Failed to update entity {Identity}", createOrUpdate.PlayerIdentity);
+        return (false, string.Empty);
     }
 
-    private void ProcessEntity(EFClient client)
+    private void ProcessPlayer(EFClient client)
     {
         client.Kick("^1Globally banned!^7\nBanHub.gg",
             SharedLibraryCore.Utilities.IW4MAdminClient(client.CurrentServer));
@@ -117,9 +119,13 @@ public class EndpointManager
         _logger.LogError("Failed to remove {Name} from profiles", client.CleanedName);
     }
 
-    public async Task<(bool, Guid?)> NewPenalty(string sourcePenaltyType, EFClient origin, EFClient target,
-        string reason, TimeSpan? duration = null, PenaltyScope? scope = null, string? evidence = null)
+    public async Task<(bool, Guid?)> AddPlayerPenaltyAsync(string sourcePenaltyType, EFClient origin, EFClient target,
+        string reason, TimeSpan? duration = null, PenaltyScope? scope = null)
     {
+        var adminIdentity = await CreateOrUpdatePlayerAsync(origin);
+        var targetIdentity = await CreateOrUpdatePlayerAsync(target);
+        if (!adminIdentity.Success || !targetIdentity.Success) return (false, null);
+
         var parsedPenaltyType = Enum.TryParse<PenaltyType>(sourcePenaltyType, out var penaltyType);
         if (!parsedPenaltyType || !Plugin.InstanceActive) return (false, null);
         if (penaltyType is not PenaltyType.Ban && origin.ClientId is 1) return (false, null);
@@ -132,21 +138,18 @@ public class EndpointManager
             globalAntiCheatBan = Regex.IsMatch(antiCheatReason, regex);
         }
 
-        var adminIdentity = EntityToPlayerIdentity(origin);
-        var targetIdentity = EntityToPlayerIdentity(target);
-
         var penaltyDto = new AddPlayerPenaltyCommand
         {
             PenaltyType = penaltyType,
             PenaltyScope = globalAntiCheatBan ? PenaltyScope.Global : scope ?? PenaltyScope.Local,
-            Reason = globalAntiCheatBan ? "AntiCheat Detection" : reason,
+            Reason = globalAntiCheatBan ? antiCheatReason ?? "AntiCheat Detection" : reason,
             Automated = globalAntiCheatBan,
-            Duration = duration is not null && duration.Value.TotalSeconds > 1 ? duration : null,
+            Duration = duration,
             InstanceGuid = _instanceSlim.InstanceGuid,
-            AdminIdentity = adminIdentity,
-            TargetIdentity = targetIdentity
+            AdminIdentity = adminIdentity.Identity,
+            TargetIdentity = targetIdentity.Identity
         };
-        var result = await _penalty.PostPenalty(penaltyDto);
+        var result = await _penalty.AddPlayerPenaltyAsync(penaltyDto);
 
         if (_banHubConfiguration.PrintPenaltyToConsole)
         {
@@ -159,17 +162,19 @@ public class EndpointManager
         return result;
     }
 
-    public async Task<bool> SubmitInformation(Guid guid, string evidence)
+    public async Task<bool> AddPlayerPenaltyEvidenceAsync(Guid guid, string evidence, EFClient sender)
     {
         var penalty = new AddPlayerPenaltyEvidenceCommand
         {
             PenaltyGuid = guid,
-            Evidence = evidence
+            Evidence = evidence,
+            ActionAdminIdentity = EntityToPlayerIdentity(sender),
+            ActionAdminUserName = sender.CleanedName
         };
         return await _penalty.SubmitEvidence(penalty);
     }
 
-    public async Task<string?> GenerateToken(EFClient client)
+    public async Task<string?> GetTokenAsync(EFClient client)
     {
         var identity = EntityToPlayerIdentity(client);
         return await _player.GetTokenAsync(new GetPlayerTokenCommand {Identity = identity});

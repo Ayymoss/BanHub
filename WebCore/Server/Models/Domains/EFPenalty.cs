@@ -59,7 +59,7 @@ public class EFPenalty
     /// <summary>
     /// Penalty's identifiers
     /// </summary>
-    public EFPenaltyIdentifier Identifier { get; set; } = null!;
+    public EFPenaltyIdentifier? Identifier { get; set; } = null!;
 
     /// <summary>
     /// The admin GUID who issued the infraction

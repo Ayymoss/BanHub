@@ -7,7 +7,8 @@ using MudBlazor;
 
 namespace BanHub.WebCore.Server.Handlers.Web.Penalty;
 
-public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginationCommand, IEnumerable<Shared.Models.PenaltiesView.Penalty>>
+public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginationCommand,
+    IEnumerable<Shared.Models.PenaltiesView.Penalty>>
 {
     private readonly DataContext _context;
 
@@ -62,12 +63,17 @@ public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginat
                 Submitted = penalty.Submitted,
                 AdminIdentity = penalty.Admin.Identity,
                 AdminUserName = penalty.Admin.CurrentAlias.Alias.UserName,
-                Reason = penalty.Reason,
+                Reason = request.Privileged && penalty.Automated
+                    ? penalty.Reason
+                    : penalty.Automated
+                        ? "Automated Detection"
+                        : penalty.Reason,
                 Evidence = penalty.Evidence,
                 Duration = penalty.Duration,
                 InstanceGuid = penalty.Instance.InstanceGuid,
                 TargetIdentity = penalty.Target.Identity,
-                TargetUserName = penalty.Target.CurrentAlias.Alias.UserName
+                TargetUserName = penalty.Target.CurrentAlias.Alias.UserName,
+                InstanceName = penalty.Instance.InstanceName
             }).ToListAsync(cancellationToken: cancellationToken);
 
         return pagedData;

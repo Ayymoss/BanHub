@@ -36,7 +36,7 @@ public class InstanceService
         _api = RestClient.For<IInstanceService>(ApiHost);
     }
 
-    public async Task<bool> PostInstance(CreateOrUpdateInstanceCommand instance)
+    public async Task<bool> CreateOrUpdateInstanceAsync(CreateOrUpdateInstanceCommand instance)
     {
         try
         {
@@ -53,7 +53,7 @@ public class InstanceService
                                       $"[{BanHubConfiguration.Name}] End of error");
                 }
 
-                return response.IsSuccessStatusCode;
+                return true;
             });
         }
         catch (ApiException e)

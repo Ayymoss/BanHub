@@ -20,7 +20,7 @@ namespace BanHub;
 public class Plugin : IPluginV2
 {
     public string Name => "Ban Hub";
-    public string Version => SharedLibraryCore.Utilities.GetVersionAsString();
+    public string Version => "2023-07-15";
     public string Author => "Amos";
 
     public static bool InstanceActive { get; private set; }
@@ -80,21 +80,18 @@ public class Plugin : IPluginV2
         await _endpointManager.OnStart(serverDto);
     }
 
-    private async Task OnClientPenaltyRevoked(ClientPenaltyRevokeEvent penaltyEvent, CancellationToken arg2)
+    private async Task OnClientPenaltyRevoked(ClientPenaltyRevokeEvent penaltyEvent, CancellationToken arg2) =>
+        await AddPlayerPenaltyAsync(penaltyEvent);
+
+    private async Task OnClientPenaltyAdministered(ClientPenaltyEvent penaltyEvent, CancellationToken arg2) =>
+        await AddPlayerPenaltyAsync(penaltyEvent);
+
+    private async Task AddPlayerPenaltyAsync(ClientPenaltyEvent penaltyEvent)
     {
+        if (penaltyEvent.Penalty.Offense is "^1Globally banned!^7\nBanHub.gg") return;
         if (await _whitelistManager.IsWhitelisted(penaltyEvent.Client.ToPartialClient())) return;
 
-        await _endpointManager.NewPenalty(penaltyEvent.Penalty.Type.ToString(),
-            penaltyEvent.Penalty.Punisher.ToPartialClient(),
-            penaltyEvent.Penalty.Offender.ToPartialClient(),
-            penaltyEvent.Penalty.Offense);
-    }
-
-    private async Task OnClientPenaltyAdministered(ClientPenaltyEvent penaltyEvent, CancellationToken arg2)
-    {
-        if (await _whitelistManager.IsWhitelisted(penaltyEvent.Client.ToPartialClient())) return;
-
-        await _endpointManager.NewPenalty(penaltyEvent.Penalty.Type.ToString(),
+        await _endpointManager.AddPlayerPenaltyAsync(penaltyEvent.Penalty.Type.ToString(),
             penaltyEvent.Penalty.Punisher.ToPartialClient(),
             penaltyEvent.Penalty.Offender.ToPartialClient(),
             penaltyEvent.Penalty.Offense,
@@ -115,11 +112,9 @@ public class Plugin : IPluginV2
 
     private async Task OnLoad(IManager manager, CancellationToken arg2)
     {
-#if DEBUG
-        Console.WriteLine($"[{BanHubConfiguration.Name}] Loading... !! DEBUG MODE !!");
-#else
-        Console.WriteLine($"[{ConfigurationModel.Name}] Loading...");
-#endif
+        Console.WriteLine(_config.DebugMode
+            ? $"[{BanHubConfiguration.Name}] Loading... v{Version} !! DEBUG MODE !!"
+            : $"[{BanHubConfiguration.Name}] Loading... v{Version}");
 
         // Update the instance and check its state (Singleton)
         _instanceSlim.InstanceGuid = Guid.Parse(_appConfig.Id);
@@ -131,12 +126,13 @@ public class Plugin : IPluginV2
         {
             InstanceGuid = _instanceSlim.InstanceGuid,
             InstanceIp = _instanceSlim.InstanceIp,
+            InstanceApiKey = _instanceSlim.ApiKey,
             InstanceName = _config.InstanceNameOverride ?? _appConfig.WebfrontCustomBranding,
             About = _appConfig.CommunityInformation.Description,
             Socials = _appConfig.CommunityInformation.SocialAccounts.ToDictionary(social => social.Title, social => social.Url),
         };
 
-        var enabled = await _endpointManager.UpdateInstance(instanceCopy);
+        var enabled = await _endpointManager.CreateOrUpdateInstanceAsync(instanceCopy);
 
         // Unsubscribe from events if response is bad
         if (!enabled)
@@ -157,8 +153,7 @@ public class Plugin : IPluginV2
 
         if (InstanceActive)
         {
-            Console.WriteLine($"[{BanHubConfiguration.Name}] Activated.");
-            Console.WriteLine($"[{BanHubConfiguration.Name}] Penalties and users will be reported to the API.");
+            Console.WriteLine($"[{BanHubConfiguration.Name}] Your instance is active. Penalties and users will be reported to the API.");
         }
         else
         {

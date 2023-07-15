@@ -1,11 +1,12 @@
 ﻿using BanHub.WebCore.Server.Context;
+using BanHub.WebCore.Server.Events.DiscordWebhook;
+using BanHub.WebCore.Server.Interfaces;
 using BanHubData.Commands.Penalty;
 using BanHubData.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Handlers.Plugin.Penalty;
-
 
 public class AddPlayerPenaltyEvidenceHandler : IRequestHandler<AddPlayerPenaltyEvidenceCommand, ControllerEnums.ReturnState>
 {
@@ -27,6 +28,16 @@ public class AddPlayerPenaltyEvidenceHandler : IRequestHandler<AddPlayerPenaltyE
         if (penalty.Evidence is not null) return ControllerEnums.ReturnState.Conflict;
 
         penalty.Evidence = request.Evidence;
+        var message = $"**Penalty**: {penalty.PenaltyGuid}\n" +
+                      $"**Evidence**: https://youtu.be/{penalty.Evidence}\n\n" +
+                      $"**Submitted By**: {request.ActionAdminUserName} ({request.ActionAdminIdentity})\n";
+
+        IDiscordWebhookSubscriptions.InvokeEvent(new CreateAdminActionEvent
+        {
+            Title = "Evidence Submitted!",
+            Message = message
+        }, cancellationToken);
+
         _context.Penalties.Update(penalty);
         await _context.SaveChangesAsync(cancellationToken);
         return ControllerEnums.ReturnState.Ok;

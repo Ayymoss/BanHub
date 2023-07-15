@@ -5,5 +5,5 @@ namespace BanHub.WebCore.Shared.Commands.Web;
 
 public class GetUserProfileCommand : IRequest<WebUser?>
 {
-    public int UserId { get; set; }
+    public string SignedInGuid { get; set; }
 }

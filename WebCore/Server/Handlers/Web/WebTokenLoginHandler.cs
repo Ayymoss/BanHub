@@ -30,12 +30,11 @@ public class WebTokenLoginHandler : IRequestHandler<WebTokenLoginCommand, WebTok
             .Where(x => x.Token == request.Token)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        if (token is null || token.Created + TimeSpan.FromMinutes(5) < DateTimeOffset.UtcNow || token.Used)
+        if (token is null || token.Expiration < DateTimeOffset.UtcNow || token.Used)
             return new WebTokenLoginCommandResponse
             {
                 ReturnState = ControllerEnums.ReturnState.Unauthorized,
-                ClaimsIdentity = null,
-                AuthenticationProperties = null
+                ClaimsIdentity = null
             };
 
         var user = await _context.Players
@@ -46,17 +45,17 @@ public class WebTokenLoginHandler : IRequestHandler<WebTokenLoginCommand, WebTok
                 WebRole = x.WebRole.ToString(),
                 InstanceRole = x.InstanceRole.ToString(),
                 Identity = x.Identity,
-                SignedInGuid = Guid.NewGuid().ToString()
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
+
 
         if (user is null)
             return new WebTokenLoginCommandResponse
             {
                 ReturnState = ControllerEnums.ReturnState.Unauthorized,
-                ClaimsIdentity = null,
-                AuthenticationProperties = null
+                ClaimsIdentity = null
             };
 
+        user.SignedInGuid = Guid.NewGuid().ToString();
         token.Used = true;
         _context.AuthTokens.Update(token);
         await _context.SaveChangesAsync(cancellationToken);
@@ -70,14 +69,12 @@ public class WebTokenLoginHandler : IRequestHandler<WebTokenLoginCommand, WebTok
             new("SignedInGuid", user.SignedInGuid),
         };
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var authProperties = new AuthenticationProperties();
 
         _signedInUsers.AddUser(user);
         return new WebTokenLoginCommandResponse
         {
             ReturnState = ControllerEnums.ReturnState.Ok,
-            ClaimsIdentity = claimsIdentity,
-            AuthenticationProperties = authProperties
+            ClaimsIdentity = claimsIdentity
         };
     }
 }

@@ -1,7 +1,8 @@
-﻿
+﻿using System.Collections.Concurrent;
+
 namespace BanHub.WebCore.Server.Services;
 
 public class ApiKeyCache
 {
-    public List<Guid>? ApiKeys { get; set; }
+    public ConcurrentDictionary<Guid, Guid>? ApiKeys { get; set; }
 }

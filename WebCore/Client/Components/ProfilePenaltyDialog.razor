@@ -1,4 +1,5 @@
-﻿@inject IDialogService DialogService
+﻿@using Penalty = BanHub.WebCore.Shared.Models.PlayerProfileView.Penalty
+@inject IDialogService DialogService
 
 <MudDialog>
     <DialogContent>
@@ -100,20 +101,27 @@
         </MudGrid>
 
         <MudPaper Elevation="2" Class="pa-4 mt-2 mb-4 d-flex justify-center">
-            @if (Penalty.Evidence is not null && _videoId is not null)
+            @if (Penalty.Evidence is not null)
             {
-                <iframe src="https://www.youtube.com/embed/@_videoId" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="height:400px"></iframe>
+                <iframe src="https://www.youtube.com/embed/@Penalty.Evidence" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="height:500px"></iframe>
             }
             else
             {
-                <MudText Align="Align.Center" Class="mud-text-disabled" Typo="Typo.h4">Evidence not submitted!</MudText>
+                <MudStack Justify="Justify.Center">
+                    <MudText Align="Align.Center" Class="mud-text-disabled" Typo="Typo.h4">Evidence not submitted!</MudText>
+                    <AuthorizeView Roles="InstanceModerator, InstanceAdministrator, InstanceSeniorAdmin, InstanceOwner, WebAdmin, WebSuperAdmin">
+                        <Authorized>
+                            <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Color="Color.Primary" OnClick="OpenSubmitDialog">Submit Evidence</MudButton>
+                        </Authorized>
+                    </AuthorizeView>
+                </MudStack>
             }
         </MudPaper>
     </DialogContent>
     <DialogActions>
         <AuthorizeView Roles="WebAdmin, WebSuperAdmin">
             <Authorized>
-                <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" OnClick="OpenConfirmDialog">Delete Penalty</MudButton>
+                <MudButton Class="mb-4 mr-4" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" OnClick="OpenDeleteConfirmDialog">Delete Penalty</MudButton>
             </Authorized>
         </AuthorizeView>
     </DialogActions>
@@ -127,9 +135,7 @@
     [Parameter]
     public Penalty Penalty { get; set; } = null!;
 
-    private string? _videoId;
-
-    private async Task OpenConfirmDialog()
+    private async Task OpenDeleteConfirmDialog()
     {
         var parameters = new DialogParameters
         {
@@ -137,7 +143,7 @@
         };
 
         var options = new DialogOptions {CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Small, CloseOnEscapeKey = true};
-        var dialog = await DialogService.ShowAsync<ProfilePenaltyConfirmDialog>("Delete Penalty?", parameters, options);
+        var dialog = await DialogService.ShowAsync<ProfilePenaltyDeleteConfirmDialog>("Delete Penalty?", parameters, options);
         var result = await dialog.Result;
 
         if (result?.Data is not null)
@@ -146,26 +152,21 @@
         }
     }
 
-    protected override Task OnInitializedAsync()
+    private async Task OpenSubmitDialog()
     {
-        if (Penalty.Evidence is null) return base.OnInitializedAsync();
-
-        Uri? uri;
-        try
+        var parameters = new DialogParameters
         {
-            uri = new Uri(Penalty.Evidence);
-        }
-        catch
+            {"Penalty", Penalty}
+        };
+
+        var options = new DialogOptions {CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Small, CloseOnEscapeKey = true};
+        var dialog = await DialogService.ShowAsync<ProfilePenaltySubmitEvidenceDialog>("Submit Evidence?", parameters, options);
+        var result = await dialog.Result;
+
+        if (result?.Data is not null)
         {
-            return base.OnInitializedAsync();
+            MudDialog.Close(DialogResult.Ok(result.Data));
         }
-
-        var query = HttpUtility.ParseQueryString(uri.Query);
-        _videoId = query["v"];
-
-        return base.OnInitializedAsync();
     }
-
-
 
 }
