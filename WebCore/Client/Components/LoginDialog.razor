@@ -11,7 +11,7 @@
                 <MudText Align="Align.Center" Typo="Typo.body1">
                     <MudElement Style="color:#878686">Generate a new token in-game with </MudElement><MudElement Style="color:#3496b7">!BHAuth</MudElement>
                 </MudText>
-                <MudTextField @bind-Value="_webLoginModel.Token" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" MaxLength="6" Label="Token" Variant="Variant.Text" Counter="6" AdornmentIcon="@Icons.Material.Filled.Person" Adornment="Adornment.End" AdornmentColor="Color.Info"/>
+                <MudTextField @bind-Value="_token" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" MaxLength="6" Label="Token" Variant="Variant.Text" Counter="6" AdornmentIcon="@Icons.Material.Filled.Person" Adornment="Adornment.End" AdornmentColor="Color.Info"/>
             </MudElement>
             <MudElement Class="d-flex">
                 <MudButton Disabled="@_processing" Color="Color.Tertiary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" OnClick="UserLogin">
@@ -39,7 +39,7 @@
     [CascadingParameter]
     MudDialogInstance? MudDialog { get; set; }
 
-    private readonly WebTokenLoginCommand _webLoginModel = new();
+    private string? _token;
     private bool _processing;
     private string? _error;
 
@@ -55,15 +55,22 @@
     {
         _processing = true;
         _error = null;
+        if (string.IsNullOrEmpty(_token))
+        {
+            _processing = false;
+            _error = "Token is required";
+            return;
+        }
 
-        if (_webLoginModel.Token.Length is not 6)
+        if (_token.Length is not 6)
         {
             _error = "Invalid token length";
             _processing = false;
             return;
         }
 
-        var success = await AuthService.LoginAsync(_webLoginModel);
+        var tokenModel = new WebTokenLoginCommand {Token = _token};
+        var success = await AuthService.LoginAsync(tokenModel);
         if (success)
         {
             await LocalStorageService.SetItemAsStringAsync("IsAuthenticated", "true");
