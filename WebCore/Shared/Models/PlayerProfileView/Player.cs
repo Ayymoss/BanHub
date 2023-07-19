@@ -9,4 +9,5 @@ public class Player
     public int TotalConnections { get; set; }
     public TimeSpan PlayTime { get; set; }
     public DateTimeOffset Created { get; set; }
+    public bool Connected { get; set; }
 }

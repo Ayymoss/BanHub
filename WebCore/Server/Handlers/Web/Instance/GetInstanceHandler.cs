@@ -30,7 +30,7 @@ public class GetInstanceHandler : IRequestHandler<GetInstanceCommand, BanHub.Web
                 About = x.About,
                 Socials = x.Socials,
                 Active = x.Active,
-                HeartBeat = x.HeartBeat,
+                Connected = x.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow,
                 Created = x.Created,
                 ServerCount = serverCount,
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);

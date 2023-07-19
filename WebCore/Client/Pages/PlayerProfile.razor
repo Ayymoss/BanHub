@@ -46,8 +46,8 @@ else
                     </MudButton>
                 }
                 <MudChip Variant="Variant.Text" Size="Size.Large"
-                         Color="@(_entity.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow ? Color.Info : Color.Warning)">
-                    @(_entity.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow ? "Online" : "Offline")
+                         Color="@(_entity.Connected ? Color.Info : Color.Warning)">
+                    @(_entity.Connected ? "Online" : "Offline")
                 </MudChip>
                 <MudChip Variant="Variant.Text" Size="Size.Large"
                          Color="@(_entity.IsGloballyBanned ? Color.Error : Color.Info)">
@@ -73,7 +73,7 @@ else
                 </MudItem>
                 <MudItem xs="12" sm="4" xl="3" xxl="2">
                     <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.HeartBeat > DateTimeOffset.UtcNow.AddMinutes(5) ? "Online" : _entity.HeartBeat.Humanize())</MudText>
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.Connected ? "Online" : _entity.HeartBeat.Humanize())</MudText>
                         <MudText Class="mud-text-secondary">Last Seen</MudText>
                     </MudPaper>
                 </MudItem>
