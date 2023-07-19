@@ -21,10 +21,10 @@
             <MudTableSortLabel SortLabel="Id" T="WebCore.Shared.Models.InstancesView.Instance">ID</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Instance Name" T="WebCore.Shared.Models.InstancesView.Instance">Community Name</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Name" T="WebCore.Shared.Models.InstancesView.Instance">Community Name</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Instance IP" T="WebCore.Shared.Models.InstancesView.Instance">Community IP</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Website" T="WebCore.Shared.Models.InstancesView.Instance">Community Website</MudTableSortLabel>
         </MudTh>
         <MudTh>
             <MudTableSortLabel SortLabel="Servers" T="WebCore.Shared.Models.InstancesView.Instance">Servers</MudTableSortLabel>
@@ -57,14 +57,21 @@
                 </MudElement>
             }
         </MudTd>
-        <MudTd DataLabel="Instance Name">
+        <MudTd DataLabel="Name">
             <a href="/Communities/@context.InstanceGuid">
                 <MudText Typo="Typo.body2" Color="Color.Info">
                     @(context.InstanceName)
                 </MudText>
             </a>
         </MudTd>
-        <MudTd DataLabel="Instance IP">@context.InstanceIp</MudTd>
+        <MudTd DataLabel="Website">
+            <a href="https://@(context.InstanceWebsite)/">
+                <MudText Typo="Typo.body2" Color="Color.Info">
+                    @(context.InstanceWebsite)
+                </MudText>
+            </a>
+
+        </MudTd>
         <MudTd DataLabel="Servers">@context.ServerCount</MudTd>
         <MudTd DataLabel="HeartBeat">@context.HeartBeat.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
         <MudTd DataLabel="Created">@context.Created.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>

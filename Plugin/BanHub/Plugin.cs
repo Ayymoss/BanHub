@@ -2,6 +2,7 @@
 using BanHub.Managers;
 using BanHub.Models;
 using BanHub.Services;
+using BanHub.Utilities;
 using BanHubData.Commands.Instance;
 using BanHubData.Commands.Instance.Server;
 using BanHubData.Enums;
@@ -102,7 +103,7 @@ public class Plugin : IPluginV2
     {
         // I think the lifetime of clientEvent will not remove it during this iteration. It'll be removed on the next person who leaves.
         // Maybe fix?
-        _endpointManager.RemoveFromProfiles(); 
+        _endpointManager.RemoveFromProfiles();
         return Task.CompletedTask;
     }
 
@@ -118,14 +119,6 @@ public class Plugin : IPluginV2
             ? $"[{BanHubConfiguration.Name}] Loading... v{Version} !! DEBUG MODE !!"
             : $"[{BanHubConfiguration.Name}] Loading... v{Version}");
 
-        var websiteSlash = _config.InstanceWebsite?.Contains('/') ?? false;
-        var websiteHttp = _config.InstanceWebsite?.StartsWith("http", StringComparison.InvariantCultureIgnoreCase) ?? false;
-        if (websiteHttp || websiteSlash)
-        {
-            UnloadPlugin("Please remove the http(s):// and trailing slash from your InstanceWebsite in the config.");
-            return;
-        }
-
         // Update the instance and check its state (Singleton)
         _instanceSlim.InstanceGuid = Guid.Parse(_appConfig.Id);
         _instanceSlim.InstanceIp = manager.ExternalIPAddress;
@@ -139,7 +132,7 @@ public class Plugin : IPluginV2
         {
             InstanceGuid = _instanceSlim.InstanceGuid,
             InstanceIp = _instanceSlim.InstanceIp,
-            InstanceWebsite = _config.InstanceWebsite,
+            InstanceWebsite = _config.InstanceWebsite.GetDomainName(),
             InstanceBindPort = port,
             InstanceApiKey = _instanceSlim.ApiKey,
             InstanceName = _config.InstanceNameOverride ?? _appConfig.WebfrontCustomBranding ?? _instanceSlim.InstanceGuid.ToString(),

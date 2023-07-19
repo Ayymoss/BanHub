@@ -1,18 +1,12 @@
-﻿using System.Text.Json;
-
-namespace BanHub.Utilities;
+﻿namespace BanHub.Utilities;
 
 public static class ExtensionMethods
 {
-    public static async Task<TResponse?> DeserializeHttpResponseContentAsync<TResponse>(this HttpResponseMessage response) where TResponse : class
+    public static string? GetDomainName(this string? url)
     {
-        var jsonSerializerOptions = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
-
-        if (!response.IsSuccessStatusCode) return null;
-        var json = await response.Content.ReadAsStringAsync();
-        return string.IsNullOrEmpty(json) ? null : JsonSerializer.Deserialize<TResponse>(json, jsonSerializerOptions);
+        if (string.IsNullOrEmpty(url)) return null;
+        url = url.Trim();
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) && !Uri.TryCreate("http://" + url, UriKind.Absolute, out uri)) return null;
+        return uri.Host.StartsWith("www.") ? uri.Host[4..] : uri.Host;
     }
 }
