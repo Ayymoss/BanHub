@@ -30,7 +30,9 @@ public class RemovePenaltyHandler : IRequestHandler<RemovePenaltyCommand, bool>
             .Where(x => x.PenaltyGuid == penalty.PenaltyGuid)
             .Select(x => new
             {
+                AdminUserName = x.Admin.CurrentAlias.Alias.UserName,
                 AdminIdentity = x.Admin.Identity,
+                TargetUserName = x.Target.CurrentAlias.Alias.UserName,
                 TargetIdentity = x.Target.Identity,
                 x.PenaltyGuid,
                 x.Reason,
@@ -38,13 +40,15 @@ public class RemovePenaltyHandler : IRequestHandler<RemovePenaltyCommand, bool>
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         var message = penaltyInfo is null
-            ? $"Penalty **{penalty.PenaltyGuid}** was deleted by **{request.AdminUserName}** but no information could be found."
+            ? $"Penalty **{penalty.PenaltyGuid}** was deleted by **{request.ActionAdminUserName}** but no information could be found."
             : $"**Penalty**: {penaltyInfo.PenaltyGuid}\n" +
+              $"**Issuer**: [{penaltyInfo.AdminUserName}](https://BanHub.gg/Players/{penaltyInfo.TargetIdentity})\n" +
               $"**Admin**: {penaltyInfo.AdminIdentity}\n" +
+              $"**Offender**: [{penaltyInfo.TargetUserName}](https://BanHub.gg/Players/{penaltyInfo.TargetIdentity})\n" +
               $"**Target**: {penaltyInfo.TargetIdentity}\n" +
               $"**Reason**: {penaltyInfo.Reason}\n" +
               $"**Evidence**: {penaltyInfo.Evidence ?? "None"}\n\n" +
-              $"**Deleted By**: {request.AdminUserName}\n" +
+              $"**Deleted By**: [{request.ActionAdminUserName}](https://BanHub.gg/Players/{request.ActionAdminIdentity})\n" +
               $"**Deleted For**: {request.DeletionReason}";
 
         _context.Penalties.Remove(penalty);

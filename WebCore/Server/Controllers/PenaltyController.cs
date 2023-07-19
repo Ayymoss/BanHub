@@ -212,7 +212,7 @@ public class PenaltyController : ControllerBase
 
         if (!webRoleAssigned) return Unauthorized("You are not authorised to perform this action");
 
-        request.AdminUserName = adminName;
+        request.ActionAdminUserName = adminName;
         request.ActionAdminIdentity = adminNameIdentity;
         var result = await _mediator.Send(request);
         if (!result) return BadRequest();

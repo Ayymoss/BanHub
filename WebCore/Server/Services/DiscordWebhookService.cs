@@ -25,9 +25,8 @@ public class DiscordWebhookService
         {
             Title = $"Penalty: {createPenaltyEvent.PenaltyType}",
             Description = "Click the link to view the penalty.\n" +
-                          $"**Profile:** [{createPenaltyEvent.Username}](https://BanHub.gg/Players/{createPenaltyEvent.Identity})\n" +
+                          $"**Profile:** [{createPenaltyEvent.Username}](https://BanHub.gg/Players/{createPenaltyEvent.TargetIdentity})\n" +
                           $"**Penalty ID:** {createPenaltyEvent.PenaltyGuid}\n" +
-                          $"**Identity:** {createPenaltyEvent.Identity}\n" +
                           $"**Reason:** {createPenaltyEvent.Reason}\n\n" +
                           $"**Community:** [{createPenaltyEvent.InstanceName}](https://BanHub.gg/Communities/{createPenaltyEvent.InstanceGuid})",
             Color = Color.DarkRed
