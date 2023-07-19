@@ -27,7 +27,7 @@ public class PlayerController : ControllerBase
         return Ok(id);
     }
 
-    [HttpPost("Players")]
+    [HttpPost("Pagination")]
     public async Task<ActionResult<IEnumerable<Player>>> GetPlayersPaginationAsync([FromBody] GetPlayersPaginationCommand playersPagination)
     {
         var result = await _mediator.Send(playersPagination);

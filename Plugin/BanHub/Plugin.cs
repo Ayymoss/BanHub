@@ -20,7 +20,7 @@ namespace BanHub;
 public class Plugin : IPluginV2
 {
     public string Name => "Ban Hub";
-    public string Version => "2023-07-15";
+    public string Version => "2023-07-16";
     public string Author => "Amos";
 
     public static bool InstanceActive { get; private set; }
@@ -88,7 +88,7 @@ public class Plugin : IPluginV2
 
     private async Task AddPlayerPenaltyAsync(ClientPenaltyEvent penaltyEvent)
     {
-        if (penaltyEvent.Penalty.Offense is "^1Globally banned!^7\nBanHub.gg") return;
+        if (penaltyEvent.Penalty.Offender.GetAdditionalProperty<bool>("BanHubGlobalBan")) return;
         if (await _whitelistManager.IsWhitelisted(penaltyEvent.Client.ToPartialClient())) return;
 
         await _endpointManager.AddPlayerPenaltyAsync(penaltyEvent.Penalty.Type.ToString(),
@@ -127,7 +127,7 @@ public class Plugin : IPluginV2
             InstanceGuid = _instanceSlim.InstanceGuid,
             InstanceIp = _instanceSlim.InstanceIp,
             InstanceApiKey = _instanceSlim.ApiKey,
-            InstanceName = _config.InstanceNameOverride ?? _appConfig.WebfrontCustomBranding,
+            InstanceName = _config.InstanceNameOverride ?? _appConfig.WebfrontCustomBranding ?? _instanceSlim.InstanceGuid.ToString(),
             About = _appConfig.CommunityInformation.Description,
             Socials = _appConfig.CommunityInformation.SocialAccounts.ToDictionary(social => social.Title, social => social.Url),
         };

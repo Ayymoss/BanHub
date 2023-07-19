@@ -9,11 +9,11 @@ namespace BanHub.WebCore.Server.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class HeartBeatController : ControllerBase
+public class HeartbeatController : ControllerBase
 {
     private readonly IMediator _mediator;
 
-    public HeartBeatController(IMediator mediator)
+    public HeartbeatController(IMediator mediator)
     {
         _mediator = mediator;
     }

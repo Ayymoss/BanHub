@@ -12,7 +12,7 @@ public class InstanceService
 #if DEBUG
     private const string ApiHost = "http://localhost:8123/api";
 #else
-    private const string ApiHost = "http://banhub.gg:8123/api";
+    private const string ApiHost = "https://banhub.gg/api";
 #endif
     private readonly IInstanceService _api;
 

@@ -112,7 +112,7 @@ public class DataContext : DbContext
             Submitted = DateTimeOffset.UtcNow,
             Duration = null,
             Reason = "Seed Infraction",
-            Evidence = "https://www.youtube.com/watch?v=WePNs-G7puA",
+            Evidence = "WePNs-G7puA",
             AdminId = -1,
             TargetId = -1,
             InstanceId = -1,

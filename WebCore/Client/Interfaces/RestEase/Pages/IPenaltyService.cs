@@ -12,7 +12,7 @@ public interface IPenaltyService
     [Get("/Penalty/Profile/Penalties/{identity}")]
     Task<HttpResponseMessage> GetProfilePenaltiesAsync([Path("identity")] string identity);
 
-    [Post("/Penalty/Penalties")]
+    [Post("/Penalty/Pagination")]
     Task<HttpResponseMessage> GetPenaltiesPaginationAsync([Body] GetPenaltiesPaginationCommand penaltiesPaginationQuery);
 
     [Get("/Penalty/Latest")]

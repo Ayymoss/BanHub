@@ -31,12 +31,12 @@ public class GetInstancesPaginationHandler : IRequestHandler<GetInstancesPaginat
 
         query = request.SortLabel switch
         {
-            "Id" => query.OrderByDirection((SortDirection)request.SortDirection!, key => key.Id),
-            "Instance Name" => query.OrderByDirection((SortDirection)request.SortDirection!, key => key.InstanceName),
-            "Instance IP" => query.OrderByDirection((SortDirection)request.SortDirection!, key => key.InstanceIp),
-            "Heart Beat" => query.OrderByDirection((SortDirection)request.SortDirection!, key => key.HeartBeat),
-            "Created" => query.OrderByDirection((SortDirection)request.SortDirection!, key => key.Created),
-            "Servers" => query.OrderByDirection((SortDirection)request.SortDirection!, key => key.ServerConnections.Count),
+            "Id" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.Id),
+            "Instance Name" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.InstanceName),
+            "Instance IP" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.InstanceIp),
+            "Heart Beat" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.HeartBeat),
+            "Created" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.Created),
+            "Servers" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.ServerConnections.Count),
             _ => query
         };
 

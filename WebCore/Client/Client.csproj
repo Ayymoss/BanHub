@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>BanHub.WebCore.Client</RootNamespace>
-    <Version>2023.03.05</Version>
+    <Version>2023.07.16.01</Version>
   </PropertyGroup>
 
   <ItemGroup>

@@ -22,7 +22,7 @@ builder.WebHost.ConfigureKestrel(options => { options.ListenAnyIP(configuration.
 #endif
 
 // TODO: TOGGLE MANUALLY - Migrations don't seem to honour build state
-configuration.Database.Database = "BanHubDev";
+configuration.Database.Database = "BanHubLiveTest";
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
@@ -58,18 +58,12 @@ builder.Services.AddMediatR(cfg => { cfg.RegisterServicesFromAssembly(typeof(Pro
 
 builder.Logging.ClearProviders().AddConsole();
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(opt =>
-    {
-        opt.Cookie.Name = "BanHubAccount";
-#if DEBUG
-        opt.LogoutPath = "/";
-        opt.LoginPath = "/";
-#else
-        opt.LogoutPath = "https://banhub.gg/";
-        opt.LoginPath = "https://banhub.gg/";
-#endif
-    });
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(opt =>
+{
+    opt.Cookie.Name = "BanHubAccount";
+    opt.LogoutPath = "/";
+    opt.LoginPath = "/";
+});
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsSpecs", corsPolicyBuilder =>

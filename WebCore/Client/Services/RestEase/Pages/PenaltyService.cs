@@ -1,8 +1,6 @@
 ﻿using BanHub.WebCore.Client.Interfaces.RestEase.Pages;
 using BanHub.WebCore.Shared.Commands.Penalty;
-using BanHub.WebCore.Shared.Commands.PlayerProfile;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
-using BanHub.WebCore.Shared.Models.Shared;
 using BanHub.WebCore.Shared.Utilities;
 using BanHubData.Commands.Penalty;
 using RestEase;
@@ -14,7 +12,7 @@ public class PenaltyService
 #if DEBUG
     private const string ApiHost = "http://localhost:8123/api";
 #else
-    private const string ApiHost = "http://banhub.gg:8123/api";
+    private const string ApiHost = "https://banhub.gg/api";
 #endif
     private readonly IPenaltyService _api;
 

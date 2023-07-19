@@ -70,7 +70,7 @@ public class PenaltyController : ControllerBase
         return await HandleAddPlayerPenaltyEvidence(request);
     }
 
-    [HttpPost("Penalties")]
+    [HttpPost("Pagination")]
     public async Task<ActionResult<IEnumerable<Penalty>>> GetPenaltiesPaginationAsync(
         [FromBody] GetPenaltiesPaginationCommand penaltiesPagination)
     {

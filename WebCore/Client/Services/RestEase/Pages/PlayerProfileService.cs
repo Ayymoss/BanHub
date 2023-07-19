@@ -1,5 +1,4 @@
 ﻿using BanHub.WebCore.Client.Interfaces.RestEase.Pages;
-using BanHub.WebCore.Shared.Commands.PlayerProfile;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
 using BanHub.WebCore.Shared.Utilities;
 using RestEase;
@@ -12,7 +11,7 @@ public class PlayerProfileService
 #if DEBUG
     private const string ApiHost = "http://localhost:8123/api";
 #else
-    private const string ApiHost = "http://banhub.gg:8123/api";
+    private const string ApiHost = "https://banhub.gg/api";
 #endif
     private readonly IPlayerProfileService _api;
 

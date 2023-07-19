@@ -64,7 +64,7 @@ public class InstanceController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("Instances")]
+    [HttpPost("Pagination")]
     public async Task<ActionResult<IEnumerable<Shared.Models.InstancesView.Instance>>> GetInstancesAsync(
         [FromBody] GetInstancesPaginationCommand pagination)
     {

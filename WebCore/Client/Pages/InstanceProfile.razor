@@ -41,7 +41,7 @@ else
                              Color="@(_instance.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow ? Color.Info : Color.Warning)">
                         @(_instance.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow ? "Connected" : "Disconnected")
                     </MudChip>
-                    <MudChip Variant="Variant.Text" Size="Size.Large"
+                    <MudChip Variant="Variant.Text" Size="Size.Large" 
                              Color="@(_instance.Active ? Color.Info : Color.Error)">
                         @(_instance.Active ? "Activated" : "Not Activated")
                     </MudChip>

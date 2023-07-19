@@ -5,6 +5,6 @@ namespace BanHub.WebCore.Client.Interfaces.RestEase.Pages;
 
 public interface IPlayersService
 {
-    [Post("/Player/Players")]
+    [Post("/Player/Pagination")]
     Task<HttpResponseMessage> GetPlayersAsync([Body] GetPlayersPaginationCommand playersPagination);
 }

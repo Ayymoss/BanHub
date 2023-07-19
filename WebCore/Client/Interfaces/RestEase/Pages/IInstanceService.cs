@@ -5,7 +5,7 @@ namespace BanHub.WebCore.Client.Interfaces.RestEase.Pages;
 
 public interface IInstanceService
 {
-    [Post("/Instance/Instances")]
+    [Post("/Instance/Pagination")]
     Task<HttpResponseMessage> GetInstancesPaginationAsync([Body] GetInstancesPaginationCommand penaltiesPaginationQuery);
 
     [Get("/Instance/{identity}")]
