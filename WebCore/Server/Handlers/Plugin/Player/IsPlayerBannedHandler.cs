@@ -28,7 +28,7 @@ public class IsPlayerBannedHandler : IRequestHandler<IsPlayerBannedCommand, bool
         if (player is null) return false;
 
         var expiredPenalties = player.Penalties
-            .Where(inf => DateTimeOffset.UtcNow > inf.Submitted + inf.Duration)
+            .Where(inf => DateTimeOffset.UtcNow > inf.Expiration)
             .Where(inf => inf is {PenaltyStatus: PenaltyStatus.Active}).ToList();
 
         foreach (var penalty in expiredPenalties)

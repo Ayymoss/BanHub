@@ -12,8 +12,8 @@ public static class Utilities
 
     public static bool IsInternal(this string ipAddress)
     {
+        if (!IPAddress.TryParse(ipAddress, out var address)) return false;
         if (ipAddress.StartsWith("127.0.0")) return true;
-        if (!IPAddress.TryParse(ipAddress, out var address)) return true;
         var bytes = address.GetAddressBytes();
 
         return bytes[0] switch

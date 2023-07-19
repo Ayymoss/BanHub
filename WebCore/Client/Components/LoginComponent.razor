@@ -1,7 +1,7 @@
 ﻿@using System.Security.Claims
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
-@inject IApiService ApiLogic
+@inject AuthService AuthService
 @inject ILocalStorageService LocalStorageService
 @inject IDialogService DialogService
 
@@ -64,8 +64,8 @@
 
     private async Task Logout()
     {
-        var response = await ApiLogic.LogoutAsync();
-        if (response == "Success")
+        var response = await AuthService.LogoutAsync();
+        if (response)
         {
             (AuthStateProvider as CustomAuthStateProvider)?.ClearAuthInfo();
             await LocalStorageService.RemoveItemAsync("IsAuthenticated");

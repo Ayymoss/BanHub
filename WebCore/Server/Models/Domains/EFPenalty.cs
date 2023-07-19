@@ -39,7 +39,7 @@ public class EFPenalty
     /// <summary>
     /// Duration of a temporary infraction
     /// </summary>
-    public TimeSpan? Duration { get; set; }
+    public DateTimeOffset? Expiration { get; set; }
 
     /// <summary>
     /// The provided reason for the infraction
@@ -59,7 +59,7 @@ public class EFPenalty
     /// <summary>
     /// Penalty's identifiers
     /// </summary>
-    public EFPenaltyIdentifier? Identifier { get; set; } = null!;
+    public EFPenaltyIdentifier? Identifier { get; set; }
 
     /// <summary>
     /// The admin GUID who issued the infraction

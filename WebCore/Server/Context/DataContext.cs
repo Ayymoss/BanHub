@@ -110,7 +110,7 @@ public class DataContext : DbContext
             PenaltyScope = PenaltyScope.Global,
             PenaltyGuid = Guid.NewGuid(),
             Submitted = DateTimeOffset.UtcNow,
-            Duration = null,
+            Expiration = null,
             Reason = "Seed Infraction",
             Evidence = "WePNs-G7puA",
             AdminId = -1,

@@ -40,7 +40,7 @@ else
             <MudElement>
                 @if (_entity.IsGloballyBanned)
                 {
-                    <MudButton Class="mr-2" Href="https://discord.gg/UHdqh6ZfjM" Target="_blank" StartIcon="@Icons.Material.Filled.Blind" 
+                    <MudButton Class="mr-2" Href="https://discord.gg/UHdqh6ZfjM" Target="_blank" StartIcon="@Icons.Material.Filled.Undo"
                                IconSize="Size.Large" Color="Color.Error" IconColor="Color.Error" Size="Size.Large" Variant="Variant.Outlined">
                         Appeal!
                     </MudButton>
@@ -140,7 +140,7 @@ else
                                       T="Penalty" RowsPerPage="10">
                                 <HeaderContent>
                                     <MudTh Class="rounded-tl py-2">
-                                        <MudTableSortLabel SortBy="new Func<Penalty, object>(x => x.AdminUserName)">Admin</MudTableSortLabel>
+                                        <MudTableSortLabel SortBy="new Func<Penalty, object>(x => x.AdminUserName)">Issuer</MudTableSortLabel>
                                     </MudTh>
                                     <MudTh>
                                         <MudTableSortLabel SortBy="new Func<Penalty, object>(x => x.Reason)">Reason</MudTableSortLabel>
@@ -155,20 +155,36 @@ else
                                         <MudTableSortLabel SortBy="new Func<Penalty, object>(x => x.PenaltyStatus)">Status</MudTableSortLabel>
                                     </MudTh>
                                     <MudTh>
+                                        <MudTableSortLabel SortBy="new Func<Penalty, object>(x => x.InstanceName)">Community</MudTableSortLabel>
+                                    </MudTh>
+                                    <MudTh>
                                         <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<Penalty, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
                                     </MudTh>
                                     <MudTh Class="rounded-tr" Style="width: 100px;"/>
                                 </HeaderContent>
                                 <RowTemplate>
-                                    <MudTd DataLabel="Admin">@context.AdminUserName</MudTd>
+                                    <MudTd DataLabel="Admin">
+                                        <a href="/Players/@context.AdminIdentity">
+                                            <MudText Typo="Typo.body2" Color="Color.Warning">
+                                                @context.AdminUserName
+                                            </MudText>
+                                        </a>
+                                    </MudTd>
                                     <MudTd DataLabel="Reason">@context.Reason</MudTd>
                                     <MudTd DataLabel="Type">@context.PenaltyType.ToString()</MudTd>
                                     <MudTd DataLabel="Scope">@context.PenaltyScope.ToString()</MudTd>
                                     <MudTd DataLabel="Scope">@context.PenaltyStatus.ToString()</MudTd>
+                                    <MudTd DataLabel="Community">
+                                        <a href="/Communities/@context.InstanceGuid">
+                                            <MudText Typo="Typo.body2" Color="Color.Info">
+                                                @(context.InstanceName)
+                                            </MudText>
+                                        </a>
+                                    </MudTd>
                                     <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
                                     <MudTd DataLabel="View">
                                         <MudChip Variant="Variant.Outlined" Size="Size.Small" Color="Color.Info">
-                                            <MudIcon Icon="@Icons.Material.Filled.RemoveRedEye"/>
+                                            <MudIcon Icon="@Icons.Material.Filled.LocalSee"/>
                                         </MudChip>
                                     </MudTd>
                                 </RowTemplate>

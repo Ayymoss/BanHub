@@ -21,32 +21,16 @@ public class DiscordWebhookService
 
     private async Task OnCreatePenaltyHookAsync(CreatePenaltyEvent createPenaltyEvent, CancellationToken token)
     {
-        var color = createPenaltyEvent.PenaltyType switch
-        {
-            PenaltyType.Unban => Color.Blue,
-            PenaltyType.Unmute => Color.Blue,
-            PenaltyType.Report => Color.Default,
-            PenaltyType.Warning => Color.Default,
-            PenaltyType.TempMute => Color.LightOrange,
-            PenaltyType.Mute => Color.LightOrange,
-            PenaltyType.Kick => Color.LightOrange,
-            PenaltyType.TempBan => Color.Orange,
-            PenaltyType.Ban => Color.Red,
-            _ => Color.Default
-        };
-
-        if (createPenaltyEvent.Scope is PenaltyScope.Global) color = Color.DarkRed;
-
         var embedBuilder = new EmbedBuilder
         {
             Title = $"Penalty: {createPenaltyEvent.PenaltyType}",
             Description = "Click the link to view the penalty.\n" +
-                          $"**Profile:** [View Profile](https://BanHub.gg/Profile/{createPenaltyEvent.Identity})\n" +
+                          $"**Profile:** [{createPenaltyEvent.Username}](https://BanHub.gg/Players/{createPenaltyEvent.Identity})\n" +
                           $"**Penalty ID:** {createPenaltyEvent.PenaltyGuid}\n" +
                           $"**Identity:** {createPenaltyEvent.Identity}\n" +
-                          $"**Username:** {createPenaltyEvent.Username}\n" +
-                          $"**Reason:** {createPenaltyEvent.Reason}",
-            Color = color
+                          $"**Reason:** {createPenaltyEvent.Reason}\n\n" +
+                          $"**Community:** [{createPenaltyEvent.InstanceName}](https://BanHub.gg/Communities/{createPenaltyEvent.InstanceGuid})",
+            Color = Color.DarkRed
         };
 
         await SendWebhook(embedBuilder.Build(), _configuration.PenaltyWebHook);

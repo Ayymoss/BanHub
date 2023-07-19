@@ -95,12 +95,14 @@ public class Plugin : IPluginV2
             penaltyEvent.Penalty.Punisher.ToPartialClient(),
             penaltyEvent.Penalty.Offender.ToPartialClient(),
             penaltyEvent.Penalty.Offense,
-            duration: penaltyEvent.Penalty.Expires - DateTimeOffset.UtcNow);
+            expiration: penaltyEvent.Penalty.Expires);
     }
 
     private Task OnClientStateDisposed(ClientStateEvent clientEvent, CancellationToken arg2)
     {
-        _endpointManager.RemoveFromProfiles(clientEvent.Client);
+        // I think the lifetime of clientEvent will not remove it during this iteration. It'll be removed on the next person who leaves.
+        // Maybe fix?
+        _endpointManager.RemoveFromProfiles(); 
         return Task.CompletedTask;
     }
 
@@ -116,16 +118,29 @@ public class Plugin : IPluginV2
             ? $"[{BanHubConfiguration.Name}] Loading... v{Version} !! DEBUG MODE !!"
             : $"[{BanHubConfiguration.Name}] Loading... v{Version}");
 
+        var websiteSlash = _config.InstanceWebsite?.Contains('/') ?? false;
+        var websiteHttp = _config.InstanceWebsite?.StartsWith("http", StringComparison.InvariantCultureIgnoreCase) ?? false;
+        if (websiteHttp || websiteSlash)
+        {
+            UnloadPlugin("Please remove the http(s):// and trailing slash from your InstanceWebsite in the config.");
+            return;
+        }
+
         // Update the instance and check its state (Singleton)
         _instanceSlim.InstanceGuid = Guid.Parse(_appConfig.Id);
         _instanceSlim.InstanceIp = manager.ExternalIPAddress;
         _instanceSlim.ApiKey = _config.ApiKey;
+
+        var portRaw = _appConfig.WebfrontBindUrl.Split(":").LastOrDefault();
+        _ = int.TryParse(portRaw, out var port);
 
         // We need a copy of this since we don't really want the other values being sent with each request.
         var instanceCopy = new CreateOrUpdateInstanceCommand
         {
             InstanceGuid = _instanceSlim.InstanceGuid,
             InstanceIp = _instanceSlim.InstanceIp,
+            InstanceWebsite = _config.InstanceWebsite,
+            InstanceBindPort = port,
             InstanceApiKey = _instanceSlim.ApiKey,
             InstanceName = _config.InstanceNameOverride ?? _appConfig.WebfrontCustomBranding ?? _instanceSlim.InstanceGuid.ToString(),
             About = _appConfig.CommunityInformation.Description,
@@ -134,17 +149,10 @@ public class Plugin : IPluginV2
 
         var enabled = await _endpointManager.CreateOrUpdateInstanceAsync(instanceCopy);
 
-        // Unsubscribe from events if response is bad
+        // Issue creating instance. Unload.
         if (!enabled)
         {
-            IGameServerEventSubscriptions.MonitoringStarted -= OnMonitoringStarted;
-            IManagementEventSubscriptions.Load -= OnLoad;
-            IManagementEventSubscriptions.ClientStateAuthorized -= OnClientStateAuthorized;
-            IManagementEventSubscriptions.ClientStateDisposed -= OnClientStateDisposed;
-            IManagementEventSubscriptions.ClientPenaltyAdministered -= OnClientPenaltyAdministered;
-            IManagementEventSubscriptions.ClientPenaltyRevoked -= OnClientPenaltyRevoked;
-
-            Console.WriteLine($"[{BanHubConfiguration.Name}] Failed to load. Is the API running?");
+            UnloadPlugin("Failed to load. Is the API running?");
             return;
         }
 
@@ -162,6 +170,18 @@ public class Plugin : IPluginV2
         }
 
         SharedLibraryCore.Utilities.ExecuteAfterDelay(TimeSpan.FromMinutes(4), OnNotifyAfterDelayCompleted, CancellationToken.None);
+    }
+
+    private void UnloadPlugin(string message)
+    {
+        IGameServerEventSubscriptions.MonitoringStarted -= OnMonitoringStarted;
+        IManagementEventSubscriptions.Load -= OnLoad;
+        IManagementEventSubscriptions.ClientStateAuthorized -= OnClientStateAuthorized;
+        IManagementEventSubscriptions.ClientStateDisposed -= OnClientStateDisposed;
+        IManagementEventSubscriptions.ClientPenaltyAdministered -= OnClientPenaltyAdministered;
+        IManagementEventSubscriptions.ClientPenaltyRevoked -= OnClientPenaltyRevoked;
+
+        Console.WriteLine($"[{BanHubConfiguration.Name}] {message}");
     }
 
     private async Task OnNotifyAfterDelayCompleted(CancellationToken token)

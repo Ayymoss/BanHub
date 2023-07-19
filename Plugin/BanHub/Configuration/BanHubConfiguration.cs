@@ -8,6 +8,7 @@ public class BanHubConfiguration
     public bool EnableBanHub { get; set; } = true;
     [JsonPropertyName("ApiKeyDoNotChange")] public Guid ApiKey { get; set; } = Guid.NewGuid();
     public string? InstanceNameOverride { get; set; }
+    public string? InstanceWebsite { get; set; }
     public bool PrintPenaltyToConsole { get; set; } = false;
     public TranslationStrings Translations { get; set; } = new();
     public bool DebugMode { get; set; } = false;

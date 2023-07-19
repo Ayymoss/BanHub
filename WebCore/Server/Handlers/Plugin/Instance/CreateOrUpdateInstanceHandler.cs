@@ -40,8 +40,10 @@ public class CreateOrUpdateInstanceHandler : IRequestHandler<CreateOrUpdateInsta
             _context.Instances.Add(new EFInstance
             {
                 InstanceGuid = request.InstanceGuid,
-                InstanceIp = ipAddress,
                 InstanceName = request.InstanceName,
+                InstanceIp = ipAddress,
+                InstanceIpFriendly = request.InstanceWebsite,
+                InstancePort = request.InstanceBindPort,
                 ApiKey = request.InstanceApiKey,
                 Active = false,
                 HeartBeat = DateTimeOffset.UtcNow,
@@ -76,6 +78,8 @@ public class CreateOrUpdateInstanceHandler : IRequestHandler<CreateOrUpdateInsta
         instanceGuid.Socials ??= request.Socials;
         instanceGuid.HeartBeat = DateTimeOffset.UtcNow;
         instanceGuid.InstanceName = request.InstanceName;
+        instanceGuid.InstanceIpFriendly = request.InstanceWebsite;
+        instanceGuid.InstancePort = request.InstanceBindPort;
         _context.Instances.Update(instanceGuid);
         await _context.SaveChangesAsync(cancellationToken);
 

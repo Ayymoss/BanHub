@@ -31,12 +31,18 @@
                     <MudTable Dense="true" Items="@_penaltyTable" Hover="true" FixedHeader="true" Height="100%" T="Penalty">
                         <HeaderContent>
                             <MudTh>Community</MudTh>
-                            <MudTh>Target</MudTh>
+                            <MudTh>Offender</MudTh>
                             <MudTh>Reason</MudTh>
                             <MudTh>When?</MudTh>
                         </HeaderContent>
                         <RowTemplate>
-                            <MudTd DataLabel="Instance">@(context.InstanceName ?? context.InstanceGuid.ToString())</MudTd>
+                            <MudTd DataLabel="Instance">
+                                <a href="/Communities/@context.InstanceGuid">
+                                    <MudText Typo="Typo.body2" Color="Color.Info">
+                                        @context.InstanceName
+                                    </MudText>
+                                </a>
+                            </MudTd>
                             <MudTd DataLabel="Target">
                                 <a href="/Players/@context.TargetIdentity">
                                     <MudText Typo="Typo.body2" Color="Color.Info">

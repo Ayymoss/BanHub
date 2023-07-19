@@ -1,4 +1,5 @@
 ﻿using BanHub.WebCore.Server.Context;
+using BanHub.WebCore.Server.Models.Domains;
 using BanHub.WebCore.Shared.Commands.Instance;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -19,13 +20,15 @@ public class GetInstancesPaginationHandler : IRequestHandler<GetInstancesPaginat
     public async Task<IEnumerable<Shared.Models.InstancesView.Instance>> Handle(GetInstancesPaginationCommand request,
         CancellationToken cancellationToken)
     {
-        var query = _context.Instances.AsQueryable();
+        var query = request.Privileged 
+            ? _context.Instances.AsQueryable() 
+            : _context.Instances.Where(x=>x.Active).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(request.SearchString))
         {
             query = query.Where(search =>
                 EF.Functions.ILike(search.InstanceGuid.ToString(), $"%{request.SearchString}%") ||
-                EF.Functions.ILike(search.InstanceName ?? "Unknown", $"%{request.SearchString}%") ||
+                EF.Functions.ILike(search.InstanceName, $"%{request.SearchString}%") ||
                 EF.Functions.ILike(search.InstanceIp, $"%{request.SearchString}%"));
         }
 

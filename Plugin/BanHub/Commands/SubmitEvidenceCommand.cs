@@ -58,7 +58,7 @@ public class SubmitEvidenceCommand : Command
             var guidCheck = Guid.TryParse(regex.Groups[1].ToString(), out var guid);
             var evidence = videoIdMatch.Groups[1].ToString();
 
-            if (guidCheck) result = await _endpointManager.AddPlayerPenaltyEvidenceAsync(guid, evidence, gameEvent.Origin);
+            if (guidCheck) result = await _endpointManager.AddPlayerPenaltyEvidenceAsync(guid, evidence, gameEvent.Origin, gameEvent.Target);
             else result = false;
         }
         else

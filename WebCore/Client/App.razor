@@ -1,5 +1,5 @@
 ﻿@inject ILocalStorageService LocalStorageService;
-@inject IApiService ApiLogic
+@inject AuthService AuthService
 @inject AuthenticationStateProvider AuthStateProvider
 
 <CascadingAuthenticationState>
@@ -27,20 +27,15 @@
 
         if (!string.IsNullOrEmpty(auth) && !user.Identity!.IsAuthenticated)
         {
-            var response = await ApiLogic.UserProfileAsync();
-            switch (response.Item1)
+            var response = await AuthService.UserProfileAsync();
+            if (response.Item1)
             {
-                case "Success":
-                    (AuthStateProvider as CustomAuthStateProvider)?.SetAuthInfo(response.Item2!);
-                    break;
-                case "Unauthorized":
-                    await LocalStorageService.RemoveItemAsync("IsAuthenticated");
-                    break;
-                case "Failed":
-                    (AuthStateProvider as CustomAuthStateProvider)?.ClearAuthInfo();
-                    await LocalStorageService.RemoveItemAsync("IsAuthenticated");
-                    break;
+                (AuthStateProvider as CustomAuthStateProvider)?.SetAuthInfo(response.Item2!);
+                return;
             }
+
+            (AuthStateProvider as CustomAuthStateProvider)?.ClearAuthInfo();
+            await LocalStorageService.RemoveItemAsync("IsAuthenticated");
         }
     }
 

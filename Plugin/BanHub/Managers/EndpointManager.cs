@@ -9,6 +9,7 @@ using BanHubData.Commands.Penalty;
 using BanHubData.Commands.Player;
 using BanHubData.Enums;
 using Microsoft.Extensions.Logging;
+using SharedLibraryCore;
 using SharedLibraryCore.Database.Models;
 
 namespace BanHub.Managers;
@@ -107,20 +108,24 @@ public class EndpointManager
         _logger.LogInformation("{Name} globally banned", client.CleanedName);
     }
 
-    public void RemoveFromProfiles(EFClient client)
+    public void RemoveFromProfiles()
     {
-        var canRemoveClient = Profiles.TryRemove(client, out _);
-        if (canRemoveClient)
+        foreach (var player in Profiles)
         {
-            _logger.LogInformation("Removed {Name} from profiles", client.CleanedName);
-            return;
-        }
+            if (player.Key.IsIngame) continue;
+            var canRemoveClient = Profiles.TryRemove(player.Key, out _);
+            if (canRemoveClient)
+            {
+                _logger.LogInformation("Removed {Name} from profiles", player.Key.CleanedName);
+                return;
+            }
 
-        _logger.LogError("Failed to remove {Name} from profiles", client.CleanedName);
+            _logger.LogError("Failed to remove {Name} from profiles", player.Key.CleanedName);
+        }
     }
 
     public async Task<(bool, Guid?)> AddPlayerPenaltyAsync(string sourcePenaltyType, EFClient origin, EFClient target,
-        string reason, TimeSpan? duration = null, PenaltyScope? scope = null)
+        string reason, DateTimeOffset? expiration = null, PenaltyScope? scope = null)
     {
         var adminIdentity = await CreateOrUpdatePlayerAsync(origin);
         var targetIdentity = await CreateOrUpdatePlayerAsync(target);
@@ -142,9 +147,9 @@ public class EndpointManager
         {
             PenaltyType = penaltyType,
             PenaltyScope = globalAntiCheatBan ? PenaltyScope.Global : scope ?? PenaltyScope.Local,
-            Reason = globalAntiCheatBan ? antiCheatReason ?? "AntiCheat Detection" : reason,
+            Reason = globalAntiCheatBan ? antiCheatReason ?? "AntiCheat Detection" : reason.StripColors(),
             Automated = globalAntiCheatBan,
-            Duration = duration,
+            Expiration = expiration,
             InstanceGuid = _instanceSlim.InstanceGuid,
             AdminIdentity = adminIdentity.Identity,
             TargetIdentity = targetIdentity.Identity
@@ -162,14 +167,16 @@ public class EndpointManager
         return result;
     }
 
-    public async Task<bool> AddPlayerPenaltyEvidenceAsync(Guid guid, string evidence, EFClient sender)
+    public async Task<bool> AddPlayerPenaltyEvidenceAsync(Guid guid, string evidence, EFClient issuer, EFClient offender)
     {
         var penalty = new AddPlayerPenaltyEvidenceCommand
         {
             PenaltyGuid = guid,
             Evidence = evidence,
-            ActionAdminIdentity = EntityToPlayerIdentity(sender),
-            ActionAdminUserName = sender.CleanedName
+            IssuerIdentity = EntityToPlayerIdentity(issuer),
+            IssuerUsername = issuer.CleanedName,
+            OffenderIdentity = EntityToPlayerIdentity(offender),
+            OffenderUsername = offender.CleanedName
         };
         return await _penalty.SubmitEvidence(penalty);
     }

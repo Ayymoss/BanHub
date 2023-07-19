@@ -1,6 +1,6 @@
 ﻿@using BanHub.WebCore.Shared.Commands.Web
 @inject NavigationManager NavigationManager
-@inject IApiService ApiLogic
+@inject AuthService AuthService
 @inject ILocalStorageService LocalStorageService
 
 <MudDialog Class="py-6">
@@ -8,7 +8,9 @@
         <MudContainer MaxWidth="MaxWidth.Small">
             <MudElement>
                 <MudText Align="Align.Center" Typo="Typo.h4">Enter your token</MudText>
-                <MudText Align="Align.Center" Typo="Typo.body1"><MudElement Style="color:#878686">Generate a new token in-game with </MudElement><MudElement Style="color:#3496b7">!BHAuth</MudElement></MudText>
+                <MudText Align="Align.Center" Typo="Typo.body1">
+                    <MudElement Style="color:#878686">Generate a new token in-game with </MudElement><MudElement Style="color:#3496b7">!BHAuth</MudElement>
+                </MudText>
                 <MudTextField @bind-Value="_webLoginModel.Token" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" MaxLength="6" Label="Token" Variant="Variant.Text" Counter="6" AdornmentIcon="@Icons.Material.Filled.Person" Adornment="Adornment.End" AdornmentColor="Color.Info"/>
             </MudElement>
             <MudElement Class="d-flex">
@@ -40,7 +42,7 @@
     private readonly WebTokenLoginCommand _webLoginModel = new();
     private bool _processing;
     private string? _error;
-    
+
     private async Task OnKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
@@ -61,17 +63,16 @@
             return;
         }
 
-        var success = await ApiLogic.LoginAsync(_webLoginModel);
+        var success = await AuthService.LoginAsync(_webLoginModel);
         if (success)
         {
             await LocalStorageService.SetItemAsStringAsync("IsAuthenticated", "true");
             NavigationManager.NavigateTo(NavigationManager.Uri, true);
+            return;
         }
-        else
-        {
-            _error = "Invalid or expired token";
-            _processing = false;
-        }
+
+        _error = "Invalid or expired token";
+        _processing = false;
     }
-    
+
 }

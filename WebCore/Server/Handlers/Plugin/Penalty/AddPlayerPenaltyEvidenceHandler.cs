@@ -29,8 +29,9 @@ public class AddPlayerPenaltyEvidenceHandler : IRequestHandler<AddPlayerPenaltyE
 
         penalty.Evidence = request.Evidence;
         var message = $"**Penalty**: {penalty.PenaltyGuid}\n" +
+                      $"**Profile:** [{request.OffenderUsername}](https://BanHub.gg/Players/{request.OffenderIdentity})" +
                       $"**Evidence**: https://youtu.be/{penalty.Evidence}\n\n" +
-                      $"**Submitted By**: {request.ActionAdminUserName} ({request.ActionAdminIdentity})\n";
+                      $"**Submitted By**: [{request.IssuerUsername}](https://BanHub.gg/Players/{request.IssuerIdentity})";
 
         IDiscordWebhookSubscriptions.InvokeEvent(new CreateAdminActionEvent
         {

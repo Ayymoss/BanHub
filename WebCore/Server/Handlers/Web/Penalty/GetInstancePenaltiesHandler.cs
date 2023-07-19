@@ -23,6 +23,8 @@ public class GetInstancePenaltiesHandler : IRequestHandler<GetInstancePenaltiesC
             .Select(x => new Shared.Models.InstanceProfileView.Penalty
             {
                 PenaltyGuid = x.PenaltyGuid,
+                TargetIdentity = x.Target.Identity,
+                AdminIdentity = x.Admin.Identity,
                 AdminUserName = x.Admin.CurrentAlias.Alias.UserName,
                 Reason = request.Privileged && x.Automated
                     ? x.Reason
@@ -32,7 +34,7 @@ public class GetInstancePenaltiesHandler : IRequestHandler<GetInstancePenaltiesC
                 Evidence = x.Evidence,
                 TargetUserName = x.Target.CurrentAlias.Alias.UserName,
                 InstanceGuid = x.Instance.InstanceGuid,
-                Duration = x.Duration,
+                Expiration = x.Expiration,
                 PenaltyType = x.PenaltyType,
                 PenaltyScope = x.PenaltyScope,
                 PenaltyStatus = x.PenaltyStatus,

@@ -7,6 +7,8 @@ public class AddPlayerPenaltyEvidenceCommand : IRequest<ControllerEnums.ReturnSt
 {
     public Guid PenaltyGuid { get; set; }
     public string Evidence { get; set; }
-    public string? ActionAdminUserName { get; set; }
-    public string? ActionAdminIdentity { get; set; }
+    public string OffenderUsername { get; set; }
+    public string OffenderIdentity { get; set; }
+    public string IssuerIdentity { get; set; }
+    public string IssuerUsername { get; set; }
 }

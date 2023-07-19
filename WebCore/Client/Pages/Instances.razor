@@ -38,7 +38,7 @@
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="ID">
-            @if (context.Active is true)
+            @if (context.Active)
             {
                 <MudElement Class="d-flex flex-row align-center">
                     <MudTooltip Arrow="true" Placement="Placement.Top" Text="Instance Active" RootClass="d-flex">
@@ -60,7 +60,7 @@
         <MudTd DataLabel="Instance Name">
             <a href="/Communities/@context.InstanceGuid">
                 <MudText Typo="Typo.body2" Color="Color.Info">
-                    @(context.InstanceName ?? "<Name Not Set>")
+                    @(context.InstanceName)
                 </MudText>
             </a>
         </MudTd>
@@ -70,13 +70,13 @@
         <MudTd DataLabel="Created">@context.Created.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
     </RowTemplate>
     <NoRecordsContent>
-        <MudText Class="mb-8" Color="Color.Warning">No instances found.</MudText>
+        <MudText Class="mb-8" Color="Color.Warning">No communities found.</MudText>
     </NoRecordsContent>
     <LoadingContent>
         <MudText>Loading...</MudText>
     </LoadingContent>
     <PagerContent>
-        <MudTablePager PageSizeOptions="new[] {50, 100}"/>
+        <MudTablePager PageSizeOptions="new[] {20, 50, 100}"/>
     </PagerContent>
 </MudTable>
 

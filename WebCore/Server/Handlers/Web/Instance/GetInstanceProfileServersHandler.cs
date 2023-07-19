@@ -1,5 +1,6 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Shared.Commands.Instance;
+using BanHub.WebCore.Shared.Utilities;
 using BanHubData.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,7 @@ public class GetInstanceProfileServersHandler : IRequestHandler<GetInstanceProfi
             .Select(x => new BanHub.WebCore.Shared.Models.InstanceProfileView.Server
             {
                 ServerName = x.ServerName,
-                ServerIp = x.ServerIp,
+                ServerIp = x.ServerIp.IsInternal() ? "?" : x.ServerIp, // TODO: Test this.
                 ServerPort = x.ServerPort,
                 ServerGame = x.ServerGame,
                 Updated = x.Updated,

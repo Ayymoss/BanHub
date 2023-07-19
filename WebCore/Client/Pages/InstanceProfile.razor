@@ -29,11 +29,11 @@ else
         {
             <MudElement Class="d-flex align-center">
                 <MudElement Class="d-flex align-center">
-                    <MudText Typo="Typo.h4" Class="mud-text-secondary d-flex align-center">
-                        @_instance.InstanceName
-                        <MudText Typo="Typo.h4" Color="Color.Info" Class="mx-1 mt-1">&bull;</MudText>
-                        @_instance.InstanceIp
-                    </MudText>
+                    <a href="https://@(_instance.InstanceWebsite)/">
+                        <MudText Typo="Typo.h4" Class="mud-text-secondary d-flex align-center">
+                            @_instance.InstanceName
+                        </MudText>
+                    </a>
                 </MudElement>
                 <MudSpacer/>
                 <MudElement>
@@ -41,7 +41,7 @@ else
                              Color="@(_instance.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow ? Color.Info : Color.Warning)">
                         @(_instance.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow ? "Connected" : "Disconnected")
                     </MudChip>
-                    <MudChip Variant="Variant.Text" Size="Size.Large" 
+                    <MudChip Variant="Variant.Text" Size="Size.Large"
                              Color="@(_instance.Active ? Color.Info : Color.Error)">
                         @(_instance.Active ? "Activated" : "Not Activated")
                     </MudChip>
@@ -121,8 +121,7 @@ else
                                         <RowTemplate>
                                             <MudTd DataLabel="Name">@context.ServerName</MudTd>
                                             <MudTd DataLabel="IP">
-
-                                                <MudText Typo="Typo.body2">@(context.ServerIp.IsInternal() ? _instance.InstanceIp : context.ServerIp):@context.ServerPort</MudText>
+                                                <MudText Typo="Typo.body2">@context.ServerIp:@context.ServerPort</MudText>
                                             </MudTd>
                                             <MudTd DataLabel="Game">@(context.ServerGame.GetGameName())</MudTd>
                                             <MudTd DataLabel="Updated">@context.Updated.Humanize()</MudTd>
@@ -149,10 +148,10 @@ else
                                               T="WebCore.Shared.Models.InstanceProfileView.Penalty" RowsPerPage="10">
                                         <HeaderContent>
                                             <MudTh Class="rounded-tl py-2">
-                                                <MudTableSortLabel SortBy="new Func<WebCore.Shared.Models.InstanceProfileView.Penalty, object>(x => x.TargetUserName)">Target</MudTableSortLabel>
+                                                <MudTableSortLabel SortBy="new Func<WebCore.Shared.Models.InstanceProfileView.Penalty, object>(x => x.TargetUserName)">Offender</MudTableSortLabel>
                                             </MudTh>
                                             <MudTh>
-                                                <MudTableSortLabel SortBy="new Func<WebCore.Shared.Models.InstanceProfileView.Penalty, object>(x => x.AdminUserName)">Admin</MudTableSortLabel>
+                                                <MudTableSortLabel SortBy="new Func<WebCore.Shared.Models.InstanceProfileView.Penalty, object>(x => x.AdminUserName)">Issuer</MudTableSortLabel>
                                             </MudTh>
                                             <MudTh>
                                                 <MudTableSortLabel SortBy="new Func<WebCore.Shared.Models.InstanceProfileView.Penalty, object>(x => x.Reason)">Reason</MudTableSortLabel>
@@ -172,8 +171,21 @@ else
                                             <MudTh Class="rounded-tr" Style="width: 100px;"/>
                                         </HeaderContent>
                                         <RowTemplate>
-                                            <MudTd DataLabel="Target">@context.TargetUserName</MudTd>
-                                            <MudTd DataLabel="Admin">@context.AdminUserName</MudTd>
+                                            <MudTd DataLabel="Target">
+                                                <a href="/Players/@context.TargetIdentity">
+                                                    <MudText Typo="Typo.body2" Color="Color.Warning">
+                                                        @context.TargetUserName
+                                                    </MudText>
+                                                </a>
+                                                @context.TargetUserName
+                                            </MudTd>
+                                            <MudTd DataLabel="Admin">
+                                                <a href="/Players/@context.AdminIdentity">
+                                                    <MudText Typo="Typo.body2" Color="Color.Warning">
+                                                        @context.AdminUserName
+                                                    </MudText>
+                                                </a>
+                                            </MudTd>
                                             <MudTd DataLabel="Reason">@context.Reason</MudTd>
                                             <MudTd DataLabel="Type">@context.PenaltyType.ToString()</MudTd>
                                             <MudTd DataLabel="Scope">@context.PenaltyScope.ToString()</MudTd>
@@ -181,7 +193,7 @@ else
                                             <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
                                             <MudTd DataLabel="View">
                                                 <MudChip Variant="Variant.Outlined" Size="Size.Small" Color="Color.Info">
-                                                    <MudIcon Icon="@Icons.Material.Filled.RemoveRedEye"/>
+                                                    <MudIcon Icon="@Icons.Material.Filled.LocalSee"/>
                                                 </MudChip>
                                             </MudTd>
                                         </RowTemplate>
@@ -231,7 +243,7 @@ else
         _penalties = (await PenaltyService.GetInstancePenaltiesAsync(Identity!)).ToList();
         _instance = await InstanceService.GetInstanceAsync(Identity);
         _instanceServers = await InstanceService.GetInstanceProfileServersAsync(Identity);
-        _title = _instance.InstanceName ?? _instance.InstanceGuid.ToString();
+        _title = _instance.InstanceName;
         _loading = false;
         StateHasChanged();
     }
@@ -263,7 +275,7 @@ else
             Evidence = clickArg.Item.Evidence,
             InstanceName = _instance.InstanceName,
             InstanceGuid = _instance.InstanceGuid,
-            Duration = clickArg.Item.Duration,
+            Expiration = clickArg.Item.Expiration,
             PenaltyType = clickArg.Item.PenaltyType,
             PenaltyScope = clickArg.Item.PenaltyScope,
             PenaltyStatus = clickArg.Item.PenaltyStatus,

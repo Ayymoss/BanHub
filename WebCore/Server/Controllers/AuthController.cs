@@ -39,7 +39,7 @@ public class AuthController : ControllerBase
         var signedInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
         if (signedInGuid is null) return Unauthorized("You are not authorised to perform this action");
         var result = await _mediator.Send(new GetUserProfileCommand {SignedInGuid = signedInGuid});
-        if (result is null) return BadRequest("User is invalid.");
+        if (result is null) return Unauthorized("You are not authorised to perform this action");
         return Ok(result);
     }
 

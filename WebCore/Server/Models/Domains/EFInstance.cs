@@ -20,6 +20,16 @@ public class EFInstance
     public required string InstanceIp { get; set; } = null!;
 
     /// <summary>
+    /// The IW4MAdmin port
+    /// </summary>
+    public int InstancePort { get; set; } = 1624;
+
+    /// <summary>
+    /// The friendly community address
+    /// </summary>
+    public string? InstanceIpFriendly { get; set; }
+
+    /// <summary>
     /// The IW4MAdmin name
     /// </summary>
     public required string InstanceName { get; set; }

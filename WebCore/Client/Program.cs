@@ -1,6 +1,5 @@
 using BanHub.WebCore.Client;
 using BanHub.WebCore.Client.Handlers;
-using BanHub.WebCore.Client.Interfaces;
 using BanHub.WebCore.Client.Providers;
 using BanHub.WebCore.Client.Services;
 using BanHub.WebCore.Client.Services.RestEase;
@@ -25,10 +24,10 @@ builder.Services.AddScoped(sp => new HttpClient {BaseAddress = new Uri("https://
 #endif
 
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
-builder.Services.AddScoped<IApiService, ApiService>();
+builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<CookieHandler>();
-builder.Services.AddSingleton<ActiveUserService>();
 
+builder.Services.AddSingleton<ActiveUserService>();
 builder.Services.AddSingleton<InstanceService>();
 builder.Services.AddSingleton<NoteService>();
 builder.Services.AddSingleton<PenaltyService>();

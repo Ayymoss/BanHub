@@ -24,7 +24,8 @@ public class GetInstanceHandler : IRequestHandler<GetInstanceCommand, BanHub.Web
             .Select(x => new Shared.Models.InstanceProfileView.Instance
             {
                 InstanceGuid = x.InstanceGuid,
-                InstanceIp = x.InstanceIp,
+                InstanceWebsite = x.InstanceIpFriendly ?? $"{x.InstanceIp}:{x.InstancePort}",
+                InstancePort = x.InstancePort,
                 InstanceName = x.InstanceName,
                 About = x.About,
                 Socials = x.Socials,

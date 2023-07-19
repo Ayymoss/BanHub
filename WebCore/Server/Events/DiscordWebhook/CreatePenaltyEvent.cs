@@ -10,4 +10,6 @@ public class CreatePenaltyEvent : CoreEvent
     public string Identity { get; set; }
     public string Username { get; set; }
     public string Reason { get; set; }
+    public string InstanceName { get; set; }
+    public Guid InstanceGuid { get; set; }
 }

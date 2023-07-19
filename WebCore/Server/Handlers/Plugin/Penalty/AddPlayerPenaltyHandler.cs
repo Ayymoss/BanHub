@@ -44,7 +44,9 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
             .Where(x => x.InstanceGuid == request.InstanceGuid)
             .Select(x => new
             {
-                x.Id
+                x.Id,
+                x.InstanceName,
+                x.InstanceGuid
             }).SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
         if (target is null || admin is null || instance is null) return (ControllerEnums.ReturnState.BadRequest, null);
@@ -60,7 +62,7 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
 
         var hasExistingGlobalBan = await _context.Penalties
             .Where(x => x.TargetId == target.Id)
-            .Where(x=>x.PenaltyStatus == PenaltyStatus.Active)
+            .Where(x => x.PenaltyStatus == PenaltyStatus.Active)
             .Where(x => x.PenaltyType == PenaltyType.Ban)
             .AnyAsync(x => x.PenaltyScope == PenaltyScope.Global, cancellationToken: cancellationToken);
 
@@ -101,7 +103,7 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
             AdminId = admin.Id,
             Reason = request.Reason,
             Automated = request.Automated,
-            Duration = request.Duration,
+            Expiration = request.Expiration,
             InstanceId = instance.Id,
             TargetId = target.Id
         };
@@ -131,15 +133,18 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
         _context.Add(penaltyModel);
         await _context.SaveChangesAsync(cancellationToken);
 
-        IDiscordWebhookSubscriptions.InvokeEvent(new CreatePenaltyEvent
-        {
-            Scope = penaltyModel.PenaltyScope,
-            PenaltyType = penaltyModel.PenaltyType,
-            PenaltyGuid = penaltyModel.PenaltyGuid,
-            Identity = target.Identity,
-            Username = target.UserName,
-            Reason = penaltyModel.Reason
-        }, cancellationToken);
+        if (request is {PenaltyType: PenaltyType.Ban, PenaltyScope: PenaltyScope.Global})
+            IDiscordWebhookSubscriptions.InvokeEvent(new CreatePenaltyEvent
+            {
+                Scope = penaltyModel.PenaltyScope,
+                PenaltyType = penaltyModel.PenaltyType,
+                PenaltyGuid = penaltyModel.PenaltyGuid,
+                Identity = target.Identity,
+                Username = target.UserName,
+                Reason = penaltyModel.Reason,
+                InstanceGuid = instance.InstanceGuid,
+                InstanceName = instance.InstanceName
+            }, cancellationToken);
 
         return (ControllerEnums.ReturnState.Created, penaltyModel.PenaltyGuid);
     }

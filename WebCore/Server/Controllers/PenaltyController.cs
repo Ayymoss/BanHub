@@ -65,8 +65,8 @@ public class PenaltyController : ControllerBase
 
         if (!instanceRoleAssigned && !webRoleAssigned) return Unauthorized("You are not authorised to perform this action");
 
-        request.ActionAdminUserName = adminName;
-        request.ActionAdminIdentity = adminNameIdentity;
+        request.IssuerUsername = adminName;
+        request.IssuerIdentity = adminNameIdentity;
         return await HandleAddPlayerPenaltyEvidence(request);
     }
 

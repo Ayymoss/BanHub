@@ -68,6 +68,28 @@ public class InstanceController : ControllerBase
     public async Task<ActionResult<IEnumerable<Shared.Models.InstancesView.Instance>>> GetInstancesAsync(
         [FromBody] GetInstancesPaginationCommand pagination)
     {
+        var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
+        var instanceRoleAssigned = false;
+        var webRoleAssigned = false;
+
+        if (adminSignInGuid is not null)
+        {
+            instanceRoleAssigned = _signedInUsers.IsUserInAnyInstanceRole(adminSignInGuid, new[]
+            {
+                InstanceRole.InstanceModerator,
+                InstanceRole.InstanceAdministrator,
+                InstanceRole.InstanceSeniorAdmin,
+                InstanceRole.InstanceOwner
+            });
+            webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
+            {
+                WebRole.WebAdmin,
+                WebRole.WebSuperAdmin
+            });
+        }
+
+        var authorised = instanceRoleAssigned || webRoleAssigned;
+        pagination.Privileged = authorised;
         var result = await _mediator.Send(pagination);
         return Ok(result);
     }

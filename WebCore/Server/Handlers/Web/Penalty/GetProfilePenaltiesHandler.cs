@@ -24,6 +24,7 @@ public class GetProfilePenaltiesHandler : IRequestHandler<GetProfilePenaltiesCom
             {
                 PenaltyGuid = x.PenaltyGuid,
                 AdminUserName = x.Admin.CurrentAlias.Alias.UserName,
+                AdminIdentity = x.Admin.Identity,
                 Reason = request.Privileged && x.Automated
                     ? x.Reason
                     : x.Automated
@@ -32,7 +33,7 @@ public class GetProfilePenaltiesHandler : IRequestHandler<GetProfilePenaltiesCom
                 Evidence = x.Evidence,
                 InstanceName = x.Instance.InstanceName,
                 InstanceGuid = x.Instance.InstanceGuid,
-                Duration = x.Duration,
+                Expiration = x.Expiration,
                 PenaltyType = x.PenaltyType,
                 PenaltyScope = x.PenaltyScope,
                 PenaltyStatus = x.PenaltyStatus,

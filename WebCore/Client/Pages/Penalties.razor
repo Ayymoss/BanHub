@@ -22,10 +22,10 @@
             <MudTableSortLabel SortLabel="Id" T="Penalty">ID</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Target Name" T="Penalty">Target Name</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Target Name" T="Penalty">Offender</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Admin Name" T="Penalty">Admin Name</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Admin Name" T="Penalty">Issuer</MudTableSortLabel>
         </MudTh>
         <MudTh>
             <MudTableSortLabel SortLabel="Reason" T="Penalty">Reason</MudTableSortLabel>
@@ -114,7 +114,7 @@
                     break;
             }
         </MudTd>
-        <MudTd DataLabel="Instance">@(context.InstanceName ?? context.InstanceGuid.ToString())</MudTd>
+        <MudTd DataLabel="Instance">@context.InstanceName</MudTd>
         <MudTd DataLabel="Submitted">@context.Submitted.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
     </RowTemplate>
     <NoRecordsContent>
@@ -124,7 +124,7 @@
         <MudText>Loading...</MudText>
     </LoadingContent>
     <PagerContent>
-        <MudTablePager PageSizeOptions="new[] {50, 100}"/>
+        <MudTablePager PageSizeOptions="new[] {20, 50, 100}"/>
     </PagerContent>
 </MudTable>
 

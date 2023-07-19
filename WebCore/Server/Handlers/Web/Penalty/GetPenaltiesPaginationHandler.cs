@@ -69,7 +69,7 @@ public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginat
                         ? "Automated Detection"
                         : penalty.Reason,
                 Evidence = penalty.Evidence,
-                Duration = penalty.Duration,
+                Expiration = penalty.Expiration,
                 InstanceGuid = penalty.Instance.InstanceGuid,
                 TargetIdentity = penalty.Target.Identity,
                 TargetUserName = penalty.Target.CurrentAlias.Alias.UserName,

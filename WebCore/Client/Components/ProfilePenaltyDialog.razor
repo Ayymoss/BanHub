@@ -73,18 +73,18 @@
                     <MudText Typo="Typo.body2" Class="mud-text-secondary">Admin</MudText>
                 </MudPaper>
             </MudItem>
-            @if (Penalty.Duration.HasValue)
+            @if (Penalty.Expiration.HasValue)
             {
                 <MudItem Class="flex-1">
                     <MudPaper Class="d-flex justify-center flex-column align-center align-self-center pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle2" Color="Color.Info">@Penalty.Duration.Value.Humanize()</MudText>
-                        <MudText Typo="Typo.body2" Class="mud-text-secondary">Duration</MudText>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Info">@Penalty.Expiration.Value.Humanize()</MudText>
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">Expiration</MudText>
                     </MudPaper>
                 </MudItem>
             }
             <MudItem Class="flex-1">
                 <MudPaper Class="d-flex justify-center flex-column align-center align-self-center pa-4" Elevation="2">
-                    <MudText Typo="Typo.subtitle2" Color="Color.Info">@(Penalty.InstanceName ?? Penalty.InstanceGuid.ToString())</MudText>
+                    <MudText Typo="Typo.subtitle2" Color="Color.Info">@Penalty.InstanceName</MudText>
                     <MudText Typo="Typo.body2" Class="mud-text-secondary">Server</MudText>
                 </MudPaper>
             </MudItem>
