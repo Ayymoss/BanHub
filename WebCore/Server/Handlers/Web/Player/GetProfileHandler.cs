@@ -24,6 +24,7 @@ public class GetProfileHandler : IRequestHandler<GetProfileCommand, Shared.Model
                 Identity = profile.Identity,
                 UserName = profile.CurrentAlias.Alias.UserName,
                 HeartBeat = profile.HeartBeat,
+                IpAddress = request.Privileged ? profile.CurrentAlias.Alias.IpAddress : null,
                 Connected = profile.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow,
                 TotalConnections = profile.TotalConnections,
                 PlayTime = profile.PlayTime,

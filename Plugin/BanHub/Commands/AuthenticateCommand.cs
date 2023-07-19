@@ -28,23 +28,22 @@ public class AuthenticateCommand : Command
     {
         if (!Plugin.InstanceActive)
         {
-            gameEvent.Origin.Tell(_bhConfig.Translations.NotActive);
+            gameEvent.Origin.Tell(_bhConfig.Translations.NotActive.FormatExt(_bhConfig.Translations.BanHubName));
             return;
         }
 
         if (gameEvent.Origin.ClientId is 1)
         {
-            gameEvent.Origin.Tell(_bhConfig.Translations.CannotAuthIW4MAdmin);
+            gameEvent.Origin.Tell(_bhConfig.Translations.CannotAuthIW4MAdmin.FormatExt(_bhConfig.Translations.BanHubName));
             return;
         }
 
         var token = await _endpointManager.GetTokenAsync(gameEvent.Origin);
         if (token is null)
         {
-            gameEvent.Origin.Tell(_bhConfig.Translations.TokenGenerationFailed);
+            gameEvent.Origin.Tell(_bhConfig.Translations.TokenGenerationFailed.FormatExt(_bhConfig.Translations.BanHubName));
             return;
         }
-
-        gameEvent.Origin.Tell(_bhConfig.Translations.ProvideToken.FormatExt(token));
+        gameEvent.Origin.Tell(_bhConfig.Translations.ProvideToken.FormatExt(_bhConfig.Translations.BanHubName, token));
     }
 }

@@ -10,4 +10,5 @@ public class Player
     public TimeSpan PlayTime { get; set; }
     public DateTimeOffset Created { get; set; }
     public bool Connected { get; set; }
+    public string? IpAddress { get; set; }
 }

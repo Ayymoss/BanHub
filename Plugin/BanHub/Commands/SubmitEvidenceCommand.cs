@@ -43,7 +43,7 @@ public class SubmitEvidenceCommand : Command
     {
         if (!Plugin.InstanceActive)
         {
-            gameEvent.Origin.Tell(_bhConfig.Translations.NotActive);
+            gameEvent.Origin.Tell(_bhConfig.Translations.NotActive.FormatExt(_bhConfig.Translations.BanHubName));
             return;
         }
 
@@ -63,17 +63,17 @@ public class SubmitEvidenceCommand : Command
         }
         else
         {
-            gameEvent.Origin.Tell(_bhConfig.Translations.SubmitEvidenceRegexFail);
+            gameEvent.Origin.Tell(_bhConfig.Translations.SubmitEvidenceRegexFail.FormatExt(_bhConfig.Translations.BanHubName));
             result = false;
         }
 
         switch (result)
         {
             case true:
-                gameEvent.Origin.Tell(_bhConfig.Translations.SubmitEvidenceSuccess);
+                gameEvent.Origin.Tell(_bhConfig.Translations.SubmitEvidenceSuccess.FormatExt(_bhConfig.Translations.BanHubName));
                 break;
             case false:
-                gameEvent.Origin.Tell(_bhConfig.Translations.SubmitEvidenceFail);
+                gameEvent.Origin.Tell(_bhConfig.Translations.SubmitEvidenceFail.FormatExt(_bhConfig.Translations.BanHubName));
                 break;
         }
     }

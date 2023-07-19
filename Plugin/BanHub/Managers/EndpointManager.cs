@@ -11,6 +11,7 @@ using BanHubData.Enums;
 using Microsoft.Extensions.Logging;
 using SharedLibraryCore;
 using SharedLibraryCore.Database.Models;
+using SharedLibraryCore.Interfaces;
 
 namespace BanHub.Managers;
 
@@ -18,6 +19,7 @@ public class EndpointManager
 {
     public readonly ConcurrentDictionary<EFClient, string> Profiles = new();
     private readonly ILogger<EndpointManager> _logger;
+    private readonly NoteService _noteService;
     private readonly PlayerService _player;
     private readonly BanHubConfiguration _banHubConfiguration;
     private readonly InstanceSlim _instanceSlim;
@@ -27,8 +29,7 @@ public class EndpointManager
 
     public EndpointManager(BanHubConfiguration banHubConfiguration, InstanceSlim instanceSlim,
         PlayerService playerService, InstanceService instanceService, PenaltyService penaltyService,
-        ServerService serverService,
-        ILogger<EndpointManager> logger)
+        ServerService serverService, ILogger<EndpointManager> logger, NoteService noteService)
     {
         _banHubConfiguration = banHubConfiguration;
         _instanceSlim = instanceSlim;
@@ -37,6 +38,7 @@ public class EndpointManager
         _penalty = penaltyService;
         _server = serverService;
         _logger = logger;
+        _noteService = noteService;
     }
 
     public async Task<bool> CreateOrUpdateInstanceAsync(CreateOrUpdateInstanceCommand instance) =>
@@ -71,6 +73,13 @@ public class EndpointManager
             ProcessPlayer(player);
             return;
         }
+
+        var noteCount = await _noteService.GetUserNotesCountAsync(EntityToPlayerIdentity(player));
+        if (noteCount is not 0)
+            InformAdmins(player.CurrentServer,
+                _banHubConfiguration.Translations.UserHasNotes
+                    .FormatExt(_banHubConfiguration.Translations.BanHubName, player.Name, noteCount));
+
 
         Profiles.TryAdd(player, result.Identity);
     }
@@ -186,5 +195,14 @@ public class EndpointManager
     {
         var identity = EntityToPlayerIdentity(client);
         return await _player.GetTokenAsync(new GetPlayerTokenCommand {Identity = identity});
+    }
+
+    private static void InformAdmins(Server server, string message)
+    {
+        var admins = server.GetClientsAsList().Where(x => x.IsPrivileged());
+        foreach (var admin in admins)
+        {
+            admin.Tell(message);
+        }
     }
 }

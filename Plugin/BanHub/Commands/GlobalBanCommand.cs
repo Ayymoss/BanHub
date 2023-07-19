@@ -43,13 +43,13 @@ public class GlobalBanCommand : Command
     {
         if (!Plugin.InstanceActive)
         {
-            gameEvent.Origin.Tell(_bhConfig.Translations.NotActive);
+            gameEvent.Origin.Tell(_bhConfig.Translations.NotActive.FormatExt(_bhConfig.Translations.BanHubName));
             return;
         }
 
         if (gameEvent.Target.ClientId is 1)
         {
-            gameEvent.Origin.Tell(_bhConfig.Translations.CannotTargetServer);
+            gameEvent.Origin.Tell(_bhConfig.Translations.CannotTargetServer.FormatExt(_bhConfig.Translations.BanHubName));
             return;
         }
 
@@ -59,13 +59,13 @@ public class GlobalBanCommand : Command
 
         if (!result.Item1)
         {
-            gameEvent.Origin.Tell(_bhConfig.Translations.GlobalBanCommandFail);
+            gameEvent.Origin.Tell(_bhConfig.Translations.GlobalBanCommandFail.FormatExt(_bhConfig.Translations.BanHubName));
             return;
         }
-
+        
         gameEvent.Origin.Tell(_bhConfig.Translations.GlobalBanCommandSuccess
-            .FormatExt(gameEvent.Target.CleanedName, gameEvent.Data, result.Item2));
-        gameEvent.Origin.Tell(_bhConfig.Translations.GlobalBanCommandSuccessFollow);
+            .FormatExt(_bhConfig.Translations.BanHubName, gameEvent.Target.CleanedName, gameEvent.Data, result.Item2));
+        gameEvent.Origin.Tell(_bhConfig.Translations.GlobalBanCommandSuccessFollow.FormatExt(_bhConfig.Translations.BanHubName));
         gameEvent.Target.SetAdditionalProperty("BanHubGlobalBan", true);
         gameEvent.Target.Ban("^1Globally banned!^7\nBanHub.gg",
             SharedLibraryCore.Utilities.IW4MAdminClient(gameEvent.Target.CurrentServer), false);

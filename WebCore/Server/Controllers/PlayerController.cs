@@ -2,6 +2,7 @@
 using BanHub.WebCore.Shared.Commands.PlayerProfile;
 using BanHub.WebCore.Shared.Commands.Players;
 using BanHubData.Commands.Player;
+using BanHubData.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Player = BanHub.WebCore.Shared.Models.PlayersView.Player;
@@ -13,10 +14,12 @@ namespace BanHub.WebCore.Server.Controllers;
 public class PlayerController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly SignedInUsers _signedInUsers;
 
-    public PlayerController(IMediator mediator)
+    public PlayerController(IMediator mediator, SignedInUsers signedInUsers)
     {
         _mediator = mediator;
+        _signedInUsers = signedInUsers;
     }
 
     [HttpPost, PluginAuthentication]
@@ -37,7 +40,28 @@ public class PlayerController : ControllerBase
     [HttpGet("Profile/{identity}")]
     public async Task<ActionResult<Player>> GetProfileAsync([FromRoute] string identity)
     {
-        var result = await _mediator.Send(new GetProfileCommand {Identity = identity});
+        var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
+        var instanceRoleAssigned = false;
+        var webRoleAssigned = false;
+
+        if (adminSignInGuid is not null)
+        {
+            instanceRoleAssigned = _signedInUsers.IsUserInAnyInstanceRole(adminSignInGuid, new[]
+            {
+                InstanceRole.InstanceModerator,
+                InstanceRole.InstanceAdministrator,
+                InstanceRole.InstanceSeniorAdmin,
+                InstanceRole.InstanceOwner
+            });
+            webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
+            {
+                WebRole.WebAdmin,
+                WebRole.WebSuperAdmin
+            });
+        }
+
+        var authorised = instanceRoleAssigned || webRoleAssigned;
+        var result = await _mediator.Send(new GetProfileCommand {Identity = identity, Privileged = authorised});
         if (result is null) return NotFound();
         return Ok(result);
     }

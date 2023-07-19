@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using SharedLibraryCore;
 
 namespace BanHub.Configuration;
 
@@ -18,16 +19,18 @@ public class TranslationStrings
 {
     // @formatter:off
     // ReSharper disable once InconsistentNaming
-    public string CannotAuthIW4MAdmin { get; set; } = "You cannot authenticate as IW4MAdmin";
-    public string NotActive { get; set; } = "Ban Hub is not active";
-    public string GlobalBanCommandSuccess { get; set; } = "Ban Hub banned {{target}} for {{reason}} ({{guid}})";
-    public string GlobalBanCommandSuccessFollow { get; set; } = "(Color::Yellow)You must upload (Color::Accent)!evidence (Color::Yellow)for global bans!";
-    public string GlobalBanCommandFail { get; set; } = "Ban Hub ban was not submitted";
-    public string SubmitEvidenceSuccess { get; set; } = "Evidence submitted";
-    public string SubmitEvidenceFail { get; set; } = "Failed to submit evidence. Does the penalty exist or have evidence already?";
-    public string SubmitEvidenceRegexFail { get; set; } = "Evidence must be a valid YouTube URL";
-    public string CannotTargetServer { get; set; } = "You cannot ban the console...";
-    public string ProvideToken { get; set; } = "Your token is {{token}} (expires in 5 minutes)";
-    public string TokenGenerationFailed { get; set; } = "Failed to generate token";
+    public string BanHubName { get; set; } = "[(Color::Accent)BanHub(Color::White)]";
+    public string CannotAuthIW4MAdmin { get; set; } = "{{plugin}} You cannot authenticate as IW4MAdmin";
+    public string NotActive { get; set; } = "{{plugin}} is not active";
+    public string GlobalBanCommandSuccess { get; set; } = "{{plugin}} banned {{target}} for {{reason}} ({{guid}})";
+    public string GlobalBanCommandSuccessFollow { get; set; } = "{{plugin}} (Color::Yellow)You must upload (Color::Accent)!evidence (Color::Yellow)for global bans!";
+    public string GlobalBanCommandFail { get; set; } = "{{plugin}} Ban Hub ban was not submitted";
+    public string SubmitEvidenceSuccess { get; set; } = "{{plugin}} Evidence submitted";
+    public string SubmitEvidenceFail { get; set; } = "{{plugin}} Failed to submit evidence. Does the penalty exist or have evidence already?";
+    public string SubmitEvidenceRegexFail { get; set; } = "{{plugin}} Evidence must be a valid YouTube URL";
+    public string CannotTargetServer { get; set; } = "{{plugin}} You cannot ban the console...";
+    public string ProvideToken { get; set; } = "{{plugin}} Your token is {{token}} (expires in 5 minutes)";
+    public string TokenGenerationFailed { get; set; } = "{{plugin}} Failed to generate token";
+    public string UserHasNotes { get; set; } = "{{plugin}} (Color::Accent){{user}} (Color::White)has (Color::Yellow){{count}} (Color::White)note(s). (Color::Yellow)Check the website for more info.";
     // @formatter:on
 }

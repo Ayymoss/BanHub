@@ -34,6 +34,11 @@ else
                     @_guid
                     <MudText Typo="Typo.h4" Color="Color.Info" Class="mx-1 mt-1">&bull;</MudText>
                     @_gameName
+                    @if (_entity.IpAddress is not null)
+                    {
+                        <MudText Typo="Typo.h4" Color="Color.Info" Class="mx-1 mt-1">&bull;</MudText>
+                        @_entity.IpAddress
+                    }
                 </MudText>
             </MudElement>
             <MudSpacer/>

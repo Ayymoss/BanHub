@@ -2,6 +2,7 @@
 using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Shared.Commands.PlayerProfile;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
+using BanHubData.Commands.Note;
 using BanHubData.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -105,6 +106,13 @@ public class NoteController : ControllerBase
 
         var authorised = instanceRoleAssigned || webRoleAssigned;
         var result = await _mediator.Send(new GetNotesCommand {Identity = identity, Authorised = authorised});
+        return Ok(result);
+    }
+
+    [HttpGet("NoteCount/{identity}"), PluginAuthentication]
+    public async Task<ActionResult<int>> GetUserNotesCountAsync([FromRoute] string identity)
+    {
+        var result = await _mediator.Send(new GetNoteCountCommand {Identity = identity});
         return Ok(result);
     }
 }
