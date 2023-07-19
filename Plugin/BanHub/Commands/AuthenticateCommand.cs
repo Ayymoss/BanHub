@@ -19,7 +19,7 @@ public class AuthenticateCommand : Command
         _endpointManager = endpointManager;
         Name = "bhauthenticate";
         Description = "Get an authentication code";
-        Alias = "bha";
+        Alias = "bhauth";
         Permission = EFClient.Permission.Moderator;
         RequiresTarget = false;
     }

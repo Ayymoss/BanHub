@@ -135,20 +135,21 @@ public class EndpointManager
         if (!parsedPenaltyType || !Plugin.InstanceActive) return (false, null);
         if (penaltyType is not PenaltyType.Ban && origin.ClientId is 1) return (false, null);
 
-        var globalAntiCheatBan = false;
+        var (isGlobalAntiCheatBan, isAntiCheatBan) = (false, false);
         var antiCheatReason = origin.AdministeredPenalties?.FirstOrDefault()?.AutomatedOffense;
         if (antiCheatReason is not null)
         {
             const string regex = @"^(Recoil|Button)(-{1,2})(\d{0,})@(\d{0,})$";
-            globalAntiCheatBan = Regex.IsMatch(antiCheatReason, regex);
+            isGlobalAntiCheatBan = Regex.IsMatch(antiCheatReason, regex);
+            isAntiCheatBan = true;
         }
 
         var penaltyDto = new AddPlayerPenaltyCommand
         {
             PenaltyType = penaltyType,
-            PenaltyScope = globalAntiCheatBan ? PenaltyScope.Global : scope ?? PenaltyScope.Local,
-            Reason = globalAntiCheatBan ? antiCheatReason ?? "AntiCheat Detection" : reason.StripColors(),
-            Automated = globalAntiCheatBan,
+            PenaltyScope = isGlobalAntiCheatBan ? PenaltyScope.Global : scope ?? PenaltyScope.Local,
+            Reason = isAntiCheatBan ? antiCheatReason ?? "AntiCheat Detection" : reason.StripColors(),
+            Automated = isAntiCheatBan,
             Expiration = expiration,
             InstanceGuid = _instanceSlim.InstanceGuid,
             AdminIdentity = adminIdentity.Identity,
