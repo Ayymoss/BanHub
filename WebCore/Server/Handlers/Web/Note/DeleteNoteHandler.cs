@@ -15,6 +15,7 @@ public class DeleteNoteHandler : IRequestHandler<DeleteNoteCommand, bool>
     {
         _context = context;
     }
+
     public async Task<bool> Handle(DeleteNoteCommand request, CancellationToken cancellationToken)
     {
         var note = await _context.Notes.FirstOrDefaultAsync(x => x.NoteGuid == request.NoteGuid, cancellationToken: cancellationToken);
@@ -26,23 +27,28 @@ public class DeleteNoteHandler : IRequestHandler<DeleteNoteCommand, bool>
             {
                 x.NoteGuid,
                 AdminIdentity = x.Admin.Identity,
+                AdminUserName = x.Admin.CurrentAlias.Alias.UserName,
+                TargetUserName = x.Target.CurrentAlias.Alias.UserName,
                 TargetIdentity = x.Target.Identity,
                 x.Message,
-                x.IsPrivate,
+                x.IsPrivate
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
-
-        var message = noteInfo is null
-            ? $"Note **{note.NoteGuid}** was deleted by **{request.ActionAdminUserName}** but no information could be found."
-            : $"**Note**: {noteInfo.NoteGuid}\n" +
-              $"**Admin**: {noteInfo.AdminIdentity}\n" +
-              $"**Target**: {noteInfo.TargetIdentity}\n" +
-              $"**Note**: {noteInfo.Message}\n" +
-              $"**Was Public?**: {(!noteInfo.IsPrivate ? "Yes" : "No")}\n\n" +
-              $"**Deleted By**: {request.ActionAdminUserName} ({request.ActionAdminIdentity})\n" +
-              $"**Deleted For**: {request.ActionDeletionReason}";
 
         _context.Notes.Remove(note);
         await _context.SaveChangesAsync(cancellationToken);
+
+        var message = noteInfo is null
+            ? $"Note **{note.NoteGuid}** was deleted by **{request.ActionAdminIdentity}** but no information could be found."
+            : $"**Note**: {noteInfo.NoteGuid}\n" +
+              $"**Admin**: {noteInfo.AdminIdentity}\n" +
+              $"**Admin**: [{noteInfo.AdminUserName}](https://BanHub.gg/Players/{noteInfo.AdminIdentity})\n" +
+              $"**Target**: {noteInfo.TargetIdentity}\n" +
+              $"**Target**: [{noteInfo.TargetUserName}](https://BanHub.gg/Players/{noteInfo.TargetIdentity})\n" +
+              $"**Note**: {noteInfo.Message}\n" +
+              $"**Was Private?**: {(noteInfo.IsPrivate ? "Yes" : "No")}\n\n" +
+              $"**Deleted By**: [{request.ActionAdminUserName}](https://BanHub.gg/Players/{request.ActionAdminIdentity})\n" +
+              $"**Deleted For**: {request.ActionDeletionReason}";
+
         IDiscordWebhookSubscriptions.InvokeEvent(new CreateAdminActionEvent
         {
             Title = "Note Deletion!",

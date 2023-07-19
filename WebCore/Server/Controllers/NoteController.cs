@@ -44,11 +44,8 @@ public class NoteController : ControllerBase
         if (!instanceRoleAssigned && !webRoleAssigned) return Unauthorized("You are not authorised to perform this action");
 
         var result = await _mediator.Send(request);
-        return result switch
-        {
-            true => Ok("Created note"),
-            false => BadRequest("Failed to create note")
-        };
+        if (!result) return BadRequest();
+        return Ok();
     }
 
     [HttpDelete] // Authorised endpoint

@@ -8,5 +8,4 @@ public class AddNoteCommand : IRequest<bool>
     public bool IsPrivate { get; set; }
     public string TargetIdentity { get; set; }
     public string AdminIdentity { get; set; }
-    public string AdminUserName { get; set; }
 }

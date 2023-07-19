@@ -23,7 +23,7 @@ public class TranslationStrings
     public string CannotAuthIW4MAdmin { get; set; } = "{{plugin}} You cannot authenticate as IW4MAdmin";
     public string NotActive { get; set; } = "{{plugin}} is not active";
     public string GlobalBanCommandSuccess { get; set; } = "{{plugin}} banned {{target}} for {{reason}} ({{guid}})";
-    public string GlobalBanCommandSuccessFollow { get; set; } = "{{plugin}} (Color::Yellow)You must upload (Color::Accent)!evidence (Color::Yellow)for global bans!";
+    public string GlobalBanCommandSuccessFollow { get; set; } = "{{plugin}} (Color::Yellow)You must upload (Color::Accent)!{{command}} (Color::Yellow)for global bans!";
     public string GlobalBanCommandFail { get; set; } = "{{plugin}} Ban Hub ban was not submitted";
     public string SubmitEvidenceSuccess { get; set; } = "{{plugin}} Evidence submitted";
     public string SubmitEvidenceFail { get; set; } = "{{plugin}} Failed to submit evidence. Does the penalty exist or have evidence already?";
