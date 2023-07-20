@@ -27,7 +27,7 @@ public class TranslationStrings
     public string GlobalBanCommandFail { get; set; } = "{{plugin}} Ban Hub ban was not submitted";
     public string SubmitEvidenceSuccess { get; set; } = "{{plugin}} Evidence submitted";
     public string SubmitEvidenceFail { get; set; } = "{{plugin}} Failed to submit evidence. Does the penalty exist or have evidence already?";
-    public string SubmitEvidenceRegexFail { get; set; } = "{{plugin}} Evidence must be a valid YouTube URL";
+    public string SubmitEvidenceUrlFail { get; set; } = "{{plugin}} Evidence must be a valid YouTube URL";
     public string CannotTargetServer { get; set; } = "{{plugin}} You cannot ban the console...";
     public string ProvideToken { get; set; } = "{{plugin}} Your token is {{token}} (expires in 5 minutes)";
     public string TokenGenerationFailed { get; set; } = "{{plugin}} Failed to generate token";

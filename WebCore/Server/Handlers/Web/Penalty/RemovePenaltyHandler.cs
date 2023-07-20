@@ -2,12 +2,11 @@
 using BanHub.WebCore.Server.Events.DiscordWebhook;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Shared.Commands.Penalty;
-using BanHub.WebCore.Shared.Commands.PlayerProfile;
 using BanHubData.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace BanHub.WebCore.Server.Handlers.Web.PlayerProfile;
+namespace BanHub.WebCore.Server.Handlers.Web.Penalty;
 
 public class RemovePenaltyHandler : IRequestHandler<RemovePenaltyCommand, bool>
 {

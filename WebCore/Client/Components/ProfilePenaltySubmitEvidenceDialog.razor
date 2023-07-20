@@ -1,6 +1,4 @@
 ﻿@using Penalty = BanHub.WebCore.Shared.Models.PlayerProfileView.Penalty
-@using BanHubData.Commands.Penalty
-@using System.Text.RegularExpressions
 @inject ISnackbar SnackbarService
 @inject PenaltyService PenaltyService
 @attribute [Authorize(Roles = "WebAdmin, WebSuperAdmin")]
@@ -53,12 +51,8 @@
     {
         _processing = true;
 
-        const string youtubeRegex = @"^(((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?)$";
-        const string videoId = @"v=([^&]+)";
-        var youTubeMatch = Regex.Match(_evidence, youtubeRegex);
-        var videoIdMatch = Regex.Match(_evidence, videoId);
-
-        if (!youTubeMatch.Success)
+        var videoId = _evidence.GetYouTubeVideoId();
+        if (string.IsNullOrEmpty(videoId))
         {
             SnackbarService.Add("The URL provided doesn't match. Expecting YouTube.", Severity.Warning);
             _processing = false;
@@ -68,11 +62,10 @@
         var evidenceCommand = new AddPlayerPenaltyEvidenceCommand
         {
             PenaltyGuid = Penalty.PenaltyGuid,
-            Evidence = videoIdMatch.Groups[1].ToString()
+            Evidence = videoId
         };
 
         var request = await PenaltyService.AddPlayerPenaltyEvidenceAsync(evidenceCommand);
-
         if (!request)
         {
             SnackbarService.Add("Failed to add evidence!", Severity.Error);
@@ -86,4 +79,5 @@
         MudDialog.Close(DialogResult.Ok(evidenceCommand));
     }
 
+    
 }

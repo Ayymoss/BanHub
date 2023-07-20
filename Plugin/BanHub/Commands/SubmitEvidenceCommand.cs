@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using BanHub.Configuration;
 using BanHub.Managers;
+using BanHubData.Extension;
 using SharedLibraryCore;
 using SharedLibraryCore.Commands;
 using SharedLibraryCore.Configuration;
@@ -47,34 +48,23 @@ public class SubmitEvidenceCommand : Command
             return;
         }
 
-        const string youtubeRegex = @"^([0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}) (((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?)$";
-        const string videoId = @"v=([^&]+)";
-        var regex = Regex.Match(gameEvent.Data, youtubeRegex);
-        var videoIdMatch = Regex.Match(gameEvent.Data, videoId);
-        bool result;
+        var args = gameEvent.Data.Split(" ");
+        var guidCheck = Guid.TryParse(args.FirstOrDefault(), out var guid);
+        var videoId = args.LastOrDefault()?.GetYouTubeVideoId();
 
-        if (regex.Success)
+        if (string.IsNullOrEmpty(videoId) || !guidCheck)
         {
-            var guidCheck = Guid.TryParse(regex.Groups[1].ToString(), out var guid);
-            var evidence = videoIdMatch.Groups[1].ToString();
-
-            if (guidCheck) result = await _endpointManager.AddPlayerPenaltyEvidenceAsync(guid, evidence, gameEvent.Origin, gameEvent.Target);
-            else result = false;
-        }
-        else
-        {
-            gameEvent.Origin.Tell(_bhConfig.Translations.SubmitEvidenceRegexFail.FormatExt(_bhConfig.Translations.BanHubName));
-            result = false;
+            gameEvent.Origin.Tell(_bhConfig.Translations.SubmitEvidenceUrlFail.FormatExt(_bhConfig.Translations.BanHubName));
+            return;
         }
 
-        switch (result)
+        var result = await _endpointManager.AddPlayerPenaltyEvidenceAsync(guid, videoId, gameEvent.Origin, gameEvent.Target);
+        if (!result)
         {
-            case true:
-                gameEvent.Origin.Tell(_bhConfig.Translations.SubmitEvidenceSuccess.FormatExt(_bhConfig.Translations.BanHubName));
-                break;
-            case false:
-                gameEvent.Origin.Tell(_bhConfig.Translations.SubmitEvidenceFail.FormatExt(_bhConfig.Translations.BanHubName));
-                break;
+            gameEvent.Origin.Tell(_bhConfig.Translations.SubmitEvidenceFail.FormatExt(_bhConfig.Translations.BanHubName));
+            return;
         }
+
+        gameEvent.Origin.Tell(_bhConfig.Translations.SubmitEvidenceSuccess.FormatExt(_bhConfig.Translations.BanHubName));
     }
 }
