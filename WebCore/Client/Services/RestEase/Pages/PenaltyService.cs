@@ -100,20 +100,20 @@ public class PenaltyService
         return new List<WebCore.Shared.Models.IndexView.Penalty>();
     }
 
-    public async Task<IEnumerable<WebCore.Shared.Models.InstanceProfileView.Penalty>> GetInstancePenaltiesAsync(string identity)
+    public async Task<IEnumerable<WebCore.Shared.Models.CommunityProfileView.Penalty>> GetCommunityPenaltiesAsync(string identity)
     {
         try
         {
-            var response = await _api.GetInstancePenaltiesAsync(identity);
+            var response = await _api.GetCommunityPenaltiesAsync(identity);
             var result =
-                await response.DeserializeHttpResponseContentAsync<IEnumerable<WebCore.Shared.Models.InstanceProfileView.Penalty>>();
-            return result ?? new List<WebCore.Shared.Models.InstanceProfileView.Penalty>();
+                await response.DeserializeHttpResponseContentAsync<IEnumerable<WebCore.Shared.Models.CommunityProfileView.Penalty>>();
+            return result ?? new List<WebCore.Shared.Models.CommunityProfileView.Penalty>();
         }
         catch (ApiException e)
         {
             Console.WriteLine($"API->Failed to get player penalties: {e.Message}");
         }
 
-        return new List<WebCore.Shared.Models.InstanceProfileView.Penalty>();
+        return new List<WebCore.Shared.Models.CommunityProfileView.Penalty>();
     }
 }

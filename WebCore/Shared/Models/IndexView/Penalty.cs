@@ -2,8 +2,8 @@
 
 public class Penalty
 {
-    public string InstanceName { get; set; }
-    public Guid InstanceGuid { get; set; }
+    public string CommunityName { get; set; }
+    public Guid CommunityGuid { get; set; }
     public string TargetUserName { get; set; }
     public string TargetIdentity { get; set; }
     public string Reason { get; set; }

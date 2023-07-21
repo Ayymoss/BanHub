@@ -28,7 +28,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<CookieHandler>();
 
 builder.Services.AddSingleton<ActiveUserService>();
-builder.Services.AddSingleton<InstanceService>();
+builder.Services.AddSingleton<CommunityService>();
 builder.Services.AddSingleton<NoteService>();
 builder.Services.AddSingleton<PenaltyService>();
 builder.Services.AddSingleton<PlayerProfileService>();

@@ -26,23 +26,23 @@ public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginat
         {
             query = query.Where(search =>
                 EF.Functions.ILike(search.PenaltyGuid.ToString(), $"%{request.SearchString}%") ||
-                EF.Functions.ILike(search.Admin.CurrentAlias.Alias.UserName, $"%{request.SearchString}%") ||
-                EF.Functions.ILike(search.Target.CurrentAlias.Alias.UserName, $"%{request.SearchString}%"));
+                EF.Functions.ILike(search.Issuer.CurrentAlias.Alias.UserName, $"%{request.SearchString}%") ||
+                EF.Functions.ILike(search.Recipient.CurrentAlias.Alias.UserName, $"%{request.SearchString}%"));
         }
 
         query = request.SortLabel switch
         {
             "Id" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.PenaltyGuid),
             "Target Name" => query.OrderByDirection((SortDirection)request.SortDirection,
-                key => key.Admin.CurrentAlias.Alias.UserName),
+                key => key.Issuer.CurrentAlias.Alias.UserName),
             "Admin Name" => query.OrderByDirection((SortDirection)request.SortDirection,
-                key => key.Target.Penalties.Count),
+                key => key.Recipient.Penalties.Count),
             "Reason" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.Reason),
             "Type" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.PenaltyType),
             "Status" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.PenaltyStatus),
             "Scope" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.PenaltyScope),
             "Instance" => query.OrderByDirection((SortDirection)request.SortDirection,
-                key => key.Instance.InstanceName),
+                key => key.Community.CommunityName),
             "Submitted" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.Submitted),
             _ => query
         };
@@ -61,8 +61,8 @@ public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginat
                 PenaltyStatus = penalty.PenaltyStatus,
                 PenaltyScope = penalty.PenaltyScope,
                 Submitted = penalty.Submitted,
-                AdminIdentity = penalty.Admin.Identity,
-                AdminUserName = penalty.Admin.CurrentAlias.Alias.UserName,
+                AdminIdentity = penalty.Issuer.Identity,
+                AdminUserName = penalty.Issuer.CurrentAlias.Alias.UserName,
                 Reason = request.Privileged && penalty.Automated
                     ? penalty.Reason
                     : penalty.Automated
@@ -70,10 +70,10 @@ public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginat
                         : penalty.Reason,
                 Evidence = penalty.Evidence,
                 Expiration = penalty.Expiration,
-                InstanceGuid = penalty.Instance.InstanceGuid,
-                TargetIdentity = penalty.Target.Identity,
-                TargetUserName = penalty.Target.CurrentAlias.Alias.UserName,
-                InstanceName = penalty.Instance.InstanceName
+                CommunityGuid = penalty.Community.CommunityGuid,
+                TargetIdentity = penalty.Recipient.Identity,
+                TargetUserName = penalty.Recipient.CurrentAlias.Alias.UserName,
+                CommunityName = penalty.Community.CommunityName
             }).ToListAsync(cancellationToken: cancellationToken);
 
         return pagedData;

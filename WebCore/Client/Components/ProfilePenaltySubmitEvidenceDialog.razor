@@ -9,6 +9,10 @@
             <MudText Typo="Typo.subtitle1">Please enter a YouTube URL</MudText>
             <MudTextField @bind-Value="_evidence" AutoFocus="false" Immediate="true" MaxLength="128" Label="YouTube URL"
                           Variant="Variant.Text" Counter="128" AdornmentIcon="@Icons.Custom.Brands.YouTube" Adornment="Adornment.End"/>
+            <MudStack Row="true" Class="align-center">
+                <MudIcon Color="Color.Warning" Icon="@Icons.Material.Filled.Warning"/>
+                <MudText Typo="Typo.body2">Please make sure the channel you're uploading to belongs to your community. If the video is removed, the ban will be lifted.</MudText>
+            </MudStack>
         </MudElement>
         <MudElement Class="d-flex flex-column mb-3">
             <MudDivider FlexItem="true" DividerType="DividerType.Inset" Class="mx-n6 mb-4 mt-8"/>
@@ -79,5 +83,5 @@
         MudDialog.Close(DialogResult.Ok(evidenceCommand));
     }
 
-    
+
 }

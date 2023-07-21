@@ -6,25 +6,25 @@ namespace BanHub.Managers;
 
 public class HeartBeatManager
 {
-    private readonly InstanceSlim _instanceSlim;
+    private readonly CommunitySlim _communitySlim;
     private readonly HeartbeatService _heartbeatService;
     private readonly EndpointManager _endpointManager;
 
-    public HeartBeatManager(InstanceSlim instanceSlim, HeartbeatService heartbeatService, EndpointManager endpointManager)
+    public HeartBeatManager(CommunitySlim communitySlim, HeartbeatService heartbeatService, EndpointManager endpointManager)
     {
-        _instanceSlim = instanceSlim;
+        _communitySlim = communitySlim;
         _heartbeatService = heartbeatService;
         _endpointManager = endpointManager;
     }
     
-    public async Task InstanceHeartBeat()
+    public async Task CommunityHeartbeat()
     {
         try
         {
-            await _heartbeatService.PostInstanceHeartBeat(new InstanceHeartbeatCommand
+            await _heartbeatService.PostCommunityHeartbeat(new CommunityHeartbeatCommand
             {
-                ApiKey = _instanceSlim.ApiKey,
-                InstanceGuid = _instanceSlim.InstanceGuid
+                ApiKey = _communitySlim.ApiKey,
+                CommunityGuid = _communitySlim.CommunityGuid
             });
         }
         catch (Exception exception)
@@ -33,16 +33,16 @@ public class HeartBeatManager
         }
     }
 
-    public async Task ClientHeartBeat()
+    public async Task ClientHeartbeat()
     {
-        if (!Plugin.InstanceActive) return;
+        if (!Plugin.CommunityActive) return;
         try
         {
             if (_endpointManager.Profiles.Count is 0) return;
             var players = _endpointManager.Profiles.Select(x => x.Value).ToList();
-            await _heartbeatService.PostEntityHeartBeat(new PlayersHeartbeatCommand
+            await _heartbeatService.PostEntityHeartbeat(new PlayersHeartbeatCommand
             {
-                InstanceGuid = _instanceSlim.InstanceGuid,
+                CommunityGuid = _communitySlim.CommunityGuid,
                 PlayerIdentities = players
             });
         }

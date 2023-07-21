@@ -22,42 +22,42 @@ public class EndpointManager
     private readonly NoteService _noteService;
     private readonly PlayerService _player;
     private readonly BanHubConfiguration _banHubConfiguration;
-    private readonly InstanceSlim _instanceSlim;
-    private readonly InstanceService _instance;
+    private readonly CommunitySlim _communitySlim;
+    private readonly CommunityService _community;
     private readonly PenaltyService _penalty;
     private readonly ServerService _server;
 
-    public EndpointManager(BanHubConfiguration banHubConfiguration, InstanceSlim instanceSlim,
-        PlayerService playerService, InstanceService instanceService, PenaltyService penaltyService,
+    public EndpointManager(BanHubConfiguration banHubConfiguration, CommunitySlim communitySlim,
+        PlayerService playerService, CommunityService communityService, PenaltyService penaltyService,
         ServerService serverService, ILogger<EndpointManager> logger, NoteService noteService)
     {
         _banHubConfiguration = banHubConfiguration;
-        _instanceSlim = instanceSlim;
+        _communitySlim = communitySlim;
         _player = playerService;
-        _instance = instanceService;
+        _community = communityService;
         _penalty = penaltyService;
         _server = serverService;
         _logger = logger;
         _noteService = noteService;
     }
 
-    public async Task<bool> CreateOrUpdateInstanceAsync(CreateOrUpdateInstanceCommand instance) =>
-        await _instance.CreateOrUpdateInstanceAsync(instance);
+    public async Task<bool> CreateOrUpdateCommunityAsync(CreateOrUpdateCommunityCommand community) =>
+        await _community.CreateOrUpdateCommunityAsync(community);
 
-    public async Task<bool> IsInstanceActive(Guid guid) => await _instance.IsInstanceActive(guid.ToString());
+    public async Task<bool> IsCommunityActive(Guid guid) => await _community.IsCommunityActiveAsync(guid.ToString());
 
     private static string EntityToPlayerIdentity(EFClient client) => $"{client.GuidString}:{client.GameName.ToString()}";
 
     public async Task OnStart(CreateOrUpdateServerCommand server)
     {
-        if (!Plugin.InstanceActive) return;
+        if (!Plugin.CommunityActive) return;
         await _server.PostServer(server);
     }
 
     public async Task OnJoin(EFClient player)
     {
         // We don't want to act on anything if they're not authenticated
-        if (!_instanceSlim.Active) return;
+        if (!_communitySlim.Active) return;
 
         var result = await CreateOrUpdatePlayerAsync(player);
         if (!result.Success) return;
@@ -91,16 +91,16 @@ public class EndpointManager
             PlayerIdentity = $"{player.GuidString}:{player.GameName.ToString()}",
             PlayerAliasUserName = player.CleanedName,
             PlayerAliasIpAddress = player.ClientId is not 0 ? player.IPAddressString : "0.0.0.0",
-            PlayerInstanceRole = player.ClientPermission.Level switch
+            PlayerCommunityRole = player.ClientPermission.Level switch
             {
-                Data.Models.Client.EFClient.Permission.Trusted => InstanceRole.InstanceTrusted,
-                Data.Models.Client.EFClient.Permission.Moderator => InstanceRole.InstanceModerator,
-                Data.Models.Client.EFClient.Permission.Administrator => InstanceRole.InstanceAdministrator,
-                Data.Models.Client.EFClient.Permission.SeniorAdmin => InstanceRole.InstanceSeniorAdmin,
-                Data.Models.Client.EFClient.Permission.Owner => InstanceRole.InstanceOwner,
-                _ => InstanceRole.InstanceUser
+                Data.Models.Client.EFClient.Permission.Trusted => CommunityRole.Trusted,
+                Data.Models.Client.EFClient.Permission.Moderator => CommunityRole.Moderator,
+                Data.Models.Client.EFClient.Permission.Administrator => CommunityRole.Administrator,
+                Data.Models.Client.EFClient.Permission.SeniorAdmin => CommunityRole.SeniorAdmin,
+                Data.Models.Client.EFClient.Permission.Owner => CommunityRole.Owner,
+                _ => CommunityRole.User
             },
-            InstanceGuid = _instanceSlim.InstanceGuid,
+            CommunityGuid = _communitySlim.CommunityGuid,
             ServerId = player.CurrentServer?.Id
         };
 
@@ -141,7 +141,7 @@ public class EndpointManager
         if (!adminIdentity.Success || !targetIdentity.Success) return (false, null);
 
         var parsedPenaltyType = Enum.TryParse<PenaltyType>(sourcePenaltyType, out var penaltyType);
-        if (!parsedPenaltyType || !Plugin.InstanceActive) return (false, null);
+        if (!parsedPenaltyType || !Plugin.CommunityActive) return (false, null);
         if (penaltyType is not PenaltyType.Ban && origin.ClientId is 1) return (false, null);
 
         var (isGlobalAntiCheatBan, isAntiCheatBan) = (false, false);
@@ -160,7 +160,7 @@ public class EndpointManager
             Reason = isAntiCheatBan ? antiCheatReason ?? "AntiCheat Detection" : reason.StripColors(),
             Automated = isAntiCheatBan,
             Expiration = expiration,
-            InstanceGuid = _instanceSlim.InstanceGuid,
+            CommunityGuid = _communitySlim.CommunityGuid,
             AdminIdentity = adminIdentity.Identity,
             TargetIdentity = targetIdentity.Identity
         };

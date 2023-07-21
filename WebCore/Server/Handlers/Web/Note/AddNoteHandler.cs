@@ -19,14 +19,16 @@ public class AddNoteHandler : IRequestHandler<AddNoteCommand, bool>
 
     public async Task<bool> Handle(AddNoteCommand request, CancellationToken cancellationToken)
     {
-        var admin = await _context.Players.Where(x => x.Identity == request.AdminIdentity)
+        var admin = await _context.Players
+            .Where(x => x.Identity == request.AdminIdentity)
             .Select(x => new
             {
                 x.Id,
                 x.Identity,
                 x.CurrentAlias.Alias.UserName
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
-        var target = await _context.Players.Where(x => x.Identity == request.TargetIdentity)
+        var target = await _context.Players
+            .Where(x => x.Identity == request.TargetIdentity)
             .Select(x => new
             {
                 x.Id,
@@ -38,8 +40,8 @@ public class AddNoteHandler : IRequestHandler<AddNoteCommand, bool>
         var note = new EFNote
         {
             NoteGuid = Guid.NewGuid(),
-            TargetId = target.Id,
-            AdminId = admin.Id,
+            RecipientId = target.Id,
+            IssuerId = admin.Id,
             Message = request.Message,
             IsPrivate = request.IsPrivate,
             Created = DateTimeOffset.UtcNow

@@ -27,10 +27,10 @@ public class GetLatestBansHandler : IRequestHandler<GetLatestBansCommand, IEnume
             .Select(penalty => new Shared.Models.IndexView.Penalty
             {
                 Submitted = penalty.Submitted,
-                TargetIdentity = penalty.Target.Identity,
-                TargetUserName = penalty.Target.CurrentAlias.Alias.UserName,
-                InstanceGuid = penalty.Instance.InstanceGuid,
-                InstanceName = penalty.Instance.InstanceName,
+                TargetIdentity = penalty.Recipient.Identity,
+                TargetUserName = penalty.Recipient.CurrentAlias.Alias.UserName,
+                CommunityGuid = penalty.Community.CommunityGuid,
+                CommunityName = penalty.Community.CommunityName,
                 Reason = request.Privileged && penalty.Automated
                     ? penalty.Reason
                     : penalty.Automated

@@ -27,7 +27,7 @@ public class CreateOrUpdatePlayerHandler : IRequestHandler<CreateOrUpdatePlayerC
 
         var efServer = await _context.Servers.AsNoTracking()
             .Where(c => c.ServerId == request.ServerId)
-            .FirstOrDefaultAsync(x => x.Instance.InstanceGuid == request.InstanceGuid, cancellationToken: cancellationToken);
+            .FirstOrDefaultAsync(x => x.Community.CommunityGuid == request.CommunityGuid, cancellationToken: cancellationToken);
 
         var utcTimeNow = DateTimeOffset.UtcNow;
 
@@ -79,8 +79,8 @@ public class CreateOrUpdatePlayerHandler : IRequestHandler<CreateOrUpdatePlayerC
         {
             Identity = request.PlayerIdentity,
             HeartBeat = utcTimeNow,
-            WebRole = WebRole.WebUser,
-            InstanceRole = request.PlayerInstanceRole,
+            WebRole = WebRole.User,
+            CommunityRole = request.PlayerCommunityRole,
             Created = utcTimeNow,
             PlayTime = TimeSpan.Zero,
             TotalConnections = 1

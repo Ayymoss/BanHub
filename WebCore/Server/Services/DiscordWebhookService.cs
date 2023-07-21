@@ -28,7 +28,7 @@ public class DiscordWebhookService
                           $"**Profile:** [{createPenaltyEvent.Username}](https://BanHub.gg/Players/{createPenaltyEvent.TargetIdentity})\n" +
                           $"**Penalty ID:** {createPenaltyEvent.PenaltyGuid}\n" +
                           $"**Reason:** {createPenaltyEvent.Reason}\n\n" +
-                          $"**Community:** [{createPenaltyEvent.InstanceName}](https://BanHub.gg/Communities/{createPenaltyEvent.InstanceGuid})",
+                          $"**Community:** [{createPenaltyEvent.CommunityName}](https://BanHub.gg/Communities/{createPenaltyEvent.CommunityGuid})",
             Color = Color.DarkRed
         };
 
@@ -39,14 +39,14 @@ public class DiscordWebhookService
     {
         var embedBuilder = new EmbedBuilder
         {
-            Title = $"IP Mismatch: {createIssueEvent.InstanceGuid}",
+            Title = $"IP Mismatch: {createIssueEvent.CommunityGuid}",
             Description = "IP Mismatch Issue Raised\n" +
-                          $"**Record IP:** {createIssueEvent.InstanceIp}\n" +
+                          $"**Record IP:** {createIssueEvent.CommunityIp}\n" +
                           $"**Incoming IP:** {createIssueEvent.IncomingIp}",
             Color = Color.DarkRed
         };
 
-        await SendWebhook(embedBuilder.Build(), _configuration.InstanceWebHook);
+        await SendWebhook(embedBuilder.Build(), _configuration.CommunityWebHook);
     }
 
     private async Task OnCreateAdminActionHookAsync(CreateAdminActionEvent createAdminActionEvent, CancellationToken token)

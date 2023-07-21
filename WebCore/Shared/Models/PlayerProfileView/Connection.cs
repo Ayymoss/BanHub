@@ -9,6 +9,6 @@ public class Connection
     public DateTimeOffset Connected { get; set; }
     public int ServerPort { get; set; }
     public string ServerIp { get; set; }
-    public string InstanceIp { get; set; }
-    public string? InstanceName { get; set; }
+    public string CommunityIp { get; set; }
+    public string? CommunityName { get; set; }
 }

@@ -87,7 +87,7 @@
 
         var statistics = await StatisticService.GetStatisticAsync();
         _pagedData = await PlayersService.GetPlayersAsync(paginationQuery);
-        _totalItems = statistics.EntityCount;
+        _totalItems = statistics.PlayerCount;
 
         return new TableData<Player> {TotalItems = _totalItems, Items = _pagedData};
     }

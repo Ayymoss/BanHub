@@ -37,7 +37,7 @@
                         </HeaderContent>
                         <RowTemplate>
                             <MudTd DataLabel="Instance">
-                                <MudLink Href="@($"/Communities/{context.InstanceGuid}")" Typo="Typo.body2" Color="Color.Info">@context.InstanceName</MudLink>
+                                <MudLink Href="@($"/Communities/{context.CommunityGuid}")" Typo="Typo.body2" Color="Color.Info">@context.CommunityName</MudLink>
                             </MudTd>
                             <MudTd DataLabel="Target">
                                 <MudLink Href="@($"/Players/{context.TargetIdentity}")" Typo="Typo.body2" Color="Color.Info">@context.TargetUserName</MudLink>
@@ -67,7 +67,7 @@
                         </MudItem>
                         <MudItem xs="12" sm="4" xl="3">
                             <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
-                                <MudText Typo="Typo.subtitle1" Color="Color.Info">@_instances</MudText>
+                                <MudText Typo="Typo.subtitle1" Color="Color.Info">@_communities</MudText>
                                 <MudText Class="mud-text-secondary">Communities</MudText>
                             </MudPaper>
                         </MudItem>
@@ -107,7 +107,7 @@
 
 @code {
 
-    private string? _instances;
+    private string? _communities;
     private string? _penalties;
     private string? _entities;
     private string? _servers;
@@ -117,8 +117,8 @@
     protected override async Task OnInitializedAsync()
     {
         var statistics = await StatisticService.GetStatisticAsync();
-        _entities = $"{statistics.EntityCount:N0}";
-        _instances = $"{statistics.InstanceCount:N0}";
+        _entities = $"{statistics.PlayerCount:N0}";
+        _communities = $"{statistics.CommunityCount:N0}";
         _penalties = $"{statistics.PenaltyCount:N0}";
         _servers = $"{statistics.ServerCount:N0}";
 

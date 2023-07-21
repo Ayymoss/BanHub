@@ -42,7 +42,7 @@ public class SubmitEvidenceCommand : Command
 
     public override async Task ExecuteAsync(GameEvent gameEvent)
     {
-        if (!Plugin.InstanceActive)
+        if (!Plugin.CommunityActive)
         {
             gameEvent.Origin.Tell(_bhConfig.Translations.NotActive.FormatExt(_bhConfig.Translations.BanHubName));
             return;

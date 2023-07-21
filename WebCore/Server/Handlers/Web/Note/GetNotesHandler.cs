@@ -18,13 +18,13 @@ public class GetNotesHandler : IRequestHandler<GetNotesCommand, IEnumerable<Shar
         CancellationToken cancellationToken)
     {
         var notes = await _context.Notes
-            .Where(x => x.Target.Identity == request.Identity)
+            .Where(x => x.Recipient.Identity == request.Identity)
             .Where(x => request.Authorised || !x.IsPrivate)
             .Select(x => new Shared.Models.PlayerProfileView.Note
             {
                 NoteGuid = x.NoteGuid,
                 Message = x.Message,
-                AdminUserName = x.Admin.CurrentAlias.Alias.UserName,
+                AdminUserName = x.Issuer.CurrentAlias.Alias.UserName,
                 Created = x.Created,
                 IsPrivate = x.IsPrivate
             }).ToListAsync(cancellationToken: cancellationToken);

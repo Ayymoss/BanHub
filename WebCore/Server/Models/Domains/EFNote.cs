@@ -21,7 +21,7 @@ public class EFNote
     /// The associated note
     /// </summary>
     public required string Message { get; set; }
-    
+
     /// <summary>
     /// Is the note public
     /// </summary>
@@ -30,14 +30,22 @@ public class EFNote
     /// <summary>
     /// The admin who issued the note
     /// </summary>
-    public int AdminId { get; set; }
+    public int IssuerId { get; set; }
 
-    [ForeignKey(nameof(AdminId))] public EFPlayer Admin { get; set; } = null!;
+    /// <summary>
+    /// The admin who issued the note
+    /// </summary>
+    [ForeignKey(nameof(IssuerId))]
+    public EFPlayer Issuer { get; set; } = null!;
 
     /// <summary>
     /// The user who received the note
     /// </summary>
-    public int TargetId { get; set; }
+    public int RecipientId { get; set; }
 
-    [ForeignKey(nameof(TargetId))] public EFPlayer Target { get; set; } = null!;
+    /// <summary>
+    /// The user who received the note
+    /// </summary>
+    [ForeignKey(nameof(RecipientId))]
+    public EFPlayer Recipient { get; set; } = null!;
 }

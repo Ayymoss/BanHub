@@ -10,10 +10,10 @@ Please see this project's [progress board](https://github.com/users/Ayymoss/proj
 ***
 ## Requirements
 ### Plugin
-**IW4MAdmin:** https://github.com/RaidMax/IW4M-Admin/ (2022.10.13.1 and above)
+**IW4MAdmin:** https://github.com/RaidMax/IW4M-Admin/ (2023.4.15.3 and above)
 ### Building
-* Plugin .NET6
-* WebCore .NET7
+* BanHub, BanHubData - .NET6
+* WebCore (Server, Client, Shared) - .NET7
 
 ***
 ## Recognition

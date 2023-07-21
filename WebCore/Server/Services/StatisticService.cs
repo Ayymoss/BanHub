@@ -11,7 +11,6 @@ public class StatisticService : IStatisticService
 {
     private readonly DataContext _context;
     private readonly StatisticsTracking _statisticsTracking;
-
     private readonly SemaphoreSlim _load = new(1, 1);
 
     public StatisticService(DataContext context, StatisticsTracking statisticsTracking)
@@ -32,14 +31,14 @@ public class StatisticService : IStatisticService
 
                 _statisticsTracking.Penalties = result.PenaltyCount;
                 _statisticsTracking.Servers = result.ServerCount;
-                _statisticsTracking.Instances = result.InstanceCount;
-                _statisticsTracking.Entities = result.EntityCount;
+                _statisticsTracking.Communities = result.CommunityCount;
+                _statisticsTracking.Players = result.PlayerCount;
                 _statisticsTracking.Loaded = true;
             }
         }
         finally
         {
-            if (_load.CurrentCount == 0) _load.Release();
+            if (_load.CurrentCount is 0) _load.Release();
         }
     }
 
@@ -57,8 +56,8 @@ public class StatisticService : IStatisticService
         {
             {ControllerEnums.StatisticType.PenaltyCount, () => actionMapping[action](_statisticsTracking.Penalties)},
             {ControllerEnums.StatisticType.ServerCount, () => actionMapping[action](_statisticsTracking.Servers)},
-            {ControllerEnums.StatisticType.InstanceCount, () => actionMapping[action](_statisticsTracking.Instances)},
-            {ControllerEnums.StatisticType.EntityCount, () => actionMapping[action](_statisticsTracking.Entities)}
+            {ControllerEnums.StatisticType.CommunityCount, () => actionMapping[action](_statisticsTracking.Communities)},
+            {ControllerEnums.StatisticType.EntityCount, () => actionMapping[action](_statisticsTracking.Players)}
         };
 
         statisticMapping[statistic]();
@@ -72,63 +71,67 @@ public class StatisticService : IStatisticService
         {
             PenaltyCount = _statisticsTracking.Penalties,
             ServerCount = _statisticsTracking.Servers,
-            InstanceCount = _statisticsTracking.Instances,
-            EntityCount = _statisticsTracking.Entities,
-            OnlineCount = _statisticsTracking.UsersOnlineCount,
-            BanCount = _statisticsTracking.BansDayCount
+            CommunityCount = _statisticsTracking.Communities,
+            PlayerCount = _statisticsTracking.Players,
+            OnlinePlayersCount = _statisticsTracking.OnlinePlayers.Count,
+            RecentBansCount = _statisticsTracking.RecentBans.Count
         };
     }
 
-    public async Task UpdateOnlineStatisticAsync(StatisticUsersOnline statisticUsers)
+    public async Task UpdateOnlineStatisticAsync(IEnumerable<string> playerIdentities)
     {
         if (!_statisticsTracking.Loaded) await EnsureInitialisedAsync();
 
-        var instance = _statisticsTracking.UsersOnline
-            .FirstOrDefault(x => x.InstanceGuid == statisticUsers.InstanceGuid);
-
-        if (instance is null)
-        {
-            _statisticsTracking.UsersOnline.Add(statisticUsers);
-        }
-        else
-        {
-            instance.Online = statisticUsers.Online;
-            instance.HeartBeat = statisticUsers.HeartBeat;
-        }
-
-        _statisticsTracking.UsersOnline = _statisticsTracking.UsersOnline
-            .Where(x => x.HeartBeat > DateTimeOffset.UtcNow.AddMinutes(-5))
+        var statisticUsers = playerIdentities
+            .Select(x => new {PlayerIdentity = x, HeartBeat = DateTimeOffset.UtcNow})
             .ToList();
 
-        _statisticsTracking.UsersOnlineCount = _statisticsTracking.UsersOnline.Sum(x => x.Online);
+        foreach (var user in statisticUsers)
+        {
+            _statisticsTracking.OnlinePlayers.AddOrUpdate(user.PlayerIdentity, user.HeartBeat,
+                (key, oldValue) => user.HeartBeat);
+        }
+
+        var offlineUsers = _statisticsTracking.OnlinePlayers
+            .Where(x => x.Value < DateTimeOffset.UtcNow.AddMinutes(-5))
+            .Select(x => x.Key)
+            .ToList();
+
+        foreach (var user in offlineUsers)
+        {
+            _statisticsTracking.OnlinePlayers.TryRemove(user, out _);
+        }
     }
 
-    public async Task UpdateDayStatisticAsync(StatisticBan statisticBan)
+    public async Task UpdateRecentBansStatisticAsync(StatisticBan statisticBan)
     {
         if (!_statisticsTracking.Loaded) await EnsureInitialisedAsync();
 
-        _statisticsTracking.BansDay.Add(statisticBan);
+        _statisticsTracking.RecentBans.TryAdd(statisticBan.BanGuid, statisticBan.Submitted);
 
-        _statisticsTracking.BansDay = _statisticsTracking.BansDay
-            .Where(x => x.Submitted > DateTimeOffset.UtcNow.AddDays(-7))
+        var oldBans = _statisticsTracking.RecentBans
+            .Where(x => x.Value < DateTimeOffset.UtcNow.AddDays(-7))
+            .Select(x => x.Key)
             .ToList();
-
-        _statisticsTracking.BansDayCount = _statisticsTracking.BansDay.Count;
+        foreach (var ban in oldBans)
+        {
+            _statisticsTracking.RecentBans.TryRemove(ban, out _);
+        }
     }
 
     private async Task<Statistic> ReadStatisticsAsync()
     {
-        var entity = await _context.Players.CountAsync();
-        var instance = await _context.Instances.CountAsync();
+        var player = await _context.Players.CountAsync();
+        var instance = await _context.Community.CountAsync();
         var server = await _context.Servers.CountAsync();
         var penalty = await _context.Penalties.CountAsync();
 
         var statistics = new Statistic
         {
-            EntityCount = entity,
-            InstanceCount = instance,
+            PlayerCount = player,
+            CommunityCount = instance,
             ServerCount = server,
-            PenaltyCount = penalty
+            PenaltyCount = penalty,
         };
 
         return statistics;

@@ -12,5 +12,5 @@ public class AddPlayerPenaltyCommand : IRequest<(ControllerEnums.ReturnState, Gu
     public DateTimeOffset? Expiration { get; set; }
     public string AdminIdentity { get; set; }
     public string TargetIdentity { get; set; }
-    public Guid InstanceGuid { get; set; }
+    public Guid CommunityGuid { get; set; }
 }

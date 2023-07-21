@@ -21,10 +21,10 @@ public class SignedInUsers
         return user is not null && role.Any(x => x.ToString() == user.WebRole);
     }
 
-    public bool IsUserInAnyInstanceRole(string signedInGuid, IEnumerable<InstanceRole> role)
+    public bool IsUserInAnyCommunityRole(string signedInGuid, IEnumerable<CommunityRole> role)
     {
         _users.TryGetValue(signedInGuid, out var user);
-        return user is not null && role.Any(x => x.ToString() == user.InstanceRole);
+        return user is not null && role.Any(x => x.ToString() == user.CommunityRole);
     }
 
     public bool IsUserSignedIn(string signedInGuid) => _users.ContainsKey(signedInGuid);

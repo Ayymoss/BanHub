@@ -41,8 +41,7 @@ public class AuthService
         {
             var response = await _api.GetProfileAsync();
             var result = await response.DeserializeHttpResponseContentAsync<WebUser>();
-
-            return response.IsSuccessStatusCode ? (true, result) : (false, null);
+            return response.IsSuccessStatusCode && result is not null ? (true, result) : (false, null);
         }
         catch (ApiException e)
         {

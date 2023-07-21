@@ -74,8 +74,8 @@
         _activeUserCount = ActiveUserService.ActiveUsers;
 
         var statistics = await StatisticService.GetStatisticAsync();
-        _online = statistics.OnlineCount;
-        _bans = statistics.BanCount;
+        _online = statistics.OnlinePlayersCount;
+        _bans = statistics.RecentBansCount;
 
         await base.OnInitializedAsync();
     }

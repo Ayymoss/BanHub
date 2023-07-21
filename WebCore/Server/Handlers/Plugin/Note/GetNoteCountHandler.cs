@@ -15,7 +15,7 @@ public class GetNoteCountHandler : IRequestHandler<GetNoteCountCommand, int>
     }
     public async Task<int> Handle(GetNoteCountCommand request, CancellationToken cancellationToken)
     {
-        var count = await _context.Notes.Where(x => x.Target.Identity == request.Identity).CountAsync(cancellationToken: cancellationToken);
+        var count = await _context.Notes.Where(x => x.Recipient.Identity == request.Identity).CountAsync(cancellationToken: cancellationToken);
         return count;
     }
 }

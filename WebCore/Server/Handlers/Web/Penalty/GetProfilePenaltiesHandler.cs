@@ -19,20 +19,20 @@ public class GetProfilePenaltiesHandler : IRequestHandler<GetProfilePenaltiesCom
         CancellationToken cancellationToken)
     {
         var results = await _context.Penalties
-            .Where(x => x.Target.Identity == request.Identity)
+            .Where(x => x.Recipient.Identity == request.Identity)
             .Select(x => new Shared.Models.PlayerProfileView.Penalty
             {
                 PenaltyGuid = x.PenaltyGuid,
-                AdminUserName = x.Admin.CurrentAlias.Alias.UserName,
-                AdminIdentity = x.Admin.Identity,
+                AdminUserName = x.Issuer.CurrentAlias.Alias.UserName,
+                AdminIdentity = x.Issuer.Identity,
                 Reason = request.Privileged && x.Automated
                     ? x.Reason
                     : x.Automated
                         ? "Automated Detection"
                         : x.Reason,
                 Evidence = x.Evidence,
-                InstanceName = x.Instance.InstanceName,
-                InstanceGuid = x.Instance.InstanceGuid,
+                CommunityName = x.Community.CommunityName,
+                CommunityGuid = x.Community.CommunityGuid,
                 Expiration = x.Expiration,
                 PenaltyType = x.PenaltyType,
                 PenaltyScope = x.PenaltyScope,

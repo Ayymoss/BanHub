@@ -20,7 +20,7 @@ public abstract class ControllerEnums
         EntityCount = -4,
         ServerCount = -3,
         PenaltyCount = -2,
-        InstanceCount = -1
+        CommunityCount = -1
     }
 
     public enum StatisticTypeAction

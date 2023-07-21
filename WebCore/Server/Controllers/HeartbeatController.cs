@@ -18,8 +18,8 @@ public class HeartbeatController : ControllerBase
         _mediator = mediator;
     }
 
-    [HttpPost("Instance")]
-    public async Task<IActionResult> InstanceHeartBeatAsync([FromBody] InstanceHeartbeatCommand request)
+    [HttpPost("Community")]
+    public async Task<IActionResult> CommunityHeartbeatAsync([FromBody] CommunityHeartbeatCommand request)
     {
         var result = await _mediator.Send(request);
         return result switch
@@ -31,7 +31,7 @@ public class HeartbeatController : ControllerBase
     }
 
     [HttpPost("Players"), PluginAuthentication]
-    public async Task<IActionResult> PlayersHeartBeatAsync([FromQuery] string authToken, [FromBody] PlayersHeartbeatCommand request)
+    public async Task<IActionResult> PlayersHeartbeatAsync([FromQuery] string authToken, [FromBody] PlayersHeartbeatCommand request)
     {
         await _mediator.Send(request);
         return Ok();

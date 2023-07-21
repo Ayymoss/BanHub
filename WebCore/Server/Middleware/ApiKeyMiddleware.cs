@@ -20,9 +20,9 @@ public class ApiKeyMiddleware : IMiddleware
     {
         if (_apiKeyCache.ApiKeys is null)
         {
-            var keys = await _dataContext.Instances
+            var keys = await _dataContext.Community
                 .Where(x => x.Active)
-                .ToDictionaryAsync(x => x.InstanceGuid, x => x.ApiKey);
+                .ToDictionaryAsync(x => x.CommunityGuid, x => x.ApiKey);
 
             _apiKeyCache.ApiKeys = new ConcurrentDictionary<Guid, Guid>(keys);
         }

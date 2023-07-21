@@ -10,7 +10,7 @@ public class DataContext : DbContext
     {
     }
 
-    public DbSet<EFInstance> Instances { get; set; }
+    public DbSet<EFCommunity> Community { get; set; }
     public DbSet<EFPlayer> Players { get; set; }
     public DbSet<EFAlias> Aliases { get; set; }
     public DbSet<EFCurrentAlias> CurrentAliases { get; set; }
@@ -23,7 +23,7 @@ public class DataContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<EFInstance>().ToTable("EFInstances");
+        modelBuilder.Entity<EFCommunity>().ToTable("EFCommunities");
         modelBuilder.Entity<EFPlayer>().ToTable("EFPlayers");
         modelBuilder.Entity<EFAlias>().ToTable("EFAliases");
         modelBuilder.Entity<EFPenalty>().ToTable("EFPenalties");
@@ -35,14 +35,14 @@ public class DataContext : DbContext
         modelBuilder.Entity<EFPenaltyIdentifier>().ToTable("EFPenaltyIdentifiers");
 
         modelBuilder.Entity<EFPenalty>()
-            .HasOne(a => a.Target)
+            .HasOne(a => a.Recipient)
             .WithMany(p => p.Penalties)
-            .HasForeignKey(f => f.TargetId);
+            .HasForeignKey(f => f.RecipientId);
 
         modelBuilder.Entity<EFNote>()
-            .HasOne(a => a.Target)
+            .HasOne(a => a.Recipient)
             .WithMany(p => p.Notes)
-            .HasForeignKey(f => f.TargetId);
+            .HasForeignKey(f => f.RecipientId);
 
         #region IW4MAdminSeed
 
@@ -61,8 +61,8 @@ public class DataContext : DbContext
             Identity = "0:UKN",
             HeartBeat = DateTimeOffset.UtcNow,
             Created = DateTimeOffset.UtcNow,
-            WebRole = WebRole.WebUser,
-            InstanceRole = InstanceRole.InstanceUser,
+            WebRole = WebRole.User,
+            CommunityRole = CommunityRole.User,
             Penalties = new List<EFPenalty>(),
             TotalConnections = 0,
             PlayTime = TimeSpan.Zero
@@ -81,15 +81,15 @@ public class DataContext : DbContext
 
         #endregion
 
-
         #region TemporarySeedData
 
-        var instance = new EFInstance
+        var community = new EFCommunity
         {
             Id = -1,
-            InstanceGuid = Guid.NewGuid(),
-            InstanceIp = "123.123.123.123",
-            InstanceName = "Seed Instance",
+            CommunityGuid = Guid.NewGuid(),
+            CommunityIp = "123.123.123.123",
+            CommunityIpFriendly = "zombo.com",
+            CommunityName = "Seed Instance",
             HeartBeat = DateTimeOffset.UtcNow,
             ApiKey = Guid.NewGuid(),
             Active = true,
@@ -99,8 +99,7 @@ public class DataContext : DbContext
             {
                 {"YouTube", "https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
                 {"Another YouTube", "https://www.youtube.com/watch?v=sFce1pBvSd4"}
-            },
-            InstanceIpFriendly = "zombo.com"
+            }
         };
 
         var infraction = new EFPenalty
@@ -114,13 +113,13 @@ public class DataContext : DbContext
             Expiration = null,
             Reason = "Seed Infraction",
             Evidence = "WePNs-G7puA",
-            AdminId = -1,
-            TargetId = -1,
-            InstanceId = -1,
+            IssuerId = -1,
+            RecipientId = -1,
+            CommunityId = -1,
             Automated = true
         };
 
-        modelBuilder.Entity<EFInstance>().HasData(instance);
+        modelBuilder.Entity<EFCommunity>().HasData(community);
         modelBuilder.Entity<EFPenalty>().HasData(infraction);
 
         #endregion

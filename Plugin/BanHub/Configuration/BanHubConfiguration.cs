@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using SharedLibraryCore;
 
 namespace BanHub.Configuration;
 
@@ -7,11 +6,11 @@ public class BanHubConfiguration
 {
     [JsonIgnore] public const string Name = "Ban Hub";
     public bool EnableBanHub { get; set; } = true;
-    [JsonPropertyName("ApiKeyDoNotChange")] public Guid ApiKey { get; set; } = Guid.NewGuid();
-    public string? InstanceNameOverride { get; set; }
-    public string? InstanceWebsite { get; set; }
     public bool PrintPenaltyToConsole { get; set; } = false;
+    public string? CommunityNameOverride { get; set; }
+    public string? CommunityWebsite { get; set; }
     public TranslationStrings Translations { get; set; } = new();
+    [JsonPropertyName("ApiKeyDoNotChange")] public Guid ApiKey { get; set; } = Guid.NewGuid();
     public bool DebugMode { get; set; } = false;
 }
 

@@ -34,14 +34,7 @@ public class PlayerHeartbeatHandler : IRequestHandler<PlayersHeartbeatCommand>
             _context.Players.Update(profile);
         }
 
-        var count = identities.Length;
-        await _statisticService.UpdateOnlineStatisticAsync(new StatisticUsersOnline
-        {
-            InstanceGuid = request.InstanceGuid,
-            Online = count,
-            HeartBeat = DateTimeOffset.UtcNow
-        });
-
+        await _statisticService.UpdateOnlineStatisticAsync(identities);
         await _context.SaveChangesAsync(cancellationToken);
     }
 }

@@ -2,7 +2,7 @@
 
 public class CreateIssueEvent : CoreEvent
 {
-    public Guid InstanceGuid { get; set; }
-    public string InstanceIp { get; set; }
+    public Guid CommunityGuid { get; set; }
+    public string CommunityIp { get; set; }
     public string IncomingIp { get; set; }
 }

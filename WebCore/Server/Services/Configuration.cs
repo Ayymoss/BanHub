@@ -5,7 +5,7 @@ public class Configuration
     public byte Version { get; set; } = 1;
     public int WebBind { get; set; } = 80;
     public string PenaltyWebHook { get; set; } = null!;
-    public string InstanceWebHook { get; set; } = null!;
+    public string CommunityWebHook { get; set; } = null!;
     public string AdminActionWebHook { get; set; } = null!;
     public DatabaseConfiguration Database { get; set; } = new();
 }

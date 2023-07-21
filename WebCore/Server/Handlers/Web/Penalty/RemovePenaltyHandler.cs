@@ -29,10 +29,10 @@ public class RemovePenaltyHandler : IRequestHandler<RemovePenaltyCommand, bool>
             .Where(x => x.PenaltyGuid == penalty.PenaltyGuid)
             .Select(x => new
             {
-                AdminUserName = x.Admin.CurrentAlias.Alias.UserName,
-                AdminIdentity = x.Admin.Identity,
-                TargetUserName = x.Target.CurrentAlias.Alias.UserName,
-                TargetIdentity = x.Target.Identity,
+                AdminUserName = x.Issuer.CurrentAlias.Alias.UserName,
+                AdminIdentity = x.Issuer.Identity,
+                TargetUserName = x.Recipient.CurrentAlias.Alias.UserName,
+                TargetIdentity = x.Recipient.Identity,
                 x.PenaltyGuid,
                 x.Reason,
                 x.Evidence

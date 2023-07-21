@@ -41,7 +41,7 @@ public class EFServer
     /// <summary>
     /// Current server associated with instance.
     /// </summary>
-    public int InstanceId { get; set; }
+    public int CommunityId { get; set; }
 
-    [ForeignKey(nameof(InstanceId))] public EFInstance Instance { get; set; } = null!;
+    [ForeignKey(nameof(CommunityId))] public EFCommunity Community { get; set; } = null!;
 }

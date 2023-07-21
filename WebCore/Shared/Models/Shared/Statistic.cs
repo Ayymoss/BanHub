@@ -5,12 +5,12 @@ public class Statistic
     /// <summary>
     /// The count of how many entities there are
     /// </summary>
-    public int EntityCount { get; set; }
+    public int PlayerCount { get; set; }
 
     /// <summary>
     /// The count of how many instances there are
     /// </summary>
-    public int InstanceCount { get; set; }
+    public int CommunityCount { get; set; }
 
     /// <summary>
     /// The count of how many servers there are
@@ -25,10 +25,10 @@ public class Statistic
     /// <summary>
     /// The count of how many users are online
     /// </summary>
-    public int OnlineCount { get; set; }
+    public int OnlinePlayersCount { get; set; }
 
     /// <summary>
     /// The count of how many bans there are in last 7d
     /// </summary>
-    public int BanCount { get; set; }
+    public int RecentBansCount { get; set; }
 }

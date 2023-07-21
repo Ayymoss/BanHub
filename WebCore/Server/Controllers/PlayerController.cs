@@ -46,17 +46,17 @@ public class PlayerController : ControllerBase
 
         if (adminSignInGuid is not null)
         {
-            instanceRoleAssigned = _signedInUsers.IsUserInAnyInstanceRole(adminSignInGuid, new[]
+            instanceRoleAssigned = _signedInUsers.IsUserInAnyCommunityRole(adminSignInGuid, new[]
             {
-                InstanceRole.InstanceModerator,
-                InstanceRole.InstanceAdministrator,
-                InstanceRole.InstanceSeniorAdmin,
-                InstanceRole.InstanceOwner
+                CommunityRole.Moderator,
+                CommunityRole.Administrator,
+                CommunityRole.SeniorAdmin,
+                CommunityRole.Owner
             });
             webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
             {
-                WebRole.WebAdmin,
-                WebRole.WebSuperAdmin
+                WebRole.Admin,
+                WebRole.SuperAdmin
             });
         }
 

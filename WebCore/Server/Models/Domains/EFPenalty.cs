@@ -64,21 +64,21 @@ public class EFPenalty
     /// <summary>
     /// The admin GUID who issued the infraction
     /// </summary>
-    public int AdminId { get; set; }
+    public int IssuerId { get; set; }
 
-    [ForeignKey(nameof(AdminId))] public EFPlayer Admin { get; set; } = null!;
+    [ForeignKey(nameof(IssuerId))] public EFPlayer Issuer { get; set; } = null!;
 
     /// <summary>
     /// The user GUID who received the infraction
     /// </summary>
-    public int TargetId { get; set; }
+    public int RecipientId { get; set; }
 
-    [ForeignKey(nameof(TargetId))] public EFPlayer Target { get; set; } = null!;
+    [ForeignKey(nameof(RecipientId))] public EFPlayer Recipient { get; set; } = null!;
 
     /// <summary>
     /// The server reference this infraction
     /// </summary>
-    public int InstanceId { get; set; }
+    public int CommunityId { get; set; }
 
-    [ForeignKey(nameof(InstanceId))] public EFInstance Instance { get; set; } = null!;
+    [ForeignKey(nameof(CommunityId))] public EFCommunity Community { get; set; } = null!;
 }

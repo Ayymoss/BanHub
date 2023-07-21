@@ -160,7 +160,7 @@ else
                                         <MudTableSortLabel SortBy="new Func<Penalty, object>(x => x.PenaltyStatus)">Status</MudTableSortLabel>
                                     </MudTh>
                                     <MudTh>
-                                        <MudTableSortLabel SortBy="new Func<Penalty, object>(x => x.InstanceName)">Community</MudTableSortLabel>
+                                        <MudTableSortLabel SortBy="new Func<Penalty, object>(x => x.CommunityName)">Community</MudTableSortLabel>
                                     </MudTh>
                                     <MudTh>
                                         <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<Penalty, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
@@ -176,7 +176,7 @@ else
                                     <MudTd DataLabel="Scope">@context.PenaltyScope.ToString()</MudTd>
                                     <MudTd DataLabel="Status">@context.PenaltyStatus.ToString()</MudTd>
                                     <MudTd DataLabel="Community">
-                                        <MudLink Href="@($"/Communities/{context.InstanceGuid}")" Typo="Typo.body2" Color="Color.Info">@context.InstanceName</MudLink>
+                                        <MudLink Href="@($"/Communities/{context.CommunityGuid}")" Typo="Typo.body2" Color="Color.Info">@context.CommunityName</MudLink>
                                     </MudTd>
                                     <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
                                     <MudTd DataLabel="View">
@@ -206,7 +206,7 @@ else
                                       Items="@_connections" Dense="true" @ref="_connectionTable" T="Connection" RowsPerPage="10">
                                 <HeaderContent>
                                     <MudTh Class="rounded-tl py-2">
-                                        <MudTableSortLabel SortBy="new Func<Connection, object>(x => x.ServerName ?? x.InstanceIp)">Server Name</MudTableSortLabel>
+                                        <MudTableSortLabel SortBy="new Func<Connection, object>(x => x.ServerName ?? x.CommunityIp)">Server Name</MudTableSortLabel>
                                     </MudTh>
                                     <MudTh>
                                         <MudTableSortLabel SortBy="new Func<Connection, object>(x => x.ServerGame)">Server Game</MudTableSortLabel>
@@ -222,7 +222,7 @@ else
                                     <MudTd DataLabel="Server Name">@context.ServerName</MudTd>
                                     <MudTd DataLabel="Server Game">@(context.ServerGame.GetGameName())</MudTd>
                                     <MudTd DataLabel="Server IP">
-                                        <MudText Typo="Typo.body2">@(context.ServerIp.IsInternal() ? context.InstanceIp : context.ServerIp):@context.ServerPort</MudText>
+                                        <MudText Typo="Typo.body2">@(context.ServerIp.IsInternal() ? context.CommunityIp : context.ServerIp):@context.ServerPort</MudText>
                                     </MudTd>
                                     <MudTd DataLabel="Connected">@context.Connected.Humanize()</MudTd>
                                 </RowTemplate>
@@ -316,7 +316,7 @@ else
     private string _guid = string.Empty;
     private string _gameName = string.Empty;
     private bool _webAdmin;
-    private bool _instanceAdmin;
+    private bool _communityAdmin;
     private MudTable<Penalty>? _penaltyTable;
     private MudTable<Note>? _noteTable;
     private MudTable<Connection>? _connectionTable;
@@ -327,7 +327,7 @@ else
 
         var user = (await (AuthStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
         _webAdmin = user.IsInAnyRole("WebAdmin", "WebSuperAdmin");
-        _instanceAdmin = user.IsInAnyRole("InstanceModerator", "InstanceAdministrator", "InstanceSeniorAdmin", "InstanceOwner");
+        _communityAdmin = user.IsInAnyRole("InstanceModerator", "InstanceAdministrator", "InstanceSeniorAdmin", "InstanceOwner");
         Identity ??= user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
         await LoadProfile();
@@ -364,7 +364,7 @@ else
         if (_connections.Any())
         {
             var connection = _connections.MaxBy(x => x.Connected);
-            _lastConnectedServer = $"({connection?.InstanceName ?? "Unset"}) {connection?.ServerName ?? "Unset"}";
+            _lastConnectedServer = $"({connection?.CommunityName ?? "Unset"}) {connection?.ServerName ?? "Unset"}";
         }
 
         _loading = false;
@@ -398,7 +398,7 @@ else
 
     private async Task NoteRowClickEvent(TableRowClickEventArgs<Note> clickEvent)
     {
-        if (!_instanceAdmin && !_webAdmin) return;
+        if (!_communityAdmin && !_webAdmin) return;
 
         var parameters = new DialogParameters
         {

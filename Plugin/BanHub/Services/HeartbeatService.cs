@@ -50,20 +50,20 @@ public class HeartbeatService
         _api = RestClient.For<IHeartbeatService>(ApiHost);
     }
 
-    public async Task<bool> PostInstanceHeartBeat(InstanceHeartbeatCommand instance)
+    public async Task<bool> PostCommunityHeartbeat(CommunityHeartbeatCommand community)
     {
         try
         {
             return await _retryPolicy.ExecuteAsync(async () =>
             {
-                var response = await _api.PostInstanceHeartBeatAsync(instance);
+                var response = await _api.PostCommunityHeartBeatAsync(community);
                 if (!response.IsSuccessStatusCode && _banHubConfiguration.DebugMode)
                 {
                     Console.WriteLine($"\n[{BanHubConfiguration.Name}] Error posting instance heartbeat.\n" +
                                       $"SC: {response.StatusCode}\n" +
                                       $"RP: {response.ReasonPhrase}\n" +
                                       $"B: {await response.Content.ReadAsStringAsync()}\n" +
-                                      $"JSON: {JsonSerializer.Serialize(instance)}\n" +
+                                      $"JSON: {JsonSerializer.Serialize(community)}\n" +
                                       $"[{BanHubConfiguration.Name}] End of error");
                 }
 
@@ -78,7 +78,7 @@ public class HeartbeatService
         return false;
     }
 
-    public async Task<bool> PostEntityHeartBeat(PlayersHeartbeatCommand players)
+    public async Task<bool> PostEntityHeartbeat(PlayersHeartbeatCommand players)
     {
         try
         {

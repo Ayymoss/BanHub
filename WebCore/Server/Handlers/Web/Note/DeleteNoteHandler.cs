@@ -26,10 +26,10 @@ public class DeleteNoteHandler : IRequestHandler<DeleteNoteCommand, bool>
             .Select(x => new
             {
                 x.NoteGuid,
-                AdminIdentity = x.Admin.Identity,
-                AdminUserName = x.Admin.CurrentAlias.Alias.UserName,
-                TargetUserName = x.Target.CurrentAlias.Alias.UserName,
-                TargetIdentity = x.Target.Identity,
+                AdminIdentity = x.Issuer.Identity,
+                AdminUserName = x.Issuer.CurrentAlias.Alias.UserName,
+                TargetUserName = x.Recipient.CurrentAlias.Alias.UserName,
+                TargetIdentity = x.Recipient.Identity,
                 x.Message,
                 x.IsPrivate
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);

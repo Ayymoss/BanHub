@@ -24,15 +24,15 @@ public class Plugin : IPluginV2
     public string Version => "2023-07-16";
     public string Author => "Amos";
 
-    public static bool InstanceActive { get; private set; }
-    private readonly InstanceSlim _instanceSlim;
+    public static bool CommunityActive { get; private set; }
+    private readonly CommunitySlim _communitySlim;
     private readonly EndpointManager _endpointManager;
     private readonly HeartBeatManager _heartBeatManager;
     private readonly BanHubConfiguration _config;
     private readonly ApplicationConfiguration _appConfig;
     private readonly WhitelistManager _whitelistManager;
 
-    public Plugin(InstanceSlim instanceSlim, HeartBeatManager heartBeatManager, EndpointManager endpointManager, BanHubConfiguration config,
+    public Plugin(CommunitySlim communitySlim, HeartBeatManager heartBeatManager, EndpointManager endpointManager, BanHubConfiguration config,
         ApplicationConfiguration appConfig, WhitelistManager whitelistManager)
     {
         _config = config;
@@ -40,7 +40,7 @@ public class Plugin : IPluginV2
         _whitelistManager = whitelistManager;
         _heartBeatManager = heartBeatManager;
         _endpointManager = endpointManager;
-        _instanceSlim = instanceSlim;
+        _communitySlim = communitySlim;
 
         if (!config.EnableBanHub) return; // disable if not enabled in config
 
@@ -59,9 +59,9 @@ public class Plugin : IPluginV2
         serviceCollection.AddSingleton<HeartbeatService>();
         serviceCollection.AddSingleton<PlayerService>();
         serviceCollection.AddSingleton<PenaltyService>();
-        serviceCollection.AddSingleton<InstanceService>();
+        serviceCollection.AddSingleton<CommunityService>();
         serviceCollection.AddSingleton<ServerService>();
-        serviceCollection.AddSingleton(new InstanceSlim());
+        serviceCollection.AddSingleton(new CommunitySlim());
         serviceCollection.AddSingleton<HeartBeatManager>();
         serviceCollection.AddSingleton<EndpointManager>();
         serviceCollection.AddSingleton<WhitelistManager>();
@@ -76,7 +76,7 @@ public class Plugin : IPluginV2
             ServerIp = startEvent.Server.ListenAddress,
             ServerPort = startEvent.Server.ListenPort,
             ServerGame = Enum.Parse<Game>(startEvent.Server.GameCode.ToString()),
-            InstanceGuid = _instanceSlim.InstanceGuid
+            CommunityGuid = _communitySlim.CommunityGuid
         };
         await _endpointManager.OnStart(serverDto);
     }
@@ -120,27 +120,27 @@ public class Plugin : IPluginV2
             : $"[{BanHubConfiguration.Name}] Loading... v{Version}");
 
         // Update the instance and check its state (Singleton)
-        _instanceSlim.InstanceGuid = Guid.Parse(_appConfig.Id);
-        _instanceSlim.InstanceIp = manager.ExternalIPAddress;
-        _instanceSlim.ApiKey = _config.ApiKey;
+        _communitySlim.CommunityGuid = Guid.Parse(_appConfig.Id);
+        _communitySlim.CommunityIp = manager.ExternalIPAddress;
+        _communitySlim.ApiKey = _config.ApiKey;
 
         var portRaw = _appConfig.WebfrontBindUrl.Split(":").LastOrDefault();
         _ = int.TryParse(portRaw, out var port);
 
         // We need a copy of this since we don't really want the other values being sent with each request.
-        var instanceCopy = new CreateOrUpdateInstanceCommand
+        var instanceCopy = new CreateOrUpdateCommunityCommand
         {
-            InstanceGuid = _instanceSlim.InstanceGuid,
-            InstanceIp = _instanceSlim.InstanceIp,
-            InstanceWebsite = _config.InstanceWebsite.GetDomainName(),
-            InstanceBindPort = port,
-            InstanceApiKey = _instanceSlim.ApiKey,
-            InstanceName = _config.InstanceNameOverride ?? _appConfig.WebfrontCustomBranding ?? _instanceSlim.InstanceGuid.ToString(),
+            CommunityGuid = _communitySlim.CommunityGuid,
+            CommunityIp = _communitySlim.CommunityIp,
+            CommunityWebsite = _config.CommunityWebsite.GetDomainName(),
+            CommunityPort = port,
+            CommunityApiKey = _communitySlim.ApiKey,
+            CommunityName = _config.CommunityNameOverride ?? _appConfig.WebfrontCustomBranding ?? _communitySlim.CommunityGuid.ToString(),
             About = _appConfig.CommunityInformation.Description,
             Socials = _appConfig.CommunityInformation.SocialAccounts.ToDictionary(social => social.Title, social => social.Url),
         };
 
-        var enabled = await _endpointManager.CreateOrUpdateInstanceAsync(instanceCopy);
+        var enabled = await _endpointManager.CreateOrUpdateCommunityAsync(instanceCopy);
 
         // Issue creating instance. Unload.
         if (!enabled)
@@ -149,10 +149,10 @@ public class Plugin : IPluginV2
             return;
         }
 
-        InstanceActive = await _endpointManager.IsInstanceActive(_instanceSlim.InstanceGuid);
-        _instanceSlim.Active = InstanceActive;
+        CommunityActive = await _endpointManager.IsCommunityActive(_communitySlim.CommunityGuid);
+        _communitySlim.Active = CommunityActive;
 
-        if (InstanceActive)
+        if (CommunityActive)
         {
             Console.WriteLine($"[{BanHubConfiguration.Name}] Your instance is active. Penalties and users will be reported to the API.");
         }
@@ -179,8 +179,8 @@ public class Plugin : IPluginV2
 
     private async Task OnNotifyAfterDelayCompleted(CancellationToken token)
     {
-        await _heartBeatManager.InstanceHeartBeat();
-        await _heartBeatManager.ClientHeartBeat();
+        await _heartBeatManager.CommunityHeartbeat();
+        await _heartBeatManager.ClientHeartbeat();
         SharedLibraryCore.Utilities.ExecuteAfterDelay(TimeSpan.FromMinutes(4), OnNotifyAfterDelayCompleted, CancellationToken.None);
     }
 }

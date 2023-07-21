@@ -58,24 +58,11 @@
             return;
         }
 
-        var authenticatedUser = (await (AuthStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
-        var adminIdentity = authenticatedUser.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-        var adminName = authenticatedUser.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-
-        if (adminName is null || adminIdentity is null)
-        {
-            SnackbarService.Add("Failed to get admin identities!", Severity.Error);
-            _processing = false;
-            MudDialog.Cancel();
-            return;
-        }
-
         var request = await NoteService.AddNoteAsync(new AddNoteCommand
         {
             Message = _noteMessage,
             IsPrivate = _isPrivateNote,
             TargetIdentity = Identity,
-            AdminIdentity = adminIdentity
         });
 
         if (!request)

@@ -43,7 +43,7 @@ public class WebTokenLoginHandler : IRequestHandler<WebTokenLoginCommand, WebTok
             {
                 UserName = x.CurrentAlias.Alias.UserName,
                 WebRole = x.WebRole.ToString(),
-                InstanceRole = x.InstanceRole.ToString(),
+                CommunityRole = x.CommunityRole.ToString(),
                 Identity = x.Identity,
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
@@ -64,7 +64,7 @@ public class WebTokenLoginHandler : IRequestHandler<WebTokenLoginCommand, WebTok
         {
             new(ClaimTypes.Name, user.UserName),
             new(ClaimTypes.Role, user.WebRole),
-            new(ClaimTypes.Role, user.InstanceRole),
+            new(ClaimTypes.Role, user.CommunityRole),
             new(ClaimTypes.NameIdentifier, user.Identity),
             new("SignedInGuid", user.SignedInGuid),
         };

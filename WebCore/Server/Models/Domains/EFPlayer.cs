@@ -43,7 +43,7 @@ public class EFPlayer
     /// <summary>
     /// The player's instance role
     /// </summary>
-    public required InstanceRole InstanceRole { get; set; }
+    public required CommunityRole CommunityRole { get; set; }
 
     /// <summary>
     /// Player's notes.

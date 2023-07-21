@@ -40,13 +40,13 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
                 x.Id
             }).SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
-        var instance = await _context.Instances.AsTracking()
-            .Where(x => x.InstanceGuid == request.InstanceGuid)
+        var instance = await _context.Community.AsTracking()
+            .Where(x => x.CommunityGuid == request.CommunityGuid)
             .Select(x => new
             {
                 x.Id,
-                x.InstanceName,
-                x.InstanceGuid
+                InstanceName = x.CommunityName,
+                InstanceGuid = x.CommunityGuid
             }).SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
         if (target is null || admin is null || instance is null) return (ControllerEnums.ReturnState.BadRequest, null);
@@ -54,14 +54,14 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
         var penalties = await _context.Penalties
             .AsTracking()
             .Include(x => x.Identifier)
-            .Where(i => i.Instance.InstanceGuid == request.InstanceGuid)
-            .Where(t => t.TargetId == target.Id)
+            .Where(i => i.Community.CommunityGuid == request.CommunityGuid)
+            .Where(t => t.RecipientId == target.Id)
             .Where(p => p.PenaltyType == PenaltyType.Ban || p.PenaltyType == PenaltyType.TempBan)
             .Where(p => p.PenaltyStatus == PenaltyStatus.Active)
             .ToListAsync(cancellationToken: cancellationToken);
 
         var hasExistingGlobalBan = await _context.Penalties
-            .Where(x => x.TargetId == target.Id)
+            .Where(x => x.RecipientId == target.Id)
             .Where(x => x.PenaltyStatus == PenaltyStatus.Active)
             .Where(x => x.PenaltyType == PenaltyType.Ban)
             .AnyAsync(x => x.PenaltyScope == PenaltyScope.Global, cancellationToken: cancellationToken);
@@ -100,12 +100,12 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
             PenaltyScope = request.PenaltyScope,
             PenaltyGuid = Guid.NewGuid(),
             Submitted = DateTimeOffset.UtcNow,
-            AdminId = admin.Id,
+            IssuerId = admin.Id,
             Reason = request.Reason,
             Automated = request.Automated,
             Expiration = request.Expiration,
-            InstanceId = instance.Id,
-            TargetId = target.Id
+            CommunityId = instance.Id,
+            RecipientId = target.Id
         };
 
         if (request is {PenaltyType: PenaltyType.Ban, PenaltyScope: PenaltyScope.Global})
@@ -122,7 +122,7 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
         }
 
         if (request.PenaltyScope is PenaltyScope.Global)
-            await _statisticService.UpdateDayStatisticAsync(new StatisticBan
+            await _statisticService.UpdateRecentBansStatisticAsync(new StatisticBan
             {
                 BanGuid = penaltyModel.PenaltyGuid,
                 Submitted = DateTimeOffset.UtcNow
@@ -142,8 +142,8 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
                 TargetIdentity = target.Identity,
                 Username = target.UserName,
                 Reason = penaltyModel.Reason,
-                InstanceGuid = instance.InstanceGuid,
-                InstanceName = instance.InstanceName
+                CommunityGuid = instance.InstanceGuid,
+                CommunityName = instance.InstanceName
             }, cancellationToken);
 
         return (ControllerEnums.ReturnState.Created, penaltyModel.PenaltyGuid);

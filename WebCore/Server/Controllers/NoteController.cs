@@ -26,23 +26,24 @@ public class NoteController : ControllerBase
     public async Task<IActionResult> AddNoteAsync([FromBody] AddNoteCommand request)
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
-        if (adminSignInGuid is null) return Unauthorized("You are not authorised to perform this action");
+        var adminIdentity = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        if (adminSignInGuid is null || adminIdentity is null) return Unauthorized("You are not authorised to perform this action");
 
-        var instanceRoleAssigned = _signedInUsers.IsUserInAnyInstanceRole(adminSignInGuid, new[]
+        var instanceRoleAssigned = _signedInUsers.IsUserInAnyCommunityRole(adminSignInGuid, new[]
         {
-            InstanceRole.InstanceModerator,
-            InstanceRole.InstanceAdministrator,
-            InstanceRole.InstanceSeniorAdmin,
-            InstanceRole.InstanceOwner
+            CommunityRole.Moderator,
+            CommunityRole.Administrator,
+            CommunityRole.SeniorAdmin,
+            CommunityRole.Owner
         });
         var webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
         {
-            WebRole.WebAdmin,
-            WebRole.WebSuperAdmin
+            WebRole.Admin,
+            WebRole.SuperAdmin
         });
 
         if (!instanceRoleAssigned && !webRoleAssigned) return Unauthorized("You are not authorised to perform this action");
-
+        request.AdminIdentity = adminIdentity;
         var result = await _mediator.Send(request);
         if (!result) return BadRequest();
         return Ok();
@@ -54,19 +55,20 @@ public class NoteController : ControllerBase
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
         var adminName = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
         var adminNameIdentity = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-        if (adminSignInGuid is null || adminName is null || adminNameIdentity is null) return Unauthorized("You are not authorised to perform this action");
+        if (adminSignInGuid is null || adminName is null || adminNameIdentity is null)
+            return Unauthorized("You are not authorised to perform this action");
 
-        var instanceRoleAssigned = _signedInUsers.IsUserInAnyInstanceRole(adminSignInGuid, new[]
+        var instanceRoleAssigned = _signedInUsers.IsUserInAnyCommunityRole(adminSignInGuid, new[]
         {
-            InstanceRole.InstanceModerator,
-            InstanceRole.InstanceAdministrator,
-            InstanceRole.InstanceSeniorAdmin,
-            InstanceRole.InstanceOwner
+            CommunityRole.Moderator,
+            CommunityRole.Administrator,
+            CommunityRole.SeniorAdmin,
+            CommunityRole.Owner
         });
         var webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
         {
-            WebRole.WebAdmin,
-            WebRole.WebSuperAdmin
+            WebRole.Admin,
+            WebRole.SuperAdmin
         });
 
         if (!instanceRoleAssigned && !webRoleAssigned) return Unauthorized("You are not authorised to perform this action");
@@ -87,17 +89,17 @@ public class NoteController : ControllerBase
 
         if (adminSignInGuid is not null)
         {
-            instanceRoleAssigned = _signedInUsers.IsUserInAnyInstanceRole(adminSignInGuid, new[]
+            instanceRoleAssigned = _signedInUsers.IsUserInAnyCommunityRole(adminSignInGuid, new[]
             {
-                InstanceRole.InstanceModerator,
-                InstanceRole.InstanceAdministrator,
-                InstanceRole.InstanceSeniorAdmin,
-                InstanceRole.InstanceOwner
+                CommunityRole.Moderator,
+                CommunityRole.Administrator,
+                CommunityRole.SeniorAdmin,
+                CommunityRole.Owner
             });
             webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
             {
-                WebRole.WebAdmin,
-                WebRole.WebSuperAdmin
+                WebRole.Admin,
+                WebRole.SuperAdmin
             });
         }
 

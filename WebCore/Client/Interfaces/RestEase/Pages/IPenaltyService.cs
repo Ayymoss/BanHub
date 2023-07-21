@@ -18,8 +18,8 @@ public interface IPenaltyService
     [Get("/Penalty/Latest")]
     Task<HttpResponseMessage> GetLatestBansAsync();
 
-    [Get("/Penalty/Instance/Penalties/{identity}")]
-    Task<HttpResponseMessage> GetInstancePenaltiesAsync([Path("identity")] string identity);
+    [Get("/Penalty/Community/Penalties/{identity}")]
+    Task<HttpResponseMessage> GetCommunityPenaltiesAsync([Path("identity")] string identity);
 
     [Patch("/Penalty/WebEvidence")]
     Task<HttpResponseMessage> AddPlayerPenaltyEvidenceAsync([Body] AddPlayerPenaltyEvidenceCommand evidence);
