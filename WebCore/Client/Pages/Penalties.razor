@@ -49,18 +49,10 @@
     <RowTemplate>
         <MudTd DataLabel="ID">@context.PenaltyGuid</MudTd>
         <MudTd DataLabel="Target Name">
-            <a href="/Players/@context.TargetIdentity">
-                <MudText Typo="Typo.body2" Color="Color.Warning">
-                    @context.TargetUserName
-                </MudText>
-            </a>
+            <MudLink Href="@($"/Players/{context.TargetIdentity}")" Typo="Typo.body2" Color="Color.Info">@context.TargetUserName</MudLink>
         </MudTd>
         <MudTd DataLabel="Admin Name">
-            <a href="/Players/@context.AdminIdentity">
-                <MudText Typo="Typo.body2" Color="Color.Info">
-                    @context.AdminUserName
-                </MudText>
-            </a>
+            <MudLink Href="@($"/Players/{context.AdminIdentity}")" Typo="Typo.body2" Color="Color.Info">@context.AdminUserName</MudLink>
         </MudTd>
         <MudTd DataLabel="Reason">@context.Reason</MudTd>
         <MudTd DataLabel="Type">

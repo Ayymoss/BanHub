@@ -58,19 +58,10 @@
             }
         </MudTd>
         <MudTd DataLabel="Name">
-            <a href="/Communities/@context.InstanceGuid">
-                <MudText Typo="Typo.body2" Color="Color.Info">
-                    @(context.InstanceName)
-                </MudText>
-            </a>
+            <MudLink Href="@($"/Communities/{context.InstanceGuid}")" Typo="Typo.body2" Color="Color.Info">@context.InstanceName</MudLink>
         </MudTd>
         <MudTd DataLabel="Website">
-            <a href="https://@(context.InstanceWebsite)/">
-                <MudText Typo="Typo.body2" Color="Color.Info">
-                    @(context.InstanceWebsite)
-                </MudText>
-            </a>
-
+            <MudLink Href="@($"https://{context.InstanceWebsite}/")" Typo="Typo.body2" Color="Color.Info">@context.InstanceWebsite</MudLink>
         </MudTd>
         <MudTd DataLabel="Servers">@context.ServerCount</MudTd>
         <MudTd DataLabel="HeartBeat">@context.HeartBeat.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>

@@ -28,11 +28,7 @@ else
         <RowTemplate>
             <MudTd DataLabel="ID">@context.Identity</MudTd>
             <MudTd DataLabel="User">
-                <a href="/Players/@context.Identity">
-                    <MudText Typo="Typo.body2" Color="Color.Info">
-                        @context.Username
-                    </MudText>
-                </a>
+                <MudLink Href="@($"/Communities/{context.Identity}")" Typo="Typo.body2" Color="Color.Info">@context.Username</MudLink>
             </MudTd>
         </RowTemplate>
     </MudTable>

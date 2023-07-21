@@ -169,22 +169,14 @@ else
                                 </HeaderContent>
                                 <RowTemplate>
                                     <MudTd DataLabel="Admin">
-                                        <a href="/Players/@context.AdminIdentity">
-                                            <MudText Typo="Typo.body2" Color="Color.Warning">
-                                                @context.AdminUserName
-                                            </MudText>
-                                        </a>
+                                        <MudLink Href="@($"/Players/{context.AdminIdentity}")" Typo="Typo.body2" Color="Color.Info">@context.AdminUserName</MudLink>
                                     </MudTd>
                                     <MudTd DataLabel="Reason">@context.Reason</MudTd>
                                     <MudTd DataLabel="Type">@context.PenaltyType.ToString()</MudTd>
                                     <MudTd DataLabel="Scope">@context.PenaltyScope.ToString()</MudTd>
                                     <MudTd DataLabel="Status">@context.PenaltyStatus.ToString()</MudTd>
                                     <MudTd DataLabel="Community">
-                                        <a href="/Communities/@context.InstanceGuid">
-                                            <MudText Typo="Typo.body2" Color="Color.Info">
-                                                @(context.InstanceName)
-                                            </MudText>
-                                        </a>
+                                        <MudLink Href="@($"/Communities/{context.InstanceGuid}")" Typo="Typo.body2" Color="Color.Info">@context.InstanceName</MudLink>
                                     </MudTd>
                                     <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
                                     <MudTd DataLabel="View">

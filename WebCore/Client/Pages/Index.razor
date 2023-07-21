@@ -37,18 +37,10 @@
                         </HeaderContent>
                         <RowTemplate>
                             <MudTd DataLabel="Instance">
-                                <a href="/Communities/@context.InstanceGuid">
-                                    <MudText Typo="Typo.body2" Color="Color.Info">
-                                        @context.InstanceName
-                                    </MudText>
-                                </a>
+                                <MudLink Href="@($"/Communities/{context.InstanceGuid}")" Typo="Typo.body2" Color="Color.Info">@context.InstanceName</MudLink>
                             </MudTd>
                             <MudTd DataLabel="Target">
-                                <a href="/Players/@context.TargetIdentity">
-                                    <MudText Typo="Typo.body2" Color="Color.Info">
-                                        @context.TargetUserName
-                                    </MudText>
-                                </a>
+                                <MudLink Href="@($"/Players/{context.TargetIdentity}")" Typo="Typo.body2" Color="Color.Info">@context.TargetUserName</MudLink>
                             </MudTd>
                             <MudTd DataLabel="Reason">@context.Reason</MudTd>
                             <MudTd DataLabel="When?">@context.Submitted.Humanize().Titleize()</MudTd>
@@ -99,11 +91,11 @@
 
                         <MudText Typo="Typo.h6" Class="my-2">Follow us</MudText>
                         <MudElement>
-                            <MudChip Size="Size.Large" Icon="@Icons.Custom.Brands.Discord" Label="true" Color="Color.Primary">
-                                <a href="https://discord.gg/39rMB7YE2R">Discord</a>
+                            <MudChip Size="Size.Large" Icon="@Icons.Custom.Brands.Discord" Href="https://discord.gg/39rMB7YE2R" Label="true" Color="Color.Primary">
+                                Discord
                             </MudChip>
-                            <MudChip Size="Size.Large" Icon="@Icons.Custom.Brands.GitHub" Label="true" Color="Color.Info">
-                                <a href="https://github.com/Ayymoss/BanHub">GitHub</a>
+                            <MudChip Size="Size.Large" Icon="@Icons.Custom.Brands.GitHub" Href="https://github.com/Ayymoss/BanHub" Label="true" Color="Color.Info">
+                                GitHub
                             </MudChip>
                         </MudElement>
                     </MudPaper>

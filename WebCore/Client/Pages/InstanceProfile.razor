@@ -29,11 +29,7 @@ else
         {
             <MudElement Class="d-flex align-center">
                 <MudElement Class="d-flex align-center">
-                    <a href="https://@(_instance.InstanceWebsite)/">
-                        <MudText Typo="Typo.h4" Class="mud-text-secondary d-flex align-center">
-                            @_instance.InstanceName
-                        </MudText>
-                    </a>
+                    <MudLink Href="@($"https://{_instance.InstanceWebsite}/")" Typo="Typo.h4" Class="mud-text-secondary">@_instance.InstanceName</MudLink>
                 </MudElement>
                 <MudSpacer/>
                 <MudElement>
@@ -172,19 +168,10 @@ else
                                         </HeaderContent>
                                         <RowTemplate>
                                             <MudTd DataLabel="Target">
-                                                <a href="/Players/@context.TargetIdentity">
-                                                    <MudText Typo="Typo.body2" Color="Color.Warning">
-                                                        @context.TargetUserName
-                                                    </MudText>
-                                                </a>
-                                                @context.TargetUserName
+                                                <MudLink Href="@($"/Players/{context.TargetIdentity}")" Typo="Typo.body2" Color="Color.Warning">@context.TargetUserName</MudLink>
                                             </MudTd>
                                             <MudTd DataLabel="Admin">
-                                                <a href="/Players/@context.AdminIdentity">
-                                                    <MudText Typo="Typo.body2" Color="Color.Warning">
-                                                        @context.AdminUserName
-                                                    </MudText>
-                                                </a>
+                                                <MudLink Href="@($"/Players/{context.AdminIdentity}")" Typo="Typo.body2" Color="Color.Warning">@context.AdminUserName</MudLink>
                                             </MudTd>
                                             <MudTd DataLabel="Reason">@context.Reason</MudTd>
                                             <MudTd DataLabel="Type">@context.PenaltyType.ToString()</MudTd>

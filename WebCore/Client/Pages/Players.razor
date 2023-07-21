@@ -36,11 +36,7 @@
     <RowTemplate>
         <MudTd DataLabel="ID">@context.Identity</MudTd>
         <MudTd DataLabel="Name">
-            <a href="/Players/@context.Identity">
-                <MudText Typo="Typo.body2" Color="Color.Info">
-                    @context.UserName
-                </MudText>
-            </a>
+            <MudLink Href="@($"/Players/{context.Identity}")" Typo="Typo.body2" Color="Color.Info">@context.UserName</MudLink>
         </MudTd>
         <MudTd DataLabel="Penalty">@(context.Penalties is 0 ? "None" : context.Penalties)</MudTd>
         <MudTd DataLabel="Online?">
