@@ -70,7 +70,7 @@ public class PlayerController : ControllerBase
     public async Task<IActionResult> IsPlayerBannedAsync([FromBody] IsPlayerBannedCommand request)
     {
         var result = await _mediator.Send(request);
-        return result ? Forbid() : Ok();
+        return result ? StatusCode(403) : Ok();
     }
 
     [HttpPost("GetToken"), PluginAuthentication]

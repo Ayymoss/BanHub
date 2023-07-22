@@ -37,7 +37,7 @@ public class EFPenalty
     public required DateTimeOffset Submitted { get; set; }
 
     /// <summary>
-    /// Duration of a temporary infraction
+    /// Expiration of a temporary infraction
     /// </summary>
     public DateTimeOffset? Expiration { get; set; }
 
