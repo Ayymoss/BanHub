@@ -19,15 +19,12 @@ public class ServerService
     private readonly IServerService _api;
     private readonly BanHubConfiguration _banHubConfiguration;
 
-    private readonly AsyncRetryPolicy _retryPolicy = Policy.Handle<HttpRequestException>()
-        .WaitAndRetryAsync(
-            retryCount: 3,
-            sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-            onRetry: (exception, retryCount, context) =>
-            {
-                Console.WriteLine($"[{BanHubConfiguration.Name}] Error sending heartbeat: {exception.Message}. " +
-                                  $"Retrying ({retryCount}/{context["retryCount"]})...");
-            });
+    private readonly AsyncRetryPolicy _retryPolicy = Policy.Handle<HttpRequestException>().WaitAndRetryAsync(3,
+        retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), (exception, retryCount, context) =>
+        {
+            Console.WriteLine(
+                $"[{BanHubConfiguration.Name}] Error sending heartbeat: {exception.Message}. Retrying ({retryCount}/3)...");
+        });
 
     public ServerService(BanHubConfiguration banHubConfiguration)
     {
