@@ -122,7 +122,7 @@ public class StatisticService : IStatisticService
     private async Task<Statistic> ReadStatisticsAsync()
     {
         var player = await _context.Players.CountAsync();
-        var instance = await _context.Community.CountAsync();
+        var instance = await _context.Communities.CountAsync();
         var server = await _context.Servers.CountAsync();
         var penalty = await _context.Penalties.CountAsync();
 

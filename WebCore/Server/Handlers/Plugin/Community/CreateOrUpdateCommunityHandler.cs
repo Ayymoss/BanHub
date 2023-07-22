@@ -23,12 +23,12 @@ public class CreateOrUpdateCommunityHandler : IRequestHandler<CreateOrUpdateComm
     public async Task<ControllerEnums.ReturnState> Handle(CreateOrUpdateCommunityCommand request,
         CancellationToken cancellationToken)
     {
-        var instanceGuid = await _context.Community
+        var instanceGuid = await _context.Communities
             .AsTracking()
             .FirstOrDefaultAsync(server => server.CommunityGuid == request.CommunityGuid,
                 cancellationToken: cancellationToken);
 
-        var instanceApi = await _context.Community
+        var instanceApi = await _context.Communities
             .FirstOrDefaultAsync(server => server.ApiKey == request.CommunityApiKey,
                 cancellationToken: cancellationToken);
 
@@ -37,7 +37,7 @@ public class CreateOrUpdateCommunityHandler : IRequestHandler<CreateOrUpdateComm
         // New instance
         if (instanceApi is null && instanceGuid is null)
         {
-            _context.Community.Add(new EFCommunity
+            _context.Communities.Add(new EFCommunity
             {
                 CommunityGuid = request.CommunityGuid,
                 CommunityName = request.CommunityName,
@@ -80,7 +80,7 @@ public class CreateOrUpdateCommunityHandler : IRequestHandler<CreateOrUpdateComm
         instanceGuid.CommunityName = request.CommunityName;
         instanceGuid.CommunityIpFriendly = request.CommunityWebsite;
         instanceGuid.CommunityPort = request.CommunityPort;
-        _context.Community.Update(instanceGuid);
+        _context.Communities.Update(instanceGuid);
         await _context.SaveChangesAsync(cancellationToken);
 
         return ControllerEnums.ReturnState.Ok;

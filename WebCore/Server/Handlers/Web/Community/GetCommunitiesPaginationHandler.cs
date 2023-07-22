@@ -20,8 +20,8 @@ public class GetCommunitiesPaginationHandler : IRequestHandler<GetCommunitiesPag
         CancellationToken cancellationToken)
     {
         var query = request.Privileged 
-            ? _context.Community.AsQueryable() 
-            : _context.Community.Where(x=>x.Active).AsQueryable();
+            ? _context.Communities.AsQueryable() 
+            : _context.Communities.Where(x=>x.Active).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(request.SearchString))
         {

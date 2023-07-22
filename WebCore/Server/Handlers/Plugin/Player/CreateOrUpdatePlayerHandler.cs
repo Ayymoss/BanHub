@@ -21,7 +21,7 @@ public class CreateOrUpdatePlayerHandler : IRequestHandler<CreateOrUpdatePlayerC
 
     public async Task<string> Handle(CreateOrUpdatePlayerCommand request, CancellationToken cancellationToken)
     {
-         var user = await _context.Players.AsTracking()
+        var user = await _context.Players.AsTracking()
             .Include(x => x.Aliases)
             .SingleOrDefaultAsync(user => user.Identity == request.PlayerIdentity, cancellationToken: cancellationToken);
 

@@ -19,7 +19,7 @@ public class GetCommunityHandler : IRequestHandler<GetCommunityCommand, Shared.M
         var serverCount = await _context.Servers
             .CountAsync(x => x.Community.CommunityGuid == request.CommunityGuid, cancellationToken: cancellationToken);
 
-        var result = await _context.Community
+        var result = await _context.Communities
             .Where(x => x.CommunityGuid == request.CommunityGuid)
             .Select(x => new Shared.Models.CommunityProfileView.Community
             {

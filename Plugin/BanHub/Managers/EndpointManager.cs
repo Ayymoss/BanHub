@@ -86,11 +86,12 @@ public class EndpointManager
 
     private async Task<(bool Success, string Identity)> CreateOrUpdatePlayerAsync(EFClient player)
     {
+        if (player.ClientId is 1) return (true, "0:UKN");
         var createOrUpdate = new CreateOrUpdatePlayerCommand
         {
             PlayerIdentity = $"{player.GuidString}:{player.GameName.ToString()}",
             PlayerAliasUserName = player.CleanedName,
-            PlayerAliasIpAddress = player.ClientId is not 0 ? player.IPAddressString : "0.0.0.0",
+            PlayerAliasIpAddress = player.IPAddressString,
             PlayerCommunityRole = player.ClientPermission.Level switch
             {
                 Data.Models.Client.EFClient.Permission.Trusted => CommunityRole.Trusted,

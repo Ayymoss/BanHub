@@ -16,7 +16,7 @@ public class IsCommunityActiveHandler : IRequestHandler<IsCommunityActiveCommand
 
     public async Task<bool> Handle(IsCommunityActiveCommand request, CancellationToken cancellationToken)
     {
-        return await _context.Community
+        return await _context.Communities
             .SingleOrDefaultAsync(x => x.CommunityGuid == request.CommunityGuid, 
                 cancellationToken: cancellationToken) is {Active: true};
     }

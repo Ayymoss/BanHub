@@ -21,7 +21,7 @@ public class CreateOrUpdateServerHandler : IRequestHandler<CreateOrUpdateServerC
 
     public async Task<ControllerEnums.ReturnState> Handle(CreateOrUpdateServerCommand request, CancellationToken cancellationToken)
     {
-        var instance = await _context.Community
+        var instance = await _context.Communities
             .FirstOrDefaultAsync(x => x.CommunityGuid == request.CommunityGuid, cancellationToken: cancellationToken);
         if (instance is null) return ControllerEnums.ReturnState.NotFound;
 

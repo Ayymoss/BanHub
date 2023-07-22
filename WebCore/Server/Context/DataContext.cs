@@ -10,7 +10,7 @@ public class DataContext : DbContext
     {
     }
 
-    public DbSet<EFCommunity> Community { get; set; }
+    public DbSet<EFCommunity> Communities { get; set; }
     public DbSet<EFPlayer> Players { get; set; }
     public DbSet<EFAlias> Aliases { get; set; }
     public DbSet<EFCurrentAlias> CurrentAliases { get; set; }

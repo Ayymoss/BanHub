@@ -20,7 +20,7 @@ public class ApiKeyMiddleware : IMiddleware
     {
         if (_apiKeyCache.ApiKeys is null)
         {
-            var keys = await _dataContext.Community
+            var keys = await _dataContext.Communities
                 .Where(x => x.Active)
                 .ToDictionaryAsync(x => x.CommunityGuid, x => x.ApiKey);
 

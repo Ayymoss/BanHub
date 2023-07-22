@@ -40,7 +40,7 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
                 x.Id
             }).SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
-        var instance = await _context.Community.AsTracking()
+        var instance = await _context.Communities.AsTracking()
             .Where(x => x.CommunityGuid == request.CommunityGuid)
             .Select(x => new
             {

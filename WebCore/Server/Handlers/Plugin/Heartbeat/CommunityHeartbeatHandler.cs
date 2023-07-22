@@ -17,14 +17,14 @@ public class CommunityHeartbeatHandler : IRequestHandler<CommunityHeartbeatComma
 
     public async Task<ControllerEnums.ReturnState> Handle(CommunityHeartbeatCommand request, CancellationToken cancellationToken)
     {
-        var instance = await _context.Community
+        var instance = await _context.Communities
             .AsTracking()
             .FirstOrDefaultAsync(x => x.CommunityGuid == request.CommunityGuid && x.ApiKey == request.ApiKey,
                 cancellationToken: cancellationToken);
         if (instance is null) return ControllerEnums.ReturnState.NotFound;
 
         instance.HeartBeat = DateTimeOffset.UtcNow;
-        _context.Community.Update(instance);
+        _context.Communities.Update(instance);
         await _context.SaveChangesAsync(cancellationToken);
         return instance.Active ? ControllerEnums.ReturnState.Ok : ControllerEnums.ReturnState.Accepted;
     }
