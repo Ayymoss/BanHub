@@ -67,5 +67,5 @@ public class EFCommunity
     /// <summary>
     /// The list of connected servers
     /// </summary>
-    public ICollection<EFServer> ServerConnections { get; set; } = null!;
+    public ICollection<EFServer> ServerConnections { get; set; }
 }

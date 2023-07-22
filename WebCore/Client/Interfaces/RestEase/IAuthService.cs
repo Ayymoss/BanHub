@@ -1,7 +1,7 @@
 ﻿using BanHub.WebCore.Shared.Commands.Web;
 using RestEase;
 
-namespace BanHub.WebCore.Client.Interfaces.RestEase.Pages;
+namespace BanHub.WebCore.Client.Interfaces.RestEase;
 
 public interface IAuthService
 {

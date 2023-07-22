@@ -66,19 +66,19 @@ public class EFPenalty
     /// </summary>
     public int IssuerId { get; set; }
 
-    [ForeignKey(nameof(IssuerId))] public EFPlayer Issuer { get; set; } = null!;
+    [ForeignKey(nameof(IssuerId))] public EFPlayer Issuer { get; set; }
 
     /// <summary>
     /// The user GUID who received the infraction
     /// </summary>
     public int RecipientId { get; set; }
 
-    [ForeignKey(nameof(RecipientId))] public EFPlayer Recipient { get; set; } = null!;
+    [ForeignKey(nameof(RecipientId))] public EFPlayer Recipient { get; set; }
 
     /// <summary>
     /// The server reference this infraction
     /// </summary>
     public int CommunityId { get; set; }
 
-    [ForeignKey(nameof(CommunityId))] public EFCommunity Community { get; set; } = null!;
+    [ForeignKey(nameof(CommunityId))] public EFCommunity Community { get; set; }
 }

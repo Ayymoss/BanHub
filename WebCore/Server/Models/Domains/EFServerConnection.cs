@@ -17,12 +17,12 @@ public class EFServerConnection
     /// </summary>
     public int PlayerId { get; set; }
 
-    [ForeignKey(nameof(PlayerId))] public EFPlayer Player { get; set; } = null!;
+    [ForeignKey(nameof(PlayerId))] public EFPlayer Player { get; set; }
 
     /// <summary>
     /// The server they connected to
     /// </summary>
     public int ServerId { get; set; }
 
-    [ForeignKey(nameof(ServerId))] public EFServer Server { get; set; } = null!;
+    [ForeignKey(nameof(ServerId))] public EFServer Server { get; set; }
 }

@@ -15,12 +15,12 @@ public class EFCurrentAlias
     /// </summary>
     public int PlayerId { get; set; }
 
-    [ForeignKey(nameof(PlayerId))] public EFPlayer Player { get; set; } = null!;
+    [ForeignKey(nameof(PlayerId))] public EFPlayer Player { get; set; }
 
     /// <summary>
     /// Current alias associated with entity.
     /// </summary>
     public int AliasId { get; set; }
 
-    [ForeignKey(nameof(AliasId))] public EFAlias Alias { get; set; } = null!;
+    [ForeignKey(nameof(AliasId))] public EFAlias Alias { get; set; }
 }

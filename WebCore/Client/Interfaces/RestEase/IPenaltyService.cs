@@ -2,7 +2,7 @@
 using BanHubData.Commands.Penalty;
 using RestEase;
 
-namespace BanHub.WebCore.Client.Interfaces.RestEase.Pages;
+namespace BanHub.WebCore.Client.Interfaces.RestEase;
 
 public interface IPenaltyService
 {

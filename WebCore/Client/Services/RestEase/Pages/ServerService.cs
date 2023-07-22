@@ -1,4 +1,4 @@
-﻿using BanHub.WebCore.Client.Interfaces.RestEase.Pages;
+﻿using BanHub.WebCore.Client.Interfaces.RestEase;
 using RestEase;
 
 namespace BanHub.WebCore.Client.Services.RestEase.Pages;

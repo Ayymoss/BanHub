@@ -46,7 +46,7 @@ public class EndpointManager
 
     public async Task<bool> IsCommunityActive(Guid guid) => await _community.IsCommunityActiveAsync(guid.ToString());
 
-    private static string EntityToPlayerIdentity(EFClient client) => $"{client.GuidString}:{client.GameName.ToString()}";
+    public string EntityToPlayerIdentity(EFClient client) => $"{client.GuidString}:{client.GameName.ToString()}";
 
     public async Task OnStart(CreateOrUpdateServerCommand server)
     {

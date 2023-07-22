@@ -3,12 +3,14 @@ using BanHub.Managers;
 using BanHub.Models;
 using BanHub.Services;
 using BanHub.Utilities;
+using BanHubData.Commands.Chat;
 using BanHubData.Commands.Instance;
 using BanHubData.Commands.Instance.Server;
 using BanHubData.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using SharedLibraryCore;
 using SharedLibraryCore.Configuration;
+using SharedLibraryCore.Events.Game;
 using SharedLibraryCore.Events.Management;
 using SharedLibraryCore.Events.Server;
 using SharedLibraryCore.Interfaces;
@@ -31,13 +33,15 @@ public class Plugin : IPluginV2
     private readonly BanHubConfiguration _config;
     private readonly ApplicationConfiguration _appConfig;
     private readonly WhitelistManager _whitelistManager;
+    private readonly ChatService _chatService;
 
-    public Plugin(CommunitySlim communitySlim, HeartBeatManager heartBeatManager, EndpointManager endpointManager, BanHubConfiguration config,
-        ApplicationConfiguration appConfig, WhitelistManager whitelistManager)
+    public Plugin(CommunitySlim communitySlim, HeartBeatManager heartBeatManager, EndpointManager endpointManager,
+        BanHubConfiguration config, ApplicationConfiguration appConfig, WhitelistManager whitelistManager, ChatService chatService)
     {
         _config = config;
         _appConfig = appConfig;
         _whitelistManager = whitelistManager;
+        _chatService = chatService;
         _heartBeatManager = heartBeatManager;
         _endpointManager = endpointManager;
         _communitySlim = communitySlim;
@@ -45,6 +49,7 @@ public class Plugin : IPluginV2
         if (!config.EnableBanHub) return; // disable if not enabled in config
 
         IGameServerEventSubscriptions.MonitoringStarted += OnMonitoringStarted;
+        IGameEventSubscriptions.ClientMessaged += OnChatMessaged;
         IManagementEventSubscriptions.Load += OnLoad;
         IManagementEventSubscriptions.ClientStateAuthorized += OnClientStateAuthorized;
         IManagementEventSubscriptions.ClientStateDisposed += OnClientStateDisposed;
@@ -57,10 +62,13 @@ public class Plugin : IPluginV2
         serviceCollection.AddConfiguration("BanHubSettings", new BanHubConfiguration());
 
         serviceCollection.AddSingleton<HeartbeatService>();
+        serviceCollection.AddSingleton<ChatService>();
         serviceCollection.AddSingleton<PlayerService>();
         serviceCollection.AddSingleton<PenaltyService>();
         serviceCollection.AddSingleton<CommunityService>();
         serviceCollection.AddSingleton<ServerService>();
+        serviceCollection.AddSingleton<NoteService>();
+
         serviceCollection.AddSingleton(new CommunitySlim());
         serviceCollection.AddSingleton<HeartBeatManager>();
         serviceCollection.AddSingleton<EndpointManager>();
@@ -111,6 +119,33 @@ public class Plugin : IPluginV2
     {
         if (await _whitelistManager.IsWhitelisted(clientEvent.Client.ToPartialClient())) return;
         await _endpointManager.OnJoin(clientEvent.Client);
+    }
+
+    private async Task OnChatMessaged(ClientMessageEvent messageEvent, CancellationToken token)
+    {
+        var message = messageEvent.Message.StripColors();
+        var playerIdentity = _endpointManager.EntityToPlayerIdentity(messageEvent.Client);
+
+        if (_communitySlim.PlayerMessages.ContainsKey(playerIdentity))
+        {
+            var playerMessages = _communitySlim.PlayerMessages.FirstOrDefault(x => x.Key == playerIdentity);
+            playerMessages.Value.Add((DateTimeOffset.UtcNow, message));
+        }
+        else
+        {
+            _communitySlim.PlayerMessages.TryAdd(_endpointManager
+                .EntityToPlayerIdentity(messageEvent.Client), new List<(DateTimeOffset, string)> {(DateTimeOffset.UtcNow, message)});
+        }
+
+        if (_communitySlim.PlayerMessages.Count < 100) return;
+        var communityMessages = new AddCommunityChatMessagesCommand
+        {
+            CommunityGuid = _communitySlim.CommunityGuid,
+            PlayerMessages = _communitySlim.PlayerMessages.ToDictionary(x => x.Key, x => x.Value)
+        };
+        
+        _communitySlim.PlayerMessages.Clear();
+        await _chatService.AddInstanceChatMessagesAsync(communityMessages);
     }
 
     private async Task OnLoad(IManager manager, CancellationToken arg2)

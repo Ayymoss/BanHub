@@ -36,7 +36,7 @@ public class EFNote
     /// The admin who issued the note
     /// </summary>
     [ForeignKey(nameof(IssuerId))]
-    public EFPlayer Issuer { get; set; } = null!;
+    public EFPlayer Issuer { get; set; }
 
     /// <summary>
     /// The user who received the note
@@ -47,5 +47,5 @@ public class EFNote
     /// The user who received the note
     /// </summary>
     [ForeignKey(nameof(RecipientId))]
-    public EFPlayer Recipient { get; set; } = null!;
+    public EFPlayer Recipient { get; set; }
 }

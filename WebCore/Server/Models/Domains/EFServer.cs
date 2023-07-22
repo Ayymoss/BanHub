@@ -27,12 +27,12 @@ public class EFServer
     /// The port of the server
     /// </summary>
     public required int ServerPort { get; set; }
-    
+
     /// <summary>
     /// The game the server is running
     /// </summary>
     public required Game ServerGame { get; set; }
-    
+
     /// <summary>
     /// When we last received an update from this server.
     /// </summary>
@@ -43,5 +43,5 @@ public class EFServer
     /// </summary>
     public int CommunityId { get; set; }
 
-    [ForeignKey(nameof(CommunityId))] public EFCommunity Community { get; set; } = null!;
+    [ForeignKey(nameof(CommunityId))] public EFCommunity Community { get; set; }
 }

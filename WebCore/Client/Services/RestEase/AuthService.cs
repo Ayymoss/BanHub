@@ -1,4 +1,4 @@
-﻿using BanHub.WebCore.Client.Interfaces.RestEase.Pages;
+﻿using BanHub.WebCore.Client.Interfaces.RestEase;
 using BanHub.WebCore.Shared.Commands.Web;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHub.WebCore.Shared.Utilities;

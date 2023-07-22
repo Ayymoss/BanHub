@@ -19,12 +19,12 @@ public class EFPlayer
     /// The last time the player was seen
     /// </summary>
     public required DateTimeOffset HeartBeat { get; set; }
-    
+
     /// <summary>
     /// Total time played
     /// </summary>
     public required TimeSpan PlayTime { get; set; }
-    
+
     /// <summary>
     /// Total connections to any server
     /// </summary>
@@ -48,30 +48,35 @@ public class EFPlayer
     /// <summary>
     /// Player's notes.
     /// </summary>
-    public ICollection<EFNote> Notes { get; set; } = null!;
+    public ICollection<EFNote> Notes { get; set; }
 
     /// <summary>
     /// The player's list of names and IP addresses
     /// </summary>
-    public ICollection<EFAlias> Aliases { get; set; } = null!;
+    public ICollection<EFAlias> Aliases { get; set; }
 
     /// <summary>
     /// The player's list of infractions
     /// </summary>
-    public ICollection<EFPenalty> Penalties { get; set; } = null!;
+    public ICollection<EFPenalty> Penalties { get; set; }
 
     /// <summary>
     /// The lookup for current alias
     /// </summary>
-    public EFCurrentAlias CurrentAlias { get; set; } = null!;
+    public EFCurrentAlias CurrentAlias { get; set; }
 
     /// <summary>
     /// The list of historically connected servers
     /// </summary>
-    public ICollection<EFServerConnection> ServerConnections { get; set; } = null!;
+    public ICollection<EFServerConnection> ServerConnections { get; set; }
 
     /// <summary>
     /// Penalty's identifiers
     /// </summary>
-    public ICollection<EFPenaltyIdentifier> PenaltyIdentifiers { get; set; } = null!;
+    public ICollection<EFPenaltyIdentifier> PenaltyIdentifiers { get; set; }
+
+    /// <summary>
+    /// The player's chat messages
+    /// </summary>
+    public ICollection<EFChat> Chats { get; set; }
 }

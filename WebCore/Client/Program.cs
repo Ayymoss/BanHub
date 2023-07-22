@@ -31,6 +31,7 @@ builder.Services.AddSingleton<ActiveUserService>();
 builder.Services.AddSingleton<CommunityService>();
 builder.Services.AddSingleton<NoteService>();
 builder.Services.AddSingleton<PenaltyService>();
+builder.Services.AddSingleton<ChatService>();
 builder.Services.AddSingleton<PlayerProfileService>();
 builder.Services.AddSingleton<PlayersService>();
 builder.Services.AddSingleton<SearchService>();
