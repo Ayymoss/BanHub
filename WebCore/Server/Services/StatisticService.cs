@@ -113,6 +113,7 @@ public class StatisticService : IStatisticService
             .Where(x => x.Value < DateTimeOffset.UtcNow.AddDays(-7))
             .Select(x => x.Key)
             .ToList();
+
         foreach (var ban in oldBans)
         {
             _statisticsTracking.RecentBans.TryRemove(ban, out _);

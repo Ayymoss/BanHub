@@ -2,6 +2,7 @@
 using BanHub.WebCore.Server.Events.DiscordWebhook;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Models.Domains;
+using BanHub.WebCore.Server.Services;
 using BanHubData.Commands.Instance;
 using BanHubData.Enums;
 using MediatR;
@@ -13,35 +14,36 @@ public class CreateOrUpdateCommunityHandler : IRequestHandler<CreateOrUpdateComm
 {
     private readonly DataContext _context;
     private readonly IStatisticService _statisticService;
+    private readonly ApiKeyCache _apiKeyCache;
 
-    public CreateOrUpdateCommunityHandler(DataContext context, IStatisticService statisticService)
+    public CreateOrUpdateCommunityHandler(DataContext context, IStatisticService statisticService, ApiKeyCache apiKeyCache)
     {
         _context = context;
         _statisticService = statisticService;
+        _apiKeyCache = apiKeyCache;
     }
 
     public async Task<ControllerEnums.ReturnState> Handle(CreateOrUpdateCommunityCommand request,
         CancellationToken cancellationToken)
     {
-        var instanceGuid = await _context.Communities
+        var community = await _context.Communities
             .AsTracking()
             .FirstOrDefaultAsync(server => server.CommunityGuid == request.CommunityGuid,
                 cancellationToken: cancellationToken);
 
-        var instanceApi = await _context.Communities
-            .FirstOrDefaultAsync(server => server.ApiKey == request.CommunityApiKey,
-                cancellationToken: cancellationToken);
-
-        var ipAddress = request.CommunityIp;
+        var instanceApiValid = await _context.Communities
+            .Where(server => server.ApiKey == request.CommunityApiKey)
+            .Select(x => new {x.Id})
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         // New instance
-        if (instanceApi is null && instanceGuid is null)
+        if (instanceApiValid is null && community is null)
         {
             _context.Communities.Add(new EFCommunity
             {
                 CommunityGuid = request.CommunityGuid,
                 CommunityName = request.CommunityName,
-                CommunityIp = ipAddress,
+                CommunityIp = request.CommunityIp,
                 CommunityIpFriendly = request.CommunityWebsite,
                 CommunityPort = request.CommunityPort,
                 ApiKey = request.CommunityApiKey,
@@ -59,28 +61,32 @@ public class CreateOrUpdateCommunityHandler : IRequestHandler<CreateOrUpdateComm
             return ControllerEnums.ReturnState.Created;
         }
 
-        if (instanceGuid is null || instanceApi is null) return ControllerEnums.ReturnState.BadRequest;
-        if (instanceGuid.Id != instanceApi.Id) return ControllerEnums.ReturnState.Conflict;
+        if (community is null || instanceApiValid is null) return ControllerEnums.ReturnState.BadRequest;
+        if (community.Id != instanceApiValid.Id) return ControllerEnums.ReturnState.Conflict;
 
         // Warn if IP address has changed... this really shouldn't happen.
-        if (request.HeaderIp != instanceGuid.CommunityIp)
+        if (request.HeaderIp != community.CommunityIp)
         {
+#if !DEBUG
+            community.Active = false;
+            _apiKeyCache.ApiKeys?.TryRemove(request.CommunityGuid, out _);
+#endif
             IDiscordWebhookSubscriptions.InvokeEvent(new CreateIssueEvent
             {
-                CommunityGuid = instanceGuid.CommunityGuid,
+                CommunityGuid = community.CommunityGuid,
                 CommunityIp = request.CommunityIp,
                 IncomingIp = request.HeaderIp ?? "Unknown"
             }, cancellationToken);
         }
 
         // Update existing record
-        instanceGuid.About ??= request.About;
-        instanceGuid.Socials ??= request.Socials;
-        instanceGuid.HeartBeat = DateTimeOffset.UtcNow;
-        instanceGuid.CommunityName = request.CommunityName;
-        instanceGuid.CommunityIpFriendly = request.CommunityWebsite;
-        instanceGuid.CommunityPort = request.CommunityPort;
-        _context.Communities.Update(instanceGuid);
+        community.About ??= request.About;
+        community.Socials ??= request.Socials;
+        community.HeartBeat = DateTimeOffset.UtcNow;
+        community.CommunityName = request.CommunityName;
+        community.CommunityIpFriendly = request.CommunityWebsite;
+        community.CommunityPort = request.CommunityPort;
+        _context.Communities.Update(community);
         await _context.SaveChangesAsync(cancellationToken);
 
         return ControllerEnums.ReturnState.Ok;

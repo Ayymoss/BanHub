@@ -128,8 +128,7 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
                 Submitted = DateTimeOffset.UtcNow
             });
 
-        await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.PenaltyCount,
-            ControllerEnums.StatisticTypeAction.Add);
+        await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.PenaltyCount, ControllerEnums.StatisticTypeAction.Add);
         _context.Add(penaltyModel);
         await _context.SaveChangesAsync(cancellationToken);
 

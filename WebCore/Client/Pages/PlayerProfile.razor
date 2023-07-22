@@ -106,7 +106,7 @@ else
                             <MudElement Class="flex-grow-1">
                                 <MudText Typo="Typo.subtitle1" Color="Color.Info">@(!_notes.Any() ? "None" : _notes.Count.ToString())</MudText>
                             </MudElement>
-                            <AuthorizeView Roles="InstanceModerator, InstanceAdministrator, InstanceSeniorAdmin, InstanceOwner, WebAdmin, WebSuperAdmin">
+                            <AuthorizeView Roles="@HelperMethods.GetRolesAsString(new[] {WebRole.Admin, WebRole.SuperAdmin}, new[] {CommunityRole.Moderator, CommunityRole.Administrator, CommunityRole.SeniorAdmin, CommunityRole.Owner})">
                                 <Authorized>
                                     <MudElement Class="justify-center align-self-center">
                                         <MudIconButton Icon="@Icons.Material.Filled.Add" Title="Add Note" Color="Color.Tertiary" OnClick="AddNote"

@@ -43,7 +43,7 @@ else
                              Color="@(_community.Active ? Color.Info : Color.Error)">
                         @(_community.Active ? "Activated" : "Not Activated")
                     </MudChip>
-                    <AuthorizeView Roles="WebSuperAdmin">
+                    <AuthorizeView Roles="@HelperMethods.GetRolesAsString(new[] {WebRole.SuperAdmin})">
                         <Authorized>
                             <MudIconButton Icon="@(_community.Active ? Icons.Material.Filled.RemoveModerator : Icons.Material.Filled.AddModerator)"
                                            Title="@(_community.Active ? "Deauthorise" : "Authorise")"
@@ -55,7 +55,7 @@ else
                 </MudElement>
             </MudElement>
             <MudElement Class="mt-4 d-flex flex-column">
-                <MudStack Row="true" Spacing="4">
+                <MudStack Row="true" Spacing="3">
                     <MudPaper Class="pa-4 d-flex flex-grow-1 flex-column">
                         <MudText Typo="Typo.h6" Class="mb-4">About</MudText>
                         <MudText>@_community.About</MudText>

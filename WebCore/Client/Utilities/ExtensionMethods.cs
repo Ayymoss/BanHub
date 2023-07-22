@@ -2,21 +2,21 @@
 
 namespace BanHub.WebCore.Client.Utilities;
 
-public static class ExtensionMethod
+public static class ExtensionMethods
 {
     public static string GetRoleName(this string role)
     {
         return role switch
         {
-            "WebUser" => "User",
-            "WebAdmin" => "Admin",
-            "WebSuperAdmin" => "Super Admin",
-            "InstanceUser" => "User",
-            "InstanceTrusted" => "Trusted",
-            "InstanceModerator" => "Moderator",
-            "InstanceAdministrator" => "Admin",
-            "InstanceSeniorAdmin" => "Senior Admin",
-            "InstanceOwner" => "Owner",
+            "Web_User" => "User",
+            "Web_Admin" => "Admin",
+            "Web_SuperAdmin" => "Super Admin",
+            "Community_User" => "User",
+            "Community_Trusted" => "Trusted",
+            "Community_Moderator" => "Moderator",
+            "Community_Administrator" => "Admin",
+            "Community_SeniorAdmin" => "Senior Admin",
+            "Community_Owner" => "Owner",
             _ => "Unknown"
         };
     }

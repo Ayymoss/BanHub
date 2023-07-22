@@ -59,10 +59,6 @@ public class PluginAuthentication : Attribute, IAuthorizationFilter
         }
     }
 
-    private static bool IsValidToken(string authToken, ApiKeyCache apiKeyCache)
-    {
-        if (!Guid.TryParse(authToken, out var guid)) return false;
-        var exists = apiKeyCache.ApiKeys?.Any(x => x.Value == guid);
-        return exists ?? false;
-    }
+    private static bool IsValidToken(string authToken, ApiKeyCache apiKeyCache) =>
+        Guid.TryParse(authToken, out var key) && apiKeyCache.ExistsApiKey(key);
 }

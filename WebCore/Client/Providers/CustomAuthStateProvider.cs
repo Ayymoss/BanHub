@@ -17,8 +17,8 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
     {
         var identity = new ClaimsIdentity(new[]
         {
-            new Claim(ClaimTypes.Role, webUserProfile.WebRole),
-            new Claim(ClaimTypes.Role, webUserProfile.CommunityRole),
+            new Claim(ClaimTypes.Role, $"Web_{webUserProfile.WebRole}"),
+            new Claim(ClaimTypes.Role, $"Community_{webUserProfile.CommunityRole}"),
             new Claim(ClaimTypes.Name, webUserProfile.UserName),
             new Claim(ClaimTypes.NameIdentifier, webUserProfile.Identity),
             new("SignedInGuid", webUserProfile.SignedInGuid)

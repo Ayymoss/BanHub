@@ -22,16 +22,16 @@ public class ToggleCommunityActivationHandler : IRequestHandler<ToggleCommunityA
         var instance = await _context.Communities
             .FirstOrDefaultAsync(x => x.CommunityGuid == request.CommunityGuid, cancellationToken: cancellationToken);
 
-        if (instance is null || _apiKeyCache.ApiKeys is null) return false;
+        if (instance is null || _apiKeyCache.IsEmpty) return false;
         instance.Active = !instance.Active;
 
         switch (instance.Active)
         {
             case true:
-                _apiKeyCache.ApiKeys.TryRemove(instance.CommunityGuid, out _);
+                _apiKeyCache.TryRemove(instance.CommunityGuid);
                 break;
             case false:
-                _apiKeyCache.ApiKeys.TryAdd(instance.CommunityGuid, instance.ApiKey);
+                _apiKeyCache.TryAdd(instance.CommunityGuid, instance.ApiKey);
                 break;
         }
 

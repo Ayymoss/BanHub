@@ -63,8 +63,8 @@ public class WebTokenLoginHandler : IRequestHandler<WebTokenLoginCommand, WebTok
         var claims = new List<Claim>
         {
             new(ClaimTypes.Name, user.UserName),
-            new(ClaimTypes.Role, user.WebRole),
-            new(ClaimTypes.Role, user.CommunityRole),
+            new(ClaimTypes.Role, $"Web_{user.WebRole}"),
+            new(ClaimTypes.Role, $"Community_{user.CommunityRole}"),
             new(ClaimTypes.NameIdentifier, user.Identity),
             new("SignedInGuid", user.SignedInGuid),
         };
