@@ -4,6 +4,7 @@ using BanHub.Models;
 using BanHub.Services;
 using BanHub.Utilities;
 using BanHubData.Commands.Chat;
+using BanHubData.Commands.Community;
 using BanHubData.Commands.Instance;
 using BanHubData.Commands.Instance.Server;
 using BanHubData.Enums;
@@ -23,7 +24,7 @@ namespace BanHub;
 public class Plugin : IPluginV2
 {
     public string Name => "Ban Hub";
-    public string Version => "2023-07-16";
+    public string Version => "2023-07-23-Test";
     public string Author => "Amos";
 
     public static bool CommunityActive { get; private set; }
@@ -117,7 +118,7 @@ public class Plugin : IPluginV2
     {
         // I think the lifetime of clientEvent will not remove it during this iteration. It'll be removed on the next person who leaves.
         // Maybe fix?
-        _endpointManager.RemoveFromProfiles();
+        _endpointManager.RemoveFromProfiles(clientEvent.Client);
         return Task.CompletedTask;
     }
 
@@ -163,7 +164,10 @@ public class Plugin : IPluginV2
         _communitySlim.CommunityIp = manager.ExternalIPAddress;
         _communitySlim.ApiKey = _config.ApiKey;
 
-        var portRaw = _appConfig.WebfrontBindUrl.Split(":").LastOrDefault();
+        var portRaw = _appConfig.WebfrontBindUrl
+            .Replace("/", "")
+            .Split(":")
+            .LastOrDefault();
         _ = int.TryParse(portRaw, out var port);
 
         // We need a copy of this since we don't really want the other values being sent with each request.

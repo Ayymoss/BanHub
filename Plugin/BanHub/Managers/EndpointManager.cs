@@ -3,6 +3,8 @@ using System.Text.RegularExpressions;
 using BanHub.Configuration;
 using BanHub.Models;
 using BanHub.Services;
+using BanHub.Utilities;
+using BanHubData.Commands.Community;
 using BanHubData.Commands.Instance;
 using BanHubData.Commands.Instance.Server;
 using BanHubData.Commands.Penalty;
@@ -58,13 +60,10 @@ public class EndpointManager
     {
         // We don't want to act on anything if they're not authenticated
         if (!_communitySlim.Active) return;
-
-        var result = await CreateOrUpdatePlayerAsync(player);
-        if (!result.Success) return;
-
+        var identity = EntityToPlayerIdentity(player);
         var isBanned = await _player.IsPlayerBannedAsync(new IsPlayerBannedCommand
         {
-            Identity = result.Identity,
+            Identity = identity,
             IpAddress = player.IPAddressString
         });
 
@@ -74,13 +73,15 @@ public class EndpointManager
             return;
         }
 
-        var noteCount = await _noteService.GetUserNotesCountAsync(result.Identity);
-        if (noteCount is not 0)
-            InformAdmins(player.CurrentServer,
-                _banHubConfiguration.Translations.UserHasNotes
-                    .FormatExt(_banHubConfiguration.Translations.BanHubName, player.Name, noteCount));
+        var result = await CreateOrUpdatePlayerAsync(player);
+        if (!result.Success) return;
 
-        Profiles.TryAdd(player, result.Identity);
+        var noteCount = await _noteService.GetUserNotesCountAsync(identity);
+        if (noteCount is not 0)
+            InformAdmins(player.CurrentServer, _banHubConfiguration.Translations.UserHasNotes
+                .FormatExt(_banHubConfiguration.Translations.BanHubName, player.Name, noteCount));
+
+        Profiles.TryAdd(player, identity);
     }
 
     private async Task<(bool Success, string Identity)> CreateOrUpdatePlayerAsync(EFClient player)
@@ -91,7 +92,7 @@ public class EndpointManager
         var createOrUpdate = new CreateOrUpdatePlayerCommand
         {
             PlayerIdentity = $"{player.GuidString}:{player.GameName.ToString()}",
-            PlayerAliasUserName = player.CleanedName,
+            PlayerAliasUserName = player.CleanedName.FilterUnknownCharacters(),
             PlayerAliasIpAddress = player.IPAddressString,
             PlayerCommunityRole = player.ClientPermission.Level switch
             {
@@ -119,18 +120,14 @@ public class EndpointManager
         _logger.LogInformation("{Name} globally banned", client.CleanedName);
     }
 
-    public void RemoveFromProfiles()
+    public void RemoveFromProfiles(EFClient client)
     {
+        Profiles.TryRemove(client, out _);
         foreach (var player in Profiles)
         {
-            if (player.Key.IsIngame) continue;
-            var canRemoveClient = Profiles.TryRemove(player.Key, out _);
-            if (canRemoveClient)
-            {
-                _logger.LogInformation("Removed {Name} from profiles", player.Key.CleanedName);
-                return;
-            }
-
+            if (player.Key.State is EFClient.ClientState.Connected) continue;
+            var isRemoved = Profiles.TryRemove(player.Key, out _);
+            if (isRemoved) continue;
             _logger.LogError("Failed to remove {Name} from profiles", player.Key.CleanedName);
         }
     }
@@ -196,7 +193,7 @@ public class EndpointManager
     public async Task<string?> GetTokenAsync(EFClient client)
     {
         var identity = EntityToPlayerIdentity(client);
-        return await _player.GetTokenAsync(new GetPlayerTokenCommand {Identity = identity});
+        return await _player.GetTokenAsync(identity);
     }
 
     private static void InformAdmins(Server server, string message)

@@ -70,13 +70,13 @@ public class PlayerController : ControllerBase
     public async Task<IActionResult> IsPlayerBannedAsync([FromBody] IsPlayerBannedCommand request)
     {
         var result = await _mediator.Send(request);
-        return result ? StatusCode(403) : Ok();
+        return result ? Unauthorized() : Ok();
     }
 
-    [HttpPost("GetToken"), PluginAuthentication]
-    public async Task<ActionResult<string>> GetAuthenticationTokenAsync([FromQuery] string authToken, [FromBody] GetPlayerTokenCommand request)
+    [HttpPost("GetToken/{identity}"), PluginAuthentication]
+    public async Task<ActionResult<string>> GetAuthenticationTokenAsync([FromQuery] string authToken, [FromRoute] string identity)
     {
-        var result = await _mediator.Send(request);
+        var result = await _mediator.Send(new GetPlayerTokenCommand{Identity = identity});
         if (result is null) return NotFound();
         return Ok(result);
     }

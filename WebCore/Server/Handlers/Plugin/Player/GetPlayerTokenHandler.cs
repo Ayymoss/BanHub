@@ -18,13 +18,13 @@ public class GetPlayerTokenHandler : IRequestHandler<GetPlayerTokenCommand, stri
 
     public async Task<string?> Handle(GetPlayerTokenCommand request, CancellationToken cancellationToken)
     {
-        if (await _context.Players.FirstOrDefaultAsync(x => x.Identity == request.Identity, cancellationToken: cancellationToken) is not
-            { } entity) return null;
+        var player = await _context.Players.FirstOrDefaultAsync(x => x.Identity == request.Identity, cancellationToken: cancellationToken);
+        if (player is null) return null;
 
         var utcTimeNow = DateTimeOffset.UtcNow;
 
         var hasActiveToken = await _context.AuthTokens.FirstOrDefaultAsync(x =>
-            x.PlayerId == entity.Id && x.Expiration > utcTimeNow && !x.Used, cancellationToken: cancellationToken);
+            x.PlayerId == player.Id && x.Expiration > utcTimeNow && !x.Used, cancellationToken: cancellationToken);
         if (hasActiveToken is not null) return hasActiveToken.Token;
 
         const string characters = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
@@ -35,7 +35,7 @@ public class GetPlayerTokenHandler : IRequestHandler<GetPlayerTokenCommand, stri
         {
             Token = result.ToString(),
             Expiration = utcTimeNow + TimeSpan.FromMinutes(5),
-            PlayerId = entity.Id,
+            PlayerId = player.Id,
             Used = false
         };
 

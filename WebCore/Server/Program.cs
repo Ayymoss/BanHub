@@ -58,12 +58,17 @@ builder.Services.AddMediatR(cfg => { cfg.RegisterServicesFromAssembly(typeof(Pro
 
 builder.Logging.ClearProviders().AddConsole();
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(opt =>
-{
-    opt.Cookie.Name = "BanHubAccount";
-    opt.LogoutPath = "/";
-    opt.LoginPath = "/";
-});
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(opt =>
+    {
+        opt.Cookie.Name = "BanHubAccount";
+        opt.LogoutPath = "/";
+        opt.LoginPath = "/";
+#if !DEBUG
+        opt.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        opt.Cookie.SameSite = SameSiteMode.Strict;
+#endif
+    });
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsSpecs", corsPolicyBuilder =>

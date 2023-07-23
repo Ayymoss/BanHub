@@ -1,4 +1,5 @@
-﻿using BanHub.Models;
+﻿using BanHub.Configuration;
+using BanHub.Models;
 using BanHub.Services;
 using BanHubData.Commands.Heartbeat;
 
@@ -40,6 +41,7 @@ public class HeartBeatManager
         {
             if (_endpointManager.Profiles.Count is 0) return;
             var players = _endpointManager.Profiles.Select(x => x.Value).ToList();
+            Console.WriteLine($"[{BanHubConfiguration.Name}] Sending heartbeat for {players.Count} players");
             await _heartbeatService.PostEntityHeartbeat(new PlayersHeartbeatCommand
             {
                 CommunityGuid = _communitySlim.CommunityGuid,

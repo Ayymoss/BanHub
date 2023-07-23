@@ -50,19 +50,19 @@ public class PlayerService
             return await _retryPolicy.ExecuteAsync(async () =>
             {
                 var response = await _api.IsPlayerBannedAsync(identity);
-                if (!response.IsSuccessStatusCode) return false;
-                return response.StatusCode is HttpStatusCode.Forbidden;
+                return response.StatusCode is HttpStatusCode.Unauthorized;
             });
         }
         catch (ApiException e)
         {
+            if (e.StatusCode is HttpStatusCode.Unauthorized) return true;
             Console.WriteLine($"[{BanHubConfiguration.Name}] Error getting player ban state: {e.Message}");
         }
 
         return false;
     }
 
-    public async Task<string?> GetTokenAsync(GetPlayerTokenCommand identity)
+    public async Task<string?> GetTokenAsync(string identity)
     {
         try
         {

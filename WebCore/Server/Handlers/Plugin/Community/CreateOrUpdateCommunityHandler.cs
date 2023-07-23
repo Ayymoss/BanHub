@@ -3,7 +3,7 @@ using BanHub.WebCore.Server.Events.DiscordWebhook;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Models.Domains;
 using BanHub.WebCore.Server.Services;
-using BanHubData.Commands.Instance;
+using BanHubData.Commands.Community;
 using BanHubData.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

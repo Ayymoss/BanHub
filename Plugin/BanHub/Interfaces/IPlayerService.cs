@@ -11,6 +11,6 @@ public interface IPlayerService
     [Post("/Player")]
     Task<HttpResponseMessage> CreateOrUpdatePlayerAsync([Query("authToken")] string authToken, [Body] CreateOrUpdatePlayerCommand entities);
 
-    [Post("/Player/GetToken")]
-    Task<HttpResponseMessage> GetTokenAsync([Query("authToken")] string authToken, [Body] GetPlayerTokenCommand identity);
+    [Post("/Player/GetToken/{identity}")]
+    Task<HttpResponseMessage> GetTokenAsync([Query("authToken")] string authToken, [Path("identity")] string identity);
 }

@@ -466,8 +466,8 @@ else
         if (_connections.Any())
         {
             var connection = _connections.MaxBy(x => x.Connected);
-            _lastConnectedCommunity = connection?.CommunityName ?? "--";
-            _lastConnectedServer = connection?.ServerName ?? "--";
+            _lastConnectedCommunity = connection?.CommunityName ?? "None";
+            _lastConnectedServer = connection?.ServerName ?? "None";
         }
 
         _loading = false;

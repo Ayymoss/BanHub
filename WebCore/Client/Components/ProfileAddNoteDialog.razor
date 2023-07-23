@@ -8,7 +8,7 @@
         <MudElement Class="d-flex flex-column">
             <MudText Typo="Typo.subtitle1">Note message</MudText>
             <MudTextField @bind-Value="_noteMessage" AutoFocus="false" Immediate="true" MaxLength="256" Label="Message" Variant="Variant.Text" Counter="256" AdornmentIcon="@Icons.Material.Filled.Warning" Adornment="Adornment.End"/>
-            <MudSwitch @bind-Checked="_isPrivateNote" Color="Color.Tertiary">Privatise this Note? (@(_isPrivateNote ? "Yes" : "No"))</MudSwitch>
+            <MudSwitch @bind-Checked="_isPrivateNote" Color="Color.Tertiary">Privileged Note? (@(_isPrivateNote ? "Yes" : "No"))</MudSwitch>
         </MudElement>
         <MudElement Class="d-flex flex-column mb-3">
             <MudDivider FlexItem="true" DividerType="DividerType.Inset" Class="mx-n6 mb-4 mt-8"/>

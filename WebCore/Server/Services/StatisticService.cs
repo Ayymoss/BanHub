@@ -83,17 +83,17 @@ public class StatisticService : IStatisticService
         if (!_statisticsTracking.Loaded) await EnsureInitialisedAsync();
 
         var statisticUsers = playerIdentities
-            .Select(x => new {PlayerIdentity = x, HeartBeat = DateTimeOffset.UtcNow})
+            .Select(x => new {PlayerIdentity = x, Heartbeat = DateTimeOffset.UtcNow})
             .ToList();
 
         foreach (var user in statisticUsers)
         {
-            _statisticsTracking.OnlinePlayers.AddOrUpdate(user.PlayerIdentity, user.HeartBeat,
-                (key, oldValue) => user.HeartBeat);
+            _statisticsTracking.OnlinePlayers.AddOrUpdate(user.PlayerIdentity, user.Heartbeat,
+                (key, oldValue) => user.Heartbeat);
         }
 
         var offlineUsers = _statisticsTracking.OnlinePlayers
-            .Where(x => x.Value < DateTimeOffset.UtcNow.AddMinutes(-5))
+            .Where(x => x.Value > DateTimeOffset.UtcNow.AddMinutes(5))
             .Select(x => x.Key)
             .ToList();
 

@@ -1,7 +1,7 @@
 ﻿using BanHubData.Enums;
 using MediatR;
 
-namespace BanHubData.Commands.Instance;
+namespace BanHubData.Commands.Community;
 
 public class CreateOrUpdateCommunityCommand : IRequest<ControllerEnums.ReturnState>
 {
