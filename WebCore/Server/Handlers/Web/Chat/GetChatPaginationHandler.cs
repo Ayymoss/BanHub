@@ -7,7 +7,7 @@ using MudBlazor;
 
 namespace BanHub.WebCore.Server.Handlers.Web.Chat;
 
-public class GetChatPaginationHandler : IRequestHandler<GetChatPaginationCommand, IEnumerable<Shared.Models.PlayerProfileView.Chat>>
+public class GetChatPaginationHandler : IRequestHandler<GetChatPaginationCommand, ChatContext>
 {
     private readonly DataContext _context;
 
@@ -16,7 +16,7 @@ public class GetChatPaginationHandler : IRequestHandler<GetChatPaginationCommand
         _context = context;
     }
 
-    public async Task<IEnumerable<Shared.Models.PlayerProfileView.Chat>> Handle(GetChatPaginationCommand request,
+    public async Task<ChatContext> Handle(GetChatPaginationCommand request,
         CancellationToken cancellationToken)
     {
         var query = _context.Chats
@@ -38,6 +38,7 @@ public class GetChatPaginationHandler : IRequestHandler<GetChatPaginationCommand
             _ => query
         };
 
+        var count = await query.CountAsync(cancellationToken: cancellationToken);
         var pagedData = await query
             .Skip(request.Page * request.PageSize)
             .Take(request.PageSize)
@@ -49,6 +50,10 @@ public class GetChatPaginationHandler : IRequestHandler<GetChatPaginationCommand
                 CommunityName = chat.Community.CommunityName
             }).ToListAsync(cancellationToken: cancellationToken);
 
-        return pagedData;
+        return new ChatContext
+        {
+            Chats = pagedData,
+            Count = count
+        };
     }
 }

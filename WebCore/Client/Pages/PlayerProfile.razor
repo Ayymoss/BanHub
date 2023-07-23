@@ -326,7 +326,7 @@ else
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="Message">
-                            
+
                             <MudStack Row="true" AlignItems="AlignItems.Center">
                                 @if (context.Message.Length > 64)
                                 {
@@ -359,7 +359,7 @@ else
                                     @context.Message
                                 }
                             </MudStack>
-                            
+
                         </MudTd>
 
                         <MudTd DataLabel="CommunityName">
@@ -474,8 +474,8 @@ else
             PlayerIdentity = Identity!
         };
 
-        var chats = await ChatService.GetPenaltiesPaginationAsync(paginationQuery);
-        return new TableData<Chat> {TotalItems = _totalChatMessages, Items = chats};
+        var chatContext = await ChatService.GetChatPaginationAsync(paginationQuery);
+        return new TableData<Chat> {TotalItems = chatContext.Count, Items = chatContext.Chats};
     }
 
     private void OnSearch(string text)

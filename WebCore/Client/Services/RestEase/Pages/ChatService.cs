@@ -20,20 +20,20 @@ public class ChatService
         _api = RestClient.For<IChatService>(ApiHost);
     }
 
-    public async Task<IEnumerable<Chat>> GetPenaltiesPaginationAsync(GetChatPaginationCommand paginationQuery)
+    public async Task<ChatContext> GetChatPaginationAsync(GetChatPaginationCommand paginationQuery)
     {
         try
         {
             var response = await _api.GetChatPaginationAsync(paginationQuery);
-            var result = await response.DeserializeHttpResponseContentAsync<IEnumerable<Chat>>();
-            return result ?? new List<Chat>();
+            var result = await response.DeserializeHttpResponseContentAsync<ChatContext>();
+            return result ?? new ChatContext();
         }
         catch (ApiException e)
         {
             Console.WriteLine($"API->Failed to get chat: {e.Message}");
         }
 
-        return new List<Chat>();
+        return new ChatContext();
     }
 
     public async Task<int> GetChatCountAsync(string identity)

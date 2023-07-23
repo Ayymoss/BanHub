@@ -1,5 +1,6 @@
 ﻿using BanHub.Configuration;
 using BanHub.Interfaces;
+using BanHub.Utilities;
 using BanHubData.Commands.Chat;
 using Polly;
 using Polly.Retry;
@@ -38,13 +39,14 @@ public class ChatService
         {
             return await _retryPolicy.ExecuteAsync(async () =>
             {
-                var response = await _api.AddInstanceChatMessagesAsync(identity);
+                var response = await _api.AddInstanceChatMessagesAsync(identity, _banHubConfiguration.ApiKey.ToString());
                 return response.IsSuccessStatusCode;
             });
         }
         catch (ApiException e)
         {
-            Console.WriteLine($"[{BanHubConfiguration.Name}] Error sending chat messages: {e.Message}");
+            var errorMessage = HelperMethods.ObscureGuid(e.Message);
+            Console.WriteLine($"[{BanHubConfiguration.Name}] Error sending chat messages: {errorMessage}");
         }
 
         return false;

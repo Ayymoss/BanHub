@@ -1,6 +1,5 @@
 ﻿@page "/Penalties"
 @using Penalty = BanHub.WebCore.Shared.Models.PenaltiesView.Penalty
-@using BanHub.WebCore.Shared.Commands.Penalty
 @inject StatisticService StatisticService
 @inject PenaltyService PenaltyService
 
@@ -22,10 +21,10 @@
             <MudTableSortLabel SortLabel="Id" T="Penalty">ID</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Target Name" T="Penalty">Offender</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="RecipientName" T="Penalty">Offender</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Admin Name" T="Penalty">Issuer</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="IssuerName" T="Penalty">Issuer</MudTableSortLabel>
         </MudTh>
         <MudTh>
             <MudTableSortLabel SortLabel="Reason" T="Penalty">Reason</MudTableSortLabel>
@@ -40,18 +39,18 @@
             <MudTableSortLabel SortLabel="Scope" T="Penalty">Scope</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Instance" T="Penalty">Community</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Community" T="Penalty">Community</MudTableSortLabel>
         </MudTh>
         <MudTh>
             <MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="Submitted" T="Penalty">Submitted</MudTableSortLabel>
         </MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="ID">@context.PenaltyGuid</MudTd>
-        <MudTd DataLabel="Target Name">
+        <MudTd DataLabel="Id">@context.PenaltyGuid</MudTd>
+        <MudTd DataLabel="IssuerName">
             <MudLink Href="@($"/Players/{context.TargetIdentity}")" Typo="Typo.body2" Color="Color.Info">@context.TargetUserName</MudLink>
         </MudTd>
-        <MudTd DataLabel="Admin Name">
+        <MudTd DataLabel="RecipientName">
             <MudLink Href="@($"/Players/{context.AdminIdentity}")" Typo="Typo.body2" Color="Color.Info">@context.AdminUserName</MudLink>
         </MudTd>
         <MudTd DataLabel="Reason">@context.Reason</MudTd>
@@ -106,7 +105,9 @@
                     break;
             }
         </MudTd>
-        <MudTd DataLabel="Instance">@context.CommunityName</MudTd>
+        <MudTd DataLabel="Community">
+            <MudLink Href="@($"/Communities/{context.CommunityGuid}")" Typo="Typo.body2" Color="Color.Info">@context.CommunityName</MudLink>
+        </MudTd>
         <MudTd DataLabel="Submitted">@context.Submitted.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
     </RowTemplate>
     <NoRecordsContent>
@@ -123,13 +124,9 @@
 
 @code
 {
-    [Parameter, SupplyParameterFromQuery(Name = "search")]
-    public string? SearchString { get; set; }
-
     private MudTable<Penalty>? _table;
     private IEnumerable<Penalty>? _pagedData;
     private string? _searchString;
-    private int _totalItems;
 
     private async Task<TableData<Penalty>> ServerReload(TableState state)
     {
@@ -142,11 +139,9 @@
             SearchString = _searchString
         };
 
-        var statistics = await StatisticService.GetStatisticAsync();
-        _pagedData = await PenaltyService.GetPenaltiesPaginationAsync(paginationQuery);
-        _totalItems = statistics.PenaltyCount;
-
-        return new TableData<Penalty> {TotalItems = _totalItems, Items = _pagedData};
+        var context = await PenaltyService.GetPenaltiesPaginationAsync(paginationQuery);
+        _pagedData = context.Penalties;
+        return new TableData<Penalty> {TotalItems = context.Count, Items = _pagedData};
     }
 
     private void OnSearch(string text)

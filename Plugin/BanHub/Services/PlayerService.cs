@@ -2,6 +2,7 @@
 using System.Text.Json;
 using BanHub.Configuration;
 using BanHub.Interfaces;
+using BanHub.Utilities;
 using BanHubData.Commands.Player;
 using Polly;
 using Polly.Retry;
@@ -72,7 +73,8 @@ public class PlayerService
         }
         catch (ApiException e)
         {
-            Console.WriteLine($"[{BanHubConfiguration.Name}] Error getting token: {e.Message}");
+            var errorMessage = HelperMethods.ObscureGuid(e.Message);
+            Console.WriteLine($"[{BanHubConfiguration.Name}] Error getting token: {errorMessage}");
         }
 
         return null;
@@ -101,7 +103,8 @@ public class PlayerService
         }
         catch (ApiException e)
         {
-            Console.WriteLine($"[{BanHubConfiguration.Name}] Error updating entity: {e.Message}");
+            var errorMessage = HelperMethods.ObscureGuid(e.Message);
+            Console.WriteLine($"[{BanHubConfiguration.Name}] Error updating entity: {errorMessage}");
         }
 
         return null;

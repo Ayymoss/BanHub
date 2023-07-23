@@ -6,5 +6,5 @@ namespace BanHub.Interfaces;
 public interface IChatService
 {
     [Post("/Chat/AddMessages")]
-    Task<HttpResponseMessage> AddInstanceChatMessagesAsync([Body] AddCommunityChatMessagesCommand messages);
+    Task<HttpResponseMessage> AddInstanceChatMessagesAsync([Body] AddCommunityChatMessagesCommand messages, [Query("authToken")] string authToken);
 }

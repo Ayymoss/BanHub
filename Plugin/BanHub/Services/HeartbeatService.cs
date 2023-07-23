@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using BanHub.Configuration;
 using BanHub.Interfaces;
+using BanHub.Utilities;
 using BanHubData.Commands.Heartbeat;
 using Polly;
 using Polly.Retry;
@@ -83,7 +84,8 @@ public class HeartbeatService
         }
         catch (ApiException e)
         {
-            Console.WriteLine($"[{BanHubConfiguration.Name}] Error sending entity heartbeat: {e.Message}");
+            var errorMessage = HelperMethods.ObscureGuid(e.Message);
+            Console.WriteLine($"[{BanHubConfiguration.Name}] Error sending entity heartbeat: {errorMessage}");
         }
 
         return false;

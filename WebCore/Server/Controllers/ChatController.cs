@@ -27,8 +27,7 @@ public class ChatController : ControllerBase
     }
 
     [HttpPost("Pagination")]
-    public async Task<ActionResult<Chat>> GetChatPaginationAsync(
-        [FromBody] GetChatPaginationCommand penaltiesPagination)
+    public async Task<ActionResult<ChatContext>> GetChatPaginationAsync([FromBody] GetChatPaginationCommand penaltiesPagination)
     {
         var result = await _mediator.Send(penaltiesPagination);
         return Ok(result);

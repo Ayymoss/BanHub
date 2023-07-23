@@ -1,5 +1,11 @@
 ﻿namespace BanHub.WebCore.Shared.Models.PlayerProfileView;
 
+public class ChatContext
+{
+    public List<Chat> Chats { get; set; } = new();
+    public int Count { get; set; }
+}
+
 public class Chat
 {
     public string Message { get; set; }

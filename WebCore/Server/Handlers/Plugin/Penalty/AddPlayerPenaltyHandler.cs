@@ -118,7 +118,7 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
                 Penalty = penaltyModel,
                 PlayerId = target.Id
             };
-            _context.Add(identifier);
+            _context.PenaltyIdentifiers.Add(identifier);
         }
 
         if (request.PenaltyScope is PenaltyScope.Global)
@@ -129,7 +129,7 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
             });
 
         await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.PenaltyCount, ControllerEnums.StatisticTypeAction.Add);
-        _context.Add(penaltyModel);
+        _context.Penalties.Add(penaltyModel);
         await _context.SaveChangesAsync(cancellationToken);
 
         if (request is {PenaltyType: PenaltyType.Ban, PenaltyScope: PenaltyScope.Global})

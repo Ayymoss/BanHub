@@ -1,9 +1,10 @@
 ﻿using BanHub.WebCore.Client.Interfaces.RestEase;
 using BanHub.WebCore.Shared.Commands.Penalty;
-using BanHub.WebCore.Shared.Models.PlayerProfileView;
+using BanHub.WebCore.Shared.Models.PenaltiesView;
 using BanHub.WebCore.Shared.Utilities;
 using BanHubData.Commands.Penalty;
 using RestEase;
+using Penalty = BanHub.WebCore.Shared.Models.PlayerProfileView.Penalty;
 
 namespace BanHub.WebCore.Client.Services.RestEase.Pages;
 
@@ -67,21 +68,21 @@ public class PenaltyService
         return new List<Penalty>();
     }
 
-    public async Task<IEnumerable<WebCore.Shared.Models.PenaltiesView.Penalty>> GetPenaltiesPaginationAsync(
+    public async Task<PenaltyContext> GetPenaltiesPaginationAsync(
         GetPenaltiesPaginationCommand paginationQuery)
     {
         try
         {
             var response = await _api.GetPenaltiesPaginationAsync(paginationQuery);
-            var result = await response.DeserializeHttpResponseContentAsync<IEnumerable<WebCore.Shared.Models.PenaltiesView.Penalty>>();
-            return result ?? new List<WebCore.Shared.Models.PenaltiesView.Penalty>();
+            var result = await response.DeserializeHttpResponseContentAsync<PenaltyContext>();
+            return result ?? new PenaltyContext();
         }
         catch (ApiException e)
         {
             Console.WriteLine($"API->Failed to get penalties: {e.Message}");
         }
 
-        return new List<WebCore.Shared.Models.PenaltiesView.Penalty>();
+        return new PenaltyContext();
     }
 
     public async Task<IEnumerable<WebCore.Shared.Models.IndexView.Penalty>> GetLatestBansAsync()

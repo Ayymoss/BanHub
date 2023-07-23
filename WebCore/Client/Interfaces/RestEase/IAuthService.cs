@@ -1,4 +1,4 @@
-﻿using BanHub.WebCore.Shared.Commands.Web;
+﻿using BanHub.WebCore.Shared.Commands;
 using RestEase;
 
 namespace BanHub.WebCore.Client.Interfaces.RestEase;

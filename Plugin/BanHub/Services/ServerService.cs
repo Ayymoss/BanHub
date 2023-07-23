@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using BanHub.Configuration;
 using BanHub.Interfaces;
+using BanHub.Utilities;
 using BanHubData.Commands.Instance.Server;
 using Polly;
 using Polly.Retry;
@@ -55,7 +56,8 @@ public class ServerService
         }
         catch (ApiException e)
         {
-            Console.WriteLine($"[{BanHubConfiguration.Name}] Error posting server: {e.Message}");
+            var errorMessage = HelperMethods.ObscureGuid(e.Message);
+            Console.WriteLine($"[{BanHubConfiguration.Name}] Error posting server: {errorMessage}");
         }
 
         return false;

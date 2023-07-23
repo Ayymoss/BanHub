@@ -71,7 +71,7 @@ public class PenaltyController : ControllerBase
     }
 
     [HttpPost("Pagination")]
-    public async Task<ActionResult<IEnumerable<Penalty>>> GetPenaltiesPaginationAsync(
+    public async Task<ActionResult<PenaltyContext>> GetPenaltiesPaginationAsync(
         [FromBody] GetPenaltiesPaginationCommand penaltiesPagination)
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;

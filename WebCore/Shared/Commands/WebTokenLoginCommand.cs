@@ -2,7 +2,7 @@
 using BanHubData.Enums;
 using MediatR;
 
-namespace BanHub.WebCore.Shared.Commands.Web;
+namespace BanHub.WebCore.Shared.Commands;
 
 public class WebTokenLoginCommand : IRequest<WebTokenLoginCommandResponse>
 {

@@ -1,4 +1,5 @@
 ﻿using BanHub.WebCore.Server.Context;
+using BanHub.WebCore.Server.Models.Domains;
 using BanHubData.Commands.Player;
 using BanHubData.Enums;
 using MediatR;
@@ -15,37 +16,40 @@ public class IsPlayerBannedHandler : IRequestHandler<IsPlayerBannedCommand, bool
         _context = context;
     }
 
+    // TODO: Consider improving this. Right now users who change both identifiers will be unbanned.
+    // Ban reference system? https://chat.openai.com/c/e8853a97-6810-4154-a08a-6812404a39f4
     public async Task<bool> Handle(IsPlayerBannedCommand request, CancellationToken cancellationToken)
     {
         var player = await _context.Players
+            .AsNoTracking()
             .Include(x => x.Penalties)
             .FirstOrDefaultAsync(x => x.Identity == request.Identity, cancellationToken: cancellationToken);
 
-        var hasIpAddressBan = await _context.PenaltyIdentifiers
-            .Where(x => x.Expiration > DateTimeOffset.UtcNow)
-            .AnyAsync(x => x.IpAddress == request.IpAddress, cancellationToken: cancellationToken);
+        var hasIdentifierBan = await _context.PenaltyIdentifiers
+            .Where(x => x.Expiration > DateTimeOffset.UtcNow) // The identity check below is redundant, however, may be relevant in the future
+            .AnyAsync(x => x.IpAddress == request.IpAddress || x.Identity == request.Identity, cancellationToken: cancellationToken);
 
         if (player is null) return false;
 
+        // Expire old penalties
         var expiredPenalties = player.Penalties
             .Where(inf => DateTimeOffset.UtcNow > inf.Expiration)
-            .Where(inf => inf is {PenaltyStatus: PenaltyStatus.Active}).ToList();
+            .Where(inf => inf.PenaltyStatus == PenaltyStatus.Active)
+            .ToList();
 
-        foreach (var penalty in expiredPenalties)
-        {
-            penalty.PenaltyStatus = PenaltyStatus.Expired;
-            _context.Penalties.Update(penalty);
-        }
-
+        expiredPenalties.ForEach(inf => inf.PenaltyStatus = PenaltyStatus.Expired);
+        _context.Penalties.UpdateRange(expiredPenalties);
         await _context.SaveChangesAsync(cancellationToken);
 
-        var hasIdentityBan = player.Penalties.Any(penalty => penalty is
+        // Check player identifier states
+        var playerIdentityBan = player.Penalties.Any(penalty => penalty is
         {
             PenaltyStatus: PenaltyStatus.Active,
             PenaltyType: PenaltyType.Ban,
             PenaltyScope: PenaltyScope.Global
         });
 
-        return hasIdentityBan || hasIpAddressBan;
+        var isBanned = playerIdentityBan || hasIdentifierBan;
+        return isBanned;
     }
 }

@@ -3,6 +3,7 @@ using System.Text.Json;
 using BanHub.Commands;
 using BanHub.Configuration;
 using BanHub.Interfaces;
+using BanHub.Utilities;
 using BanHubData.Commands.Penalty;
 using Polly;
 using Polly.Retry;
@@ -60,7 +61,8 @@ public class PenaltyService
         }
         catch (ApiException e)
         {
-            Console.WriteLine($"[{BanHubConfiguration.Name}] Error posting penalty: {e.Message}");
+            var errorMessage = HelperMethods.ObscureGuid(e.Message);
+            Console.WriteLine($"[{BanHubConfiguration.Name}] Error posting penalty: {errorMessage}");
         }
 
         return (false, null);
@@ -86,7 +88,8 @@ public class PenaltyService
         }
         catch (ApiException e)
         {
-            Console.WriteLine($"[{BanHubConfiguration.Name}] Error submitting information: {e.Message}");
+            var errorMessage = HelperMethods.ObscureGuid(e.Message);
+            Console.WriteLine($"[{BanHubConfiguration.Name}] Error submitting information: {errorMessage}");
         }
 
         return false;

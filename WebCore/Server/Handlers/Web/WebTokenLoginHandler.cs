@@ -2,7 +2,6 @@
 using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Shared.Commands;
-using BanHub.WebCore.Shared.Commands.Web;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Enums;
 using MediatR;
