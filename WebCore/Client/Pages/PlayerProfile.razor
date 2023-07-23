@@ -66,14 +66,8 @@ else
             <MudGrid Spacing="2" Justify="Justify.FlexStart">
                 <MudItem xs="12" sm="4" xl="3" xxl="2">
                     <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(!_penalties.Any() ? "None" : _penalties.Count.ToString())</MudText>
-                        <MudText Class="mud-text-secondary">Penalties</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4" xl="3" xxl="2">
-                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@_lastConnectedServer</MudText>
-                        <MudText Class="mud-text-secondary">Last Connected Server</MudText>
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@_entity.Created.Humanize()</MudText>
+                        <MudText Class="mud-text-secondary">First Seen</MudText>
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12" sm="4" xl="3" xxl="2">
@@ -84,8 +78,11 @@ else
                 </MudItem>
                 <MudItem xs="12" sm="4" xl="3" xxl="2">
                     <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@_totalChatMessages</MudText>
-                        <MudText Class="mud-text-secondary">Total Chat Messages</MudText>
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@_lastConnectedServer</MudText>
+                        <MudStack Row="true" Justify="Justify.SpaceBetween">
+                            <MudText Class="mud-text-secondary">Last Server</MudText>
+                            <MudText Class="mud-text-secondary">@_lastConnectedCommunity</MudText>
+                        </MudStack>
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12" sm="4" xl="3" xxl="2">
@@ -108,6 +105,12 @@ else
                 </MudItem>
                 <MudItem xs="12" sm="4" xl="3" xxl="2">
                     <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@_totalChatMessages</MudText>
+                        <MudText Class="mud-text-secondary">Total Chat Messages</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="4" xl="3" xxl="2">
+                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
                         <MudElement Class="d-flex">
                             <MudElement Class="flex-grow-1">
                                 <MudText Typo="Typo.subtitle1" Color="Color.Info">@(!_notes.Any() ? "None" : _notes.Count.ToString())</MudText>
@@ -122,14 +125,14 @@ else
                             </AuthorizeView>
                         </MudElement>
                         <MudElement Class="d-flex">
-                            <MudText Class="mud-text-secondary">Notes</MudText>
+                            <MudText Class="mud-text-secondary">Total Notes</MudText>
                         </MudElement>
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12" sm="4" xl="3" xxl="2">
                     <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@_entity.Created.Humanize()</MudText>
-                        <MudText Class="mud-text-secondary">Created</MudText>
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(!_penalties.Any() ? "None" : _penalties.Count.ToString())</MudText>
+                        <MudText Class="mud-text-secondary">Total Penalties</MudText>
                     </MudPaper>
                 </MudItem>
             </MudGrid>
@@ -141,7 +144,7 @@ else
                 @if (!_penalties.Any())
                 {
                     <MudPaper Class="pa-4 flex-1 d-flex align-center justify-center">
-                        <MudText Align="Align.Center" Class="mud-text-secondary" Typo="Typo.h6">The user has no penalties.</MudText>
+                        <MudText Align="Align.Center" Class="mud-text-secondary" Typo="Typo.h6">The user has no penalties</MudText>
                     </MudPaper>
                 }
                 else
@@ -203,7 +206,7 @@ else
                 @if (!_connections.Any())
                 {
                     <MudPaper Class="pa-4 flex-1 d-flex align-center justify-center">
-                        <MudText Align="Align.Center" Class="flex-grow-1 mud-text-secondary" Typo="Typo.h6">The user has no connections.</MudText>
+                        <MudText Align="Align.Center" Class="flex-grow-1 mud-text-secondary" Typo="Typo.h6">The user has no connections</MudText>
                     </MudPaper>
                 }
                 else
@@ -212,7 +215,10 @@ else
                               Items="@_connections" Dense="true" @ref="_connectionTable" T="Connection" RowsPerPage="10">
                         <HeaderContent>
                             <MudTh Class="rounded-tl py-2">
-                                <MudTableSortLabel SortBy="new Func<Connection, object>(x => x.ServerName ?? x.CommunityIp)">Server Name</MudTableSortLabel>
+                                <MudTableSortLabel SortBy="new Func<Connection, object>(x => x.CommunityName)">Community Name</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<Connection, object>(x => x.ServerName)">Server Name</MudTableSortLabel>
                             </MudTh>
                             <MudTh>
                                 <MudTableSortLabel SortBy="new Func<Connection, object>(x => x.ServerGame)">Server Game</MudTableSortLabel>
@@ -225,9 +231,12 @@ else
                             </MudTh>
                         </HeaderContent>
                         <RowTemplate>
-                            <MudTd DataLabel="Server Name">@context.ServerName</MudTd>
-                            <MudTd DataLabel="Server Game">@(context.ServerGame.GetGameName())</MudTd>
-                            <MudTd DataLabel="Server IP">
+                            <MudTd DataLabel="CommunityName">
+                                <MudLink Href="@($"/Communities/{context.CommunityGuid}")" Typo="Typo.body2" Color="Color.Info">@context.CommunityName</MudLink>
+                            </MudTd>
+                            <MudTd DataLabel="ServerName">@context.ServerName</MudTd>
+                            <MudTd DataLabel="ServerGame">@(context.ServerGame.GetGameName())</MudTd>
+                            <MudTd DataLabel="ServerIP">
                                 <MudText Typo="Typo.body2">@(context.ServerIp.IsInternal() ? context.CommunityIp : context.ServerIp):@context.ServerPort</MudText>
                             </MudTd>
                             <MudTd DataLabel="Connected">@context.Connected.Humanize()</MudTd>
@@ -244,7 +253,7 @@ else
                 @if (!_notes.Any())
                 {
                     <MudPaper Class="pa-4 flex-1 d-flex align-center justify-center">
-                        <MudText Align="Align.Center" Class="flex-grow-1 mud-text-secondary" Typo="Typo.h6">The user has no notes.</MudText>
+                        <MudText Align="Align.Center" Class="flex-grow-1 mud-text-secondary" Typo="Typo.h6">The user has no notes</MudText>
                     </MudPaper>
                 }
                 else
@@ -326,23 +335,23 @@ else
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="Message">
-
                             <MudStack Row="true" AlignItems="AlignItems.Center">
                                 @if (context.Message.Length > 64)
                                 {
                                     @context.Message.Truncate(64)
-                                    <MudSpacer/>
-                                    if (!_chatOpenStates.ContainsKey(context.Message))
+                                    if (!_chatHoverStates.ContainsKey(context.Message))
                                     {
-                                        _chatOpenStates[context.Message] = false;
+                                        _chatHoverStates[context.Message] = false;
+                                        _chatClickStates[context.Message] = false;
                                     }
-                                    <MudIconButton @onmouseenter="@(() => _chatOpenStates[context.Message] = true)"
-                                                   @onmouseleave="@(() => _chatOpenStates[context.Message] = false)"
-                                                   Icon="@Icons.Material.Filled.RemoveRedEye"
+                                    <MudIconButton @onclick="@(() => _chatClickStates[context.Message] = !_chatClickStates[context.Message])"
+                                                   @onmouseenter="@(() => _chatHoverStates[context.Message] = true)"
+                                                   @onmouseleave="@(() => { if (!_chatClickStates[context.Message]) { _chatHoverStates[context.Message] = false; } })"
+                                                   Icon="@GetChatIconState(context.Message)"
                                                    Size="Size.Small"
                                                    Color="Color.Info"/>
                                     <MudPopover OverflowBehavior="OverflowBehavior.FlipOnOpen"
-                                                Open="@_chatOpenStates[context.Message]"
+                                                Open="@(_chatHoverStates[context.Message] || _chatClickStates[context.Message])"
                                                 AnchorOrigin="Origin.TopCenter"
                                                 RelativeWidth="true"
                                                 TransformOrigin="Origin.BottomCenter"
@@ -359,7 +368,6 @@ else
                                     @context.Message
                                 }
                             </MudStack>
-
                         </MudTd>
 
                         <MudTd DataLabel="CommunityName">
@@ -368,7 +376,7 @@ else
                         <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
                     </RowTemplate>
                     <NoRecordsContent>
-                        <MudText Class="mb-8" Color="Color.Warning">This user has no chat</MudText>
+                        <MudText Align="Align.Center" Class="flex-grow-1 mud-text-secondary" Typo="Typo.h6">The user has no chat</MudText>
                     </NoRecordsContent>
                     <LoadingContent>
                         <MudText>Loading...</MudText>
@@ -390,13 +398,16 @@ else
     [Parameter]
     public string? Identity { get; set; }
 
-    private Player? _entity;
-    private List<Connection>? _connections;
-    private List<Note>? _notes;
-    private List<Penalty>? _penalties;
+    private Player _entity = new();
+    private List<Connection> _connections = new();
+    private List<Note> _notes = new();
+    private List<Penalty> _penalties = new();
     private int _totalChatMessages;
-    private Dictionary<string, bool> _chatOpenStates = new();
-    private string _lastConnectedServer = "None";
+    private readonly Dictionary<string, bool> _chatHoverStates = new();
+    private readonly Dictionary<string, bool> _chatClickStates = new();
+    private string _lastConnectedServer = "--";
+    private string _lastConnectedCommunity = "--";
+
     private string _title = "Not Found";
     private bool _loading = true;
     private string _guid = string.Empty;
@@ -409,7 +420,6 @@ else
 
     // Pagination Chat
     private MudTable<Chat>? _chatTable;
-    private IEnumerable<Chat>? _chatPagedData;
     private string? _chatSearchString;
 
     protected override async Task OnInitializedAsync()
@@ -456,7 +466,8 @@ else
         if (_connections.Any())
         {
             var connection = _connections.MaxBy(x => x.Connected);
-            _lastConnectedServer = $"({connection?.CommunityName ?? "Unset"}) {connection?.ServerName ?? "Unset"}";
+            _lastConnectedCommunity = connection?.CommunityName ?? "--";
+            _lastConnectedServer = connection?.ServerName ?? "--";
         }
 
         _loading = false;
@@ -550,4 +561,14 @@ else
         NavigationManager.LocationChanged -= OnLocationChanged;
         return ValueTask.CompletedTask;
     }
+
+    private string GetChatIconState(string message)
+    {
+        if (_chatClickStates[message]) return Icons.Material.Filled.ExpandMore;
+
+        return _chatHoverStates[message]
+            ? Icons.Material.Filled.ExpandLess
+            : Icons.Material.Filled.ChevronRight;
+    }
+
 }

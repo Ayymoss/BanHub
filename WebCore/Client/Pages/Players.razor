@@ -24,7 +24,7 @@
             <MudTableSortLabel SortLabel="Name" T="Player">Name</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortLabel="Penalty" T="Player">Penalties</MudTableSortLabel>
+            <MudTableSortLabel SortLabel="Penalties" T="Player">Penalties</MudTableSortLabel>
         </MudTh>
         <MudTh>
             <MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="Online" T="Player">Online?</MudTableSortLabel>
@@ -34,12 +34,12 @@
         </MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="ID">@context.Identity</MudTd>
+        <MudTd DataLabel="Id">@context.Identity</MudTd>
         <MudTd DataLabel="Name">
             <MudLink Href="@($"/Players/{context.Identity}")" Typo="Typo.body2" Color="Color.Info">@context.UserName</MudLink>
         </MudTd>
-        <MudTd DataLabel="Penalty">@(context.Penalties is 0 ? "None" : context.Penalties)</MudTd>
-        <MudTd DataLabel="Online?">
+        <MudTd DataLabel="Penalties">@(context.Penalties is 0 ? "None" : context.Penalties)</MudTd>
+        <MudTd DataLabel="Online">
             <MudTooltip Arrow="true" Placement="Placement.Top" Text="@context.HeartBeat.ToString("yyyy-MM-dd HH:mm:ss")">
                 @if (context.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
                 {
@@ -66,13 +66,8 @@
 
 @code
 {
-    [Parameter, SupplyParameterFromQuery(Name = "search")]
-    public string? SearchString { get; set; }
-
     private MudTable<Player>? _table;
-    private IEnumerable<Player>? _pagedData;
     private string? _searchString;
-    private int _totalItems;
 
     private async Task<TableData<Player>> ServerReload(TableState state)
     {
@@ -85,11 +80,8 @@
             SearchString = _searchString,
         };
 
-        var statistics = await StatisticService.GetStatisticAsync();
-        _pagedData = await PlayersService.GetPlayersAsync(paginationQuery);
-        _totalItems = statistics.PlayerCount;
-
-        return new TableData<Player> {TotalItems = _totalItems, Items = _pagedData};
+        var context = await PlayersService.GetPlayersAsync(paginationQuery);
+        return new TableData<Player> {TotalItems = context.Count, Items = context.Players};
     }
 
     private void OnSearch(string text)

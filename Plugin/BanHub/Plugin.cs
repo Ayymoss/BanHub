@@ -107,6 +107,12 @@ public class Plugin : IPluginV2
             expiration: penaltyEvent.Penalty.Expires);
     }
 
+    private async Task OnClientStateAuthorized(ClientStateAuthorizeEvent clientEvent, CancellationToken arg2)
+    {
+        if (await _whitelistManager.IsWhitelisted(clientEvent.Client.ToPartialClient())) return;
+        await _endpointManager.OnJoin(clientEvent.Client);
+    }
+
     private Task OnClientStateDisposed(ClientStateEvent clientEvent, CancellationToken arg2)
     {
         // I think the lifetime of clientEvent will not remove it during this iteration. It'll be removed on the next person who leaves.
@@ -115,26 +121,24 @@ public class Plugin : IPluginV2
         return Task.CompletedTask;
     }
 
-    private async Task OnClientStateAuthorized(ClientStateAuthorizeEvent clientEvent, CancellationToken arg2)
-    {
-        if (await _whitelistManager.IsWhitelisted(clientEvent.Client.ToPartialClient())) return;
-        await _endpointManager.OnJoin(clientEvent.Client);
-    }
-
     private async Task OnChatMessaged(ClientMessageEvent messageEvent, CancellationToken token)
     {
+        if (!_communitySlim.Active) return;
         var message = messageEvent.Message.StripColors();
+        if (string.IsNullOrEmpty(message)) return;
+
         var playerIdentity = _endpointManager.EntityToPlayerIdentity(messageEvent.Client);
+        var messageContext = new MessageContext(DateTimeOffset.UtcNow, message);
 
         if (_communitySlim.PlayerMessages.ContainsKey(playerIdentity))
         {
             var playerMessages = _communitySlim.PlayerMessages.FirstOrDefault(x => x.Key == playerIdentity);
-            playerMessages.Value.Add((DateTimeOffset.UtcNow, message));
+            playerMessages.Value.Add(messageContext);
         }
         else
         {
-            _communitySlim.PlayerMessages.TryAdd(_endpointManager
-                .EntityToPlayerIdentity(messageEvent.Client), new List<(DateTimeOffset, string)> {(DateTimeOffset.UtcNow, message)});
+            _communitySlim.PlayerMessages
+                .TryAdd(_endpointManager.EntityToPlayerIdentity(messageEvent.Client), new List<MessageContext> {messageContext});
         }
 
         if (_communitySlim.PlayerMessages.Count < 100) return;
@@ -143,7 +147,7 @@ public class Plugin : IPluginV2
             CommunityGuid = _communitySlim.CommunityGuid,
             PlayerMessages = _communitySlim.PlayerMessages.ToDictionary(x => x.Key, x => x.Value)
         };
-        
+
         _communitySlim.PlayerMessages.Clear();
         await _chatService.AddInstanceChatMessagesAsync(communityMessages);
     }
@@ -215,7 +219,7 @@ public class Plugin : IPluginV2
     private async Task OnNotifyAfterDelayCompleted(CancellationToken token)
     {
         await _heartBeatManager.CommunityHeartbeat();
-        await _heartBeatManager.ClientHeartbeat();
+        if (_communitySlim.Active) await _heartBeatManager.ClientHeartbeat();
         SharedLibraryCore.Utilities.ExecuteAfterDelay(TimeSpan.FromMinutes(4), OnNotifyAfterDelayCompleted, CancellationToken.None);
     }
 }

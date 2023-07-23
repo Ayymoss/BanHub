@@ -26,8 +26,8 @@ public class ToggleCommunityActivationHandler : IRequestHandler<ToggleCommunityA
         instance.Active = !instance.Active;
 
         // TODO: Check this
-        if (instance.Active) _apiKeyCache.TryRemove(instance.CommunityGuid);
-        else _apiKeyCache.TryAdd(instance.CommunityGuid, instance.ApiKey);
+        if (instance.Active) _apiKeyCache.TryAdd(instance.CommunityGuid, instance.ApiKey);
+        else _apiKeyCache.TryRemove(instance.CommunityGuid);
 
         await _context.SaveChangesAsync(cancellationToken);
         return true;

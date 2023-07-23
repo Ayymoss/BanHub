@@ -74,12 +74,11 @@ public class EndpointManager
             return;
         }
 
-        var noteCount = await _noteService.GetUserNotesCountAsync(EntityToPlayerIdentity(player));
+        var noteCount = await _noteService.GetUserNotesCountAsync(result.Identity);
         if (noteCount is not 0)
             InformAdmins(player.CurrentServer,
                 _banHubConfiguration.Translations.UserHasNotes
                     .FormatExt(_banHubConfiguration.Translations.BanHubName, player.Name, noteCount));
-
 
         Profiles.TryAdd(player, result.Identity);
     }
@@ -87,6 +86,8 @@ public class EndpointManager
     private async Task<(bool Success, string Identity)> CreateOrUpdatePlayerAsync(EFClient player)
     {
         if (player.ClientId is 1) return (true, "0:UKN");
+        if (!_communitySlim.Active) return (true, EntityToPlayerIdentity(player));
+
         var createOrUpdate = new CreateOrUpdatePlayerCommand
         {
             PlayerIdentity = $"{player.GuidString}:{player.GameName.ToString()}",

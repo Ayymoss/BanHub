@@ -4,6 +4,7 @@ using BanHub.Configuration;
 using BanHub.Interfaces;
 using BanHub.Utilities;
 using BanHubData.Commands.Player;
+using Humanizer;
 using Polly;
 using Polly.Retry;
 using RestEase;
@@ -21,12 +22,14 @@ public class PlayerService
     private readonly IPlayerService _api;
     private readonly BanHubConfiguration _banHubConfiguration;
 
-    private readonly AsyncRetryPolicy _retryPolicy = Policy.Handle<HttpRequestException>().Or<ApiException>()
+    private readonly AsyncRetryPolicy _retryPolicy = Policy
+        .Handle<TaskCanceledException>()
+        .Or<ApiException>(ex => ex.InnerException is TaskCanceledException)
         .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-            (exception, retryCount, context) =>
+            (exception, retryDelay, context) =>
             {
-                Console.WriteLine(
-                    $"[{BanHubConfiguration.Name}] Error sending heartbeat: {exception.Message}. Retrying ({retryCount}/3)...");
+                Console.WriteLine($"[{BanHubConfiguration.Name}] Penalty API: {exception.Message}. " +
+                                  $"Retrying in {retryDelay.Humanize()}...");
             });
 
     public PlayerService(BanHubConfiguration banHubConfiguration)

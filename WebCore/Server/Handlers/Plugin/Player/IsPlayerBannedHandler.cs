@@ -26,28 +26,31 @@ public class IsPlayerBannedHandler : IRequestHandler<IsPlayerBannedCommand, bool
             .FirstOrDefaultAsync(x => x.Identity == request.Identity, cancellationToken: cancellationToken);
 
         var hasIdentifierBan = await _context.PenaltyIdentifiers
-            .Where(x => x.Expiration > DateTimeOffset.UtcNow) // The identity check below is redundant, however, may be relevant in the future
+            .Where(x => x.Expiration > DateTimeOffset.UtcNow)
+            // The identity check below is redundant, however, may be relevant in the future
             .AnyAsync(x => x.IpAddress == request.IpAddress || x.Identity == request.Identity, cancellationToken: cancellationToken);
 
-        if (player is null) return false;
-
         // Expire old penalties
-        var expiredPenalties = player.Penalties
-            .Where(inf => DateTimeOffset.UtcNow > inf.Expiration)
-            .Where(inf => inf.PenaltyStatus == PenaltyStatus.Active)
-            .ToList();
-
-        expiredPenalties.ForEach(inf => inf.PenaltyStatus = PenaltyStatus.Expired);
-        _context.Penalties.UpdateRange(expiredPenalties);
-        await _context.SaveChangesAsync(cancellationToken);
-
-        // Check player identifier states
-        var playerIdentityBan = player.Penalties.Any(penalty => penalty is
+        var playerIdentityBan = false;
+        if (player is not null)
         {
-            PenaltyStatus: PenaltyStatus.Active,
-            PenaltyType: PenaltyType.Ban,
-            PenaltyScope: PenaltyScope.Global
-        });
+            var expiredPenalties = player.Penalties
+                .Where(inf => DateTimeOffset.UtcNow > inf.Expiration)
+                .Where(inf => inf.PenaltyStatus == PenaltyStatus.Active)
+                .ToList();
+
+            expiredPenalties.ForEach(inf => inf.PenaltyStatus = PenaltyStatus.Expired);
+            _context.Penalties.UpdateRange(expiredPenalties);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            // Check player identifier states
+            playerIdentityBan = player.Penalties.Any(penalty => penalty is
+            {
+                PenaltyStatus: PenaltyStatus.Active,
+                PenaltyType: PenaltyType.Ban,
+                PenaltyScope: PenaltyScope.Global
+            });
+        }
 
         var isBanned = playerIdentityBan || hasIdentifierBan;
         return isBanned;

@@ -69,14 +69,15 @@ public class CreateOrUpdateCommunityHandler : IRequestHandler<CreateOrUpdateComm
         {
 #if !DEBUG
             community.Active = false;
-            _apiKeyCache.ApiKeys?.TryRemove(request.CommunityGuid, out _);
-#endif
+            _apiKeyCache.TryRemove(request.CommunityGuid);
+
             IDiscordWebhookSubscriptions.InvokeEvent(new CreateIssueEvent
             {
                 CommunityGuid = community.CommunityGuid,
                 CommunityIp = request.CommunityIp,
                 IncomingIp = request.HeaderIp ?? "Unknown"
             }, cancellationToken);
+#endif
         }
 
         // Update existing record

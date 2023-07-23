@@ -27,7 +27,8 @@ public class GetProfileConnectionsHandler : IRequestHandler<GetProfileConnection
                 ServerPort = x.Server.ServerPort,
                 ServerIp = x.Server.ServerIp,
                 CommunityIp = x.Server.Community.CommunityIp,
-                CommunityName = x.Server.Community.CommunityName
+                CommunityName = x.Server.Community.CommunityName,
+                CommunityGuid = x.Server.Community.CommunityGuid
             }).ToListAsync(cancellationToken);
         return result;
     }

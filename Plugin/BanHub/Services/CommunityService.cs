@@ -3,6 +3,7 @@ using System.Text.Json;
 using BanHub.Configuration;
 using BanHub.Interfaces;
 using BanHubData.Commands.Instance;
+using Humanizer;
 using Polly;
 using Polly.Retry;
 using RestEase;
@@ -20,12 +21,14 @@ public class CommunityService
     private readonly ICommunityService _api;
     private readonly BanHubConfiguration _banHubConfiguration;
 
-    private readonly AsyncRetryPolicy _retryPolicy = Policy.Handle<HttpRequestException>().Or<ApiException>()
+    private readonly AsyncRetryPolicy _retryPolicy = Policy
+        .Handle<TaskCanceledException>()
+        .Or<ApiException>(ex => ex.InnerException is TaskCanceledException)
         .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-            (exception, retryCount, context) =>
+            (exception, retryDelay, context) =>
             {
-                Console.WriteLine(
-                    $"[{BanHubConfiguration.Name}] Error sending heartbeat: {exception.Message}. Retrying ({retryCount}/3)...");
+                Console.WriteLine($"[{BanHubConfiguration.Name}] Community API: {exception.Message}. " +
+                                  $"Retrying in {retryDelay.Humanize()}...");
             });
 
     public CommunityService(BanHubConfiguration banHubConfiguration)
@@ -74,7 +77,7 @@ public class CommunityService
         }
         catch (ApiException e)
         {
-            Console.WriteLine($"[{BanHubConfiguration.Name}] Error getting community state: {e.Message}");
+            Console.WriteLine($"[{BanHubConfiguration.Name}] Error getting community active state: {e.Message}");
         }
 
         return false;

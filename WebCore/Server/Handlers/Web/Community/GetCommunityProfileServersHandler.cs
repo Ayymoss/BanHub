@@ -24,7 +24,7 @@ public class GetCommunityProfileServersHandler : IRequestHandler<GetCommunityPro
             .Select(x => new Shared.Models.CommunityProfileView.Server
             {
                 ServerName = x.ServerName,
-                ServerIp = x.ServerIp.IsInternal() ? "?" : x.ServerIp, // TODO: Test this.
+                ServerIp = x.ServerIp.IsInternal() ? x.Community.CommunityIp : x.ServerIp, // TODO: Test this.
                 ServerPort = x.ServerPort,
                 ServerGame = x.ServerGame,
                 Updated = x.Updated,

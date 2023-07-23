@@ -82,13 +82,8 @@
 
 @code
 {
-    [Parameter, SupplyParameterFromQuery(Name = "search")]
-    public string? SearchString { get; set; }
-
     private MudTable<Community>? _table;
-    private IEnumerable<Community>? _pagedData;
     private string? _searchString;
-    private int _totalItems;
 
     private async Task<TableData<Community>> ServerReload(TableState state)
     {
@@ -101,11 +96,8 @@
             SearchString = _searchString
         };
 
-        var statistics = await StatisticService.GetStatisticAsync();
-        _pagedData = await CommunityService.GetCommunitiesPaginationAsync(paginationQuery);
-        _totalItems = statistics.CommunityCount;
-
-        return new TableData<Community> {TotalItems = _totalItems, Items = _pagedData};
+        var context = await CommunityService.GetCommunitiesPaginationAsync(paginationQuery);
+        return new TableData<Community> {TotalItems = context.Count, Items = context.Communities};
     }
 
     private void OnSearch(string text)

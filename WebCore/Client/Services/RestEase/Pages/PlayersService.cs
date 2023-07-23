@@ -20,19 +20,19 @@ public class PlayersService
         _api = RestClient.For<IPlayersService>(ApiHost);
     }
 
-    public async Task<IEnumerable<Player>> GetPlayersAsync(GetPlayersPaginationCommand playersPagination)
+    public async Task<PlayerContext> GetPlayersAsync(GetPlayersPaginationCommand playersPagination)
     {
         try
         {
             var response = await _api.GetPlayersAsync(playersPagination);
-            var result = await response.DeserializeHttpResponseContentAsync<IEnumerable<Player>>();
-            return result ?? new List<Player>();
+            var result = await response.DeserializeHttpResponseContentAsync<PlayerContext>();
+            return result ?? new PlayerContext();
         }
         catch (ApiException e)
         {
             Console.WriteLine($"API->Failed to get players pagination: {e.Message}");
         }
 
-        return new List<Player>();
+        return new PlayerContext();
     }
 }
