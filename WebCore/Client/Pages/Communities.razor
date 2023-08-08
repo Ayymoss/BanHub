@@ -40,24 +40,12 @@
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="ID">
-            @if (context.Active)
-            {
-                <MudElement Class="d-flex flex-row align-center">
-                    <MudTooltip Arrow="true" Placement="Placement.Top" Text="Instance Active" RootClass="d-flex">
-                        <MudIcon Icon="@Icons.Material.Filled.Circle" Size="Size.Small" Color="Color.Success"/>
-                    </MudTooltip>
-                    <MudText Typo="Typo.body2" Class="ml-2">@context.CommunityGuid</MudText>
-                </MudElement>
-            }
-            else
-            {
-                <MudElement Class="d-flex flex-row align-center">
-                    <MudTooltip Arrow="true" Placement="Placement.Top" Text="Instance Not Active" RootClass="d-flex">
-                        <MudIcon Icon="@Icons.Material.Filled.Circle" Size="Size.Small" Color="Color.Error"/>
-                    </MudTooltip>
-                    <MudText Typo="Typo.body2" Class="ml-2">@context.CommunityGuid</MudText>
-                </MudElement>
-            }
+            <MudElement Class="d-flex flex-row align-center">
+                <MudTooltip Arrow="true" Placement="Placement.Top" Text="@($"{(context.Active ? "Instance Active" : "Instance Not Active")}")" RootClass="d-flex">
+                    <MudIcon Icon="@Icons.Material.Filled.Circle" Size="Size.Small" Color="@(context.Active ? Color.Success : Color.Error)"/>
+                </MudTooltip>
+                <MudText Typo="Typo.body2" Class="ml-2">@context.CommunityGuid</MudText>
+            </MudElement>
         </MudTd>
         <MudTd DataLabel="Name">
             <MudLink Href="@($"/Communities/{context.CommunityGuid}")" Typo="Typo.body2" Color="Color.Info">@context.CommunityName</MudLink>

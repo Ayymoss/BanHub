@@ -1,4 +1,6 @@
-﻿namespace BanHub.WebCore.Shared.Models.PlayerProfileView;
+﻿using BanHubData.Enums;
+
+namespace BanHub.WebCore.Shared.Models.PlayerProfileView;
 
 public class Player
 {
@@ -11,4 +13,6 @@ public class Player
     public DateTimeOffset Created { get; set; }
     public bool Connected { get; set; }
     public string? IpAddress { get; set; }
+    public CommunityRole CommunityRole { get; set; }
+    public WebRole WebRole { get; set; }
 }

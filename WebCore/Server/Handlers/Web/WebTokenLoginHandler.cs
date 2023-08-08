@@ -22,6 +22,7 @@ public class WebTokenLoginHandler : IRequestHandler<WebTokenLoginCommand, WebTok
         _signedInUsers = signedInUsers;
     }
 
+    // TODO: After service restart we need to rebuild their login from the database.
     public async Task<WebTokenLoginCommandResponse> Handle(WebTokenLoginCommand request, CancellationToken cancellationToken)
     {
         var token = await _context.AuthTokens

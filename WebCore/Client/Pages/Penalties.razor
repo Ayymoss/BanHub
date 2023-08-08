@@ -46,7 +46,21 @@
         </MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="Id">@context.PenaltyGuid</MudTd>
+        <MudTd DataLabel="Id">
+            @if (context.EvidenceMissing)
+            {
+                <MudElement Class="d-flex flex-row align-center">
+                    <MudTooltip Arrow="true" Placement="Placement.Top" Text="Evidence Missing" RootClass="d-flex">
+                        <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" Color="Color.Error"/>
+                    </MudTooltip>
+                    <MudText Typo="Typo.body2" Class="ml-2">@context.PenaltyGuid</MudText>
+                </MudElement>
+            }
+            else
+            {
+                @context.PenaltyGuid
+            }
+        </MudTd>
         <MudTd DataLabel="IssuerName">
             <MudLink Href="@($"/Players/{context.TargetIdentity}")" Typo="Typo.body2" Color="Color.Info">@context.TargetUserName</MudLink>
         </MudTd>
@@ -55,55 +69,13 @@
         </MudTd>
         <MudTd DataLabel="Reason">@context.Reason</MudTd>
         <MudTd DataLabel="Type">
-            @switch (context.PenaltyType)
-            {
-                case PenaltyType.Warning:
-                    <MudChip Variant="Variant.Text" Size="Size.Small">Warn</MudChip>
-                    break;
-                case PenaltyType.Mute:
-                    <MudChip Variant="Variant.Text" Size="Size.Small">Mute</MudChip>
-                    break;
-                case PenaltyType.Kick:
-                    <MudChip Variant="Variant.Text" Size="Size.Small">Kick</MudChip>
-                    break;
-                case PenaltyType.Unban:
-                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Unban</MudChip>
-                    break;
-                case PenaltyType.TempBan:
-                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Tempban</MudChip>
-                    break;
-                case PenaltyType.Ban:
-                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Ban</MudChip>
-                    break;
-            }
+            <EnumMudChip Value="@context.PenaltyType"/>
         </MudTd>
         <MudTd DataLabel="Status">
-            @switch (context.PenaltyStatus)
-            {
-                case PenaltyStatus.Informational:
-                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Informational</MudChip>
-                    break;
-                case PenaltyStatus.Active:
-                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Success">Active</MudChip>
-                    break;
-                case PenaltyStatus.Revoked:
-                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Revoked</MudChip>
-                    break;
-                case PenaltyStatus.Expired:
-                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Expired</MudChip>
-                    break;
-            }
+            <EnumMudChip Value="@context.PenaltyStatus"/>
         </MudTd>
         <MudTd DataLabel="Scope">
-            @switch (context.PenaltyScope)
-            {
-                case PenaltyScope.Local:
-                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Local</MudChip>
-                    break;
-                case PenaltyScope.Global:
-                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Global</MudChip>
-                    break;
-            }
+            <EnumMudChip Value="@context.PenaltyScope"/>
         </MudTd>
         <MudTd DataLabel="Community">
             <MudLink Href="@($"/Communities/{context.CommunityGuid}")" Typo="Typo.body2" Color="Color.Info">@context.CommunityName</MudLink>
@@ -147,4 +119,5 @@
         _searchString = text;
         _table!.ReloadServerData();
     }
+
 }

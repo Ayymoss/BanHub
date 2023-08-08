@@ -24,4 +24,5 @@ public class Penalty
     public PenaltyScope PenaltyScope { get; set; }
     public PenaltyStatus PenaltyStatus { get; set; }
     public DateTimeOffset Submitted { get; set; }
+    public bool EvidenceMissing { get; set; }
 }

@@ -13,4 +13,6 @@ public class Community
     public DateTimeOffset Created { get; set; }
     public int ServerCount { get; set; }
     public int CommunityPort { get; set; }
+    public int AutomatedPenaltiesCount { get; set; }
+    public int PenaltiesCount { get; set; }
 }

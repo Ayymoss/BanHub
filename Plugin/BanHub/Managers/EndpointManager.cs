@@ -52,7 +52,7 @@ public class EndpointManager
 
     public async Task OnStart(CreateOrUpdateServerCommand server)
     {
-        if (!Plugin.CommunityActive) return;
+        if (!_communitySlim.Active) return;
         await _server.PostServer(server);
     }
 
@@ -140,7 +140,7 @@ public class EndpointManager
         if (!adminIdentity.Success || !targetIdentity.Success) return (false, null);
 
         var parsedPenaltyType = Enum.TryParse<PenaltyType>(sourcePenaltyType, out var penaltyType);
-        if (!parsedPenaltyType || !Plugin.CommunityActive) return (false, null);
+        if (!parsedPenaltyType || !_communitySlim.Active) return (false, null);
         if (penaltyType is not PenaltyType.Ban && origin.ClientId is 1) return (false, null);
 
         var (isGlobalAntiCheatBan, isAntiCheatBan) = (false, false);
@@ -183,9 +183,7 @@ public class EndpointManager
             PenaltyGuid = guid,
             Evidence = evidence,
             IssuerIdentity = EntityToPlayerIdentity(issuer),
-            IssuerUsername = issuer.CleanedName,
-            OffenderIdentity = EntityToPlayerIdentity(offender),
-            OffenderUsername = offender.CleanedName
+            IssuerUsername = issuer.CleanedName
         };
         return await _penalty.SubmitEvidence(penalty);
     }

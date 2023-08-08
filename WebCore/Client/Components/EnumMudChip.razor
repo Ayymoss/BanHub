@@ -1,0 +1,25 @@
+﻿
+@if (_enumDetails.TryGetValue(Value, out var details))
+{
+    <MudChip Variant="Variant.Text" Size="Size.Small" Color="@details.Color">@details.Text</MudChip>
+}
+
+@code {
+    [Parameter] public required Enum Value { get; set; }
+
+    private readonly Dictionary<Enum, (string Text, Color Color)> _enumDetails = new()
+    {
+        {PenaltyType.Warning, ("Warn", Color.Default)},
+        {PenaltyType.Mute, ("Mute", Color.Default)},
+        {PenaltyType.Kick, ("Kick", Color.Default)},
+        {PenaltyType.Unban, ("Unban", Color.Info)},
+        {PenaltyType.TempBan, ("Tempban", Color.Warning)},
+        {PenaltyType.Ban, ("Ban", Color.Error)},
+        {PenaltyStatus.Informational, ("Informational", Color.Info)},
+        {PenaltyStatus.Active, ("Active", Color.Success)},
+        {PenaltyStatus.Revoked, ("Revoked", Color.Info)},
+        {PenaltyStatus.Expired, ("Expired", Color.Info)},
+        {PenaltyScope.Local, ("Local", Color.Info)},
+        {PenaltyScope.Global, ("Global", Color.Error)},
+    };
+}

@@ -23,6 +23,7 @@ public class GetPaginationHandler : IRequestHandler<GetPlayersPaginationCommand,
         if (!string.IsNullOrWhiteSpace(request.SearchString))
         {
             query = query.Where(search =>
+                search.CurrentAlias.Alias.IpAddress == request.SearchString ||
                 EF.Functions.ILike(search.Identity, $"%{request.SearchString}%") ||
                 EF.Functions.ILike(search.CurrentAlias.Alias.UserName, $"%{request.SearchString}%"));
         }
@@ -47,7 +48,8 @@ public class GetPaginationHandler : IRequestHandler<GetPlayersPaginationCommand,
                 UserName = profile.CurrentAlias.Alias.UserName,
                 Penalties = profile.Penalties.Count,
                 HeartBeat = profile.HeartBeat,
-                Created = profile.Created,
+                IsOnline = profile.HeartBeat > DateTimeOffset.UtcNow.AddMinutes(-5),
+                Created = profile.Created
             }).ToListAsync(cancellationToken: cancellationToken);
 
         return new PlayerContext

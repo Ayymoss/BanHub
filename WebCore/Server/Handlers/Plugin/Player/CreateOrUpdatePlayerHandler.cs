@@ -37,6 +37,7 @@ public class CreateOrUpdatePlayerHandler : IRequestHandler<CreateOrUpdatePlayerC
         {
             var mostRecentAlias = await _context.CurrentAliases
                 .AsTracking()
+                .Include(efCurrentAlias => efCurrentAlias.Alias)
                 .SingleOrDefaultAsync(x => x.PlayerId == user.Id, cancellationToken: cancellationToken);
 
             if (mostRecentAlias is not null && 
@@ -46,7 +47,7 @@ public class CreateOrUpdatePlayerHandler : IRequestHandler<CreateOrUpdatePlayerC
                 {
                     UserName = request.PlayerAliasUserName,
                     IpAddress = request.PlayerAliasIpAddress,
-                    Changed = utcTimeNow,
+                    Created = utcTimeNow,
                     PlayerId = user.Id
                 };
 
@@ -91,7 +92,7 @@ public class CreateOrUpdatePlayerHandler : IRequestHandler<CreateOrUpdatePlayerC
             Player = entity,
             UserName = request.PlayerAliasUserName,
             IpAddress = request.PlayerAliasIpAddress,
-            Changed = utcTimeNow
+            Created = utcTimeNow
         };
 
         var currentAlias = new EFCurrentAlias

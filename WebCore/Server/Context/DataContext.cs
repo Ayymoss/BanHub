@@ -54,7 +54,7 @@ public class DataContext : DbContext
             PlayerId = -1,
             UserName = "IW4MAdmin",
             IpAddress = "0.0.0.0",
-            Changed = DateTimeOffset.UtcNow
+            Created = DateTimeOffset.UtcNow
         };
 
         var adminProfile = new EFPlayer

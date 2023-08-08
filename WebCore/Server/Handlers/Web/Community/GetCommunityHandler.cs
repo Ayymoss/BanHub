@@ -14,7 +14,8 @@ public class GetCommunityHandler : IRequestHandler<GetCommunityCommand, Shared.M
         _context = context;
     }
 
-    public async Task<Shared.Models.CommunityProfileView.Community?> Handle(GetCommunityCommand request, CancellationToken cancellationToken)
+    public async Task<Shared.Models.CommunityProfileView.Community?> Handle(GetCommunityCommand request,
+        CancellationToken cancellationToken)
     {
         var serverCount = await _context.Servers
             .CountAsync(x => x.Community.CommunityGuid == request.CommunityGuid, cancellationToken: cancellationToken);
@@ -34,6 +35,17 @@ public class GetCommunityHandler : IRequestHandler<GetCommunityCommand, Shared.M
                 Created = x.Created,
                 ServerCount = serverCount,
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
+
+        if (result is null) return null;
+
+        result.AutomatedPenaltiesCount = await _context.Penalties
+            .Where(x => x.Community.CommunityGuid == request.CommunityGuid)
+            .Where(x => x.Automated)
+            .CountAsync(cancellationToken: cancellationToken);
+
+        result.PenaltiesCount = await _context.Penalties
+            .Where(x => x.Community.CommunityGuid == request.CommunityGuid)
+            .CountAsync(cancellationToken: cancellationToken);
 
         return result;
     }

@@ -107,7 +107,9 @@
             else
             {
                 <MudStack Justify="Justify.Center">
-                    <MudText Align="Align.Center" Class="mud-text-disabled" Typo="Typo.h4">Evidence not submitted!</MudText>
+                    <MudText Align="Align.Center" Class="mud-text-disabled" Typo="Typo.h4">
+                        @(Penalty.PenaltyScope is PenaltyScope.Global ? "Evidence not submitted" : "Evidence isn't required for local penalties")
+                    </MudText>
                     <AuthorizeView Roles="@HelperMethods.GetRolesAsString(new[] {WebRole.Admin, WebRole.SuperAdmin}, new[] {CommunityRole.Moderator, CommunityRole.Administrator, CommunityRole.SeniorAdmin, CommunityRole.Owner})">
                         <Authorized>
                             <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true" Color="Color.Primary" OnClick="OpenSubmitDialog">Submit Evidence</MudButton>

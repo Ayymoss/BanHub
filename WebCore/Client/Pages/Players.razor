@@ -1,7 +1,6 @@
 ﻿@page "/Players"
 @using Player = BanHub.WebCore.Shared.Models.PlayersView.Player
 @inject PlayersService PlayersService
-@inject StatisticService StatisticService
 
 <PageTitle>Players | Ban Hub</PageTitle>
 
@@ -41,17 +40,16 @@
         <MudTd DataLabel="Penalties">@(context.Penalties is 0 ? "None" : context.Penalties)</MudTd>
         <MudTd DataLabel="Online">
             <MudTooltip Arrow="true" Placement="Placement.Top" Text="@context.HeartBeat.ToString("yyyy-MM-dd HH:mm:ss")">
-                @if (context.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow)
-                {
-                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Info">Online</MudChip>
-                }
-                else
-                {
-                    <MudChip Variant="Variant.Text" Size="Size.Small" Color="Color.Warning">Offline</MudChip>
-                }
+                <MudChip Variant="Variant.Text" Size="Size.Small" Color="@(context.IsOnline ? Color.Info : Color.Warning)">
+                    @(context.IsOnline ? "Online" : "Offline")
+                </MudChip>
             </MudTooltip>
         </MudTd>
-        <MudTd DataLabel="Created">@context.Created.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
+        <MudTd DataLabel="Created">
+            <MudTooltip Arrow="true" Placement="Placement.Top" Text="@context.Created.ToString("yyyy-MM-dd HH:mm:ss")">
+                <MudText Typo="Typo.body2">@context.Created.Humanize()</MudText>
+            </MudTooltip>
+        </MudTd>
     </RowTemplate>
     <NoRecordsContent>
         <MudText Class="mb-8" Color="Color.Warning">No players found.</MudText>

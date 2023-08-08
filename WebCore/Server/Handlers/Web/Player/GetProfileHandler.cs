@@ -31,7 +31,9 @@ public class GetProfileHandler : IRequestHandler<GetProfileCommand, Shared.Model
                 Created = profile.Created,
                 IsGloballyBanned = profile.Penalties.Where(x => x.PenaltyType == PenaltyType.Ban)
                     .Where(x => x.PenaltyStatus == PenaltyStatus.Active)
-                    .Any(x => x.PenaltyScope == PenaltyScope.Global)
+                    .Any(x => x.PenaltyScope == PenaltyScope.Global),
+                CommunityRole = profile.CommunityRole,
+                WebRole = profile.WebRole
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         return entity;

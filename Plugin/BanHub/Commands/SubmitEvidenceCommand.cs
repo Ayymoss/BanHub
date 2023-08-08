@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using BanHub.Configuration;
 using BanHub.Managers;
+using BanHub.Models;
 using BanHubData.Extension;
 using SharedLibraryCore;
 using SharedLibraryCore.Commands;
@@ -14,12 +15,14 @@ public class SubmitEvidenceCommand : Command
 {
     private readonly BanHubConfiguration _bhConfig;
     private readonly EndpointManager _endpointManager;
+    private readonly CommunitySlim _communitySlim;
 
     public SubmitEvidenceCommand(CommandConfiguration config, ITranslationLookup layout, BanHubConfiguration bhConfig,
-        EndpointManager endpointManager) : base(config, layout)
+        EndpointManager endpointManager, CommunitySlim communitySlim) : base(config, layout)
     {
         _bhConfig = bhConfig;
         _endpointManager = endpointManager;
+        _communitySlim = communitySlim;
         Name = "bhevidence";
         Description = "Submit evidence for a players ban";
         Alias = "bhe";
@@ -42,7 +45,7 @@ public class SubmitEvidenceCommand : Command
 
     public override async Task ExecuteAsync(GameEvent gameEvent)
     {
-        if (!Plugin.CommunityActive)
+        if (!_communitySlim.Active)
         {
             gameEvent.Origin.Tell(_bhConfig.Translations.NotActive.FormatExt(_bhConfig.Translations.BanHubName));
             return;

@@ -23,7 +23,8 @@ public class PenaltyController : ControllerBase
     }
 
     [HttpPost, PluginAuthentication]
-    public async Task<IActionResult> AddPlayerPenaltyAsync([FromQuery] string authToken, [FromBody] AddPlayerPenaltyCommand request)
+    public async Task<IActionResult> AddPlayerPenaltyAsync([FromQuery] string authToken,
+        [FromBody] AddPlayerPenaltyCommand request)
     {
         var result = await _mediator.Send(request);
         return result.Item1 switch
@@ -50,20 +51,20 @@ public class PenaltyController : ControllerBase
         if (adminSignInGuid is null || adminName is null || adminNameIdentity is null)
             return Unauthorized("You are not authorised to perform this action");
 
-        var instanceRoleAssigned = _signedInUsers.IsUserInAnyCommunityRole(adminSignInGuid, new[]
-        {
-            CommunityRole.Moderator,
-            CommunityRole.Administrator,
-            CommunityRole.SeniorAdmin,
-            CommunityRole.Owner
-        });
-        var webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
-        {
-            WebRole.Admin,
-            WebRole.SuperAdmin
-        });
+        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             CommunityRole.Moderator,
+                             CommunityRole.Administrator,
+                             CommunityRole.SeniorAdmin,
+                             CommunityRole.Owner
+                         }, _signedInUsers.IsUserInCommunityRole) ||
+                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             WebRole.Admin,
+                             WebRole.SuperAdmin
+                         }, _signedInUsers.IsUserInWebRole);
 
-        if (!instanceRoleAssigned && !webRoleAssigned) return Unauthorized("You are not authorised to perform this action");
+        if (!authorised) return Unauthorized("You are not authorised to perform this action");
 
         request.IssuerUsername = adminName;
         request.IssuerIdentity = adminNameIdentity;
@@ -75,26 +76,21 @@ public class PenaltyController : ControllerBase
         [FromBody] GetPenaltiesPaginationCommand penaltiesPagination)
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
-        var instanceRoleAssigned = false;
-        var webRoleAssigned = false;
 
-        if (adminSignInGuid is not null)
-        {
-            instanceRoleAssigned = _signedInUsers.IsUserInAnyCommunityRole(adminSignInGuid, new[]
-            {
-                CommunityRole.Moderator,
-                CommunityRole.Administrator,
-                CommunityRole.SeniorAdmin,
-                CommunityRole.Owner
-            });
-            webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
-            {
-                WebRole.Admin,
-                WebRole.SuperAdmin
-            });
-        }
+        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             CommunityRole.Moderator,
+                             CommunityRole.Administrator,
+                             CommunityRole.SeniorAdmin,
+                             CommunityRole.Owner
+                         }, _signedInUsers.IsUserInCommunityRole) ||
+                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             WebRole.Admin,
+                             WebRole.SuperAdmin
+                         }, _signedInUsers.IsUserInWebRole);
 
-        penaltiesPagination.Privileged = instanceRoleAssigned || webRoleAssigned;
+        penaltiesPagination.Privileged = authorised;
         var result = await _mediator.Send(penaltiesPagination);
         return Ok(result);
     }
@@ -104,29 +100,24 @@ public class PenaltyController : ControllerBase
         [FromRoute] string identity)
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
-        var instanceRoleAssigned = false;
-        var webRoleAssigned = false;
 
-        if (adminSignInGuid is not null)
-        {
-            instanceRoleAssigned = _signedInUsers.IsUserInAnyCommunityRole(adminSignInGuid, new[]
-            {
-                CommunityRole.Moderator,
-                CommunityRole.Administrator,
-                CommunityRole.SeniorAdmin,
-                CommunityRole.Owner
-            });
-            webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
-            {
-                WebRole.Admin,
-                WebRole.SuperAdmin
-            });
-        }
+        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             CommunityRole.Moderator,
+                             CommunityRole.Administrator,
+                             CommunityRole.SeniorAdmin,
+                             CommunityRole.Owner
+                         }, _signedInUsers.IsUserInCommunityRole) ||
+                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             WebRole.Admin,
+                             WebRole.SuperAdmin
+                         }, _signedInUsers.IsUserInWebRole);
 
         var result = await _mediator.Send(new GetProfilePenaltiesCommand
         {
             Identity = identity,
-            Privileged = instanceRoleAssigned || webRoleAssigned
+            Privileged = authorised
         });
         return Ok(result);
     }
@@ -136,31 +127,25 @@ public class PenaltyController : ControllerBase
         [FromRoute] string identity)
     {
         if (!Guid.TryParse(identity, out var guid)) return BadRequest();
-
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
-        var communityRoleAssigned = false;
-        var webRoleAssigned = false;
 
-        if (adminSignInGuid is not null)
-        {
-            communityRoleAssigned = _signedInUsers.IsUserInAnyCommunityRole(adminSignInGuid, new[]
-            {
-                CommunityRole.Moderator,
-                CommunityRole.Administrator,
-                CommunityRole.SeniorAdmin,
-                CommunityRole.Owner
-            });
-            webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
-            {
-                WebRole.Admin,
-                WebRole.SuperAdmin
-            });
-        }
+        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             CommunityRole.Moderator,
+                             CommunityRole.Administrator,
+                             CommunityRole.SeniorAdmin,
+                             CommunityRole.Owner
+                         }, _signedInUsers.IsUserInCommunityRole) ||
+                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             WebRole.Admin,
+                             WebRole.SuperAdmin
+                         }, _signedInUsers.IsUserInWebRole);
 
         var result = await _mediator.Send(new GetCommunityPenaltiesCommand
         {
             Identity = guid,
-            Privileged = communityRoleAssigned || webRoleAssigned
+            Privileged = authorised
         });
         return Ok(result);
     }
@@ -169,28 +154,23 @@ public class PenaltyController : ControllerBase
     public async Task<ActionResult<IEnumerable<Shared.Models.IndexView.Penalty>>> GetLatestBansAsync()
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
-        var instanceRoleAssigned = false;
-        var webRoleAssigned = false;
 
-        if (adminSignInGuid is not null)
-        {
-            instanceRoleAssigned = _signedInUsers.IsUserInAnyCommunityRole(adminSignInGuid, new[]
-            {
-                CommunityRole.Moderator,
-                CommunityRole.Administrator,
-                CommunityRole.SeniorAdmin,
-                CommunityRole.Owner
-            });
-            webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
-            {
-                WebRole.Admin,
-                WebRole.SuperAdmin
-            });
-        }
+        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             CommunityRole.Moderator,
+                             CommunityRole.Administrator,
+                             CommunityRole.SeniorAdmin,
+                             CommunityRole.Owner
+                         }, _signedInUsers.IsUserInCommunityRole) ||
+                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             WebRole.Admin,
+                             WebRole.SuperAdmin
+                         }, _signedInUsers.IsUserInWebRole);
 
         var result = await _mediator.Send(new GetLatestBansCommand
         {
-            Privileged = instanceRoleAssigned || webRoleAssigned
+            Privileged = authorised
         });
         return Ok(result);
     }
@@ -204,13 +184,13 @@ public class PenaltyController : ControllerBase
         if (adminName is null || adminSignInGuid is null || adminNameIdentity is null)
             return Unauthorized("You are not authorised to perform this action");
 
-        var webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
+        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
         {
             WebRole.Admin,
             WebRole.SuperAdmin
-        });
+        }, _signedInUsers.IsUserInWebRole);
 
-        if (!webRoleAssigned) return Unauthorized("You are not authorised to perform this action");
+        if (!authorised) return Unauthorized("You are not authorised to perform this action");
 
         request.ActionAdminUserName = adminName;
         request.ActionAdminIdentity = adminNameIdentity;

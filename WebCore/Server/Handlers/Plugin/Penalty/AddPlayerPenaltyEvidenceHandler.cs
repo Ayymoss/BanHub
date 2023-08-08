@@ -20,17 +20,29 @@ public class AddPlayerPenaltyEvidenceHandler : IRequestHandler<AddPlayerPenaltyE
     public async Task<ControllerEnums.ReturnState> Handle(AddPlayerPenaltyEvidenceCommand request, CancellationToken cancellationToken)
     {
         var penalty = await _context.Penalties
-            .AsTracking()
-            .FirstOrDefaultAsync(x => x.PenaltyGuid == request.PenaltyGuid, cancellationToken: cancellationToken);
+            .Where(x => x.PenaltyGuid == request.PenaltyGuid)
+            .Select(x => new
+            {
+                x.Id,
+                x.Recipient.Identity,
+                x.Recipient.CurrentAlias.Alias.UserName,
+                x.Evidence
+            }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         if (penalty is null) return ControllerEnums.ReturnState.NotFound;
         // Someone has already submitted evidence. Don't overwrite it.
         if (penalty.Evidence is not null) return ControllerEnums.ReturnState.Conflict;
 
-        penalty.Evidence = request.Evidence;
-        var message = $"**Penalty**: {penalty.PenaltyGuid}\n" +
-                      $"**Profile:** [{request.OffenderUsername}](https://BanHub.gg/Players/{request.OffenderIdentity})" +
-                      $"**Evidence**: https://youtu.be/{penalty.Evidence}\n\n" +
+        // TODO: This needs to be updated in another way. Maybe remove required tags for efmodel -> using Attach.
+        var newPenalty = await _context.Penalties
+            .AsTracking()
+            .FirstAsync(x => x.Id == penalty.Id, cancellationToken: cancellationToken);
+        
+        newPenalty.Evidence = request.Evidence;
+
+        var message = $"**Penalty**: {request.PenaltyGuid}\n" +
+                      $"**Profile:** [{penalty.UserName}](https://BanHub.gg/Players/{penalty.Identity})\n" +
+                      $"**Evidence**: https://youtu.be/{request.Evidence}\n\n" +
                       $"**Submitted By**: [{request.IssuerUsername}](https://BanHub.gg/Players/{request.IssuerIdentity})";
 
         IDiscordWebhookSubscriptions.InvokeEvent(new CreateAdminActionEvent
@@ -39,7 +51,7 @@ public class AddPlayerPenaltyEvidenceHandler : IRequestHandler<AddPlayerPenaltyE
             Message = message
         }, cancellationToken);
 
-        _context.Penalties.Update(penalty);
+        _context.Penalties.Update(newPenalty);
         await _context.SaveChangesAsync(cancellationToken);
         return ControllerEnums.ReturnState.Ok;
     }

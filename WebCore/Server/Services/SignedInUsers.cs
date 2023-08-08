@@ -6,27 +6,27 @@ namespace BanHub.WebCore.Server.Services;
 
 public class SignedInUsers
 {
-    private readonly ConcurrentDictionary<string, WebUser> _users;
-
-    public SignedInUsers()
-    {
-        _users = new ConcurrentDictionary<string, WebUser>();
-    }
+    private readonly ConcurrentDictionary<string, WebUser> _users = new();
 
     public void AddUser(WebUser user) => _users.TryAdd(user.SignedInGuid, user);
 
-    public bool IsUserInAnyWebRole(string signedInGuid, IEnumerable<WebRole> role)
+    public static bool IsUserInRole<T>(string? signedInGuid, IEnumerable<T> roles, Func<string, T, bool> roleChecker)
+        where T : Enum => signedInGuid is not null && roles.Any(role => roleChecker(signedInGuid, role));
+
+    public bool IsUserInWebRole(string signedInGuid, WebRole role)
     {
         _users.TryGetValue(signedInGuid, out var user);
-        return user is not null && role.Any(x => x.ToString() == user.WebRole);
+        return user is not null && role.ToString() == user.WebRole;
     }
 
-    public bool IsUserInAnyCommunityRole(string signedInGuid, IEnumerable<CommunityRole> role)
+    public bool IsUserInCommunityRole(string signedInGuid, CommunityRole role)
     {
         _users.TryGetValue(signedInGuid, out var user);
-        return user is not null && role.Any(x => x.ToString() == user.CommunityRole);
+        return user is not null && role.ToString() == user.CommunityRole;
     }
 
     public bool IsUserSignedIn(string signedInGuid) => _users.ContainsKey(signedInGuid);
-    public WebUser? GetSignedInUser(string signedInGuid) => !_users.TryGetValue(signedInGuid, out var profile) ? null : profile;
+
+    public WebUser? GetSignedInUser(string signedInGuid) =>
+        !_users.TryGetValue(signedInGuid, out var profile) ? null : profile;
 }

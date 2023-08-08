@@ -1,5 +1,4 @@
-﻿using BanHub.WebCore.Server.Interfaces;
-using BanHub.WebCore.Server.Services;
+﻿using BanHub.WebCore.Server.Services;
 using BanHubData.Commands.Heartbeat;
 using BanHubData.Enums;
 using MediatR;
@@ -26,6 +25,7 @@ public class HeartbeatController : ControllerBase
         {
             ControllerEnums.ReturnState.Accepted => Accepted(),
             ControllerEnums.ReturnState.Ok => Ok(),
+            ControllerEnums.ReturnState.BadRequest => BadRequest(),
             _ => NotFound()
         };
     }
@@ -33,7 +33,8 @@ public class HeartbeatController : ControllerBase
     [HttpPost("Players"), PluginAuthentication]
     public async Task<IActionResult> PlayersHeartbeatAsync([FromQuery] string authToken, [FromBody] PlayersHeartbeatCommand request)
     {
-        await _mediator.Send(request);
+        var result = await _mediator.Send(request);
+        if (!result) return BadRequest();
         return Ok();
     }
 }

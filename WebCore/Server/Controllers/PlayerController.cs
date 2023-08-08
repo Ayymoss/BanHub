@@ -31,7 +31,8 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost("Pagination")]
-    public async Task<ActionResult<IEnumerable<Player>>> GetPlayersPaginationAsync([FromBody] GetPlayersPaginationCommand playersPagination)
+    public async Task<ActionResult<IEnumerable<Player>>> GetPlayersPaginationAsync(
+        [FromBody] GetPlayersPaginationCommand playersPagination)
     {
         var result = await _mediator.Send(playersPagination);
         return Ok(result);
@@ -41,26 +42,19 @@ public class PlayerController : ControllerBase
     public async Task<ActionResult<Player>> GetProfileAsync([FromRoute] string identity)
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
-        var instanceRoleAssigned = false;
-        var webRoleAssigned = false;
+        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             CommunityRole.Moderator,
+                             CommunityRole.Administrator,
+                             CommunityRole.SeniorAdmin,
+                             CommunityRole.Owner
+                         }, _signedInUsers.IsUserInCommunityRole) ||
+                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             WebRole.Admin,
+                             WebRole.SuperAdmin
+                         }, _signedInUsers.IsUserInWebRole);
 
-        if (adminSignInGuid is not null)
-        {
-            instanceRoleAssigned = _signedInUsers.IsUserInAnyCommunityRole(adminSignInGuid, new[]
-            {
-                CommunityRole.Moderator,
-                CommunityRole.Administrator,
-                CommunityRole.SeniorAdmin,
-                CommunityRole.Owner
-            });
-            webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
-            {
-                WebRole.Admin,
-                WebRole.SuperAdmin
-            });
-        }
-
-        var authorised = instanceRoleAssigned || webRoleAssigned;
         var result = await _mediator.Send(new GetProfileCommand {Identity = identity, Privileged = authorised});
         if (result is null) return NotFound();
         return Ok(result);
@@ -74,15 +68,17 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost("GetToken/{identity}"), PluginAuthentication]
-    public async Task<ActionResult<string>> GetAuthenticationTokenAsync([FromQuery] string authToken, [FromRoute] string identity)
+    public async Task<ActionResult<string>> GetAuthenticationTokenAsync([FromQuery] string authToken,
+        [FromRoute] string identity)
     {
-        var result = await _mediator.Send(new GetPlayerTokenCommand{Identity = identity});
+        var result = await _mediator.Send(new GetPlayerTokenCommand {Identity = identity});
         if (result is null) return NotFound();
         return Ok(result);
     }
-    
+
     [HttpGet("Profile/Connections/{identity}")]
-    public async Task<ActionResult<IEnumerable<Shared.Models.PlayerProfileView.Connection>>> GetProfileConnectionsAsync([FromRoute] string identity)
+    public async Task<ActionResult<IEnumerable<Shared.Models.PlayerProfileView.Connection>>> GetProfileConnectionsAsync(
+        [FromRoute] string identity)
     {
         var result = await _mediator.Send(new GetProfileConnectionsCommand {Identity = identity});
         return Ok(result);

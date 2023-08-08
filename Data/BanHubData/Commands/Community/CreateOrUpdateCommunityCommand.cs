@@ -5,6 +5,7 @@ namespace BanHubData.Commands.Community;
 
 public class CreateOrUpdateCommunityCommand : IRequest<ControllerEnums.ReturnState>
 {
+    public Version PluginVersion { get; set; }
     public Guid CommunityGuid { get; set; }
     public Guid CommunityApiKey { get; set; }
     public string CommunityName { get; set; }

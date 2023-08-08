@@ -5,20 +5,32 @@ using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Server.SignalR;
 using BanHub.WebCore.Server.Utilities;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 // TODO: LOGGING!!!!
 
+/*
+ fail: Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware[1]
+      An unhandled exception has occurred while executing the request.
+      System.InvalidOperationException: Sequence contains more than one element.
+         at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+         at BanHub.WebCore.Server.Handlers.Plugin.Player.CreateOrUpdatePlayerHandler.Handle(CreateOrUpdatePlayerCommand request, CancellationToken cancellationToken) in C:\Users\AmosDev\RiderProjects\_IW4MAdmin Plugins\OnlyBans\WebCore\Server\Handlers\Plugin\Player\CreateOrUpdatePlayerHandler.cs:line 122
+         at BanHub.WebCore.Server.Controllers.PlayerController.CreateOrUpdatePlayerAsync(String authToken, CreateOrUpdatePlayerCommand request) in C:\Users\AmosDev\RiderProjects\_IW4MAdmin Plugins\OnlyBans\WebCore\Server\Controllers\PlayerController.cs:line 31
+         at lambda_method285(Closure, Object)
+ */
+
 SetupConfiguration.InitConfigurationAsync();
 var configuration = SetupConfiguration.ReadConfiguration();
 
 var builder = WebApplication.CreateBuilder(args);
-
+    
 #if DEBUG
 builder.WebHost.ConfigureKestrel(options => { options.ListenLocalhost(8123); });
 #else
-builder.WebHost.ConfigureKestrel(options => { options.ListenAnyIP(configuration.WebBind); });
+builder.WebHost.ConfigureKestrel(options => { options.ListenAnyIP(configuration.WebBind, configure => configure.UseHttps()); });
 #endif
 
 // TODO: TOGGLE MANUALLY - Migrations don't seem to honour build state
@@ -43,6 +55,10 @@ builder.Services.AddSingleton(new DiscordWebhookService(configuration));
 builder.Services.AddTransient<ApiKeyMiddleware>();
 
 builder.Services.AddScoped<IStatisticService, StatisticService>();
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(@"./Account/"))
+    .SetApplicationName("BanHubAccount");
 
 // Add services to the container.
 builder.Services.AddLogging();
@@ -83,8 +99,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseMiddleware<ApiKeyMiddleware>();
-
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -112,6 +126,7 @@ app.MapHub<ViewerCount>("/ActiveUsersHub");
 
 app.UseCors("CorsSpecs");
 app.UseAuthentication();
+app.UseMiddleware<ApiKeyMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

@@ -1,5 +1,6 @@
 ﻿using BanHub.Configuration;
 using BanHub.Managers;
+using BanHub.Models;
 using SharedLibraryCore;
 using SharedLibraryCore.Configuration;
 using SharedLibraryCore.Database.Models;
@@ -11,12 +12,14 @@ public class AuthenticateCommand : Command
 {
     private readonly BanHubConfiguration _bhConfig;
     private readonly EndpointManager _endpointManager;
+    private readonly CommunitySlim _communitySlim;
 
     public AuthenticateCommand(CommandConfiguration config, ITranslationLookup layout, BanHubConfiguration bhConfig,
-        EndpointManager endpointManager) : base(config, layout)
+        EndpointManager endpointManager, CommunitySlim communitySlim) : base(config, layout)
     {
         _bhConfig = bhConfig;
         _endpointManager = endpointManager;
+        _communitySlim = communitySlim;
         Name = "bhauthenticate";
         Description = "Get an authentication code";
         Alias = "bhauth";
@@ -26,7 +29,7 @@ public class AuthenticateCommand : Command
 
     public override async Task ExecuteAsync(GameEvent gameEvent)
     {
-        if (!Plugin.CommunityActive)
+        if (!_communitySlim.Active)
         {
             gameEvent.Origin.Tell(_bhConfig.Translations.NotActive.FormatExt(_bhConfig.Translations.BanHubName));
             return;

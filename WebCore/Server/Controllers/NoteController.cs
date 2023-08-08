@@ -29,20 +29,20 @@ public class NoteController : ControllerBase
         var adminIdentity = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         if (adminSignInGuid is null || adminIdentity is null) return Unauthorized("You are not authorised to perform this action");
 
-        var instanceRoleAssigned = _signedInUsers.IsUserInAnyCommunityRole(adminSignInGuid, new[]
-        {
-            CommunityRole.Moderator,
-            CommunityRole.Administrator,
-            CommunityRole.SeniorAdmin,
-            CommunityRole.Owner
-        });
-        var webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
-        {
-            WebRole.Admin,
-            WebRole.SuperAdmin
-        });
+        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             CommunityRole.Moderator,
+                             CommunityRole.Administrator,
+                             CommunityRole.SeniorAdmin,
+                             CommunityRole.Owner
+                         }, _signedInUsers.IsUserInCommunityRole) ||
+                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             WebRole.Admin,
+                             WebRole.SuperAdmin
+                         }, _signedInUsers.IsUserInWebRole);
 
-        if (!instanceRoleAssigned && !webRoleAssigned) return Unauthorized("You are not authorised to perform this action");
+        if (!authorised) return Unauthorized("You are not authorised to perform this action");
         request.AdminIdentity = adminIdentity;
         var result = await _mediator.Send(request);
         if (!result) return BadRequest();
@@ -58,20 +58,20 @@ public class NoteController : ControllerBase
         if (adminSignInGuid is null || adminName is null || adminNameIdentity is null)
             return Unauthorized("You are not authorised to perform this action");
 
-        var instanceRoleAssigned = _signedInUsers.IsUserInAnyCommunityRole(adminSignInGuid, new[]
-        {
-            CommunityRole.Moderator,
-            CommunityRole.Administrator,
-            CommunityRole.SeniorAdmin,
-            CommunityRole.Owner
-        });
-        var webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
-        {
-            WebRole.Admin,
-            WebRole.SuperAdmin
-        });
+        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             CommunityRole.Moderator,
+                             CommunityRole.Administrator,
+                             CommunityRole.SeniorAdmin,
+                             CommunityRole.Owner
+                         }, _signedInUsers.IsUserInCommunityRole) ||
+                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             WebRole.Admin,
+                             WebRole.SuperAdmin
+                         }, _signedInUsers.IsUserInWebRole);
 
-        if (!instanceRoleAssigned && !webRoleAssigned) return Unauthorized("You are not authorised to perform this action");
+        if (!authorised) return Unauthorized("You are not authorised to perform this action");
 
         request.ActionAdminUserName = adminName;
         request.ActionAdminIdentity = adminNameIdentity;
@@ -84,26 +84,20 @@ public class NoteController : ControllerBase
     public async Task<ActionResult<IEnumerable<Note>>> GetNotesAsync([FromRoute] string identity)
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
-        var instanceRoleAssigned = false;
-        var webRoleAssigned = false;
 
-        if (adminSignInGuid is not null)
-        {
-            instanceRoleAssigned = _signedInUsers.IsUserInAnyCommunityRole(adminSignInGuid, new[]
-            {
-                CommunityRole.Moderator,
-                CommunityRole.Administrator,
-                CommunityRole.SeniorAdmin,
-                CommunityRole.Owner
-            });
-            webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
-            {
-                WebRole.Admin,
-                WebRole.SuperAdmin
-            });
-        }
+        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             CommunityRole.Moderator,
+                             CommunityRole.Administrator,
+                             CommunityRole.SeniorAdmin,
+                             CommunityRole.Owner
+                         }, _signedInUsers.IsUserInCommunityRole) ||
+                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             WebRole.Admin,
+                             WebRole.SuperAdmin
+                         }, _signedInUsers.IsUserInWebRole);
 
-        var authorised = instanceRoleAssigned || webRoleAssigned;
         var result = await _mediator.Send(new GetNotesCommand {Identity = identity, Authorised = authorised});
         return Ok(result);
     }

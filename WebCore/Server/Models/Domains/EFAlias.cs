@@ -23,7 +23,7 @@ public class EFAlias
     /// <summary>
     /// The last time the player's name changed
     /// </summary>
-    public required DateTimeOffset Changed { get; set; }
+    public required DateTimeOffset Created { get; set; }
 
     /// <summary>
     /// The associated entity

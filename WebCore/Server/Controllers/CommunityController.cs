@@ -72,26 +72,20 @@ public class CommunityController : ControllerBase
         [FromBody] GetCommunitiesPaginationCommand pagination)
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
-        var instanceRoleAssigned = false;
-        var webRoleAssigned = false;
 
-        if (adminSignInGuid is not null)
-        {
-            instanceRoleAssigned = _signedInUsers.IsUserInAnyCommunityRole(adminSignInGuid, new[]
-            {
-                CommunityRole.Moderator,
-                CommunityRole.Administrator,
-                CommunityRole.SeniorAdmin,
-                CommunityRole.Owner
-            });
-            webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[]
-            {
-                WebRole.Admin,
-                WebRole.SuperAdmin
-            });
-        }
+        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             CommunityRole.Moderator,
+                             CommunityRole.Administrator,
+                             CommunityRole.SeniorAdmin,
+                             CommunityRole.Owner
+                         }, _signedInUsers.IsUserInCommunityRole) ||
+                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             WebRole.Admin,
+                             WebRole.SuperAdmin
+                         }, _signedInUsers.IsUserInWebRole);
 
-        var authorised = instanceRoleAssigned || webRoleAssigned;
         pagination.Privileged = authorised;
         var result = await _mediator.Send(pagination);
         return Ok(result);
@@ -112,11 +106,12 @@ public class CommunityController : ControllerBase
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
         if (adminSignInGuid is null) return Unauthorized("You are not authorised to perform this action");
 
-        var webRoleAssigned = _signedInUsers.IsUserInAnyWebRole(adminSignInGuid, new[] {WebRole.SuperAdmin});
-        if (!webRoleAssigned) return Unauthorized("You are not authorised to perform this action");
+        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[] {WebRole.SuperAdmin}, _signedInUsers.IsUserInWebRole);
+        if (!authorised) return Unauthorized("You are not authorised to perform this action");
 
         if (!Guid.TryParse(identity, out var guid)) return BadRequest();
         var result = await _mediator.Send(new ToggleCommunityActivationCommand {CommunityGuid = guid});
+
         if (!result) return NotFound();
         return Ok();
     }

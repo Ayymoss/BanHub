@@ -20,7 +20,12 @@ public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginat
     public async Task<PenaltyContext> Handle(GetPenaltiesPaginationCommand request,
         CancellationToken cancellationToken)
     {
-        var query = _context.Penalties.AsQueryable();
+        var query = _context.Penalties
+            .Where(x => x.PenaltyType == PenaltyType.Ban
+                        || x.PenaltyType == PenaltyType.TempBan
+                        || x.PenaltyType == PenaltyType.Kick
+                        || x.PenaltyType == PenaltyType.Unban)
+            .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(request.SearchString))
         {
@@ -50,10 +55,6 @@ public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginat
         var pagedData = await query
             .Skip(request.Page * request.PageSize)
             .Take(request.PageSize)
-            .Where(x => x.PenaltyType == PenaltyType.Ban
-                        || x.PenaltyType == PenaltyType.TempBan
-                        || x.PenaltyType == PenaltyType.Kick
-                        || x.PenaltyType == PenaltyType.Unban)
             .Select(penalty => new Shared.Models.PenaltiesView.Penalty
             {
                 PenaltyGuid = penalty.PenaltyGuid,
@@ -73,7 +74,8 @@ public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginat
                 CommunityGuid = penalty.Community.CommunityGuid,
                 TargetIdentity = penalty.Recipient.Identity,
                 TargetUserName = penalty.Recipient.CurrentAlias.Alias.UserName,
-                CommunityName = penalty.Community.CommunityName
+                CommunityName = penalty.Community.CommunityName,
+                EvidenceMissing = string.IsNullOrWhiteSpace(penalty.Evidence) && penalty.PenaltyScope == PenaltyScope.Global && !penalty.Automated
             }).ToListAsync(cancellationToken: cancellationToken);
 
         return new PenaltyContext

@@ -93,7 +93,7 @@ public class StatisticService : IStatisticService
         }
 
         var offlineUsers = _statisticsTracking.OnlinePlayers
-            .Where(x => x.Value > DateTimeOffset.UtcNow.AddMinutes(5))
+            .Where(x => x.Value < DateTimeOffset.UtcNow.AddMinutes(-4))
             .Select(x => x.Key)
             .ToList();
 

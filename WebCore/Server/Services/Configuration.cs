@@ -7,6 +7,7 @@ public class Configuration
     public string PenaltyWebHook { get; set; } = null!;
     public string CommunityWebHook { get; set; } = null!;
     public string AdminActionWebHook { get; set; } = null!;
+    public Version PluginVersion { get; set; } = new();
     public DatabaseConfiguration Database { get; set; } = new();
 }
 

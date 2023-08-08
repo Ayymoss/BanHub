@@ -15,17 +15,21 @@ public class CreateOrUpdateCommunityHandler : IRequestHandler<CreateOrUpdateComm
     private readonly DataContext _context;
     private readonly IStatisticService _statisticService;
     private readonly ApiKeyCache _apiKeyCache;
+    private readonly Configuration _config;
 
-    public CreateOrUpdateCommunityHandler(DataContext context, IStatisticService statisticService, ApiKeyCache apiKeyCache)
+    public CreateOrUpdateCommunityHandler(DataContext context, IStatisticService statisticService, ApiKeyCache apiKeyCache,
+        Configuration config)
     {
         _context = context;
         _statisticService = statisticService;
         _apiKeyCache = apiKeyCache;
+        _config = config;
     }
 
-    public async Task<ControllerEnums.ReturnState> Handle(CreateOrUpdateCommunityCommand request,
-        CancellationToken cancellationToken)
+    public async Task<ControllerEnums.ReturnState> Handle(CreateOrUpdateCommunityCommand request, CancellationToken cancellationToken)
     {
+        if (request.PluginVersion < _config.PluginVersion) return ControllerEnums.ReturnState.BadRequest;
+
         var community = await _context.Communities
             .AsTracking()
             .FirstOrDefaultAsync(server => server.CommunityGuid == request.CommunityGuid,
@@ -65,9 +69,9 @@ public class CreateOrUpdateCommunityHandler : IRequestHandler<CreateOrUpdateComm
         if (community.Id != instanceApiValid.Id) return ControllerEnums.ReturnState.Conflict;
 
         // Warn if IP address has changed... this really shouldn't happen.
+#if !DEBUG
         if (request.HeaderIp != community.CommunityIp)
         {
-#if !DEBUG
             community.Active = false;
             _apiKeyCache.TryRemove(request.CommunityGuid);
 
@@ -77,8 +81,9 @@ public class CreateOrUpdateCommunityHandler : IRequestHandler<CreateOrUpdateComm
                 CommunityIp = request.CommunityIp,
                 IncomingIp = request.HeaderIp ?? "Unknown"
             }, cancellationToken);
-#endif
+            return ControllerEnums.ReturnState.BadRequest;
         }
+#endif
 
         // Update existing record
         community.About ??= request.About;

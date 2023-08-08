@@ -59,7 +59,7 @@ public class CommunityService
         }
         catch (ApiException e)
         {
-            Console.WriteLine($"[{BanHubConfiguration.Name}] Error posting community: {e.Message}");
+            Console.WriteLine($"[{BanHubConfiguration.Name}] Error posting community: {e.Message} - JSON: {JsonSerializer.Serialize(community)}");
         }
 
         return false;

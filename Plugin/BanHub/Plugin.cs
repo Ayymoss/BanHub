@@ -5,7 +5,6 @@ using BanHub.Services;
 using BanHub.Utilities;
 using BanHubData.Commands.Chat;
 using BanHubData.Commands.Community;
-using BanHubData.Commands.Instance;
 using BanHubData.Commands.Instance.Server;
 using BanHubData.Enums;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,26 +23,25 @@ namespace BanHub;
 public class Plugin : IPluginV2
 {
     public string Name => "Ban Hub";
-    public string Version => "2023-07-23-Test";
+    public string Version => "2023.07.27.01";
     public string Author => "Amos";
 
-    public static bool CommunityActive { get; private set; }
     private readonly CommunitySlim _communitySlim;
     private readonly EndpointManager _endpointManager;
-    private readonly HeartBeatManager _heartBeatManager;
+    private readonly HeartbeatManager _heartbeatManager;
     private readonly BanHubConfiguration _config;
     private readonly ApplicationConfiguration _appConfig;
     private readonly WhitelistManager _whitelistManager;
     private readonly ChatService _chatService;
 
-    public Plugin(CommunitySlim communitySlim, HeartBeatManager heartBeatManager, EndpointManager endpointManager,
+    public Plugin(CommunitySlim communitySlim, HeartbeatManager heartbeatManager, EndpointManager endpointManager,
         BanHubConfiguration config, ApplicationConfiguration appConfig, WhitelistManager whitelistManager, ChatService chatService)
     {
         _config = config;
         _appConfig = appConfig;
         _whitelistManager = whitelistManager;
         _chatService = chatService;
-        _heartBeatManager = heartBeatManager;
+        _heartbeatManager = heartbeatManager;
         _endpointManager = endpointManager;
         _communitySlim = communitySlim;
 
@@ -71,7 +69,7 @@ public class Plugin : IPluginV2
         serviceCollection.AddSingleton<NoteService>();
 
         serviceCollection.AddSingleton(new CommunitySlim());
-        serviceCollection.AddSingleton<HeartBeatManager>();
+        serviceCollection.AddSingleton<HeartbeatManager>();
         serviceCollection.AddSingleton<EndpointManager>();
         serviceCollection.AddSingleton<WhitelistManager>();
     }
@@ -105,7 +103,7 @@ public class Plugin : IPluginV2
             penaltyEvent.Penalty.Punisher.ToPartialClient(),
             penaltyEvent.Penalty.Offender.ToPartialClient(),
             penaltyEvent.Penalty.Offense,
-            expiration: penaltyEvent.Penalty.Expires);
+            expiration: penaltyEvent.Penalty.Expires?.Second is 0 ? null : penaltyEvent.Penalty.Expires);
     }
 
     private async Task OnClientStateAuthorized(ClientStateAuthorizeEvent clientEvent, CancellationToken arg2)
@@ -173,6 +171,7 @@ public class Plugin : IPluginV2
         // We need a copy of this since we don't really want the other values being sent with each request.
         var instanceCopy = new CreateOrUpdateCommunityCommand
         {
+            PluginVersion = new Version(Version),
             CommunityGuid = _communitySlim.CommunityGuid,
             CommunityIp = _communitySlim.CommunityIp,
             CommunityWebsite = _config.CommunityWebsite.GetDomainName(),
@@ -192,10 +191,9 @@ public class Plugin : IPluginV2
             return;
         }
 
-        CommunityActive = await _endpointManager.IsCommunityActive(_communitySlim.CommunityGuid);
-        _communitySlim.Active = CommunityActive;
+        _communitySlim.Active = await _endpointManager.IsCommunityActive(_communitySlim.CommunityGuid);
 
-        if (CommunityActive)
+        if (_communitySlim.Active)
         {
             Console.WriteLine($"[{BanHubConfiguration.Name}] Your instance is active. Penalties and users will be reported to the API.");
         }
@@ -222,8 +220,8 @@ public class Plugin : IPluginV2
 
     private async Task OnNotifyAfterDelayCompleted(CancellationToken token)
     {
-        await _heartBeatManager.CommunityHeartbeat();
-        if (_communitySlim.Active) await _heartBeatManager.ClientHeartbeat();
+        await _heartbeatManager.CommunityHeartbeat(Version);
+        if (_communitySlim.Active) await _heartbeatManager.ClientHeartbeat(Version);
         SharedLibraryCore.Utilities.ExecuteAfterDelay(TimeSpan.FromMinutes(4), OnNotifyAfterDelayCompleted, CancellationToken.None);
     }
 }

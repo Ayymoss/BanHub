@@ -85,6 +85,12 @@ else
                                 <MudText Class="mud-text-secondary">Created</MudText>
                             </MudPaper>
                         </MudItem>
+                        <MudItem xs="12" sm="4" xl="3" xxl="2">
+                            <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
+                                <MudText Typo="Typo.subtitle1" Color="Color.Info">@_community.PenaltiesCount (@_community.AutomatedPenaltiesCount)</MudText>
+                                <MudText Class="mud-text-secondary">Penalties (Automated)</MudText>
+                            </MudPaper>
+                        </MudItem>
                     </MudGrid>
                 </MudElement>
 
@@ -170,10 +176,10 @@ else
                                         </HeaderContent>
                                         <RowTemplate>
                                             <MudTd DataLabel="Target">
-                                                <MudLink Href="@($"/Players/{context.TargetIdentity}")" Typo="Typo.body2" Color="Color.Warning">@context.TargetUserName</MudLink>
+                                                <MudLink Href="@($"/Players/{context.TargetIdentity}")" Typo="Typo.body2" Color="Color.Info">@context.TargetUserName</MudLink>
                                             </MudTd>
                                             <MudTd DataLabel="Admin">
-                                                <MudLink Href="@($"/Players/{context.AdminIdentity}")" Typo="Typo.body2" Color="Color.Warning">@context.AdminUserName</MudLink>
+                                                <MudLink Href="@($"/Players/{context.AdminIdentity}")" Typo="Typo.body2" Color="Color.Info">@context.AdminUserName</MudLink>
                                             </MudTd>
                                             <MudTd DataLabel="Reason">@context.Reason</MudTd>
                                             <MudTd DataLabel="Type">@context.PenaltyType.ToString()</MudTd>

@@ -20,7 +20,7 @@
 }
 else
 {
-    @if (_entity is null)
+    @if (_player is null)
     {
         <MudText Typo="Typo.h4">Profile not found!</MudText>
         <MudText Typo="Typo.body1" Color="Color.Info">Provided identity doesn't exist.</MudText>
@@ -30,34 +30,44 @@ else
         <MudElement Class="d-flex align-center">
             <MudElement Class="d-flex align-center">
                 <MudText Typo="Typo.h4" Class="mud-text-secondary d-flex align-center">
-                    @_entity.UserName
+                    @_player.UserName
                     <MudText Typo="Typo.h4" Color="Color.Info" Class="mx-1 mt-1">&bull;</MudText>
                     @_guid
                     <MudText Typo="Typo.h4" Color="Color.Info" Class="mx-1 mt-1">&bull;</MudText>
                     @_gameName
-                    @if (_entity.IpAddress is not null)
+                    @if (_player.IpAddress is not null)
                     {
                         <MudText Typo="Typo.h4" Color="Color.Info" Class="mx-1 mt-1">&bull;</MudText>
-                        @_entity.IpAddress
+                        @_player.IpAddress
                     }
                 </MudText>
             </MudElement>
             <MudSpacer/>
             <MudElement>
-                @if (_entity.IsGloballyBanned)
+                @if (_player.IsGloballyBanned)
                 {
                     <MudButton Class="mr-2" Href="https://discord.gg/UHdqh6ZfjM" Target="_blank" StartIcon="@Icons.Material.Filled.Undo"
                                IconSize="Size.Large" Color="Color.Error" IconColor="Color.Error" Size="Size.Large" Variant="Variant.Outlined">
                         Appeal!
                     </MudButton>
                 }
-                <MudChip Variant="Variant.Text" Size="Size.Large"
-                         Color="@(_entity.Connected ? Color.Info : Color.Warning)">
-                    @(_entity.Connected ? "Online" : "Offline")
+                @if (_player.WebRole != WebRole.User)
+                {
+                    <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Info">
+                        Web @_player.WebRole
+                    </MudChip>
+                }
+                @if (_player.CommunityRole != CommunityRole.User)
+                {
+                    <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Info">
+                        Community @_player.CommunityRole
+                    </MudChip>
+                }
+                <MudChip Variant="Variant.Text" Size="Size.Large" Color="@(_player.Connected ? Color.Info : Color.Warning)">
+                    @(_player.Connected ? "Online" : "Offline")
                 </MudChip>
-                <MudChip Variant="Variant.Text" Size="Size.Large"
-                         Color="@(_entity.IsGloballyBanned ? Color.Error : Color.Info)">
-                    @(_entity.IsGloballyBanned ? "Globally Banned" : "Compliant")
+                <MudChip Variant="Variant.Text" Size="Size.Large" Color="@(_player.IsGloballyBanned ? Color.Error : Color.Info)">
+                    @(_player.IsGloballyBanned ? "Globally Banned" : "Compliant")
                 </MudChip>
             </MudElement>
         </MudElement>
@@ -66,13 +76,13 @@ else
             <MudGrid Spacing="2" Justify="Justify.FlexStart">
                 <MudItem xs="12" sm="4" xl="3" xxl="2">
                     <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@_entity.Created.Humanize()</MudText>
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@_player.Created.Humanize()</MudText>
                         <MudText Class="mud-text-secondary">First Seen</MudText>
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12" sm="4" xl="3" xxl="2">
                     <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.Connected ? "Online" : _entity.HeartBeat.Humanize())</MudText>
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_player.Connected ? "Now" : _player.HeartBeat.Humanize())</MudText>
                         <MudText Class="mud-text-secondary">Last Seen</MudText>
                     </MudPaper>
                 </MudItem>
@@ -87,25 +97,25 @@ else
                 </MudItem>
                 <MudItem xs="12" sm="4" xl="3" xxl="2">
                     <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.TotalConnections is 0 ? "None" : _entity.TotalConnections)</MudText>
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_player.TotalConnections is 0 ? "None" : _player.TotalConnections)</MudText>
                         <MudText Class="mud-text-secondary">Total Connections</MudText>
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12" sm="4" xl="3" xxl="2">
                     <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.PlayTime == TimeSpan.Zero ? "None" : _entity.PlayTime.Humanize())</MudText>
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_player.PlayTime == TimeSpan.Zero ? "None" : _player.PlayTime.Humanize())</MudText>
                         <MudText Class="mud-text-secondary">Total Playtime</MudText>
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12" sm="4" xl="3" xxl="2">
                     <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_entity.TotalConnections is 0 || _entity.PlayTime == TimeSpan.Zero ? "None" : (_entity.PlayTime / _entity.TotalConnections).Humanize())</MudText>
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_player.TotalConnections is 0 || _player.PlayTime == TimeSpan.Zero ? "None" : (_player.PlayTime / _player.TotalConnections).Humanize())</MudText>
                         <MudText Class="mud-text-secondary">Average Playtime</MudText>
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12" sm="4" xl="3" xxl="2">
                     <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@_totalChatMessages</MudText>
+                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_totalChatMessages is 0 ? "None" : _totalChatMessages)</MudText>
                         <MudText Class="mud-text-secondary">Total Chat Messages</MudText>
                     </MudPaper>
                 </MudItem>
@@ -398,7 +408,7 @@ else
     [Parameter]
     public string? Identity { get; set; }
 
-    private Player _entity = new();
+    private Player? _player;
     private List<Connection> _connections = new();
     private List<Note> _notes = new();
     private List<Penalty> _penalties = new();
@@ -452,16 +462,16 @@ else
     private async Task LoadProfile()
     {
         if (string.IsNullOrEmpty(Identity)) return;
-        _entity = await PlayerProfileService.GetProfileAsync(Identity!);
+        _player = await PlayerProfileService.GetProfileAsync(Identity!);
         _connections = (await PlayerProfileService.GetConnectionsAsync(Identity!)).ToList();
         _notes = (await NoteService.GetNotesAsync(Identity!)).ToList();
         _penalties = (await PenaltyService.GetProfilePenaltiesAsync(Identity!)).ToList();
         _totalChatMessages = await ChatService.GetChatCountAsync(Identity!);
 
-        var nameSplit = _entity.Identity.ToUpper().Split(':');
+        var nameSplit = _player.Identity.ToUpper().Split(':');
         _guid = nameSplit[0];
         _gameName = nameSplit[1];
-        _title = _entity.UserName;
+        _title = _player.UserName;
 
         if (_connections.Any())
         {
@@ -503,7 +513,7 @@ else
         };
 
         var options = new DialogOptions {CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Medium, CloseOnEscapeKey = true};
-        var title = $"{tableRowClickEventArgs.Item.PenaltyType} - {_entity?.UserName} - {tableRowClickEventArgs.Item.Submitted.Humanize().Titleize()}";
+        var title = $"{tableRowClickEventArgs.Item.PenaltyType} - {_player?.UserName} - {tableRowClickEventArgs.Item.Submitted.Humanize().Titleize()}";
 
         var dialog = await DialogService.ShowAsync<ProfilePenaltyDialog>(title, parameters, options);
         var result = await dialog.Result;
@@ -546,7 +556,7 @@ else
     {
         var parameters = new DialogParameters
         {
-            {"Identity", _entity?.Identity}
+            {"Identity", _player?.Identity}
         };
 
         var options = new DialogOptions {CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Medium, CloseOnEscapeKey = true};
