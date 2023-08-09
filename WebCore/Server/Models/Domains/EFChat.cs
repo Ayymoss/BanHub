@@ -25,6 +25,13 @@ public class EFChat
     [ForeignKey(nameof(PlayerId))] public EFPlayer Player { get; set; }
 
     /// <summary>
+    /// The server reference this chat message
+    /// </summary>
+    public int ServerId { get; set; }
+
+    [ForeignKey(nameof(ServerId))] public EFServer Server { get; set; }
+
+    /// <summary>
     /// The community reference this chat message
     /// </summary>
     public int CommunityId { get; set; }

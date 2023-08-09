@@ -1,6 +1,7 @@
 ﻿using BanHub.WebCore.Client.Interfaces.RestEase;
 using BanHub.WebCore.Shared.Commands.Chat;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
+using BanHub.WebCore.Shared.Models.Shared;
 using BanHub.WebCore.Shared.Utilities;
 using RestEase;
 
@@ -13,27 +14,22 @@ public class ChatService
 #else
     private const string ApiHost = "https://banhub.gg/api";
 #endif
-    private readonly IChatService _api;
+    private readonly IChatService _api = RestClient.For<IChatService>(ApiHost);
 
-    public ChatService()
-    {
-        _api = RestClient.For<IChatService>(ApiHost);
-    }
-
-    public async Task<ChatContext> GetChatPaginationAsync(GetChatPaginationCommand paginationQuery)
+    public async Task<PaginationContext<Chat>> GetChatPaginationAsync(GetChatPaginationCommand paginationQuery)
     {
         try
         {
             var response = await _api.GetChatPaginationAsync(paginationQuery);
-            var result = await response.DeserializeHttpResponseContentAsync<ChatContext>();
-            return result ?? new ChatContext();
+            var result = await response.DeserializeHttpResponseContentAsync<PaginationContext<Chat>>();
+            return result ?? new PaginationContext<Chat>();
         }
         catch (ApiException e)
         {
             Console.WriteLine($"API->Failed to get chat: {e.Message}");
         }
 
-        return new ChatContext();
+        return new PaginationContext<Chat>();
     }
 
     public async Task<int> GetChatCountAsync(string identity)
@@ -50,5 +46,21 @@ public class ChatService
         }
 
         return 0;
+    }
+
+    public async Task<ChatContextRoot> GetChatContextAsync(GetMessageContextCommand chatMessageContext)
+    {
+        try
+        {
+            var response = await _api.GetChatContextAsync(chatMessageContext);
+            var result = await response.DeserializeHttpResponseContentAsync<ChatContextRoot>();
+            return result ?? new ChatContextRoot();
+        }
+        catch (ApiException e)
+        {
+            Console.WriteLine($"API->Failed to get chat: {e.Message}");
+        }
+
+        return new ChatContextRoot();
     }
 }

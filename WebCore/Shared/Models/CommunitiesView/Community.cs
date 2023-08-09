@@ -1,10 +1,5 @@
 ﻿namespace BanHub.WebCore.Shared.Models.CommunitiesView;
 
-public class CommunityContext
-{
-    public List<Community> Communities { get; set; }
-    public int Count { get; set; }
-}
 public class Community
 {
     public bool Active { get; set; }

@@ -40,6 +40,7 @@
     <_ContentIncludedByDefault Remove="wwwroot\css\open-iconic\ICON-LICENSE" />
     <_ContentIncludedByDefault Remove="wwwroot\css\open-iconic\README.md" />
     <_ContentIncludedByDefault Remove="Pages\Auth\Login.razor" />
+    <_ContentIncludedByDefault Remove="wwwroot\scripts\customScripts.js" />
   </ItemGroup>
 
   <ItemGroup>

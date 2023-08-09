@@ -13,12 +13,7 @@ public class PlayerProfileService
 #else
     private const string ApiHost = "https://banhub.gg/api";
 #endif
-    private readonly IPlayerProfileService _api;
-
-    public PlayerProfileService()
-    {
-        _api = RestClient.For<IPlayerProfileService>(ApiHost);
-    }
+    private readonly IPlayerProfileService _api = RestClient.For<IPlayerProfileService>(ApiHost);
 
     public async Task<Player> GetProfileAsync(string identity)
     {

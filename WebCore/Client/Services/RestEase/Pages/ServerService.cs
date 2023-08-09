@@ -10,12 +10,5 @@ public class ServerService
 #else
     private const string ApiHost = "https://banhub.gg/api";
 #endif
-    private readonly IServerService _api;
-
-    public ServerService()
-    {
-        _api = RestClient.For<IServerService>(ApiHost);
-    }
-
-    
+    private readonly IServerService _api = RestClient.For<IServerService>(ApiHost);
 }

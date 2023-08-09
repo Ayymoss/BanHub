@@ -2,6 +2,7 @@
 using BanHub.WebCore.Shared.Commands.Community;
 using BanHub.WebCore.Shared.Models.CommunitiesView;
 using BanHub.WebCore.Shared.Models.CommunityProfileView;
+using BanHub.WebCore.Shared.Models.Shared;
 using BanHub.WebCore.Shared.Utilities;
 using RestEase;
 using Community = BanHub.WebCore.Shared.Models.CommunitiesView.Community;
@@ -15,27 +16,22 @@ public class CommunityService
 #else
     private const string ApiHost = "https://banhub.gg/api";
 #endif
-    private readonly ICommunityService _api;
+    private readonly ICommunityService _api = RestClient.For<ICommunityService>(ApiHost);
 
-    public CommunityService()
-    {
-        _api = RestClient.For<ICommunityService>(ApiHost);
-    }
-
-    public async Task<CommunityContext> GetCommunitiesPaginationAsync(GetCommunitiesPaginationCommand communitiesPagination)
+    public async Task<PaginationContext<Community>> GetCommunitiesPaginationAsync(GetCommunitiesPaginationCommand communitiesPagination)
     {
         try
         {
             var response = await _api.GetCommunitiesPaginationAsync(communitiesPagination);
-            var result = await response.DeserializeHttpResponseContentAsync<CommunityContext>();
-            return result ?? new CommunityContext();
+            var result = await response.DeserializeHttpResponseContentAsync<PaginationContext<Community>>();
+            return result ?? new PaginationContext<Community>();
         }
         catch (ApiException e)
         {
             Console.WriteLine($"API->Failed to get instances: {e.Message}");
         }
 
-        return new CommunityContext();
+        return new PaginationContext<Community>();
     }
 
     public async Task<WebCore.Shared.Models.CommunityProfileView.Community> GetCommunityAsync(string identity)

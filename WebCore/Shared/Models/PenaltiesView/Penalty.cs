@@ -2,12 +2,6 @@
 
 namespace BanHub.WebCore.Shared.Models.PenaltiesView;
 
-public class PenaltyContext
-{
-    public List<Penalty> Penalties { get; set; } = new();
-    public int Count { get; set; }
-}
-
 public class Penalty
 {
     public string TargetIdentity { get; set; }

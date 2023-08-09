@@ -1,13 +1,14 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Shared.Commands.Players;
 using BanHub.WebCore.Shared.Models.PlayersView;
+using BanHub.WebCore.Shared.Models.Shared;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 
 namespace BanHub.WebCore.Server.Handlers.Web.Player;
 
-public class GetPaginationHandler : IRequestHandler<GetPlayersPaginationCommand, PlayerContext>
+public class GetPaginationHandler : IRequestHandler<GetPlayersPaginationCommand, PaginationContext<Shared.Models.PlayersView.Player>>
 {
     private readonly DataContext _context;
 
@@ -16,7 +17,7 @@ public class GetPaginationHandler : IRequestHandler<GetPlayersPaginationCommand,
         _context = context;
     }
 
-    public async Task<PlayerContext> Handle(GetPlayersPaginationCommand request, CancellationToken cancellationToken)
+    public async Task<PaginationContext<Shared.Models.PlayersView.Player>> Handle(GetPlayersPaginationCommand request, CancellationToken cancellationToken)
     {
         var query = _context.Players.AsQueryable();
 
@@ -52,9 +53,9 @@ public class GetPaginationHandler : IRequestHandler<GetPlayersPaginationCommand,
                 Created = profile.Created
             }).ToListAsync(cancellationToken: cancellationToken);
 
-        return new PlayerContext
+        return new PaginationContext<Shared.Models.PlayersView.Player>
         {
-            Players = pagedData,
+            Data = pagedData,
             Count = count
         };
     }

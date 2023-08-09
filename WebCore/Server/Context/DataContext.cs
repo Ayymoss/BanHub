@@ -127,10 +127,24 @@ public class DataContext : DbContext
             Message = "Seed Chat",
             Submitted = DateTimeOffset.UtcNow,
             PlayerId = -1,
+            CommunityId = -1,
+            ServerId = -1
+        };
+
+        var server = new EFServer
+        {
+            Id = -1,
+            ServerId = "123.123.123.123:123",
+            ServerName = "Shef",
+            ServerIp = "123.123.123.123",
+            ServerPort = 123,
+            ServerGame = Game.UKN,
+            Updated = DateTimeOffset.UtcNow,
             CommunityId = -1
         };
 
         modelBuilder.Entity<EFCommunity>().HasData(community);
+        modelBuilder.Entity<EFServer>().HasData(server);
         modelBuilder.Entity<EFPenalty>().HasData(infraction);
         modelBuilder.Entity<EFChat>().HasData(chat);
 

@@ -1,6 +1,7 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Shared.Commands.Penalty;
 using BanHub.WebCore.Shared.Models.PenaltiesView;
+using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +9,7 @@ using MudBlazor;
 
 namespace BanHub.WebCore.Server.Handlers.Web.Penalty;
 
-public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginationCommand, PenaltyContext>
+public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginationCommand, PaginationContext<Shared.Models.PenaltiesView.Penalty>>
 {
     private readonly DataContext _context;
 
@@ -17,7 +18,7 @@ public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginat
         _context = context;
     }
 
-    public async Task<PenaltyContext> Handle(GetPenaltiesPaginationCommand request,
+    public async Task<PaginationContext<Shared.Models.PenaltiesView.Penalty>> Handle(GetPenaltiesPaginationCommand request,
         CancellationToken cancellationToken)
     {
         var query = _context.Penalties
@@ -78,9 +79,9 @@ public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginat
                 EvidenceMissing = string.IsNullOrWhiteSpace(penalty.Evidence) && penalty.PenaltyScope == PenaltyScope.Global && !penalty.Automated
             }).ToListAsync(cancellationToken: cancellationToken);
 
-        return new PenaltyContext
+        return new PaginationContext<Shared.Models.PenaltiesView.Penalty>
         {
-            Penalties = pagedData,
+            Data = pagedData,
             Count = count
         };
     }

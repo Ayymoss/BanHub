@@ -336,6 +336,9 @@ else
                         <MudTh Class="py-2">
                             <MudTableSortLabel SortLabel="Message" T="Chat">Message</MudTableSortLabel>
                         </MudTh>
+                        <MudTh Class="py-2">
+                            <MudTableSortLabel SortLabel="Server" T="Chat">Server</MudTableSortLabel>
+                        </MudTh>
                         <MudTh>
                             <MudTableSortLabel SortLabel="CommunityName" T="Chat">Community</MudTableSortLabel>
                         </MudTh>
@@ -346,40 +349,59 @@ else
                     <RowTemplate>
                         <MudTd DataLabel="Message">
                             <MudStack Row="true" AlignItems="AlignItems.Center">
-                                @if (context.Message.Length > 64)
-                                {
-                                    @context.Message.Truncate(64)
-                                    if (!_chatHoverStates.ContainsKey(context.Message))
-                                    {
-                                        _chatHoverStates[context.Message] = false;
-                                        _chatClickStates[context.Message] = false;
-                                    }
-                                    <MudIconButton @onclick="@(() => _chatClickStates[context.Message] = !_chatClickStates[context.Message])"
-                                                   @onmouseenter="@(() => _chatHoverStates[context.Message] = true)"
-                                                   @onmouseleave="@(() => { if (!_chatClickStates[context.Message]) { _chatHoverStates[context.Message] = false; } })"
-                                                   Icon="@GetChatIconState(context.Message)"
-                                                   Size="Size.Small"
-                                                   Color="Color.Info"/>
-                                    <MudPopover OverflowBehavior="OverflowBehavior.FlipOnOpen"
-                                                Open="@(_chatHoverStates[context.Message] || _chatClickStates[context.Message])"
-                                                AnchorOrigin="Origin.TopCenter"
-                                                RelativeWidth="true"
-                                                TransformOrigin="Origin.BottomCenter"
-                                                Class="pa-4">
-                                        <MudElement Class="d-flex flex-column">
-                                            <MudText Typo="Typo.body2">
-                                                @context.Message
-                                            </MudText>
-                                        </MudElement>
-                                    </MudPopover>
+                                @{
+                                    _chatClickStates.TryAdd(context.Submitted, false);
+                                    _chatContext.TryAdd(context.Submitted, new ChatContextRoot());
                                 }
-                                else
-                                {
-                                    @context.Message
-                                }
+                                <MudIconButton OnClick="() => OnChatClick(context)"
+                                               Icon="@GetChatIconState(context.Submitted)"
+                                               Size="Size.Small"
+                                               Color="Color.Info"/>
+
+                                @context.Message.Truncate(64)
+                                <MudPopover OverflowBehavior="OverflowBehavior.FlipOnOpen"
+                                            Open="_chatClickStates[context.Submitted]"
+                                            AnchorOrigin="Origin.TopCenter"
+                                            RelativeWidth="true"
+                                            TransformOrigin="Origin.BottomCenter"
+                                            Class="pa-4">
+                                    <MudElement Class="d-flex flex-column" Style="overflow: auto; max-height: 450px">
+                                        @if (!_chatContext[context.Submitted].Loaded)
+                                        {
+                                            <MudElement Class="justify-center">
+                                                <MudProgressCircular Indeterminate="true" Size="Size.Large" Color="Color.Tertiary"/>
+                                            </MudElement>
+                                        }
+                                        else
+                                        {
+                                            @foreach (var chat in _chatContext[context.Submitted].Messages)
+                                            {
+                                                @if (chat.Submitted == context.Submitted)
+                                                {
+                                                    <MudDivider FlexItem="true" Light="true" DividerType="DividerType.FullWidth" Class="mt-2"/>
+                                                }
+                                                <MudStack Row="true">
+                                                    <MudText Typo="Typo.body2" Class="mud-text-disabled">
+                                                        @chat.Submitted.ToString("hh:mm:ss")
+                                                    </MudText>
+                                                    <MudText Typo="Typo.body2" Class="mud-text-secondary">
+                                                        @chat.PlayerUserName
+                                                    </MudText>
+                                                    <MudText Typo="Typo.body2" Class="ml-1">
+                                                        @chat.Message
+                                                    </MudText>
+                                                </MudStack>
+                                                @if (chat.Submitted == context.Submitted)
+                                                {
+                                                    <MudDivider FlexItem="true" Light="true" DividerType="DividerType.FullWidth" Class="mb-2"/>
+                                                }
+                                            }
+                                        }
+                                    </MudElement>
+                                </MudPopover>
                             </MudStack>
                         </MudTd>
-
+                        <MudTd DataLabel="Server">@context.ServerName</MudTd>
                         <MudTd DataLabel="CommunityName">
                             <MudLink Href="@($"/Communities/{context.CommunityGuid}")" Typo="Typo.body2" Color="Color.Info">@context.CommunityName</MudLink>
                         </MudTd>
@@ -413,8 +435,8 @@ else
     private List<Note> _notes = new();
     private List<Penalty> _penalties = new();
     private int _totalChatMessages;
-    private readonly Dictionary<string, bool> _chatHoverStates = new();
-    private readonly Dictionary<string, bool> _chatClickStates = new();
+    private readonly Dictionary<DateTimeOffset, ChatContextRoot> _chatContext = new();
+    private readonly Dictionary<DateTimeOffset, bool> _chatClickStates = new();
     private string _lastConnectedServer = "--";
     private string _lastConnectedCommunity = "--";
 
@@ -496,7 +518,7 @@ else
         };
 
         var chatContext = await ChatService.GetChatPaginationAsync(paginationQuery);
-        return new TableData<Chat> {TotalItems = chatContext.Count, Items = chatContext.Chats};
+        return new TableData<Chat> {TotalItems = chatContext.Count, Items = chatContext.Data};
     }
 
     private void OnSearch(string text)
@@ -521,7 +543,7 @@ else
         switch (result?.Data)
         {
             case Penalty penalty:
-                _penalties?.Remove(penalty);
+                _penalties.Remove(penalty);
                 StateHasChanged();
                 break;
             case AddPlayerPenaltyEvidenceCommand:
@@ -547,7 +569,7 @@ else
 
         if (result?.Data is Note note)
         {
-            _notes?.Remove(note);
+            _notes.Remove(note);
             StateHasChanged();
         }
     }
@@ -572,13 +594,29 @@ else
         return ValueTask.CompletedTask;
     }
 
-    private string GetChatIconState(string message)
+    private string GetChatIconState(DateTimeOffset submitted)
     {
-        if (_chatClickStates[message]) return Icons.Material.Filled.ExpandMore;
-
-        return _chatHoverStates[message]
-            ? Icons.Material.Filled.ExpandLess
-            : Icons.Material.Filled.ChevronRight;
+        return _chatClickStates[submitted] ? Icons.Material.Filled.ExpandMore : Icons.Material.Filled.ChevronRight;
     }
 
+    private async Task OnChatClick(Chat message)
+    {
+        _chatClickStates[message.Submitted] = !_chatClickStates[message.Submitted];
+
+        foreach (var state in _chatClickStates.Where(x => x.Value))
+        {
+            if (state.Key == message.Submitted) continue;
+            _chatClickStates[state.Key] = false;
+        }
+
+        if (_chatContext.ContainsKey(message.Submitted) && _chatContext[message.Submitted].Loaded) return;
+
+        var chatContext = await ChatService.GetChatContextAsync(new GetMessageContextCommand
+        {
+            Submitted = message.Submitted,
+            ServerId = message.ServerId
+        });
+
+        _chatContext[message.Submitted] = chatContext;
+    }
 }

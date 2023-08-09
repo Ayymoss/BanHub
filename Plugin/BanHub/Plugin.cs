@@ -127,7 +127,7 @@ public class Plugin : IPluginV2
         if (string.IsNullOrEmpty(message)) return;
 
         var playerIdentity = _endpointManager.EntityToPlayerIdentity(messageEvent.Client);
-        var messageContext = new MessageContext(DateTimeOffset.UtcNow, message);
+        var messageContext = new MessageContext(DateTimeOffset.UtcNow, messageEvent.Server.Id, message);
 
         if (_communitySlim.PlayerMessages.ContainsKey(playerIdentity))
         {

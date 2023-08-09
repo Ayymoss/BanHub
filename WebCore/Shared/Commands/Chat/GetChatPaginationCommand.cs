@@ -4,7 +4,7 @@ using MediatR;
 
 namespace BanHub.WebCore.Shared.Commands.Chat;
 
-public class GetChatPaginationCommand : Pagination, IRequest<ChatContext>
+public class GetChatPaginationCommand : Pagination, IRequest<PaginationContext<Shared.Models.PlayerProfileView.Chat>>
 {
     public string PlayerIdentity { get; set; }
 }

@@ -3,6 +3,7 @@ using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Shared.Commands.Community;
 using BanHub.WebCore.Shared.Models.CommunitiesView;
+using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Commands.Community;
 using BanHubData.Commands.Instance;
 using BanHubData.Enums;
@@ -68,7 +69,7 @@ public class CommunityController : ControllerBase
     }
 
     [HttpPost("Pagination")]
-    public async Task<ActionResult<CommunityContext>> GetCommunityAsync(
+    public async Task<ActionResult<PaginationContext<Community>>> GetCommunityAsync(
         [FromBody] GetCommunitiesPaginationCommand pagination)
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;

@@ -79,7 +79,7 @@
         };
 
         var context = await PlayersService.GetPlayersAsync(paginationQuery);
-        return new TableData<Player> {TotalItems = context.Count, Items = context.Players};
+        return new TableData<Player> {TotalItems = context.Count, Items = context.Data};
     }
 
     private void OnSearch(string text)

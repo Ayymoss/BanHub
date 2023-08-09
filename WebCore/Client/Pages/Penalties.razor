@@ -111,7 +111,7 @@
         };
 
         var context = await PenaltyService.GetPenaltiesPaginationAsync(paginationQuery);
-        return new TableData<Penalty> {TotalItems = context.Count, Items = context.Penalties};
+        return new TableData<Penalty> {TotalItems = context.Count, Items = context.Data};
     }
 
     private void OnSearch(string text)

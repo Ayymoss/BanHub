@@ -12,12 +12,7 @@ public class SearchService
 #else
     private const string ApiHost = "https://banhub.gg/api";
 #endif
-    private readonly ISearchService _api;
-
-    public SearchService()
-    {
-        _api = RestClient.For<ISearchService>(ApiHost);
-    }
+    private readonly ISearchService _api = RestClient.For<ISearchService>(ApiHost);
 
     public async Task<IEnumerable<Search>> GetPlayersAsync(string query)
     {

@@ -1,6 +1,7 @@
 ﻿using BanHub.WebCore.Client.Interfaces.RestEase;
 using BanHub.WebCore.Shared.Commands.Players;
 using BanHub.WebCore.Shared.Models.PlayersView;
+using BanHub.WebCore.Shared.Models.Shared;
 using BanHub.WebCore.Shared.Utilities;
 using RestEase;
 
@@ -13,26 +14,21 @@ public class PlayersService
 #else
     private const string ApiHost = "https://banhub.gg/api";
 #endif
-    private readonly IPlayersService _api;
+    private readonly IPlayersService _api = RestClient.For<IPlayersService>(ApiHost);
 
-    public PlayersService()
-    {
-        _api = RestClient.For<IPlayersService>(ApiHost);
-    }
-
-    public async Task<PlayerContext> GetPlayersAsync(GetPlayersPaginationCommand playersPagination)
+    public async Task<PaginationContext<Player>> GetPlayersAsync(GetPlayersPaginationCommand playersPagination)
     {
         try
         {
             var response = await _api.GetPlayersAsync(playersPagination);
-            var result = await response.DeserializeHttpResponseContentAsync<PlayerContext>();
-            return result ?? new PlayerContext();
+            var result = await response.DeserializeHttpResponseContentAsync<PaginationContext<Player>>();
+            return result ?? new PaginationContext<Player>();
         }
         catch (ApiException e)
         {
             Console.WriteLine($"API->Failed to get players pagination: {e.Message}");
         }
 
-        return new PlayerContext();
+        return new PaginationContext<Player>();
     }
 }

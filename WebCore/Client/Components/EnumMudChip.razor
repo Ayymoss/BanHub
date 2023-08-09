@@ -1,7 +1,7 @@
 ﻿
 @if (_enumDetails.TryGetValue(Value, out var details))
 {
-    <MudChip Variant="Variant.Text" Size="Size.Small" Color="@details.Color">@details.Text</MudChip>
+    <MudChip Variant="Variant.Text" Size="Size.Small" Color="@details.Color" Style="margin: 0">@details.Text</MudChip>
 }
 
 @code {

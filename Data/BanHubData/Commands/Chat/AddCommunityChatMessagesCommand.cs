@@ -8,4 +8,4 @@ public class AddCommunityChatMessagesCommand : IRequest
     public Dictionary<string, List<MessageContext>> PlayerMessages { get; set; }
 }
 
-public record MessageContext(DateTimeOffset Submitted, string Message);
+public record MessageContext(DateTimeOffset Submitted, string ServerId, string Message);

@@ -13,12 +13,7 @@ public class NoteService
 #else
     private const string ApiHost = "https://banhub.gg/api";
 #endif
-    private readonly INoteService _api;
-
-    public NoteService()
-    {
-        _api = RestClient.For<INoteService>(ApiHost);
-    }
+    private readonly INoteService _api = RestClient.For<INoteService>(ApiHost);
 
     public async Task<bool> AddNoteAsync(AddNoteCommand noteToAdd)
     {

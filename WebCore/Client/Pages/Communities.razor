@@ -85,7 +85,7 @@
         };
 
         var context = await CommunityService.GetCommunitiesPaginationAsync(paginationQuery);
-        return new TableData<Community> {TotalItems = context.Count, Items = context.Communities};
+        return new TableData<Community> {TotalItems = context.Count, Items = context.Data};
     }
 
     private void OnSearch(string text)

@@ -1,13 +1,13 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Shared.Commands.Community;
-using BanHub.WebCore.Shared.Models.CommunitiesView;
+using BanHub.WebCore.Shared.Models.Shared;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 
 namespace BanHub.WebCore.Server.Handlers.Web.Community;
 
-public class GetCommunitiesPaginationHandler : IRequestHandler<GetCommunitiesPaginationCommand, CommunityContext>
+public class GetCommunitiesPaginationHandler : IRequestHandler<GetCommunitiesPaginationCommand, PaginationContext<Shared.Models.CommunitiesView.Community>>
 {
     private readonly DataContext _context;
 
@@ -16,7 +16,7 @@ public class GetCommunitiesPaginationHandler : IRequestHandler<GetCommunitiesPag
         _context = context;
     }
 
-    public async Task<CommunityContext> Handle(GetCommunitiesPaginationCommand request,
+    public async Task<PaginationContext<Shared.Models.CommunitiesView.Community>> Handle(GetCommunitiesPaginationCommand request,
         CancellationToken cancellationToken)
     {
         var query = request.Privileged 
@@ -58,9 +58,9 @@ public class GetCommunitiesPaginationHandler : IRequestHandler<GetCommunitiesPag
                 ServerCount = instance.ServerConnections.Count
             }).ToListAsync(cancellationToken: cancellationToken);
 
-        return new CommunityContext
+        return new PaginationContext<Shared.Models.CommunitiesView.Community>
         {
-            Communities = pagedData,
+            Data = pagedData,
             Count = count
         };
     }
