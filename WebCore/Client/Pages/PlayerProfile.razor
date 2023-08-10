@@ -357,7 +357,6 @@ else
                                                Icon="@GetChatIconState(context.Submitted)"
                                                Size="Size.Small"
                                                Color="Color.Info"/>
-
                                 @context.Message.Truncate(64)
                                 <MudPopover OverflowBehavior="OverflowBehavior.FlipOnOpen"
                                             Open="_chatClickStates[context.Submitted]"
@@ -380,14 +379,14 @@ else
                                                 {
                                                     <MudDivider FlexItem="true" Light="true" DividerType="DividerType.FullWidth" Class="mt-2"/>
                                                 }
-                                                <MudStack Row="true">
+                                                <MudStack Row="true" Spacing="1">
                                                     <MudText Typo="Typo.body2" Class="mud-text-disabled">
                                                         @chat.Submitted.ToString("hh:mm:ss")
                                                     </MudText>
                                                     <MudText Typo="Typo.body2" Class="mud-text-secondary">
                                                         @chat.PlayerUserName
                                                     </MudText>
-                                                    <MudText Typo="Typo.body2" Class="ml-1">
+                                                    <MudText Typo="Typo.body2">
                                                         @chat.Message
                                                     </MudText>
                                                 </MudStack>

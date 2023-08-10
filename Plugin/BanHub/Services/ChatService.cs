@@ -36,7 +36,7 @@ public class ChatService
         _api = RestClient.For<IChatService>(ApiHost);
     }
 
-    public async Task<bool> AddInstanceChatMessagesAsync(AddCommunityChatMessagesCommand identity)
+    public async Task<bool> AddCommunityChatMessagesAsync(AddCommunityChatMessagesCommand identity)
     {
         try
         {

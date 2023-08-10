@@ -23,28 +23,56 @@ public class IsPlayerBannedHandler : IRequestHandler<IsPlayerBannedCommand, bool
         var player = await _context.Players
             .AsNoTracking()
             .Include(x => x.Penalties)
-            .FirstOrDefaultAsync(x => x.Identity == request.Identity, cancellationToken: cancellationToken);
+            .Where(x => x.Identity == request.Identity)
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        var hasIdentifierBan = await _context.PenaltyIdentifiers
+        var hasIpAddressBan = await _context.PenaltyIdentifiers
             .Where(x => x.Expiration > DateTimeOffset.UtcNow)
-            // The identity check below is redundant, however, may be relevant in the future
-            .AnyAsync(x => x.IpAddress == request.IpAddress || x.Identity == request.Identity, cancellationToken: cancellationToken);
+            .Where(x => x.IpAddress == request.IpAddress)
+            .AnyAsync(cancellationToken: cancellationToken);
+
+        if (hasIpAddressBan)
+        {
+            // They have an IP ban. Let's check if they correctly have a combo ban.
+            var hasComboBan = await _context.PenaltyIdentifiers
+                .Where(x => x.Expiration > DateTimeOffset.UtcNow)
+                .Where(x => x.Identity == request.Identity)
+                .Where(x => x.IpAddress == request.IpAddress)
+                .AnyAsync(cancellationToken: cancellationToken);
+
+            if (!hasComboBan)
+            {
+                // Doesn't have a combo ban, so let's create a new one. They're probably trying to evade a ban...
+                var newIdentifierBan = new EFPenaltyIdentifier
+                {
+                    Identity = request.Identity,
+                    IpAddress = request.IpAddress,
+                    Expiration = DateTimeOffset.UtcNow.AddMonths(1)
+                };
+
+                _context.PenaltyIdentifiers.Add(newIdentifierBan);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+        }
 
         // Expire old penalties
         var playerIdentityBan = false;
         if (player is not null)
         {
             var expiredPenalties = player.Penalties
-                .Where(inf => DateTimeOffset.UtcNow > inf.Expiration)
-                .Where(inf => inf.PenaltyStatus == PenaltyStatus.Active)
+                .Where(x => DateTimeOffset.UtcNow > x.Expiration)
+                .Where(x => x.PenaltyStatus == PenaltyStatus.Active)
                 .ToList();
 
-            expiredPenalties.ForEach(inf => inf.PenaltyStatus = PenaltyStatus.Expired);
-            _context.Penalties.UpdateRange(expiredPenalties);
-            await _context.SaveChangesAsync(cancellationToken);
+            if (expiredPenalties.Any())
+            {
+                expiredPenalties.ForEach(x => x.PenaltyStatus = PenaltyStatus.Expired);
+                _context.Penalties.UpdateRange(expiredPenalties);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
 
             // Check player identifier states
-            playerIdentityBan = player.Penalties.Any(penalty => penalty is
+            playerIdentityBan = player.Penalties.Any(x => x is
             {
                 PenaltyStatus: PenaltyStatus.Active,
                 PenaltyType: PenaltyType.Ban,
@@ -52,7 +80,6 @@ public class IsPlayerBannedHandler : IRequestHandler<IsPlayerBannedCommand, bool
             });
         }
 
-        var isBanned = playerIdentityBan || hasIdentifierBan;
-        return isBanned;
+        return playerIdentityBan || hasIpAddressBan;
     }
 }

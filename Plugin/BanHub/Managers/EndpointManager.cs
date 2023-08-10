@@ -4,8 +4,8 @@ using BanHub.Configuration;
 using BanHub.Models;
 using BanHub.Services;
 using BanHub.Utilities;
+using BanHubData.Commands.Chat;
 using BanHubData.Commands.Community;
-using BanHubData.Commands.Instance;
 using BanHubData.Commands.Instance.Server;
 using BanHubData.Commands.Penalty;
 using BanHubData.Commands.Player;
@@ -13,15 +13,17 @@ using BanHubData.Enums;
 using Microsoft.Extensions.Logging;
 using SharedLibraryCore;
 using SharedLibraryCore.Database.Models;
-using SharedLibraryCore.Interfaces;
+using SharedLibraryCore.Events.Game;
 
 namespace BanHub.Managers;
 
 public class EndpointManager
 {
+    private readonly SemaphoreSlim _chatLock = new(1, 1);
     public readonly ConcurrentDictionary<EFClient, string> Profiles = new();
     private readonly ILogger<EndpointManager> _logger;
     private readonly NoteService _noteService;
+    private readonly ChatService _chatService;
     private readonly PlayerService _player;
     private readonly BanHubConfiguration _banHubConfiguration;
     private readonly CommunitySlim _communitySlim;
@@ -29,9 +31,9 @@ public class EndpointManager
     private readonly PenaltyService _penalty;
     private readonly ServerService _server;
 
-    public EndpointManager(BanHubConfiguration banHubConfiguration, CommunitySlim communitySlim,
-        PlayerService playerService, CommunityService communityService, PenaltyService penaltyService,
-        ServerService serverService, ILogger<EndpointManager> logger, NoteService noteService)
+    public EndpointManager(BanHubConfiguration banHubConfiguration, CommunitySlim communitySlim, PlayerService playerService,
+        CommunityService communityService, PenaltyService penaltyService, ServerService serverService, ILogger<EndpointManager> logger,
+        NoteService noteService, ChatService chatService)
     {
         _banHubConfiguration = banHubConfiguration;
         _communitySlim = communitySlim;
@@ -41,6 +43,7 @@ public class EndpointManager
         _server = serverService;
         _logger = logger;
         _noteService = noteService;
+        _chatService = chatService;
     }
 
     public async Task<bool> CreateOrUpdateCommunityAsync(CreateOrUpdateCommunityCommand community) =>
@@ -129,6 +132,41 @@ public class EndpointManager
             var isRemoved = Profiles.TryRemove(player.Key, out _);
             if (isRemoved) continue;
             _logger.LogError("Failed to remove {Name} from profiles", player.Key.CleanedName);
+        }
+    }
+
+    public async Task HandleChatMessageAsync(ClientMessageEvent messageEvent, CancellationToken token)
+    {
+        var message = messageEvent.Message.StripColors();
+        if (string.IsNullOrEmpty(message)) return;
+        var playerIdentity = EntityToPlayerIdentity(messageEvent.Client);
+        var messageContext = new MessageContext(DateTimeOffset.UtcNow, messageEvent.Server.Id, message);
+
+        _communitySlim.PlayerMessages.AddOrUpdate(playerIdentity, new List<MessageContext> {messageContext}, (key, existingMessages) =>
+        {
+            existingMessages.Add(messageContext);
+            return existingMessages;
+        });
+
+        try
+        {
+            await _chatLock.WaitAsync(token);
+            if (_communitySlim.PlayerMessages.Count < 25) return;
+
+            var oldMessages = _communitySlim.PlayerMessages;
+            _communitySlim.PlayerMessages = new ConcurrentDictionary<string, List<MessageContext>>();
+
+            var communityMessages = new AddCommunityChatMessagesCommand
+            {
+                CommunityGuid = _communitySlim.CommunityGuid,
+                PlayerMessages = oldMessages.ToDictionary(x => x.Key, x => x.Value)
+            };
+
+            await _chatService.AddCommunityChatMessagesAsync(communityMessages);
+        }
+        finally
+        {
+            if (_chatLock.CurrentCount is 0) _chatLock.Release();
         }
     }
 
