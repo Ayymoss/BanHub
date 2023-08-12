@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace BanHub.Utilities;
+namespace BanHub.WebCore.Server.Utilities;
 
 public static class ExtensionMethods
 {

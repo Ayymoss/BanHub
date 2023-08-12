@@ -5,11 +5,6 @@ namespace BanHub.WebCore.Shared.Utilities;
 
 public static class Utilities
 {
-    public static string GetVersionAsString()
-    {
-        return Assembly.GetCallingAssembly().GetName().Version?.ToString() ?? "Unknown";
-    }
-
     public static bool IsInternal(this string ipAddress)
     {
         if (!IPAddress.TryParse(ipAddress, out var address)) return false;

@@ -1,7 +1,7 @@
 ﻿using BanHubData.Enums;
 using MediatR;
 
-namespace BanHubData.Commands.Instance.Server;
+namespace BanHubData.Commands.Community.Server;
 
 public class CreateOrUpdateServerCommand : IRequest<ControllerEnums.ReturnState>
 {

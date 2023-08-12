@@ -2,7 +2,7 @@
 using BanHub.WebCore.Shared.Commands.Players;
 using BanHub.WebCore.Shared.Models.PlayersView;
 using BanHub.WebCore.Shared.Models.Shared;
-using BanHub.WebCore.Shared.Utilities;
+using BanHub.WebCore.Client.Utilities;
 using RestEase;
 
 namespace BanHub.WebCore.Client.Services.RestEase.Pages;

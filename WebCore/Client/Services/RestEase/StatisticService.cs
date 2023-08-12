@@ -1,6 +1,6 @@
 ﻿using BanHub.WebCore.Client.Interfaces.RestEase;
 using BanHub.WebCore.Shared.Models.Shared;
-using BanHub.WebCore.Shared.Utilities;
+using BanHub.WebCore.Client.Utilities;
 using RestEase;
 
 namespace BanHub.WebCore.Client.Services.RestEase;
@@ -12,13 +12,8 @@ public class StatisticService
 #else
     private const string ApiHost = "https://banhub.gg/api";
 #endif
-    private readonly IStatisticService _api;
+    private readonly IStatisticService _api = RestClient.For<IStatisticService>(ApiHost);
 
-    public StatisticService()
-    {
-        _api = RestClient.For<IStatisticService>(ApiHost);
-    }
-    
     public async Task<Statistic> GetStatisticAsync()
     {
         try

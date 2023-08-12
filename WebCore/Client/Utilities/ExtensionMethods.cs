@@ -1,9 +1,13 @@
-﻿using BanHubData.Enums;
+﻿using System.Security.Principal;
+using System.Text.Json;
+using BanHubData.Enums;
 
 namespace BanHub.WebCore.Client.Utilities;
 
 public static class ExtensionMethods
 {
+    public static bool IsInAnyRole(this IPrincipal principal, params string[] roles) => roles.Any(principal.IsInRole);
+
     public static string GetRoleName(this string role)
     {
         return role switch
@@ -39,5 +43,27 @@ public static class ExtensionMethods
             Game.H1 => "Modern Warfare Remastered",
             _ => "Unknown"
         };
+    }
+
+    public static async Task<TResponse?> DeserializeHttpResponseContentAsync<TResponse>(this HttpResponseMessage response)
+        where TResponse : class
+    {
+        try
+        {
+            var jsonSerializerOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            if (!response.IsSuccessStatusCode) return null;
+            var json = await response.Content.ReadAsStringAsync();
+            return string.IsNullOrEmpty(json) ? null : JsonSerializer.Deserialize<TResponse>(json, jsonSerializerOptions);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+
+        return null;
     }
 }

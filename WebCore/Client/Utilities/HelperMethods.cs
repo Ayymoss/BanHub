@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Reflection;
+using System.Text;
 using BanHubData.Enums;
 
 namespace BanHub.WebCore.Client.Utilities;
@@ -15,4 +16,6 @@ public static class HelperMethods
 
         return string.Join(", ", webRoleFormatted.Concat(communityRoleFormatted));
     }
+
+    public static string GetVersionAsString() => Assembly.GetCallingAssembly().GetName().Version?.ToString() ?? "Unknown";
 }

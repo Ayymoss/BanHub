@@ -2,7 +2,7 @@
 using BanHub.Configuration;
 using BanHub.Interfaces;
 using BanHub.Utilities;
-using BanHubData.Commands.Instance.Server;
+using BanHubData.Commands.Community.Server;
 using Humanizer;
 using Polly;
 using Polly.Retry;

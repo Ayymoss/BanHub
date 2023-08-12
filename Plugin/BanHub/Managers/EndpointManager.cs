@@ -1,12 +1,13 @@
 ﻿using System.Collections.Concurrent;
+using System.Text.Json;
 using System.Text.RegularExpressions;
+using BanHub.Commands;
 using BanHub.Configuration;
 using BanHub.Models;
 using BanHub.Services;
-using BanHub.Utilities;
 using BanHubData.Commands.Chat;
 using BanHubData.Commands.Community;
-using BanHubData.Commands.Instance.Server;
+using BanHubData.Commands.Community.Server;
 using BanHubData.Commands.Penalty;
 using BanHubData.Commands.Player;
 using BanHubData.Enums;
@@ -14,6 +15,8 @@ using Microsoft.Extensions.Logging;
 using SharedLibraryCore;
 using SharedLibraryCore.Database.Models;
 using SharedLibraryCore.Events.Game;
+using SharedLibraryCore.Helpers;
+using SharedLibraryCore.Interfaces;
 
 namespace BanHub.Managers;
 
@@ -24,26 +27,32 @@ public class EndpointManager
     private readonly ILogger<EndpointManager> _logger;
     private readonly NoteService _noteService;
     private readonly ChatService _chatService;
-    private readonly PlayerService _player;
+    private readonly IInteractionRegistration _interactionRegistration;
+    private readonly IRemoteCommandService _remoteCommandService;
+    private readonly PlayerService _playerService;
     private readonly BanHubConfiguration _banHubConfiguration;
     private readonly CommunitySlim _communitySlim;
     private readonly CommunityService _community;
     private readonly PenaltyService _penalty;
     private readonly ServerService _server;
+    private const string GlobalBanInteractionLocation = "Webfront::Profile::GlobalBan";
 
     public EndpointManager(BanHubConfiguration banHubConfiguration, CommunitySlim communitySlim, PlayerService playerService,
         CommunityService communityService, PenaltyService penaltyService, ServerService serverService, ILogger<EndpointManager> logger,
-        NoteService noteService, ChatService chatService)
+        NoteService noteService, ChatService chatService, IInteractionRegistration interactionRegistration,
+        IRemoteCommandService remoteCommandService)
     {
         _banHubConfiguration = banHubConfiguration;
         _communitySlim = communitySlim;
-        _player = playerService;
+        _playerService = playerService;
         _community = communityService;
         _penalty = penaltyService;
         _server = serverService;
         _logger = logger;
         _noteService = noteService;
         _chatService = chatService;
+        _interactionRegistration = interactionRegistration;
+        _remoteCommandService = remoteCommandService;
     }
 
     public async Task<bool> CreateOrUpdateCommunityAsync(CreateOrUpdateCommunityCommand community) =>
@@ -64,7 +73,7 @@ public class EndpointManager
         // We don't want to act on anything if they're not authenticated
         if (!_communitySlim.Active) return;
         var identity = EntityToPlayerIdentity(player);
-        var isBanned = await _player.IsPlayerBannedAsync(new IsPlayerBannedCommand
+        var isBanned = await _playerService.IsPlayerBannedAsync(new IsPlayerBannedCommand
         {
             Identity = identity,
             IpAddress = player.IPAddressString
@@ -95,7 +104,7 @@ public class EndpointManager
         var createOrUpdate = new CreateOrUpdatePlayerCommand
         {
             PlayerIdentity = $"{player.GuidString}:{player.GameName.ToString()}",
-            PlayerAliasUserName = player.CleanedName.FilterUnknownCharacters(),
+            PlayerAliasUserName = player.CleanedName,
             PlayerAliasIpAddress = player.IPAddressString,
             PlayerCommunityRole = player.ClientPermission.Level switch
             {
@@ -110,7 +119,7 @@ public class EndpointManager
             ServerId = player.CurrentServer?.Id
         };
 
-        if (await _player.CreateOrUpdatePlayerAsync(createOrUpdate) is { } identity) return (true, identity);
+        if (await _playerService.CreateOrUpdatePlayerAsync(createOrUpdate) is { } identity) return (true, identity);
 
         _logger.LogError("Failed to update entity {Identity}", createOrUpdate.PlayerIdentity);
         return (false, string.Empty);
@@ -229,7 +238,7 @@ public class EndpointManager
     public async Task<string?> GetTokenAsync(EFClient client)
     {
         var identity = EntityToPlayerIdentity(client);
-        return await _player.GetTokenAsync(identity);
+        return await _playerService.GetTokenAsync(identity);
     }
 
     private static void InformAdmins(Server server, string message)
@@ -239,5 +248,77 @@ public class EndpointManager
         {
             admin.Tell(message);
         }
+    }
+
+    public void RegisterInteraction(IManager manager)
+    {
+        _interactionRegistration.RegisterInteraction(GlobalBanInteractionLocation, async (targetClientId, game, token) =>
+        {
+            if (!targetClientId.HasValue || !game.HasValue) return null;
+
+            var clientIdentity = EntityToPlayerIdentity(new EFClient
+            {
+                ClientId = targetClientId.Value,
+                GameName = game.Value
+            });
+
+            var isGlobalBanned = await _playerService.IsPlayerBannedAsync(clientIdentity);
+            var server = manager.GetServers().First();
+
+            string GetCommandName(Type commandType) =>
+                manager.Commands.FirstOrDefault(command => command.GetType() == commandType)?.Name ?? string.Empty;
+
+            return isGlobalBanned ? null : CreateGlobalBanInteraction(targetClientId.Value, server, GetCommandName);
+        });
+    }
+
+    private InteractionData CreateGlobalBanInteraction(int targetClientId, Server server, Func<Type, string> getCommandNameFunc)
+    {
+        var reasonInput = new
+        {
+            Name = "Reason",
+            Label = "Reason",
+            Type = "text",
+            Values = (Dictionary<string, string>?)null
+        };
+
+        var inputs = new[] {reasonInput};
+        var inputsJson = JsonSerializer.Serialize(inputs);
+
+        return new InteractionData
+        {
+            EntityId = targetClientId,
+            Name = "Global Ban",
+            DisplayMeta = "oi-ban",
+            ActionPath = "DynamicAction",
+            ActionMeta = new Dictionary<string, string>
+            {
+                {"InteractionId", GlobalBanInteractionLocation},
+                {"Inputs", inputsJson},
+                {
+                    "ActionButtonLabel",
+                    "Global Ban"
+                },
+                {
+                    "Name",
+                    "Global Ban"
+                },
+                {"ShouldRefresh", true.ToString()}
+            },
+            MinimumPermission = Data.Models.Client.EFClient.Permission.SeniorAdmin,
+            Source = "Ban Hub",
+            Action = async (originId, targetId, gameName, meta, cancellationToken) =>
+            {
+                if (!targetId.HasValue) return "No target client id specified";
+
+                var gBanCommand = getCommandNameFunc(typeof(GlobalBanCommand));
+                var args = new List<string>();
+
+                if (meta.TryGetValue(reasonInput.Name, out var reason)) args.Add(reason);
+
+                var commandResponse = await _remoteCommandService.Execute(originId, targetId, gBanCommand, args, server);
+                return string.Join(".", commandResponse.Select(result => result.Response));
+            }
+        };
     }
 }

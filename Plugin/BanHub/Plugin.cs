@@ -2,9 +2,8 @@
 using BanHub.Managers;
 using BanHub.Models;
 using BanHub.Services;
-using BanHub.Utilities;
 using BanHubData.Commands.Community;
-using BanHubData.Commands.Instance.Server;
+using BanHubData.Commands.Community.Server;
 using BanHubData.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using SharedLibraryCore;
@@ -22,7 +21,7 @@ namespace BanHub;
 public class Plugin : IPluginV2
 {
     public string Name => "Ban Hub";
-    public string Version => "2023.07.27.01";
+    public string Version => "2023.08.11.01";
     public string Author => "Amos";
 
     private readonly CommunitySlim _communitySlim;
@@ -146,7 +145,7 @@ public class Plugin : IPluginV2
             PluginVersion = new Version(Version),
             CommunityGuid = _communitySlim.CommunityGuid,
             CommunityIp = _communitySlim.CommunityIp,
-            CommunityWebsite = _config.CommunityWebsite.GetDomainName(),
+            CommunityWebsite = _config.CommunityWebsite,
             CommunityPort = port,
             CommunityApiKey = _communitySlim.ApiKey,
             CommunityName = _config.CommunityNameOverride ?? _appConfig.WebfrontCustomBranding ?? _communitySlim.CommunityGuid.ToString(),
@@ -175,6 +174,7 @@ public class Plugin : IPluginV2
             Console.WriteLine($"[{BanHubConfiguration.Name}] To activate your access. Please visit https://discord.gg/Arruj6DWvp");
         }
 
+        _endpointManager.RegisterInteraction(manager);
         SharedLibraryCore.Utilities.ExecuteAfterDelay(TimeSpan.FromMinutes(4), OnNotifyAfterDelayCompleted, CancellationToken.None);
     }
 

@@ -3,6 +3,7 @@ using BanHub.WebCore.Server.Events.DiscordWebhook;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Models.Domains;
 using BanHub.WebCore.Server.Services;
+using BanHub.WebCore.Server.Utilities;
 using BanHubData.Commands.Community;
 using BanHubData.Enums;
 using MediatR;
@@ -48,7 +49,7 @@ public class CreateOrUpdateCommunityHandler : IRequestHandler<CreateOrUpdateComm
                 CommunityGuid = request.CommunityGuid,
                 CommunityName = request.CommunityName,
                 CommunityIp = request.CommunityIp,
-                CommunityIpFriendly = request.CommunityWebsite,
+                CommunityIpFriendly = request.CommunityWebsite.GetDomainName(),
                 CommunityPort = request.CommunityPort,
                 ApiKey = request.CommunityApiKey,
                 Active = false,

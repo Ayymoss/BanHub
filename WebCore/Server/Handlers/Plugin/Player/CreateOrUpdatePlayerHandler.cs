@@ -1,6 +1,7 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Models.Domains;
+using BanHub.WebCore.Server.Utilities;
 using BanHubData.Commands.Player;
 using BanHubData.Enums;
 using MediatR;
@@ -40,12 +41,13 @@ public class CreateOrUpdatePlayerHandler : IRequestHandler<CreateOrUpdatePlayerC
                 .Include(efCurrentAlias => efCurrentAlias.Alias)
                 .SingleOrDefaultAsync(x => x.PlayerId == user.Id, cancellationToken: cancellationToken);
 
-            if (mostRecentAlias is not null && 
-                (mostRecentAlias.Alias.UserName != request.PlayerAliasUserName || mostRecentAlias.Alias.IpAddress != request.PlayerAliasIpAddress))
+            var hasAliasChanged = mostRecentAlias?.Alias.UserName != request.PlayerAliasUserName
+                                  || mostRecentAlias.Alias.IpAddress != request.PlayerAliasIpAddress;
+            if (mostRecentAlias is not null && hasAliasChanged)
             {
                 var updatedAlias = new EFAlias
                 {
-                    UserName = request.PlayerAliasUserName,
+                    UserName = request.PlayerAliasUserName.FilterUnknownCharacters(),
                     IpAddress = request.PlayerAliasIpAddress,
                     Created = utcTimeNow,
                     PlayerId = user.Id
@@ -67,6 +69,7 @@ public class CreateOrUpdatePlayerHandler : IRequestHandler<CreateOrUpdatePlayerC
                 _context.ServerConnections.Add(server);
             }
 
+            user.CommunityRole = request.PlayerCommunityRole;
             user.HeartBeat = utcTimeNow;
             user.TotalConnections++;
             _context.Players.Update(user);

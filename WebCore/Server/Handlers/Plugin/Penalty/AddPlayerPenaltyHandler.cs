@@ -140,7 +140,7 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
                 PenaltyGuid = penaltyModel.PenaltyGuid,
                 TargetIdentity = target.Identity,
                 Username = target.UserName,
-                Reason = penaltyModel.Reason,
+                Reason = request.Automated ? "Automated Detection" : penaltyModel.Reason,
                 CommunityGuid = instance.InstanceGuid,
                 CommunityName = instance.InstanceName
             }, cancellationToken);

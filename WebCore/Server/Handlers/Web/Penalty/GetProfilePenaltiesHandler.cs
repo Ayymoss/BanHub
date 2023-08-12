@@ -25,11 +25,9 @@ public class GetProfilePenaltiesHandler : IRequestHandler<GetProfilePenaltiesCom
                 PenaltyGuid = x.PenaltyGuid,
                 AdminUserName = x.Issuer.CurrentAlias.Alias.UserName,
                 AdminIdentity = x.Issuer.Identity,
-                Reason = request.Privileged && x.Automated
-                    ? x.Reason
-                    : x.Automated
-                        ? "Automated Detection"
-                        : x.Reason,
+                Reason = !request.Privileged && x.Automated
+                    ? "Automated Detection"
+                    : x.Reason,
                 Evidence = x.Evidence,
                 CommunityName = x.Community.CommunityName,
                 CommunityGuid = x.Community.CommunityGuid,

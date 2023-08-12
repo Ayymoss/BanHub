@@ -1,9 +1,8 @@
 ﻿using BanHub.WebCore.Client.Interfaces.RestEase;
 using BanHub.WebCore.Shared.Commands.Community;
-using BanHub.WebCore.Shared.Models.CommunitiesView;
 using BanHub.WebCore.Shared.Models.CommunityProfileView;
 using BanHub.WebCore.Shared.Models.Shared;
-using BanHub.WebCore.Shared.Utilities;
+using BanHub.WebCore.Client.Utilities;
 using RestEase;
 using Community = BanHub.WebCore.Shared.Models.CommunitiesView.Community;
 

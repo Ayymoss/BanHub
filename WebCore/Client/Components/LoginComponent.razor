@@ -9,7 +9,8 @@
     <Authorized>
         <MudElement Class="d-inline-flex align-center">
             <MudElement Class="flex-grow-1 mr-1">
-                <MudButton @onmouseenter="@(() => _isOpen = true)" @onmouseleave="@(() => _isOpen = false)" Variant="Variant.Text" FullWidth="true" Color="Color.Info" DisableElevation="true" OnClick="@ToggleOpen"
+                <MudButton @onmouseenter="@(() => _isOpen = true)" @onmouseleave="@(() => _isOpen = false)" Variant="Variant.Text" 
+                           FullWidth="true" Color="Color.Info" DisableElevation="true" OnClick="@ToggleOpen"
                            StartIcon="@(_isOpen ? Icons.Material.Filled.Close : Icons.Material.Filled.Info)">
                     @context.User.Identity!.Name
                 </MudButton>

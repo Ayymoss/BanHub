@@ -17,7 +17,7 @@
     <MudSpacer/>
     <MudStack Spacing="2" Class="pa-2">
         <LoginComponent/>
-        <MudTextField @bind-Value="_searchValue" Disabled="true" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" Placeholder="Search"
+        <MudTextField @bind-Value="_searchValue" Disabled="true" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" Placeholder="Search Disabled"
                           Variant="Variant.Outlined" Adornment="Adornment.End" Margin="Margin.Dense" AdornmentIcon="@Icons.Material.Filled.Search"
                           AdornmentColor="Color.Info"/>
         <MudElement Class="d-inline-flex align-center mb-n1">
@@ -35,7 +35,7 @@
 @code {
     private string? _identity;
     private string? _searchValue;
-    private string _versionNumber = Utilities.GetVersionAsString();
+    private string _versionNumber = HelperMethods.GetVersionAsString();
 
     private void OnKeyPress(KeyboardEventArgs e)
     {

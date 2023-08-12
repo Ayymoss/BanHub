@@ -1,7 +1,7 @@
 ﻿using BanHub.WebCore.Client.Interfaces.RestEase;
 using BanHub.WebCore.Shared.Commands;
 using BanHub.WebCore.Shared.Models.Shared;
-using BanHub.WebCore.Shared.Utilities;
+using BanHub.WebCore.Client.Utilities;
 using RestEase;
 
 namespace BanHub.WebCore.Client.Services.RestEase;
@@ -13,12 +13,7 @@ public class AuthService
 #else
     private const string ApiHost = "https://banhub.gg/api";
 #endif
-    private readonly IAuthService _api;
-
-    public AuthService()
-    {
-        _api = RestClient.For<IAuthService>(ApiHost);
-    }
+    private readonly IAuthService _api = RestClient.For<IAuthService>(ApiHost);
 
     public async Task<bool> LoginAsync(WebTokenLoginCommand webLogin)
     {

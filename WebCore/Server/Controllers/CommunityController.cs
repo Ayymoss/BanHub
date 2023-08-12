@@ -1,11 +1,7 @@
-﻿using System.Security.Claims;
-using BanHub.WebCore.Server.Interfaces;
-using BanHub.WebCore.Server.Services;
+﻿using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Shared.Commands.Community;
-using BanHub.WebCore.Shared.Models.CommunitiesView;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Commands.Community;
-using BanHubData.Commands.Instance;
 using BanHubData.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

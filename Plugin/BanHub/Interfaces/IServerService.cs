@@ -1,4 +1,4 @@
-﻿using BanHubData.Commands.Instance.Server;
+﻿using BanHubData.Commands.Community.Server;
 using RestEase;
 
 namespace BanHub.Interfaces;

@@ -1,7 +1,7 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Models.Domains;
-using BanHubData.Commands.Instance.Server;
+using BanHubData.Commands.Community.Server;
 using BanHubData.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
