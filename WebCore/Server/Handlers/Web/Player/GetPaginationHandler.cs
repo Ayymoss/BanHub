@@ -33,7 +33,7 @@ public class GetPaginationHandler : IRequestHandler<GetPlayersPaginationCommand,
         {
             "Id" => query.OrderByDirection((SortDirection)request.SortDirection, entity => entity.Identity),
             "Name" => query.OrderByDirection((SortDirection)request.SortDirection, entity => entity.CurrentAlias.Alias.UserName),
-            "Penalty" => query.OrderByDirection((SortDirection)request.SortDirection, entity => entity.Penalties.Count),
+            "Penalties" => query.OrderByDirection((SortDirection)request.SortDirection, entity => entity.Penalties.Count),
             "Online" => query.OrderByDirection((SortDirection)request.SortDirection, entity => entity.HeartBeat),
             "Created" => query.OrderByDirection((SortDirection)request.SortDirection, entity => entity.Created),
             _ => query

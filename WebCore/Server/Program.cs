@@ -34,7 +34,7 @@ builder.WebHost.ConfigureKestrel(options => { options.ListenAnyIP(configuration.
 #endif
 
 // TODO: TOGGLE MANUALLY - Migrations don't seem to honour build state
-configuration.Database.Database = "BHLTest-Dev";
+configuration.Database.Database = "BH-Test2";
 
 builder.Services.AddDbContext<DataContext>(options =>
 {

@@ -70,7 +70,6 @@ public class EndpointManager
 
     public async Task OnJoin(EFClient player)
     {
-        // We don't want to act on anything if they're not authenticated
         if (!_communitySlim.Active) return;
         var identity = EntityToPlayerIdentity(player);
         var isBanned = await _playerService.IsPlayerBannedAsync(new IsPlayerBannedCommand
@@ -127,8 +126,7 @@ public class EndpointManager
 
     private void ProcessPlayer(EFClient client)
     {
-        client.Kick("^1Globally banned!^7\nBanHub.gg",
-            SharedLibraryCore.Utilities.IW4MAdminClient(client.CurrentServer));
+        client.Kick("^1Globally banned!^7\nBanHub.gg", SharedLibraryCore.Utilities.IW4MAdminClient(client.CurrentServer));
         _logger.LogInformation("{Name} globally banned", client.CleanedName);
     }
 

@@ -46,18 +46,36 @@ public class StatisticService : IStatisticService
     {
         if (!_statisticsTracking.Loaded) await EnsureInitialisedAsync();
 
-        var actionMapping = new Dictionary<ControllerEnums.StatisticTypeAction, Action<int>>
-        {
-            {ControllerEnums.StatisticTypeAction.Add, x => Interlocked.Add(ref x, 1)},
-            {ControllerEnums.StatisticTypeAction.Remove, x => Interlocked.Add(ref x, -1)}
-        };
-
         var statisticMapping = new Dictionary<ControllerEnums.StatisticType, Action>
         {
-            {ControllerEnums.StatisticType.PenaltyCount, () => actionMapping[action](_statisticsTracking.Penalties)},
-            {ControllerEnums.StatisticType.ServerCount, () => actionMapping[action](_statisticsTracking.Servers)},
-            {ControllerEnums.StatisticType.CommunityCount, () => actionMapping[action](_statisticsTracking.Communities)},
-            {ControllerEnums.StatisticType.EntityCount, () => actionMapping[action](_statisticsTracking.Players)}
+            {
+                ControllerEnums.StatisticType.PenaltyCount, () =>
+                {
+                    if (action is ControllerEnums.StatisticTypeAction.Add) Interlocked.Increment(ref _statisticsTracking.Penalties);
+                    else Interlocked.Decrement(ref _statisticsTracking.Penalties);
+                }
+            },
+            {
+                ControllerEnums.StatisticType.ServerCount, () =>
+                {
+                    if (action is ControllerEnums.StatisticTypeAction.Add) Interlocked.Increment(ref _statisticsTracking.Servers);
+                    else Interlocked.Decrement(ref _statisticsTracking.Servers);
+                }
+            },
+            {
+                ControllerEnums.StatisticType.CommunityCount, () =>
+                {
+                    if (action is ControllerEnums.StatisticTypeAction.Add) Interlocked.Increment(ref _statisticsTracking.Communities);
+                    else Interlocked.Decrement(ref _statisticsTracking.Communities);
+                }
+            },
+            {
+                ControllerEnums.StatisticType.PlayerCount, () =>
+                {
+                    if (action is ControllerEnums.StatisticTypeAction.Add) Interlocked.Increment(ref _statisticsTracking.Players);
+                    else Interlocked.Decrement(ref _statisticsTracking.Players);
+                }
+            }
         };
 
         statisticMapping[statistic]();

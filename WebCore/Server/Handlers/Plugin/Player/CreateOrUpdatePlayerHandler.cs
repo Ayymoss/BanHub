@@ -115,8 +115,7 @@ public class CreateOrUpdatePlayerHandler : IRequestHandler<CreateOrUpdatePlayerC
             _context.ServerConnections.Add(server);
         }
 
-        await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.EntityCount,
-            ControllerEnums.StatisticTypeAction.Add);
+        await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.PlayerCount, ControllerEnums.StatisticTypeAction.Add);
 
         entity.CurrentAlias = currentAlias;
         _context.CurrentAliases.Add(currentAlias);

@@ -95,11 +95,16 @@ public class Plugin : IPluginV2
         if (penaltyEvent.Penalty.Offender.GetAdditionalProperty<bool>("BanHubGlobalBan")) return;
         if (await _whitelistManager.IsWhitelisted(penaltyEvent.Client.ToPartialClient())) return;
 
+        var expiration = penaltyEvent.Penalty.Expires.HasValue &&
+                         penaltyEvent.Penalty.Expires.Value - DateTime.Now < TimeSpan.FromSeconds(1)
+            ? null
+            : penaltyEvent.Penalty.Expires;
+
         await _endpointManager.AddPlayerPenaltyAsync(penaltyEvent.Penalty.Type.ToString(),
             penaltyEvent.Penalty.Punisher.ToPartialClient(),
             penaltyEvent.Penalty.Offender.ToPartialClient(),
             penaltyEvent.Penalty.Offense,
-            expiration: penaltyEvent.Penalty.Expires?.Second is 0 ? null : penaltyEvent.Penalty.Expires);
+            expiration: expiration);
     }
 
     private async Task OnClientStateAuthorized(ClientStateAuthorizeEvent clientEvent, CancellationToken arg2)
@@ -110,8 +115,6 @@ public class Plugin : IPluginV2
 
     private Task OnClientStateDisposed(ClientStateEvent clientEvent, CancellationToken arg2)
     {
-        // I think the lifetime of clientEvent will not remove it during this iteration. It'll be removed on the next person who leaves.
-        // Maybe fix?
         _endpointManager.RemoveFromProfiles(clientEvent.Client);
         return Task.CompletedTask;
     }

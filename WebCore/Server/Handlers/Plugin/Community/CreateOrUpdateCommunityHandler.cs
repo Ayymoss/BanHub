@@ -91,7 +91,7 @@ public class CreateOrUpdateCommunityHandler : IRequestHandler<CreateOrUpdateComm
         community.Socials ??= request.Socials;
         community.HeartBeat = DateTimeOffset.UtcNow;
         community.CommunityName = request.CommunityName;
-        community.CommunityIpFriendly = request.CommunityWebsite;
+        community.CommunityIpFriendly = request.CommunityWebsite.GetDomainName();
         community.CommunityPort = request.CommunityPort;
         _context.Communities.Update(community);
         await _context.SaveChangesAsync(cancellationToken);

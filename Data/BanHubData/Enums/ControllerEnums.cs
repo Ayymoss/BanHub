@@ -17,10 +17,10 @@ public abstract class ControllerEnums
 
     public enum StatisticType
     {
-        EntityCount = -4,
-        ServerCount = -3,
-        PenaltyCount = -2,
-        CommunityCount = -1
+        PlayerCount,
+        ServerCount,
+        PenaltyCount,
+        CommunityCount
     }
 
     public enum StatisticTypeAction

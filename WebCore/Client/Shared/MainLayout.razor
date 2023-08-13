@@ -9,13 +9,11 @@
 
 <MudLayout Style="height:100vh">
     <MudAppBar DisableGutters="true" Elevation="1">
-        <MudElement Class="px-6 flex-grow-1 d-flex align-center">
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="DrawerToggle"/>
+        <MudElement Class="mx-6 flex-grow-1 d-flex align-center">
+            <MudIconButton Class="mr-2" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="DrawerToggle"/>
             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="true">
                 <MudElement Class="d-flex mr-4 align-center">
-                    <MudImage Height="23" Src="/images/logo.png" Alt="BH" Elevation="23" Class="pr-2 mb-1"/>
-                    <MudDivider Vertical="true" DividerType="DividerType.Middle" Class="mx-1 py-4"/>
-                    <MudText Typo="Typo.h5" Class="pl-2">Ban Hub</MudText>
+                    <MudText Typo="Typo.h5">Ban Hub</MudText>
                 </MudElement>
             </MudHidden>
             <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="false">
