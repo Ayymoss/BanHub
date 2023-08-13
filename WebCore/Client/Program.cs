@@ -1,9 +1,9 @@
 using BanHub.WebCore.Client;
 using BanHub.WebCore.Client.Handlers;
 using BanHub.WebCore.Client.Providers;
-using BanHub.WebCore.Client.Services;
 using BanHub.WebCore.Client.Services.RestEase;
 using BanHub.WebCore.Client.Services.RestEase.Pages;
+using BanHub.WebCore.Client.SignalR;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -27,7 +27,8 @@ builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<CookieHandler>();
 
-builder.Services.AddSingleton<ActiveUserService>();
+builder.Services.AddSingleton<ActiveUserHub>();
+builder.Services.AddSingleton<StatisticsHub>();
 builder.Services.AddSingleton<CommunityService>();
 builder.Services.AddSingleton<NoteService>();
 builder.Services.AddSingleton<PenaltyService>();

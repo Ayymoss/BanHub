@@ -21,14 +21,4 @@ public class Statistic
     /// The count of how many infractions there are
     /// </summary>
     public int PenaltyCount { get; set; }
-
-    /// <summary>
-    /// The count of how many users are online
-    /// </summary>
-    public int OnlinePlayersCount { get; set; }
-
-    /// <summary>
-    /// The count of how many bans there are in last 7d
-    /// </summary>
-    public int RecentBansCount { get; set; }
 }

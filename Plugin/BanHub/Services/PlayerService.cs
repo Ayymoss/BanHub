@@ -23,12 +23,12 @@ public class PlayerService
     private readonly BanHubConfiguration _banHubConfiguration;
 
     private readonly AsyncRetryPolicy _retryPolicy = Policy
-        .Handle<TaskCanceledException>()
-        .Or<ApiException>(ex => ex.InnerException is TaskCanceledException)
+        .Handle<HttpRequestException>(e =>
+            e.InnerException is TimeoutException || e.Message.Contains("timeout", StringComparison.OrdinalIgnoreCase))
         .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
             (exception, retryDelay, context) =>
             {
-                Console.WriteLine($"[{BanHubConfiguration.Name}] Penalty API: {exception.Message}. " +
+                Console.WriteLine($"[{BanHubConfiguration.Name}] Player API: {exception.Message}. " +
                                   $"Retrying in {retryDelay.Humanize()}...");
             });
 

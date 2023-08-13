@@ -122,7 +122,8 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.MapRazorPages();
-app.MapHub<ViewerCount>("/ActiveUsersHub");
+app.MapHub<ActiveUserHub>("/SignalR/ActiveUsersHub");
+app.MapHub<StatisticsHub>("/SignalR/StatisticsHub");
 
 app.UseCors("CorsSpecs");
 app.UseAuthentication();

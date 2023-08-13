@@ -68,7 +68,7 @@ public class GlobalBanCommand : Command
         
         gameEvent.Origin.Tell(_bhConfig.Translations.GlobalBanCommandSuccess
             .FormatExt(_bhConfig.Translations.BanHubName, gameEvent.Target.CleanedName, gameEvent.Data, result.Item2));
-        gameEvent.Origin.Tell(_bhConfig.Translations.GlobalBanCommandSuccessFollow.FormatExt(_bhConfig.Translations.BanHubName, Alias));
+        gameEvent.Origin.Tell(_bhConfig.Translations.GlobalBanCommandSuccessFollow.FormatExt(_bhConfig.Translations.BanHubName, SubmitEvidenceCommand.CommandAlias));
         gameEvent.Target.SetAdditionalProperty("BanHubGlobalBan", true);
         gameEvent.Target.Ban("^1Globally banned!^7\nBanHub.gg",
             SharedLibraryCore.Utilities.IW4MAdminClient(gameEvent.Target.CurrentServer), false);

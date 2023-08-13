@@ -1,8 +1,10 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Models;
+using BanHub.WebCore.Server.SignalR;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Enums;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Services;
@@ -11,12 +13,14 @@ public class StatisticService : IStatisticService
 {
     private readonly DataContext _context;
     private readonly StatisticsTracking _statisticsTracking;
+    private readonly IHubContext<StatisticsHub> _hubContext;
     private readonly SemaphoreSlim _load = new(1, 1);
 
-    public StatisticService(DataContext context, StatisticsTracking statisticsTracking)
+    public StatisticService(DataContext context, StatisticsTracking statisticsTracking, IHubContext<StatisticsHub> hubContext)
     {
         _context = context;
         _statisticsTracking = statisticsTracking;
+        _hubContext = hubContext;
     }
 
     private async Task EnsureInitialisedAsync()
@@ -91,8 +95,6 @@ public class StatisticService : IStatisticService
             ServerCount = _statisticsTracking.Servers,
             CommunityCount = _statisticsTracking.Communities,
             PlayerCount = _statisticsTracking.Players,
-            OnlinePlayersCount = _statisticsTracking.OnlinePlayers.Count,
-            RecentBansCount = _statisticsTracking.RecentBans.Count
         };
     }
 
@@ -119,6 +121,8 @@ public class StatisticService : IStatisticService
         {
             _statisticsTracking.OnlinePlayers.TryRemove(user, out _);
         }
+
+        await _hubContext.Clients.All.SendAsync("ReceiveOnlinePlayersCount", _statisticsTracking.OnlinePlayers.Count);
     }
 
     public async Task UpdateRecentBansStatisticAsync(StatisticBan statisticBan)
@@ -136,7 +140,12 @@ public class StatisticService : IStatisticService
         {
             _statisticsTracking.RecentBans.TryRemove(ban, out _);
         }
+
+        await _hubContext.Clients.All.SendAsync("ReceiveRecentBansCount", _statisticsTracking.RecentBans.Count);
     }
+
+    public int GetOnlinePlayerCount() => _statisticsTracking.OnlinePlayers.Count;
+    public int GetRecentBansCount() => _statisticsTracking.RecentBans.Count;
 
     private async Task<Statistic> ReadStatisticsAsync()
     {

@@ -5,6 +5,7 @@ using BanHub.Configuration;
 using BanHub.Interfaces;
 using BanHub.Utilities;
 using BanHubData.Commands.Penalty;
+using Humanizer;
 using Polly;
 using Polly.Retry;
 using RestEase;
@@ -22,12 +23,15 @@ public class PenaltyService
     private readonly IPenaltyService _api;
     private readonly BanHubConfiguration _banHubConfiguration;
 
-    private readonly AsyncRetryPolicy _retryPolicy = Policy.Handle<HttpRequestException>().Or<ApiException>()
+    private readonly AsyncRetryPolicy _retryPolicy = Policy
+        .Handle<HttpRequestException>(e =>
+            e.InnerException is TimeoutException || e.Message.Contains("timeout", StringComparison.OrdinalIgnoreCase))
         .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-            (exception, retryCount, context) =>
+            (exception, retryDelay, context) =>
             {
                 Console.WriteLine(
-                    $"[{BanHubConfiguration.Name}] Error sending heartbeat: {exception.Message}. Retrying ({retryCount}/3)...");
+                    $"[{BanHubConfiguration.Name}] Penalty API: {exception.Message}. " +
+                    $"Retrying in {retryDelay.Humanize()}...");
             });
 
     public PenaltyService(BanHubConfiguration banHubConfiguration)

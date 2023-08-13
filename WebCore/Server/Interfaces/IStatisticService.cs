@@ -10,4 +10,6 @@ public interface IStatisticService
     Task<Statistic> GetStatisticsAsync();
     Task UpdateOnlineStatisticAsync(IEnumerable<string> playerIdentities);
     Task UpdateRecentBansStatisticAsync(StatisticBan statisticBan);
+    int GetRecentBansCount();
+    int GetOnlinePlayerCount();
 }

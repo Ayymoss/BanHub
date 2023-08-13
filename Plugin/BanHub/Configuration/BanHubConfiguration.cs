@@ -7,6 +7,7 @@ public class BanHubConfiguration
     [JsonIgnore] public const string Name = "Ban Hub";
     public bool EnableBanHub { get; set; } = true;
     public bool PrintPenaltyToConsole { get; set; } = false;
+    public bool NotifyOnlyMode { get; set; } = false;
     public string? CommunityNameOverride { get; set; }
     public string? CommunityWebsite { get; set; }
     public TranslationStrings Translations { get; set; } = new();
@@ -18,11 +19,11 @@ public class TranslationStrings
 {
     // @formatter:off
     // ReSharper disable once InconsistentNaming
-    public string BanHubName { get; set; } = "[(Color::Accent)BanHub(Color::White)]";
+    public string BanHubName { get; set; } = "[(Color::Pink)BanHub(Color::White)]";
     public string CannotAuthIW4MAdmin { get; set; } = "{{plugin}} You cannot authenticate as IW4MAdmin";
     public string NotActive { get; set; } = "{{plugin}} is not active";
     public string GlobalBanCommandSuccess { get; set; } = "{{plugin}} banned {{target}} for {{reason}} ({{guid}})";
-    public string GlobalBanCommandSuccessFollow { get; set; } = "{{plugin}} (Color::Yellow)You must upload (Color::Accent)!{{command}} (Color::Yellow)for global bans!";
+    public string GlobalBanCommandSuccessFollow { get; set; } = "{{plugin}} (Color::Yellow)You must upload evidence (Color::Accent)!{{command}} (Color::Yellow)for global bans!";
     public string GlobalBanCommandFail { get; set; } = "{{plugin}} Ban Hub ban was not submitted";
     public string SubmitEvidenceSuccess { get; set; } = "{{plugin}} Evidence submitted";
     public string SubmitEvidenceFail { get; set; } = "{{plugin}} Failed to submit evidence. Does the penalty exist or have evidence already?";
@@ -31,5 +32,6 @@ public class TranslationStrings
     public string ProvideToken { get; set; } = "{{plugin}} Your token is {{token}} (expires in 5 minutes)";
     public string TokenGenerationFailed { get; set; } = "{{plugin}} Failed to generate token";
     public string UserHasNotes { get; set; } = "{{plugin}} (Color::Accent){{user}} (Color::White)has (Color::Yellow){{count}} (Color::White)note(s). (Color::Yellow)Check the website for more info.";
+    public string UserIsBanned { get; set; } = "{{plugin}} (Color::Accent){{user}} (Color::White)is (Color::Red)Global Banned(Color::White). (Color::Yellow)Check the website for more info.";
     // @formatter:on
 }

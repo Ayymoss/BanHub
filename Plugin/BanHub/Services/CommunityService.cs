@@ -22,8 +22,8 @@ public class CommunityService
     private readonly BanHubConfiguration _banHubConfiguration;
 
     private readonly AsyncRetryPolicy _retryPolicy = Policy
-        .Handle<TaskCanceledException>()
-        .Or<ApiException>(ex => ex.InnerException is TaskCanceledException)
+        .Handle<HttpRequestException>(e =>
+            e.InnerException is TimeoutException || e.Message.Contains("timeout", StringComparison.OrdinalIgnoreCase))
         .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
             (exception, retryDelay, context) =>
             {
@@ -59,7 +59,8 @@ public class CommunityService
         }
         catch (ApiException e)
         {
-            Console.WriteLine($"[{BanHubConfiguration.Name}] Error posting community: {e.Message} - JSON: {JsonSerializer.Serialize(community)}");
+            Console.WriteLine(
+                $"[{BanHubConfiguration.Name}] Error posting community: {e.Message} - JSON: {JsonSerializer.Serialize(community)}");
         }
 
         return false;

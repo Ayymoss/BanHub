@@ -16,6 +16,7 @@ public class SubmitEvidenceCommand : Command
     private readonly BanHubConfiguration _bhConfig;
     private readonly EndpointManager _endpointManager;
     private readonly CommunitySlim _communitySlim;
+    public const string CommandAlias = "bhe";
 
     public SubmitEvidenceCommand(CommandConfiguration config, ITranslationLookup layout, BanHubConfiguration bhConfig,
         EndpointManager endpointManager, CommunitySlim communitySlim) : base(config, layout)
@@ -25,7 +26,7 @@ public class SubmitEvidenceCommand : Command
         _communitySlim = communitySlim;
         Name = "bhevidence";
         Description = "Submit evidence for a players ban";
-        Alias = "bhe";
+        Alias = CommandAlias;
         Permission = EFClient.Permission.Moderator;
         RequiresTarget = false;
         Arguments = new[]
@@ -61,7 +62,7 @@ public class SubmitEvidenceCommand : Command
             return;
         }
 
-        var result = await _endpointManager.AddPlayerPenaltyEvidenceAsync(guid, videoId, gameEvent.Origin, gameEvent.Target);
+        var result = await _endpointManager.AddPlayerPenaltyEvidenceAsync(guid, videoId, gameEvent.Origin);
         if (!result)
         {
             gameEvent.Origin.Tell(_bhConfig.Translations.SubmitEvidenceFail.FormatExt(_bhConfig.Translations.BanHubName));

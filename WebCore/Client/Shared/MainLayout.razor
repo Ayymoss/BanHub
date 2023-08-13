@@ -1,6 +1,6 @@
-﻿@inject StatisticService StatisticService
+﻿@inject ActiveUserHub ActiveUserHub
+@inject StatisticsHub StatisticsHub
 @inherits LayoutComponentBase
-@implements IAsyncDisposable
 
 <MudThemeProvider IsDarkMode="true" Theme="_theme"/>
 <MudDialogProvider/>
@@ -49,9 +49,6 @@
 
 @code {
 
-    [Inject]
-    private ActiveUserService ActiveUserService { get; set; } = null!;
-
     private readonly MudTheme _theme = Theme.LandingPageTheme();
 
     private int _online;
@@ -63,21 +60,39 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await ActiveUserService.Initialize();
-        ActiveUserService.ActiveUserCountChanged += count =>
-        {
-            _activeUserCount = count;
-            StateHasChanged();
-        };
-        _activeUserCount = ActiveUserService.ActiveUsers;
-
-        var statistics = await StatisticService.GetStatisticAsync();
-        _online = statistics.OnlinePlayersCount;
-        _bans = statistics.RecentBansCount;
-
+        await InitializeSignalRHubs();
         await base.OnInitializedAsync();
     }
 
-    public async ValueTask DisposeAsync() => await ActiveUserService.DecrementCountAsync();
+    private async Task InitializeSignalRHubs()
+    {
+        SubscribeToHubEvents();
+        await ActiveUserHub.InitializeAsync();
+        await StatisticsHub.InitializeAsync();
+    }
 
+    private void SubscribeToHubEvents()
+    {
+        ActiveUserHub.ActiveUserCountChanged += UpdatePageViewersCount;
+        StatisticsHub.OnlineCountChanged += UpdateOnlineCount;
+        StatisticsHub.RecentBansCountChanged += UpdateBansCount;
+    }
+
+    private void UpdatePageViewersCount(int count)
+    {
+        _activeUserCount = count;
+        StateHasChanged();
+    }
+
+    private void UpdateOnlineCount(int count)
+    {
+        _online = count;
+        StateHasChanged();
+    }
+
+    private void UpdateBansCount(int count)
+    {
+        _bans = count;
+        StateHasChanged();
+    }
 }

@@ -25,7 +25,6 @@ public class ToggleCommunityActivationHandler : IRequestHandler<ToggleCommunityA
         if (instance is null || _apiKeyCache.IsEmpty) return false;
         instance.Active = !instance.Active;
 
-        // TODO: Check this
         if (instance.Active) _apiKeyCache.TryAdd(instance.CommunityGuid, instance.ApiKey);
         else _apiKeyCache.TryRemove(instance.CommunityGuid);
 

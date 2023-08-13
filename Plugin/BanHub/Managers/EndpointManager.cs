@@ -78,7 +78,7 @@ public class EndpointManager
             IpAddress = player.IPAddressString
         });
 
-        if (isBanned)
+        if (isBanned && !_banHubConfiguration.NotifyOnlyMode)
         {
             ProcessPlayer(player);
             return;
@@ -91,6 +91,13 @@ public class EndpointManager
         if (noteCount is not 0)
             InformAdmins(player.CurrentServer, _banHubConfiguration.Translations.UserHasNotes
                 .FormatExt(_banHubConfiguration.Translations.BanHubName, player.Name, noteCount));
+
+        if (isBanned)
+        {
+            InformAdmins(player.CurrentServer, _banHubConfiguration.Translations.UserIsBanned
+                .FormatExt(_banHubConfiguration.Translations.BanHubName, player.Name));
+            return;
+        }
 
         Profiles.TryAdd(player, identity);
     }
@@ -186,7 +193,7 @@ public class EndpointManager
 
         var parsedPenaltyType = Enum.TryParse<PenaltyType>(sourcePenaltyType, out var penaltyType);
         if (!parsedPenaltyType || !_communitySlim.Active) return (false, null);
-        if (penaltyType is not PenaltyType.Ban && origin.ClientId is 1) return (false, null);
+        if (penaltyType is not (PenaltyType.Ban or PenaltyType.TempBan or PenaltyType.Unban) && origin.ClientId is 1) return (false, null);
 
         var (isGlobalAntiCheatBan, isAntiCheatBan) = (false, false);
         var antiCheatReason = origin.AdministeredPenalties?.FirstOrDefault()?.AutomatedOffense;
@@ -221,7 +228,7 @@ public class EndpointManager
         return result;
     }
 
-    public async Task<bool> AddPlayerPenaltyEvidenceAsync(Guid guid, string evidence, EFClient issuer, EFClient offender)
+    public async Task<bool> AddPlayerPenaltyEvidenceAsync(Guid guid, string evidence, EFClient issuer)
     {
         var penalty = new AddPlayerPenaltyEvidenceCommand
         {

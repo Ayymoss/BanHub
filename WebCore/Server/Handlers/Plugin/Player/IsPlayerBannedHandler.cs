@@ -16,8 +16,6 @@ public class IsPlayerBannedHandler : IRequestHandler<IsPlayerBannedCommand, bool
         _context = context;
     }
 
-    // TODO: Consider improving this. Right now users who change both identifiers will be unbanned.
-    // Ban reference system? https://chat.openai.com/c/e8853a97-6810-4154-a08a-6812404a39f4
     public async Task<bool> Handle(IsPlayerBannedCommand request, CancellationToken cancellationToken)
     {
         var player = await _context.Players
