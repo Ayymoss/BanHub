@@ -40,7 +40,7 @@
         <MudTd DataLabel="Penalties">@(context.Penalties is 0 ? "None" : context.Penalties)</MudTd>
         <MudTd DataLabel="Online">
             <MudTooltip Arrow="true" Placement="Placement.Top" Text="@context.HeartBeat.ToString("yyyy-MM-dd HH:mm:ss")">
-                <MudChip Variant="Variant.Text" Size="Size.Small" Color="@(context.IsOnline ? Color.Info : Color.Warning)">
+                <MudChip Variant="Variant.Text" Size="Size.Small" Color="@(context.IsOnline ? Color.Info : Color.Warning)" Style="margin: 0">
                     @(context.IsOnline ? "Online" : "Offline")
                 </MudChip>
             </MudTooltip>

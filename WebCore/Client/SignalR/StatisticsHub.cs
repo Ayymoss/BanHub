@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+﻿using BanHubData.SignalR;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace BanHub.WebCore.Client.SignalR;
 
@@ -24,7 +25,6 @@ public class StatisticsHub : IAsyncDisposable
 #else
             .WithUrl("https://banhub.gg/SignalR/StatisticsHub")
 #endif
-            .AddJsonProtocol()
             .WithAutomaticReconnect()
             .Build();
     }
@@ -36,19 +36,18 @@ public class StatisticsHub : IAsyncDisposable
 
     private void SubscribeToHubEvents()
     {
-        _hubConnection?.On<int>("ReceiveOnlinePlayersCount", count => OnlineCountChanged?.Invoke(count));
-        _hubConnection?.On<int>("ReceiveRecentBansCount", count => RecentBansCountChanged?.Invoke(count));
+        _hubConnection?.On<int>(HubMethods.OnPlayerCountUpdate, count => OnlineCountChanged?.Invoke(count));
+        _hubConnection?.On<int>(HubMethods.OnRecentBansUpdate, count => RecentBansCountChanged?.Invoke(count));
     }
 
     private async Task FetchInitialCounts()
     {
         if (_hubConnection is null) return;
-        var onlineCount = await _hubConnection.InvokeAsync<int>("GetCurrentOnlinePlayers");
-        var bansCount = await _hubConnection.InvokeAsync<int>("GetCurrentRecentBans");
+        var onlineCount = await _hubConnection.InvokeAsync<int>(HubMethods.GetCurrentOnlinePlayers);
+        var bansCount = await _hubConnection.InvokeAsync<int>(HubMethods.GetCurrentRecentBans);
         OnlineCountChanged?.Invoke(onlineCount);
         RecentBansCountChanged?.Invoke(bansCount);
     }
-
 
     public async ValueTask DisposeAsync()
     {

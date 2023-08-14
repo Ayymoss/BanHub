@@ -6,7 +6,8 @@ public class BanHubConfiguration
 {
     [JsonIgnore] public const string Name = "Ban Hub";
     public bool EnableBanHub { get; set; } = true;
-    public bool PrintPenaltyToConsole { get; set; } = false;
+    public bool BroadcastGlobalBans { get; set; } = true;
+    public bool PrintPenaltiesToConsole { get; set; } = false;
     public bool NotifyOnlyMode { get; set; } = false;
     public string? CommunityNameOverride { get; set; }
     public string? CommunityWebsite { get; set; }
@@ -31,7 +32,8 @@ public class TranslationStrings
     public string CannotTargetServer { get; set; } = "{{plugin}} You cannot ban the console...";
     public string ProvideToken { get; set; } = "{{plugin}} Your token is {{token}} (expires in 5 minutes)";
     public string TokenGenerationFailed { get; set; } = "{{plugin}} Failed to generate token";
-    public string UserHasNotes { get; set; } = "{{plugin}} (Color::Accent){{user}} (Color::White)has (Color::Yellow){{count}} (Color::White)note(s). (Color::Yellow)Check the website for more info.";
-    public string UserIsBanned { get; set; } = "{{plugin}} (Color::Accent){{user}} (Color::White)is (Color::Red)Global Banned(Color::White). (Color::Yellow)Check the website for more info.";
+    public string UserHasNotes { get; set; } = "{{plugin}} (Color::Accent){{user}} (Color::White)has (Color::Yellow){{count}} (Color::White)note(s). (Color::Yellow)Check the website for more info";
+    public string UserIsBanned { get; set; } = "{{plugin}} (Color::Accent){{user}} (Color::White)is (Color::Red)Global Banned(Color::White). (Color::Yellow)Check the website for more info";
+    public string BroadcastGlobalBan { get; set; } = "{{plugin}} (Color::Accent){{user}} (Color::Grey)({{identity}}) (Color::Red)Global Banned";
     // @formatter:on
 }

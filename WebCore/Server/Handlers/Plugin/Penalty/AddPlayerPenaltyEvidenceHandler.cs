@@ -33,7 +33,6 @@ public class AddPlayerPenaltyEvidenceHandler : IRequestHandler<AddPlayerPenaltyE
         // Someone has already submitted evidence. Don't overwrite it.
         if (penalty.Evidence is not null) return ControllerEnums.ReturnState.Conflict;
 
-        // TODO: This needs to be updated in another way. Maybe remove required tags for efmodel -> using Attach.
         var newPenalty = await _context.Penalties
             .AsTracking()
             .FirstAsync(x => x.Id == penalty.Id, cancellationToken: cancellationToken);

@@ -1,7 +1,9 @@
-﻿using BanHub.Configuration;
+﻿using System.Text;
+using BanHub.Configuration;
 using BanHub.Managers;
 using BanHub.Models;
 using BanHub.Services;
+using BanHub.SignalR;
 using BanHubData.Commands.Community;
 using BanHubData.Commands.Community.Server;
 using BanHubData.Enums;
@@ -30,13 +32,15 @@ public class Plugin : IPluginV2
     private readonly BanHubConfiguration _config;
     private readonly ApplicationConfiguration _appConfig;
     private readonly WhitelistManager _whitelistManager;
+    private readonly PluginHub _pluginHub;
 
     public Plugin(CommunitySlim communitySlim, HeartbeatManager heartbeatManager, EndpointManager endpointManager,
-        BanHubConfiguration config, ApplicationConfiguration appConfig, WhitelistManager whitelistManager)
+        BanHubConfiguration config, ApplicationConfiguration appConfig, WhitelistManager whitelistManager, PluginHub pluginHub)
     {
         _config = config;
         _appConfig = appConfig;
         _whitelistManager = whitelistManager;
+        _pluginHub = pluginHub;
         _heartbeatManager = heartbeatManager;
         _endpointManager = endpointManager;
         _communitySlim = communitySlim;
@@ -63,6 +67,7 @@ public class Plugin : IPluginV2
         serviceCollection.AddSingleton<CommunityService>();
         serviceCollection.AddSingleton<ServerService>();
         serviceCollection.AddSingleton<NoteService>();
+        serviceCollection.AddSingleton<PluginHub>();
 
         serviceCollection.AddSingleton(new CommunitySlim());
         serviceCollection.AddSingleton<HeartbeatManager>();
@@ -127,9 +132,11 @@ public class Plugin : IPluginV2
 
     private async Task OnLoad(IManager manager, CancellationToken arg2)
     {
-        Console.WriteLine(_config.DebugMode
-            ? $"[{BanHubConfiguration.Name}] Loading... v{Version} !! DEBUG MODE !!"
-            : $"[{BanHubConfiguration.Name}] Loading... v{Version}");
+        var loadingMessage = new StringBuilder();
+        loadingMessage.AppendLine($"[{BanHubConfiguration.Name}] Loading... v{Version}");
+        if (_config.DebugMode) loadingMessage.Append(" !! DEBUG MODE !!");
+        
+        Console.WriteLine(loadingMessage);
 
         // Update the instance and check its state (Singleton)
         _communitySlim.CommunityGuid = Guid.Parse(_appConfig.Id);
@@ -175,6 +182,12 @@ public class Plugin : IPluginV2
         {
             Console.WriteLine($"[{BanHubConfiguration.Name}] Not activated. Read-only access.");
             Console.WriteLine($"[{BanHubConfiguration.Name}] To activate your access. Please visit https://discord.gg/Arruj6DWvp");
+        }
+
+        if (_config.BroadcastGlobalBans)
+        {
+            await _pluginHub.InitializeAsync(manager);
+            _pluginHub.OnGlobalBan += _endpointManager.OnGlobalBan;
         }
 
         _endpointManager.RegisterInteraction(manager);

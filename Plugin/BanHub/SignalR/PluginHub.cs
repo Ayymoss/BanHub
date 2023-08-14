@@ -1,29 +1,30 @@
-﻿using BanHub.WebCore.Shared.Models.Shared;
-using BanHubData.SignalR;
+﻿using BanHubData.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
+using SharedLibraryCore.Interfaces;
 
-namespace BanHub.WebCore.Client.SignalR;
+namespace BanHub.SignalR;
 
-public class ActiveUserHub : IAsyncDisposable
+public class PluginHub : IAsyncDisposable
 {
-    public event Action<int>? ActiveUserCountChanged;
+    public event Action<BroadcastGlobalBan, IManager>? OnGlobalBan;
     private HubConnection? _hubConnection;
+    private IManager? _manager;
 
-    public async Task InitializeAsync()
+    public async Task InitializeAsync(IManager manager)
     {
+        _manager = manager;
         CreateHubConnection();
         await StartConnection();
         SubscribeToHubEvents();
-        await FetchInitialCounts();
     }
 
     private void CreateHubConnection()
     {
         _hubConnection = new HubConnectionBuilder()
 #if DEBUG
-            .WithUrl("http://localhost:8123/SignalR/ActiveUsersHub")
+            .WithUrl("http://localhost:8123/SignalR/PluginHub")
 #else
-            .WithUrl("https://banhub.gg/SignalR/ActiveUsersHub")
+            .WithUrl("https://banhub.gg/SignalR/StatisticsHub")
 #endif
             .WithAutomaticReconnect()
             .Build();
@@ -36,14 +37,8 @@ public class ActiveUserHub : IAsyncDisposable
 
     private void SubscribeToHubEvents()
     {
-        _hubConnection?.On<int>(HubMethods.OnActiveUsersUpdate, count => ActiveUserCountChanged?.Invoke(count));
-    }
-
-    private async Task FetchInitialCounts()
-    {
-        if (_hubConnection is null) return;
-        var onlineCount = await _hubConnection.InvokeAsync<int>(HubMethods.GetActiveUsersCount);
-        ActiveUserCountChanged?.Invoke(onlineCount);
+        if (_manager is null) return;
+        _hubConnection?.On<BroadcastGlobalBan>(HubMethods.OnGlobalBan, ban => OnGlobalBan?.Invoke(ban, _manager));
     }
 
     public async ValueTask DisposeAsync()

@@ -11,6 +11,7 @@ using BanHubData.Commands.Community.Server;
 using BanHubData.Commands.Penalty;
 using BanHubData.Commands.Player;
 using BanHubData.Enums;
+using BanHubData.SignalR;
 using Microsoft.Extensions.Logging;
 using SharedLibraryCore;
 using SharedLibraryCore.Database.Models;
@@ -217,7 +218,7 @@ public class EndpointManager
         };
         var result = await _penalty.AddPlayerPenaltyAsync(penaltyDto);
 
-        if (_banHubConfiguration.PrintPenaltyToConsole)
+        if (_banHubConfiguration.PrintPenaltiesToConsole)
         {
             var guid = result.Item1 ? $"GUID: {result.Item2.ToString()}" : "Error creating penalty!";
             Console.WriteLine(
@@ -325,5 +326,14 @@ public class EndpointManager
                 return string.Join(".", commandResponse.Select(result => result.Response));
             }
         };
+    }
+
+    public void OnGlobalBan(BroadcastGlobalBan ban, IManager manager)
+    {
+        var servers = manager.GetServers();
+
+        foreach (var server in servers)
+            server.Broadcast(_banHubConfiguration.Translations.BroadcastGlobalBan
+                .FormatExt(_banHubConfiguration.Translations.BanHubName, ban.UserName, ban.Identity));
     }
 }

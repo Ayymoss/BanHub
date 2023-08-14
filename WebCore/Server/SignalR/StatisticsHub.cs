@@ -1,4 +1,6 @@
 ﻿using BanHub.WebCore.Server.Interfaces;
+using BanHub.WebCore.Shared.Models.Shared;
+using BanHubData.SignalR;
 using Microsoft.AspNetCore.SignalR;
 
 namespace BanHub.WebCore.Server.SignalR;
@@ -16,13 +18,13 @@ public class StatisticsHub : Hub
 
     public int GetCurrentRecentBans() => _statisticService.GetRecentBansCount();
 
-    public async Task BroadcastOnlinePlayers(int count)
+    public async Task BroadcastOnlinePlayersAsync(int count)
     {
-        await Clients.All.SendAsync("ReceiveOnlinePlayersCount", count);
+        await Clients.All.SendAsync(HubMethods.OnPlayerCountUpdate, count);
     }
 
-    public async Task BroadcastRecentBans(int count)
+    public async Task BroadcastRecentBansAsync(int count)
     {
-        await Clients.All.SendAsync("ReceiveRecentBansCount", count);
+        await Clients.All.SendAsync(HubMethods.OnRecentBansUpdate, count);
     }
 }

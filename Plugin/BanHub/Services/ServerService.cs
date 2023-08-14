@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net.Sockets;
+using System.Text.Json;
 using BanHub.Configuration;
 using BanHub.Interfaces;
 using BanHub.Utilities;
@@ -22,8 +23,7 @@ public class ServerService
     private readonly BanHubConfiguration _banHubConfiguration;
 
     private readonly AsyncRetryPolicy _retryPolicy = Policy
-        .Handle<HttpRequestException>(e =>
-            e.InnerException is TimeoutException || e.Message.Contains("timeout", StringComparison.OrdinalIgnoreCase))
+        .Handle<HttpRequestException>(e => e.InnerException is SocketException)
         .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
             (exception, retryDelay, context) =>
             {

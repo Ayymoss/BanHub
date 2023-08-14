@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Sockets;
 using BanHub.Configuration;
 using BanHub.Interfaces;
 using Humanizer;
@@ -20,8 +21,7 @@ public class NoteService
     private readonly BanHubConfiguration _banHubConfiguration;
 
     private readonly AsyncRetryPolicy _retryPolicy = Policy
-        .Handle<HttpRequestException>(e =>
-            e.InnerException is TimeoutException || e.Message.Contains("timeout", StringComparison.OrdinalIgnoreCase))
+        .Handle<HttpRequestException>(e => e.InnerException is SocketException)
         .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
             (exception, retryDelay, context) =>
             {
