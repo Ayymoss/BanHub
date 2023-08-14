@@ -53,9 +53,9 @@ public class PlayerService
                 return response.StatusCode is HttpStatusCode.Unauthorized;
             });
         }
-        catch (ApiException e)
+        catch (Exception e)
         {
-            if (e.StatusCode is HttpStatusCode.Unauthorized) return true;
+            if (e is ApiException {StatusCode: HttpStatusCode.Unauthorized}) return true;
             Console.WriteLine($"[{BanHubConfiguration.Name}] Error getting player ban state: {e.Message}");
         }
 
@@ -72,9 +72,9 @@ public class PlayerService
                 return response.StatusCode is HttpStatusCode.Unauthorized;
             });
         }
-        catch (ApiException e)
+        catch (Exception e)
         {
-            if (e.StatusCode is HttpStatusCode.Unauthorized) return true;
+            if (e is ApiException {StatusCode: HttpStatusCode.Unauthorized}) return true;
             Console.WriteLine($"[{BanHubConfiguration.Name}] Error getting player ban state: {e.Message}");
         }
 
@@ -93,7 +93,7 @@ public class PlayerService
                 return string.IsNullOrEmpty(result) ? null : result;
             });
         }
-        catch (ApiException e)
+        catch (Exception e)
         {
             var errorMessage = HelperMethods.ObscureGuid(e.Message);
             Console.WriteLine($"[{BanHubConfiguration.Name}] Error getting token: {errorMessage}");
@@ -123,7 +123,7 @@ public class PlayerService
                 return await response.Content.ReadAsStringAsync();
             });
         }
-        catch (ApiException e)
+        catch (Exception e)
         {
             var errorMessage = HelperMethods.ObscureGuid(e.Message);
             Console.WriteLine($"[{BanHubConfiguration.Name}] Error updating entity: {errorMessage}");

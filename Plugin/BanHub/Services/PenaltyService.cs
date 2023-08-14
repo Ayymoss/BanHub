@@ -63,7 +63,7 @@ public class PenaltyService
                 return (response.IsSuccessStatusCode && parsedState, guid);
             });
         }
-        catch (ApiException e)
+        catch (Exception e)
         {
             var errorMessage = HelperMethods.ObscureGuid(e.Message);
             Console.WriteLine($"[{BanHubConfiguration.Name}] Error posting penalty: {errorMessage}");
@@ -90,7 +90,7 @@ public class PenaltyService
 
             return response.IsSuccessStatusCode;
         }
-        catch (ApiException e)
+        catch (Exception e)
         {
             var errorMessage = HelperMethods.ObscureGuid(e.Message);
             Console.WriteLine($"[{BanHubConfiguration.Name}] Error submitting information: {errorMessage}");

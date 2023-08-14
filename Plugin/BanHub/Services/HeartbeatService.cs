@@ -57,7 +57,7 @@ public class HeartbeatService
                 return response.IsSuccessStatusCode;
             });
         }
-        catch (ApiException e)
+        catch (Exception e)
         {
             Console.WriteLine($"[{BanHubConfiguration.Name}] Error sending community heartbeat: {e.Message}");
         }
@@ -85,7 +85,7 @@ public class HeartbeatService
                 return response.IsSuccessStatusCode;
             });
         }
-        catch (ApiException e)
+        catch (Exception e)
         {
             var errorMessage = HelperMethods.ObscureGuid(e.Message);
             Console.WriteLine($"[{BanHubConfiguration.Name}] Error sending entity heartbeat: {errorMessage}");

@@ -57,7 +57,7 @@ public class CommunityService
                 return true;
             });
         }
-        catch (ApiException e)
+        catch (Exception e)
         {
             Console.WriteLine(
                 $"[{BanHubConfiguration.Name}] Error posting community: {e.Message} - JSON: {JsonSerializer.Serialize(community)}");
@@ -76,7 +76,7 @@ public class CommunityService
                 return response.StatusCode is HttpStatusCode.Accepted;
             });
         }
-        catch (ApiException e)
+        catch (Exception e)
         {
             Console.WriteLine($"[{BanHubConfiguration.Name}] Error getting community active state: {e.Message}");
         }

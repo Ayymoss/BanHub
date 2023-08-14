@@ -57,7 +57,7 @@ public class ServerService
                 return response.IsSuccessStatusCode;
             });
         }
-        catch (ApiException e)
+        catch (Exception e)
         {
             var errorMessage = HelperMethods.ObscureGuid(e.Message);
             Console.WriteLine($"[{BanHubConfiguration.Name}] Error posting server: {errorMessage}");

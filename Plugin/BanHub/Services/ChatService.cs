@@ -46,7 +46,7 @@ public class ChatService
                 return response.IsSuccessStatusCode;
             });
         }
-        catch (ApiException e)
+        catch (Exception e)
         {
             var errorMessage = HelperMethods.ObscureGuid(e.Message);
             Console.WriteLine($"[{BanHubConfiguration.Name}] Error sending chat messages: {errorMessage}");

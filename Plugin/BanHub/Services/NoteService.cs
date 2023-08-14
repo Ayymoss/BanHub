@@ -47,7 +47,7 @@ public class NoteService
                 return int.TryParse(count, out var result) ? result : 0;
             });
         }
-        catch (ApiException e)
+        catch (Exception e)
         {
             Console.WriteLine($"[{BanHubConfiguration.Name}] Error getting instance state: {e.Message}");
         }

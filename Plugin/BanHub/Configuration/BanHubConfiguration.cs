@@ -20,10 +20,10 @@ public class TranslationStrings
 {
     // @formatter:off
     // ReSharper disable once InconsistentNaming
-    public string BanHubName { get; set; } = "[(Color::Pink)BanHub(Color::White)]";
+    public string BanHubName { get; set; } = "[(Color::Red)BanHub(Color::White)]";
     public string CannotAuthIW4MAdmin { get; set; } = "{{plugin}} You cannot authenticate as IW4MAdmin";
     public string NotActive { get; set; } = "{{plugin}} is not active";
-    public string GlobalBanCommandSuccess { get; set; } = "{{plugin}} banned {{target}} for {{reason}} ({{guid}})";
+    public string GlobalBanCommandSuccess { get; set; } = "{{plugin}} Banned {{target}} for {{reason}} ({{guid}})";
     public string GlobalBanCommandSuccessFollow { get; set; } = "{{plugin}} (Color::Yellow)You must upload evidence (Color::Accent)!{{command}} (Color::Yellow)for global bans!";
     public string GlobalBanCommandFail { get; set; } = "{{plugin}} Ban Hub ban was not submitted";
     public string SubmitEvidenceSuccess { get; set; } = "{{plugin}} Evidence submitted";
@@ -32,8 +32,8 @@ public class TranslationStrings
     public string CannotTargetServer { get; set; } = "{{plugin}} You cannot ban the console...";
     public string ProvideToken { get; set; } = "{{plugin}} Your token is {{token}} (expires in 5 minutes)";
     public string TokenGenerationFailed { get; set; } = "{{plugin}} Failed to generate token";
-    public string UserHasNotes { get; set; } = "{{plugin}} (Color::Accent){{user}} (Color::White)has (Color::Yellow){{count}} (Color::White)note(s). (Color::Yellow)Check the website for more info";
-    public string UserIsBanned { get; set; } = "{{plugin}} (Color::Accent){{user}} (Color::White)is (Color::Red)Global Banned(Color::White). (Color::Yellow)Check the website for more info";
+    public string UserHasNotes { get; set; } = "{{plugin}} (Color::Accent){{user}} (Color::White)joined and has (Color::Yellow){{count}} (Color::White)note(s)";
+    public string UserIsBanned { get; set; } = "{{plugin}} (Color::Accent){{user}} (Color::White)joined and is (Color::Red)Global Banned(Color::White)";
     public string BroadcastGlobalBan { get; set; } = "{{plugin}} (Color::Accent){{user}} (Color::Grey)({{identity}}) (Color::Red)Global Banned";
     // @formatter:on
 }

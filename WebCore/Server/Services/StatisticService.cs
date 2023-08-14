@@ -4,6 +4,7 @@ using BanHub.WebCore.Server.Models;
 using BanHub.WebCore.Server.SignalR;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Enums;
+using BanHubData.SignalR;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -122,7 +123,7 @@ public class StatisticService : IStatisticService
             _statisticsTracking.OnlinePlayers.TryRemove(user, out _);
         }
 
-        await _hubContext.Clients.All.SendAsync("ReceiveOnlinePlayersCount", _statisticsTracking.OnlinePlayers.Count);
+        await _hubContext.Clients.All.SendAsync(HubMethods.OnPlayerCountUpdate, _statisticsTracking.OnlinePlayers.Count);
     }
 
     public async Task UpdateRecentBansStatisticAsync(StatisticBan statisticBan)
@@ -141,7 +142,7 @@ public class StatisticService : IStatisticService
             _statisticsTracking.RecentBans.TryRemove(ban, out _);
         }
 
-        await _hubContext.Clients.All.SendAsync("ReceiveRecentBansCount", _statisticsTracking.RecentBans.Count);
+        await _hubContext.Clients.All.SendAsync(HubMethods.OnRecentBansUpdate, _statisticsTracking.RecentBans.Count);
     }
 
     public int GetOnlinePlayerCount() => _statisticsTracking.OnlinePlayers.Count;

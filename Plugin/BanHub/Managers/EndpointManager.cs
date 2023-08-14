@@ -61,7 +61,7 @@ public class EndpointManager
 
     public async Task<bool> IsCommunityActive(Guid guid) => await _community.IsCommunityActiveAsync(guid.ToString());
 
-    public string EntityToPlayerIdentity(EFClient client) => $"{client.GuidString}:{client.GameName.ToString()}";
+    private static string EntityToPlayerIdentity(EFClient client) => $"{client.GuidString}:{client.GameName.ToString()}";
 
     public async Task OnStart(CreateOrUpdateServerCommand server)
     {
@@ -72,6 +72,7 @@ public class EndpointManager
     public async Task OnJoin(EFClient player)
     {
         if (!_communitySlim.Active) return;
+        if (player.IsBot) return;
         var identity = EntityToPlayerIdentity(player);
         var isBanned = await _playerService.IsPlayerBannedAsync(new IsPlayerBannedCommand
         {
@@ -81,7 +82,8 @@ public class EndpointManager
 
         if (isBanned && !_banHubConfiguration.NotifyOnlyMode)
         {
-            ProcessPlayer(player);
+            player.Kick("^1Globally banned!^7\nBanHub.gg", SharedLibraryCore.Utilities.IW4MAdminClient(player.CurrentServer));
+            _logger.LogInformation("{Name} globally banned", player.CleanedName);
             return;
         }
 
@@ -97,6 +99,8 @@ public class EndpointManager
         {
             InformAdmins(player.CurrentServer, _banHubConfiguration.Translations.UserIsBanned
                 .FormatExt(_banHubConfiguration.Translations.BanHubName, player.Name));
+            if (player.Level is Data.Models.Client.EFClient.Permission.User)
+                player.Flag("Ban Hub: Globally Banned", SharedLibraryCore.Utilities.IW4MAdminClient(player.CurrentServer));
             return;
         }
 
@@ -131,13 +135,7 @@ public class EndpointManager
         _logger.LogError("Failed to update entity {Identity}", createOrUpdate.PlayerIdentity);
         return (false, string.Empty);
     }
-
-    private void ProcessPlayer(EFClient client)
-    {
-        client.Kick("^1Globally banned!^7\nBanHub.gg", SharedLibraryCore.Utilities.IW4MAdminClient(client.CurrentServer));
-        _logger.LogInformation("{Name} globally banned", client.CleanedName);
-    }
-
+    
     public void RemoveFromProfiles(EFClient client)
     {
         Profiles.TryRemove(client, out _);

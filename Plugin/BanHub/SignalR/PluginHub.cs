@@ -24,7 +24,7 @@ public class PluginHub : IAsyncDisposable
 #if DEBUG
             .WithUrl("http://localhost:8123/SignalR/PluginHub")
 #else
-            .WithUrl("https://banhub.gg/SignalR/StatisticsHub")
+            .WithUrl("https://banhub.gg/SignalR/PluginHub")
 #endif
             .WithAutomaticReconnect()
             .Build();

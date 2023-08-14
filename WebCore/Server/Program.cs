@@ -122,9 +122,9 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.MapRazorPages();
+app.MapHub<PluginHub>("/SignalR/PluginHub");
 app.MapHub<ActiveUserHub>("/SignalR/ActiveUsersHub");
 app.MapHub<StatisticsHub>("/SignalR/StatisticsHub");
-app.MapHub<PluginHub>("/SignalR/PluginHub");
 
 app.UseCors("CorsSpecs");
 app.UseAuthentication();

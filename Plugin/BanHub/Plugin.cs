@@ -60,6 +60,9 @@ public class Plugin : IPluginV2
     {
         serviceCollection.AddConfiguration("BanHubSettings", new BanHubConfiguration());
 
+        serviceCollection.AddSingleton(new CommunitySlim());
+        serviceCollection.AddSingleton<PluginHub>();
+
         serviceCollection.AddSingleton<HeartbeatService>();
         serviceCollection.AddSingleton<ChatService>();
         serviceCollection.AddSingleton<PlayerService>();
@@ -67,9 +70,7 @@ public class Plugin : IPluginV2
         serviceCollection.AddSingleton<CommunityService>();
         serviceCollection.AddSingleton<ServerService>();
         serviceCollection.AddSingleton<NoteService>();
-        serviceCollection.AddSingleton<PluginHub>();
 
-        serviceCollection.AddSingleton(new CommunitySlim());
         serviceCollection.AddSingleton<HeartbeatManager>();
         serviceCollection.AddSingleton<EndpointManager>();
         serviceCollection.AddSingleton<WhitelistManager>();
@@ -133,9 +134,9 @@ public class Plugin : IPluginV2
     private async Task OnLoad(IManager manager, CancellationToken arg2)
     {
         var loadingMessage = new StringBuilder();
-        loadingMessage.AppendLine($"[{BanHubConfiguration.Name}] Loading... v{Version}");
+        loadingMessage.Append($"[{BanHubConfiguration.Name}] Loading... v{Version}");
         if (_config.DebugMode) loadingMessage.Append(" !! DEBUG MODE !!");
-        
+
         Console.WriteLine(loadingMessage);
 
         // Update the instance and check its state (Singleton)
@@ -191,7 +192,7 @@ public class Plugin : IPluginV2
         }
 
         _endpointManager.RegisterInteraction(manager);
-        SharedLibraryCore.Utilities.ExecuteAfterDelay(TimeSpan.FromMinutes(4), OnNotifyAfterDelayCompleted, CancellationToken.None);
+        await HeartbeatScheduler(CancellationToken.None);
     }
 
     private void UnloadPlugin(string message)
@@ -206,10 +207,10 @@ public class Plugin : IPluginV2
         Console.WriteLine($"[{BanHubConfiguration.Name}] {message}");
     }
 
-    private async Task OnNotifyAfterDelayCompleted(CancellationToken token)
+    private async Task HeartbeatScheduler(CancellationToken token)
     {
         await _heartbeatManager.CommunityHeartbeat(Version);
         if (_communitySlim.Active) await _heartbeatManager.ClientHeartbeat(Version);
-        SharedLibraryCore.Utilities.ExecuteAfterDelay(TimeSpan.FromMinutes(4), OnNotifyAfterDelayCompleted, CancellationToken.None);
+        SharedLibraryCore.Utilities.ExecuteAfterDelay(TimeSpan.FromMinutes(4), HeartbeatScheduler, CancellationToken.None);
     }
 }

@@ -102,7 +102,7 @@ public class NoteController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("NoteCount/{identity}"), PluginAuthentication]
+    [HttpGet("NoteCount/{identity}")]
     public async Task<ActionResult<int>> GetUserNotesCountAsync([FromRoute] string identity)
     {
         var result = await _mediator.Send(new GetNoteCountCommand {Identity = identity});

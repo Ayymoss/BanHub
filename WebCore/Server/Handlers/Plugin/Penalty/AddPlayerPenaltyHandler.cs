@@ -3,9 +3,12 @@ using BanHub.WebCore.Server.Events.DiscordWebhook;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Models;
 using BanHub.WebCore.Server.Models.Domains;
+using BanHub.WebCore.Server.SignalR;
 using BanHubData.Commands.Penalty;
 using BanHubData.Enums;
+using BanHubData.SignalR;
 using MediatR;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Handlers.Plugin.Penalty;
@@ -14,11 +17,13 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
 {
     private readonly DataContext _context;
     private readonly IStatisticService _statisticService;
+    private readonly IHubContext<PluginHub> _hubContext;
 
-    public AddPlayerPenaltyHandler(DataContext context, IStatisticService statisticService)
+    public AddPlayerPenaltyHandler(DataContext context, IStatisticService statisticService, IHubContext<PluginHub> hubContext)
     {
         _context = context;
         _statisticService = statisticService;
+        _hubContext = hubContext;
     }
 
     public async Task<(ControllerEnums.ReturnState, Guid?)> Handle(AddPlayerPenaltyCommand request, CancellationToken cancellationToken)
@@ -122,11 +127,18 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
         }
 
         if (request.PenaltyScope is PenaltyScope.Global)
+        {
+            await _hubContext.Clients.All.SendAsync(HubMethods.OnGlobalBan, new BroadcastGlobalBan
+            {
+                Identity = target.Identity,
+                UserName = target.UserName
+            }, cancellationToken: cancellationToken);
             await _statisticService.UpdateRecentBansStatisticAsync(new StatisticBan
             {
                 BanGuid = penaltyModel.PenaltyGuid,
                 Submitted = DateTimeOffset.UtcNow
             });
+        }
 
         await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.PenaltyCount, ControllerEnums.StatisticTypeAction.Add);
         _context.Penalties.Add(penaltyModel);
