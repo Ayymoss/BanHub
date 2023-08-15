@@ -19,8 +19,8 @@ public class BanHubConfiguration
 public class TranslationStrings
 {
     // @formatter:off
-    // ReSharper disable once InconsistentNaming
     public string BanHubName { get; set; } = "[(Color::Red)BanHub(Color::White)]";
+    // ReSharper disable once InconsistentNaming
     public string CannotAuthIW4MAdmin { get; set; } = "{{plugin}} You cannot authenticate as IW4MAdmin";
     public string NotActive { get; set; } = "{{plugin}} is not active";
     public string GlobalBanCommandSuccess { get; set; } = "{{plugin}} Banned {{target}} for {{reason}} ({{guid}})";

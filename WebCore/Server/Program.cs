@@ -80,10 +80,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         opt.Cookie.Name = "BanHubAccount";
         opt.LogoutPath = "/";
         opt.LoginPath = "/";
-#if !DEBUG
         opt.Cookie.SecurePolicy = CookieSecurePolicy.Always;
         opt.Cookie.SameSite = SameSiteMode.Strict;
-#endif
     });
 builder.Services.AddCors(options =>
 {
@@ -105,6 +103,7 @@ app.UseSwaggerUI();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    // TODO: Move Swagger to dev only
     app.UseWebAssemblyDebugging();
 }
 else
