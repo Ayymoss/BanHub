@@ -69,7 +69,7 @@ public class CreateOrUpdatePlayerHandler : IRequestHandler<CreateOrUpdatePlayerC
             }
 
             user.CommunityRole = request.PlayerCommunityRole;
-            user.HeartBeat = utcTimeNow;
+            user.Heartbeat = utcTimeNow;
             user.TotalConnections++;
             _context.Players.Update(user);
             await _context.SaveChangesAsync(cancellationToken);
@@ -81,7 +81,7 @@ public class CreateOrUpdatePlayerHandler : IRequestHandler<CreateOrUpdatePlayerC
         var entity = new EFPlayer
         {
             Identity = request.PlayerIdentity,
-            HeartBeat = utcTimeNow,
+            Heartbeat = utcTimeNow,
             WebRole = WebRole.User,
             CommunityRole = request.PlayerCommunityRole,
             Created = utcTimeNow,

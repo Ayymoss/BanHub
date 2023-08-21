@@ -1,4 +1,5 @@
 ﻿using BanHub.WebCore.Server.Services;
+using BanHub.WebCore.Shared.Commands.Chat;
 using BanHub.WebCore.Shared.Commands.Community;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Commands.Community;
@@ -88,12 +89,11 @@ public class CommunityController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("Profile/Servers/{identity}")]
+    [HttpPost("Profile/Servers")]
     public async Task<ActionResult<IEnumerable<Community>>> GetCommunityProfileServersAsync(
-        [FromRoute] string identity)
+        [FromBody] GetCommunityProfileServersPaginationCommand identity)
     {
-        if (!Guid.TryParse(identity, out var guid)) return BadRequest();
-        var result = await _mediator.Send(new GetCommunityProfileServersCommand {Identity = guid});
+        var result = await _mediator.Send(identity);
         return Ok(result);
     }
 
@@ -111,5 +111,28 @@ public class CommunityController : ControllerBase
 
         if (!result) return NotFound();
         return Ok();
+    }
+
+    [HttpPost("Profile/Penalties")]
+    public async Task<ActionResult<IEnumerable<Shared.Models.PlayerProfileView.Penalty>>> GetCommunityPenaltiesAsync(
+        [FromBody] GetCommunityProfilePenaltiesPaginationCommand pagination)
+    {
+        var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
+
+        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             CommunityRole.Moderator,
+                             CommunityRole.Administrator,
+                             CommunityRole.SeniorAdmin,
+                             CommunityRole.Owner
+                         }, _signedInUsers.IsUserInCommunityRole) ||
+                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         {
+                             WebRole.Admin,
+                             WebRole.SuperAdmin
+                         }, _signedInUsers.IsUserInWebRole);
+
+        var result = await _mediator.Send(pagination);
+        return Ok(result);
     }
 }

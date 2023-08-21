@@ -26,10 +26,10 @@ public class DeleteNoteHandler : IRequestHandler<DeleteNoteCommand, bool>
             .Select(x => new
             {
                 x.NoteGuid,
-                AdminIdentity = x.Issuer.Identity,
-                AdminUserName = x.Issuer.CurrentAlias.Alias.UserName,
-                TargetUserName = x.Recipient.CurrentAlias.Alias.UserName,
-                TargetIdentity = x.Recipient.Identity,
+                IssuerIdentity = x.Issuer.Identity,
+                IssuerUserName = x.Issuer.CurrentAlias.Alias.UserName,
+                RecipientUserName = x.Recipient.CurrentAlias.Alias.UserName,
+                RecipientIdentity = x.Recipient.Identity,
                 x.Message,
                 x.IsPrivate
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
@@ -38,16 +38,16 @@ public class DeleteNoteHandler : IRequestHandler<DeleteNoteCommand, bool>
         await _context.SaveChangesAsync(cancellationToken);
 
         var message = noteInfo is null
-            ? $"Note **{note.NoteGuid}** was deleted by **{request.ActionAdminIdentity}** but no information could be found."
+            ? $"Note **{note.NoteGuid}** was deleted by **{request.IssuerIdentity}** but no information could be found."
             : $"**Note**: {noteInfo.NoteGuid}\n" +
-              $"**Admin**: {noteInfo.AdminIdentity}\n" +
-              $"**Admin**: [{noteInfo.AdminUserName}](https://BanHub.gg/Players/{noteInfo.AdminIdentity})\n" +
-              $"**Target**: {noteInfo.TargetIdentity}\n" +
-              $"**Target**: [{noteInfo.TargetUserName}](https://BanHub.gg/Players/{noteInfo.TargetIdentity})\n" +
+              $"**Admin**: {noteInfo.IssuerIdentity}\n" +
+              $"**Admin**: [{noteInfo.IssuerUserName}](https://BanHub.gg/Players/{noteInfo.IssuerIdentity})\n" +
+              $"**Target**: {noteInfo.RecipientIdentity}\n" +
+              $"**Target**: [{noteInfo.RecipientUserName}](https://BanHub.gg/Players/{noteInfo.RecipientIdentity})\n" +
               $"**Note**: {noteInfo.Message}\n" +
               $"**Was Private?**: {(noteInfo.IsPrivate ? "Yes" : "No")}\n\n" +
-              $"**Deleted By**: [{request.ActionAdminUserName}](https://BanHub.gg/Players/{request.ActionAdminIdentity})\n" +
-              $"**Deleted For**: {request.ActionDeletionReason}";
+              $"**Deleted By**: [{request.IssuerUserName}](https://BanHub.gg/Players/{request.IssuerIdentity})\n" +
+              $"**Deleted For**: {request.DeletionReason}";
 
         IDiscordWebhookSubscriptions.InvokeEvent(new CreateAdminActionEvent
         {

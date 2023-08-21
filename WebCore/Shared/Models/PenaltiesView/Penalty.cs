@@ -4,11 +4,11 @@ namespace BanHub.WebCore.Shared.Models.PenaltiesView;
 
 public class Penalty
 {
-    public string TargetIdentity { get; set; }
-    public string TargetUserName { get; set; }
-    public string AdminIdentity { get; set; }
+    public string RecipientIdentity { get; set; }
+    public string RecipientUserName { get; set; }
+    public string IssuerIdentity { get; set; }
+    public string IssuerUserName { get; set; }
     public Guid PenaltyGuid { get; set; }
-    public string AdminUserName { get; set; }
     public string Reason { get; set; }
     public string? Evidence { get; set; }
     public string CommunityName { get; set; }

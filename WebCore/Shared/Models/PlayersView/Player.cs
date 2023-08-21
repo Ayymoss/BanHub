@@ -7,5 +7,5 @@ public class Player
     public int Penalties { get; set; }
     public bool IsOnline { get; set; }
     public DateTimeOffset Created { get; set; }
-    public DateTimeOffset HeartBeat { get; set; }
+    public DateTimeOffset Heartbeat { get; set; }
 }

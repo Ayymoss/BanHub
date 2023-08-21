@@ -1,90 +1,52 @@
 ﻿@page "/Players"
 @using Player = BanHub.WebCore.Shared.Models.PlayersView.Player
-@inject PlayersService PlayersService
+@using Orientation = Radzen.Orientation
 
 <PageTitle>Players | Ban Hub</PageTitle>
 
-<MudPaper Elevation="2" Class="d-flex flex-row justify-space-between align-center pa-4 rounded-b-0">
-    <MudText Typo="Typo.h4" Align="Align.Center" Class="mud-text-secondary">Players</MudText>
-    <MudElement Class="ml-2 mt-0">
-        <MudTextField T="string" ValueChanged="OnSearch" AutoFocus="false" Placeholder="Filter"
-                      Variant="Variant.Outlined" Adornment="Adornment.End" Margin="Margin.Dense" AdornmentIcon="@Icons.Material.Filled.Search"
-                      AdornmentColor="Color.Default"/>
-    </MudElement>
-</MudPaper>
-<MudTable Striped="true" HeaderClass="mud-theme-info-darken" Outlined="false" Bordered="false"
-          ServerData="@(new Func<TableState, Task<TableData<Player>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true"
-          @ref="_table">
-    <HeaderContent>
-        <MudTh Class="py-2">
-            <MudTableSortLabel SortLabel="Id" T="Player">ID</MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortLabel="Name" T="Player">Name</MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortLabel="Penalties" T="Player">Penalties</MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="Online" T="Player">Online?</MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortLabel="Created" T="Player">Created</MudTableSortLabel>
-        </MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="Id">@context.Identity</MudTd>
-        <MudTd DataLabel="Name">
-            <MudLink Href="@($"/Players/{context.Identity}")" Typo="Typo.body2" Color="Color.Info">@context.UserName</MudLink>
-        </MudTd>
-        <MudTd DataLabel="Penalties">@(context.Penalties is 0 ? "None" : context.Penalties)</MudTd>
-        <MudTd DataLabel="Online">
-            <MudTooltip Arrow="true" Placement="Placement.Top" Text="@context.HeartBeat.ToString("yyyy-MM-dd HH:mm:ss")">
-                <MudChip Variant="Variant.Text" Size="Size.Small" Color="@(context.IsOnline ? Color.Info : Color.Warning)" Style="margin: 0">
-                    @(context.IsOnline ? "Online" : "Offline")
-                </MudChip>
-            </MudTooltip>
-        </MudTd>
-        <MudTd DataLabel="Created">
-            <MudTooltip Arrow="true" Placement="Placement.Top" Text="@context.Created.ToString("yyyy-MM-dd HH:mm:ss")">
-                <MudText Typo="Typo.body2">@context.Created.Humanize()</MudText>
-            </MudTooltip>
-        </MudTd>
-    </RowTemplate>
-    <NoRecordsContent>
-        <MudText Class="mb-8" Color="Color.Warning">No players found.</MudText>
-    </NoRecordsContent>
-    <LoadingContent>
-        <MudText>Loading...</MudText>
-    </LoadingContent>
-    <PagerContent>
-        <MudTablePager PageSizeOptions="new[] {20, 50, 100}"/>
-    </PagerContent>
-</MudTable>
-
-@code
-{
-    private MudTable<Player>? _table;
-    private string? _searchString;
-
-    private async Task<TableData<Player>> ServerReload(TableState state)
-    {
-        var paginationQuery = new GetPlayersPaginationCommand
-        {
-            Page = state.Page,
-            PageSize = state.PageSize,
-            SortLabel = state.SortLabel,
-            SortDirection = (int)state.SortDirection,
-            SearchString = _searchString,
-        };
-
-        var context = await PlayersService.GetPlayersAsync(paginationQuery);
-        return new TableData<Player> {TotalItems = context.Count, Items = context.Data};
-    }
-
-    private void OnSearch(string text)
-    {
-        _searchString = text;
-        _table!.ReloadServerData();
-    }
-}
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
+        <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.DisplayH4" Text="Players" class="rz-mb-0 rz-mt-2"/>
+        <RadzenFormField Text="Search" Variant="Radzen.Variant.Outlined">
+            <ChildContent>
+                <RadzenTextBox @bind-Value="_searchString" Change="OnSearch"/>
+            </ChildContent>
+            <End>
+                <RadzenIcon Icon="search" IconStyle="IconStyle.Info"/>
+            </End>
+        </RadzenFormField>
+    </RadzenStack>
+    <RadzenDataGrid @ref="_dataGrid" TItem="Player" IsLoading="@_isLoading" Count="@_count" Data="@_playerTable" LoadData="@LoadData"
+                    Density="Density.Compact" AllowPaging="true" PageSize="20" AllowSorting="true" PagerAlwaysVisible="true"
+                    PagerHorizontalAlign="HorizontalAlign.Center" PageSizeOptions="new[] {20, 50, 100}" ShowPagingSummary="true"
+                    PagingSummaryFormat="Displaying page {0} of {1} <b>(total {2} records)</b>" AllowColumnResize="true" Style="min-height: 200px">
+        <Columns>
+            <RadzenDataGridColumn TItem="Player" Property="Identity" Title="ID"/>
+            <RadzenDataGridColumn TItem="Player" Property="UserName" Title="Name">
+                <Template Context="context">
+                    <RadzenLink Path="@($"/Players/{context.Identity}")" Text="@context.UserName"/>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Player" Property="Penalties" Title="Penalties">
+                <Template Context="context">
+                    @(context.Penalties is 0 ? "None" : context.Penalties)
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Player" Property="Heartbeat" Title="Online" SortOrder="SortOrder.Descending">
+                <Template Context="context">
+                    <RadzenBadge BadgeStyle="@(context.IsOnline ? BadgeStyle.Info : BadgeStyle.Warning)" Shade="Shade.Lighter"
+                                 IsPill="true" Variant="Radzen.Variant.Flat" Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem"
+                                 Text="@(context.IsOnline ? "Online" : "Offline")"/>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Player" Property="Created" Title="Created">
+                <Template Context="context">
+                    @context.Created.Humanize()
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+        <EmptyTemplate>
+            <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.H6" class="rz-my-4" Text="There are no players..."/>
+        </EmptyTemplate>
+    </RadzenDataGrid>
+</RadzenCard>

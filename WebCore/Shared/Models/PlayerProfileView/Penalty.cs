@@ -5,8 +5,8 @@ namespace BanHub.WebCore.Shared.Models.PlayerProfileView;
 public class Penalty
 {
     public Guid PenaltyGuid { get; set; }
-    public string AdminIdentity { get; set; }
-    public string AdminUserName { get; set; }
+    public string IssuerIdentity { get; set; }
+    public string IssuerUserName { get; set; }
     public string Reason { get; set; }
     public string? Evidence { get; set; }
     public string CommunityName { get; set; }

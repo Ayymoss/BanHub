@@ -44,20 +44,4 @@ public class NoteService
 
         return false;
     }
-
-    public async Task<IEnumerable<Note>> GetNotesAsync(string identity)
-    {
-        try
-        {
-            var response = await _api.GetNotesAsync(identity);
-            var result = await response.DeserializeHttpResponseContentAsync<IEnumerable<Note>>();
-            return result ?? new List<Note>();
-        }
-        catch (ApiException e)
-        {
-            Console.WriteLine($"API->Failed to get player notes: {e.Message}");
-        }
-
-        return new List<Note>();
-    }
 }

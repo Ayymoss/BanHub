@@ -1,5 +1,6 @@
 ﻿using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Shared.Commands.Chat;
+using BanHub.WebCore.Shared.Commands.PlayerProfile;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Commands.Chat;
@@ -27,8 +28,8 @@ public class ChatController : ControllerBase
         return Ok();
     }
 
-    [HttpPost("Pagination")]
-    public async Task<ActionResult<PaginationContext<Chat>>> GetChatPaginationAsync([FromBody] GetChatPaginationCommand penaltiesPagination)
+    [HttpPost("Profile/Chat")]
+    public async Task<ActionResult<PaginationContext<Chat>>> GetChatPaginationAsync([FromBody] GetProfileChatPaginationCommand penaltiesPagination)
     {
         var result = await _mediator.Send(penaltiesPagination);
         return Ok(result);

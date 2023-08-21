@@ -1,0 +1,43 @@
+﻿@using Orientation = Radzen.Orientation
+@using DialogService = Radzen.DialogService
+
+<RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" class="rz-mb-4">
+    <RadzenFormField Text="Filter" Variant="Radzen.Variant.Outlined">
+        <ChildContent>
+            <RadzenTextBox @bind-Value="_searchString" Change="OnSearch"/>
+        </ChildContent>
+        <End>
+            <RadzenIcon Icon="search" IconStyle="IconStyle.Info"/>
+        </End>
+    </RadzenFormField>
+</RadzenStack>
+<RadzenDataGrid @ref="_dataGrid" TItem="Note" IsLoading="@_loading" Count="@_totalCount" Data="@_data" LoadData="@LoadData"
+                Density="Density.Compact" AllowPaging="true" PageSize="10" AllowSorting="true" PagerAlwaysVisible="true"
+                PagerHorizontalAlign="HorizontalAlign.Center" PageSizeOptions="new[] {10, 20}" ShowPagingSummary="true"
+                PagingSummaryFormat="Displaying page {0} of {1} <b>(total {2} records)</b>" AllowColumnResize="true" RowClick="RowClickEvent" Style="min-height: 200px">
+    <Columns>
+        <RadzenDataGridColumn TItem="Note" Width="40px" TextAlign="TextAlign.Start" Sortable="false" Frozen="true">
+            <Template Context="context">
+                <RadzenIcon Icon="@(context.IsPrivate ? "lock" : "public")"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Note" Property="Message" Title="Message"/>
+        <RadzenDataGridColumn TItem="Note" Property="IssuerUserName" Title="Issuer">
+            <Template Context="context">
+                <RadzenLink Path="@($"/Players/{context.AdminIdentity}")" Text="@context.IssuerUserName"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Note" Property="Created" Title="Created" SortOrder="SortOrder.Descending"/>
+        @if (!Privileged) // TODO revert !
+        {
+            <RadzenDataGridColumn TItem="Note" Width="40px" TextAlign="TextAlign.End" Sortable="false" Frozen="true">
+                <Template>
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Warning" Shade="Shade.Lighter" Size="ButtonSize.ExtraSmall"/>
+                </Template>
+            </RadzenDataGridColumn>
+        }
+    </Columns>
+    <EmptyTemplate>
+        <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.H6" class="rz-my-4" Text="The user has no penalties."/>
+    </EmptyTemplate>
+</RadzenDataGrid>

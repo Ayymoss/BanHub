@@ -10,8 +10,8 @@ public class SignedInUsers
 
     public void AddUser(WebUser user) => _users.TryAdd(user.SignedInGuid, user);
 
-    public static bool IsUserInRole<T>(string? signedInGuid, IEnumerable<T> roles, Func<string, T, bool> roleChecker)
-        where T : Enum => signedInGuid is not null && roles.Any(role => roleChecker(signedInGuid, role));
+    public static bool IsUserInRole<TEnum>(string? signedInGuid, IEnumerable<TEnum> roles, Func<string, TEnum, bool> roleChecker)
+        where TEnum : Enum => signedInGuid is not null && roles.Any(role => roleChecker(signedInGuid, role));
 
     public bool IsUserInWebRole(string signedInGuid, WebRole role)
     {
@@ -24,8 +24,6 @@ public class SignedInUsers
         _users.TryGetValue(signedInGuid, out var user);
         return user is not null && role.ToString() == user.CommunityRole;
     }
-
-    public bool IsUserSignedIn(string signedInGuid) => _users.ContainsKey(signedInGuid);
 
     public WebUser? GetSignedInUser(string signedInGuid) =>
         !_users.TryGetValue(signedInGuid, out var profile) ? null : profile;

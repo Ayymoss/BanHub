@@ -33,7 +33,7 @@ public class PlayerHeartbeatHandler : IRequestHandler<PlayersHeartbeatCommand, b
 
         foreach (var profile in profiles)
         {
-            profile.HeartBeat = DateTimeOffset.UtcNow;
+            profile.Heartbeat = DateTimeOffset.UtcNow;
             profile.PlayTime = profile.PlayTime.Add(new TimeSpan(0, 0, 4, 0));
             _context.Players.Update(profile);
         }

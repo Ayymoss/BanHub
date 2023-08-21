@@ -3,6 +3,7 @@ using BanHub.WebCore.Shared.Commands.Community;
 using BanHub.WebCore.Shared.Models.CommunityProfileView;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHub.WebCore.Client.Utilities;
+using BanHub.WebCore.Shared.Commands.Chat;
 using RestEase;
 using Community = BanHub.WebCore.Shared.Models.CommunitiesView.Community;
 
@@ -48,23 +49,24 @@ public class CommunityService
 
         return new WebCore.Shared.Models.CommunityProfileView.Community();
     }
-    
-    public async Task<IEnumerable<Server>> GetCommunityProfileServersAsync(string identity)
+
+    public async Task<PaginationContext<Server>> GetCommunityProfileServersPaginationAsync(
+        GetCommunityProfileServersPaginationCommand pagination)
     {
         try
         {
-            var response = await _api.GetCommunityProfileServersAsync(identity);
-            var result = await response.DeserializeHttpResponseContentAsync<IEnumerable<Server>>();
-            return result ?? new List<Server>();
+            var response = await _api.GetCommunityProfileServersPaginationAsync(pagination);
+            var result = await response.DeserializeHttpResponseContentAsync<PaginationContext<Server>>();
+            return result ?? new PaginationContext<Server>();
         }
         catch (ApiException e)
         {
             Console.WriteLine($"API->Failed to get instances: {e.Message}");
         }
 
-        return new List<Server>();
+        return new PaginationContext<Server>();
     }
-    
+
     public async Task<bool> ToggleCommunityActivationAsync(string identity)
     {
         try
@@ -78,5 +80,22 @@ public class CommunityService
         }
 
         return false;
+    }
+
+    public async Task<PaginationContext<Penalty>> GetCommunityProfilePenaltiesPaginationAsync(
+        GetCommunityProfilePenaltiesPaginationCommand paginationQuery)
+    {
+        try
+        {
+            var response = await _api.GetCommunityProfilePenaltiesPaginationAsync(paginationQuery);
+            var result = await response.DeserializeHttpResponseContentAsync<PaginationContext<Penalty>>();
+            return result ?? new PaginationContext<Penalty>();
+        }
+        catch (ApiException e)
+        {
+            Console.WriteLine($"API->Failed to get community penalties: {e.Message}");
+        }
+
+        return new PaginationContext<Penalty>();
     }
 }

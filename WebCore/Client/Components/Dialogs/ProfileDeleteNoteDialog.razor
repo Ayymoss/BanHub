@@ -1,0 +1,23 @@
+﻿@using AlignItems = Radzen.AlignItems
+@using Orientation = Radzen.Orientation
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="0">
+    <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+        <RadzenText Text="You're about to delete this note" TextStyle="TextStyle.Subtitle1" class="rz-mb-0"/>
+        <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-mb-0 rz-text-tertiary-color">
+            @Note.Message by @Note.IssuerUserName
+        </RadzenText>
+        <RadzenFormField Text="Reason" Variant="Radzen.Variant.Outlined" Style="min-width:300px;width:75%">
+            <ChildContent>
+                <RadzenTextBox @bind-Value="_deletionReason"/>
+            </ChildContent>
+            <End>
+                <RadzenIcon Icon="warning" IconStyle="IconStyle.Info"/>
+            </End>
+        </RadzenFormField>
+    </RadzenStack>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mt-4">
+        <RadzenText TextStyle="TextStyle.Caption" class="rz-mb-0 rz-color-danger" Text="This action is logged"/>
+        <RadzenButton Click="DeletePenalty" Text="Delete" ButtonStyle="ButtonStyle.Success" IsBusy="_processing" BusyText="Deleting..."/>
+    </RadzenStack>
+</RadzenStack>

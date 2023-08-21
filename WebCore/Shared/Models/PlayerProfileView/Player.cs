@@ -15,4 +15,9 @@ public class Player
     public string? IpAddress { get; set; }
     public CommunityRole CommunityRole { get; set; }
     public WebRole WebRole { get; set; }
+    public string? LastConnectedServerName { get; set; }
+    public string? LastConnectedCommunityName { get; set; }
+    public int PenaltyCount { get; set; }
+    public int NoteCount { get; set; }
+    public int ChatCount { get; set; }
 }

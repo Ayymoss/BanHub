@@ -15,23 +15,7 @@ public class ChatService
     private const string ApiHost = "https://banhub.gg/api";
 #endif
     private readonly IChatService _api = RestClient.For<IChatService>(ApiHost);
-
-    public async Task<PaginationContext<Chat>> GetChatPaginationAsync(GetChatPaginationCommand paginationQuery)
-    {
-        try
-        {
-            var response = await _api.GetChatPaginationAsync(paginationQuery);
-            var result = await response.DeserializeHttpResponseContentAsync<PaginationContext<Chat>>();
-            return result ?? new PaginationContext<Chat>();
-        }
-        catch (ApiException e)
-        {
-            Console.WriteLine($"API->Failed to get chat: {e.Message}");
-        }
-
-        return new PaginationContext<Chat>();
-    }
-
+    
     public async Task<int> GetChatCountAsync(string identity)
     {
         try

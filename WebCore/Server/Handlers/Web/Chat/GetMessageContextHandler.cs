@@ -25,7 +25,8 @@ public class GetMessageContextHandler : IRequestHandler<GetMessageContextCommand
             {
                 Submitted = x.Submitted,
                 Message = x.Message,
-                PlayerUserName = x.Player.CurrentAlias.Alias.UserName
+                PlayerUserName = x.Player.CurrentAlias.Alias.UserName,
+                PlayerIdentity = x.Player.Identity
             }).ToListAsync(cancellationToken: cancellationToken);
 
         var result = new ChatContextRoot

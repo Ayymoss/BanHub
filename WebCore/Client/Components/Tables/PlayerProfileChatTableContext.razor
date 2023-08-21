@@ -1,0 +1,22 @@
+﻿@using Orientation = Radzen.Orientation
+@using AlignItems = Radzen.AlignItems
+
+@if (!Context.Loaded)
+{
+    <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+}
+else
+{
+    <RadzenStack Orientation="Orientation.Vertical" Gap="0">
+        @foreach (var chat in Context.Messages)
+        {
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.25rem"
+                         class="@(chat.Submitted == Chat.Submitted ? "rz-background-color-base-400 rz-border-radius-2 rz-pl-1" : "rz-pl-1")">
+                <RadzenText TextStyle="TextStyle.Body2" Text="@chat.Submitted.ToString("hh:mm:ss")" class="rz-color-secondary"/>
+                <RadzenLink Path="@($"/Players/{chat.PlayerIdentity}")" Text="@chat.PlayerUserName"/>
+                <RadzenText TextStyle="TextStyle.Body2" Text="—" class="rz-color-primary"/>
+                <RadzenText TextStyle="TextStyle.Body2" Text="@chat.Message"/>
+            </RadzenStack>
+        }
+    </RadzenStack>
+}

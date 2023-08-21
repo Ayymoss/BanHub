@@ -14,19 +14,19 @@ public class SearchService
 #endif
     private readonly ISearchService _api = RestClient.For<ISearchService>(ApiHost);
 
-    public async Task<IEnumerable<Search>> GetPlayersAsync(string query)
+    public async Task<Search> GetSearchResultsAsync(string query)
     {
         try
         {
             var response = await _api.GetSearchResultsAsync(query);
-            var result = await response.DeserializeHttpResponseContentAsync<IEnumerable<Search>>();
-            return result ?? new List<Search>();
+            var result = await response.DeserializeHttpResponseContentAsync<Search>();
+            return result ?? new Search();
         }
         catch (ApiException e)
         {
             Console.WriteLine($"API->Failed to get players pagination: {e.Message}");
         }
 
-        return new List<Search>();
+        return new Search();
     }
 }

@@ -1,0 +1,20 @@
+﻿<button @onclick="DropTomatoes">🍅 Click me!</button>
+
+@foreach (var tomato in _tomatoes)
+{
+    var rotationAnimation = tomato.RotationDirection == "clockwise"
+        ? $"rotateClockwise {tomato.RotationSpeed}s infinite linear"
+        : $"rotateCounterClockwise {tomato.RotationSpeed}s infinite linear";
+
+    var fallingAnimation = tomato.RotationDirection == "clockwise"
+        ? $"dropRotateClockwise {tomato.FallSpeed * 0.5}s linear forwards"
+        : $"dropRotateCounterClockwise {tomato.FallSpeed * 0.5}s linear forwards";
+
+    <div class="tomato-wrapper"
+         id="@tomato.Id"
+         style="@($"left: {tomato.LeftPosition}vw; top: {tomato.TopPosition}vh; animation: {fallingAnimation}")">
+        <div class="tomato" style="@($"font-size: {tomato.Size}px; animation: {rotationAnimation}")">
+            @(tomato.IsRotten ? "🤢" : "🍅")
+        </div>
+    </div>
+}

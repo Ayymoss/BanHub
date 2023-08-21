@@ -1,620 +1,168 @@
 ﻿@page "/Players/{Identity}"
-@using Note = BanHub.WebCore.Shared.Models.PlayerProfileView.Note
-@using Penalty = BanHub.WebCore.Shared.Models.PlayerProfileView.Penalty
-@using Player = BanHub.WebCore.Shared.Models.PlayerProfileView.Player
-@inject IDialogService DialogService
-@inject AuthenticationStateProvider AuthStateProvider
-@inject NavigationManager NavigationManager
-@inject PlayerProfileService PlayerProfileService
-@inject NoteService NoteService
-@inject ChatService ChatService
-@inject PenaltyService PenaltyService
-@implements IAsyncDisposable
+@using Orientation = Radzen.Orientation
+@using AlignItems = Radzen.AlignItems
 
 <PageTitle>@_title | Profile | Ban Hub</PageTitle>
-@if (_loading)
-{
-    <MudText Typo="Typo.h4">Loading...</MudText>
-    <MudProgressLinear Color="Color.Info" Size="Size.Large" Indeterminate="true" Class="my-7"/>
-}
-else
-{
-    @if (_player is null)
+
+<RadzenCard>
+    @if (_loading)
     {
-        <MudText Typo="Typo.h4">Profile not found!</MudText>
-        <MudText Typo="Typo.body1" Color="Color.Info">Provided identity doesn't exist.</MudText>
+        <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
     }
     else
     {
-        <MudElement Class="d-flex align-center">
-            <MudElement Class="d-flex align-center">
-                <MudText Typo="Typo.h4" Class="mud-text-secondary d-flex align-center">
-                    @_player.UserName
-                    <MudText Typo="Typo.h4" Color="Color.Info" Class="mx-1 mt-1">&bull;</MudText>
-                    @_guid
-                    <MudText Typo="Typo.h4" Color="Color.Info" Class="mx-1 mt-1">&bull;</MudText>
-                    @_gameName
+        @if (_player is null)
+        {
+            <RadzenText TextStyle="TextStyle.DisplayH4" Text="Profile not found!" class="rz-mb-0"/>
+            <RadzenText TextStyle="TextStyle.Body1" Text="Provided identity doesn't exist." class="rz-mb-0"/>
+        }
+        else
+        {
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center"
+                         Gap="0.1rem" class="rz-mb-4 rz-mx-1">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+                    <RadzenText TextStyle="TextStyle.H4" Text="@_player.UserName" class="rz-text-tertiary-color rz-mb-0"/>
+                    <RadzenText TextStyle="TextStyle.H4" class="rz-color-primary rz-mb-0">&bull;</RadzenText>
+                    <RadzenText TextStyle="TextStyle.H4" Text="@_guid" class="rz-text-tertiary-color rz-mb-0"/>
+                    <RadzenText TextStyle="TextStyle.H4" class="rz-color-primary rz-mb-0">&bull;</RadzenText>
+                    <RadzenText TextStyle="TextStyle.H4" Text="@_gameName" class="rz-text-tertiary-color rz-mb-0"/>
                     @if (_player.IpAddress is not null)
                     {
-                        <MudText Typo="Typo.h4" Color="Color.Info" Class="mx-1 mt-1">&bull;</MudText>
-                        @_player.IpAddress
+                        <RadzenText TextStyle="TextStyle.H4" class="rz-color-primary rz-mb-0">&bull;</RadzenText>
+                        <RadzenText TextStyle="TextStyle.H4" Text="@_player.IpAddress" class="rz-text-tertiary-color rz-mb-0"/>
                     }
-                </MudText>
-            </MudElement>
-            <MudSpacer/>
-            <MudElement>
-                @if (_player.IsGloballyBanned)
-                {
-                    <MudButton Class="mr-2" Href="https://discord.gg/UHdqh6ZfjM" Target="_blank" StartIcon="@Icons.Material.Filled.Undo"
-                               IconSize="Size.Large" Color="Color.Error" IconColor="Color.Error" Size="Size.Large" Variant="Variant.Outlined">
-                        Appeal!
-                    </MudButton>
-                }
-                @if (_player.WebRole != WebRole.User)
-                {
-                    <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Info">
-                        Web @_player.WebRole
-                    </MudChip>
-                }
-                @if (_player.CommunityRole != CommunityRole.User)
-                {
-                    <MudChip Variant="Variant.Text" Size="Size.Large" Color="Color.Info">
-                        Community @_player.CommunityRole
-                    </MudChip>
-                }
-                <MudChip Variant="Variant.Text" Size="Size.Large" Color="@(_player.Connected ? Color.Info : Color.Warning)">
-                    @(_player.Connected ? "Online" : "Offline")
-                </MudChip>
-                <MudChip Variant="Variant.Text" Size="Size.Large" Color="@(_player.IsGloballyBanned ? Color.Error : Color.Info)">
-                    @(_player.IsGloballyBanned ? "Globally Banned" : "Compliant")
-                </MudChip>
-            </MudElement>
-        </MudElement>
-        <MudElement Class="mt-4 d-flex flex-column">
-        <MudElement>
-            <MudGrid Spacing="2" Justify="Justify.FlexStart">
-                <MudItem xs="12" sm="4" xl="3" xxl="2">
-                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@_player.Created.Humanize()</MudText>
-                        <MudText Class="mud-text-secondary">First Seen</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4" xl="3" xxl="2">
-                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_player.Connected ? "Now" : _player.HeartBeat.Humanize())</MudText>
-                        <MudText Class="mud-text-secondary">Last Seen</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4" xl="3" xxl="2">
-                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@_lastConnectedServer</MudText>
-                        <MudStack Row="true" Justify="Justify.SpaceBetween">
-                            <MudText Class="mud-text-secondary">Last Server</MudText>
-                            <MudText Class="mud-text-secondary">@_lastConnectedCommunity</MudText>
-                        </MudStack>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4" xl="3" xxl="2">
-                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_player.TotalConnections is 0 ? "None" : _player.TotalConnections)</MudText>
-                        <MudText Class="mud-text-secondary">Total Connections</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4" xl="3" xxl="2">
-                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_player.PlayTime == TimeSpan.Zero ? "None" : _player.PlayTime.Humanize())</MudText>
-                        <MudText Class="mud-text-secondary">Total Playtime</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4" xl="3" xxl="2">
-                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_player.TotalConnections is 0 || _player.PlayTime == TimeSpan.Zero ? "None" : (_player.PlayTime / _player.TotalConnections).Humanize())</MudText>
-                        <MudText Class="mud-text-secondary">Average Playtime</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4" xl="3" xxl="2">
-                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(_totalChatMessages is 0 ? "None" : _totalChatMessages)</MudText>
-                        <MudText Class="mud-text-secondary">Total Chat Messages</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4" xl="3" xxl="2">
-                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudElement Class="d-flex">
-                            <MudElement Class="flex-grow-1">
-                                <MudText Typo="Typo.subtitle1" Color="Color.Info">@(!_notes.Any() ? "None" : _notes.Count.ToString())</MudText>
-                            </MudElement>
-                            <AuthorizeView Roles="@HelperMethods.GetRolesAsString(new[] {WebRole.Admin, WebRole.SuperAdmin}, new[] {CommunityRole.Moderator, CommunityRole.Administrator, CommunityRole.SeniorAdmin, CommunityRole.Owner})">
-                                <Authorized>
-                                    <MudElement Class="justify-center align-self-center">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Add" Title="Add Note" Color="Color.Tertiary" OnClick="AddNote"
-                                                       Size="Size.Small" ButtonType="ButtonType.Button" Variant="Variant.Outlined"/>
-                                    </MudElement>
-                                </Authorized>
-                            </AuthorizeView>
-                        </MudElement>
-                        <MudElement Class="d-flex">
-                            <MudText Class="mud-text-secondary">Total Notes</MudText>
-                        </MudElement>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4" xl="3" xxl="2">
-                    <MudPaper Class="d-flex flex-column pa-4" Elevation="2">
-                        <MudText Typo="Typo.subtitle1" Color="Color.Info">@(!_penalties.Any() ? "None" : _penalties.Count.ToString())</MudText>
-                        <MudText Class="mud-text-secondary">Total Penalties</MudText>
-                    </MudPaper>
-                </MudItem>
-            </MudGrid>
-        </MudElement>
-        <MudElement Class="mt-4">
-        <MudTabs Position="Position.Left" Elevation="2" Rounded="true" PanelClass="d-flex flex-column ml-4" SliderColor="Color.Info">
-        <MudTabPanel Text="Penalties">
-            <MudElement Class="flex-grow-1 d-flex flex-column">
-                @if (!_penalties.Any())
-                {
-                    <MudPaper Class="pa-4 flex-1 d-flex align-center justify-center">
-                        <MudText Align="Align.Center" Class="mud-text-secondary" Typo="Typo.h6">The user has no penalties</MudText>
-                    </MudPaper>
-                }
-                else
-                {
-                    <MudTable Striped="true" HeaderClass="mud-theme-info-darken" Outlined="false" Bordered="false"
-                              Items="@_penalties" Dense="true" @ref="_penaltyTable" OnRowClick="PenaltyRowClickEvent"
-                              T="Penalty" RowsPerPage="10">
-                        <HeaderContent>
-                            <MudTh Class="rounded-tl py-2">
-                                <MudTableSortLabel SortBy="new Func<Penalty, object>(x => x.AdminUserName)">Issuer</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh>
-                                <MudTableSortLabel SortBy="new Func<Penalty, object>(x => x.Reason)">Reason</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh>
-                                <MudTableSortLabel SortBy="new Func<Penalty, object>(x => x.PenaltyType)">Type</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh>
-                                <MudTableSortLabel SortBy="new Func<Penalty, object>(x => x.PenaltyScope)">Scope</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh>
-                                <MudTableSortLabel SortBy="new Func<Penalty, object>(x => x.PenaltyStatus)">Status</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh>
-                                <MudTableSortLabel SortBy="new Func<Penalty, object>(x => x.CommunityName)">Community</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh>
-                                <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<Penalty, object>(x => x.Submitted)">Submitted</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh Class="rounded-tr" Style="width: 100px;"/>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Admin">
-                                <MudLink Href="@($"/Players/{context.AdminIdentity}")" Typo="Typo.body2" Color="Color.Info">@context.AdminUserName</MudLink>
-                            </MudTd>
-                            <MudTd DataLabel="Reason">@context.Reason</MudTd>
-                            <MudTd DataLabel="Type">@context.PenaltyType.ToString()</MudTd>
-                            <MudTd DataLabel="Scope">@context.PenaltyScope.ToString()</MudTd>
-                            <MudTd DataLabel="Status">@context.PenaltyStatus.ToString()</MudTd>
-                            <MudTd DataLabel="Community">
-                                <MudLink Href="@($"/Communities/{context.CommunityGuid}")" Typo="Typo.body2" Color="Color.Info">@context.CommunityName</MudLink>
-                            </MudTd>
-                            <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
-                            <MudTd DataLabel="View">
-                                <MudChip Variant="Variant.Outlined" Size="Size.Small" Color="Color.Info" Style="margin: 0">
-                                    <MudIcon Icon="@Icons.Material.Filled.LocalSee"/>
-                                </MudChip>
-                            </MudTd>
-                        </RowTemplate>
-                        <PagerContent>
-                            <MudTablePager/>
-                        </PagerContent>
-                    </MudTable>
-                }
-            </MudElement>
-        </MudTabPanel>
-        <MudTabPanel Text="Connections">
-            <MudElement Class="flex-grow-1 d-flex flex-column">
-                @if (!_connections.Any())
-                {
-                    <MudPaper Class="pa-4 flex-1 d-flex align-center justify-center">
-                        <MudText Align="Align.Center" Class="flex-grow-1 mud-text-secondary" Typo="Typo.h6">The user has no connections</MudText>
-                    </MudPaper>
-                }
-                else
-                {
-                    <MudTable Striped="true" HeaderClass="mud-theme-info-darken" Outlined="false" Bordered="false"
-                              Items="@_connections" Dense="true" @ref="_connectionTable" T="Connection" RowsPerPage="10">
-                        <HeaderContent>
-                            <MudTh Class="rounded-tl py-2">
-                                <MudTableSortLabel SortBy="new Func<Connection, object>(x => x.CommunityName)">Community Name</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh>
-                                <MudTableSortLabel SortBy="new Func<Connection, object>(x => x.ServerName)">Server Name</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh>
-                                <MudTableSortLabel SortBy="new Func<Connection, object>(x => x.ServerGame)">Server Game</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh>
-                                <MudTableSortLabel SortBy="new Func<Connection, object>(x => x.ServerIp)">Server IP</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh Class="rounded-tr">
-                                <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<Connection, object>(x => x.Connected)">Connected</MudTableSortLabel>
-                            </MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="CommunityName">
-                                <MudLink Href="@($"/Communities/{context.CommunityGuid}")" Typo="Typo.body2" Color="Color.Info">@context.CommunityName</MudLink>
-                            </MudTd>
-                            <MudTd DataLabel="ServerName">@context.ServerName</MudTd>
-                            <MudTd DataLabel="ServerGame">@(context.ServerGame.GetGameName())</MudTd>
-                            <MudTd DataLabel="ServerIP">
-                                <MudText Typo="Typo.body2">@(context.ServerIp.IsInternal() ? context.CommunityIp : context.ServerIp):@context.ServerPort</MudText>
-                            </MudTd>
-                            <MudTd DataLabel="Connected">@context.Connected.Humanize()</MudTd>
-                        </RowTemplate>
-                        <PagerContent>
-                            <MudTablePager/>
-                        </PagerContent>
-                    </MudTable>
-                }
-            </MudElement>
-        </MudTabPanel>
-        <MudTabPanel Text="Notes">
-            <MudElement Class="flex-grow-1 d-flex flex-column">
-                @if (!_notes.Any())
-                {
-                    <MudPaper Class="pa-4 flex-1 d-flex align-center justify-center">
-                        <MudText Align="Align.Center" Class="flex-grow-1 mud-text-secondary" Typo="Typo.h6">The user has no notes</MudText>
-                    </MudPaper>
-                }
-                else
-                {
-                    <MudTable Striped="true" HeaderClass="mud-theme-info-darken" Outlined="false" Bordered="false" Items="@_notes" Dense="true" @ref="_noteTable"
-                              OnRowClick="NoteRowClickEvent" T="Note" RowsPerPage="10">
-                        <HeaderContent>
-                            <MudTh Class="rounded-tl py-2">
-                                <MudTableSortLabel SortBy="new Func<Note, object>(x => x.Message)">Reason</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh>
-                                <MudTableSortLabel SortBy="new Func<Note, object>(x => x.AdminUserName)">Admin</MudTableSortLabel>
-                            </MudTh>
-                            <MudTh Class="@(_webAdmin ? string.Empty : "rounded-tr")">
-                                <MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<Note, object>(x => x.Created)">Created</MudTableSortLabel>
-                            </MudTh>
-                            @if (_webAdmin)
-                            {
-                                <MudTh Class="rounded-tr" Style="width: 100px;"/>
-                            }
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Reason">
-                                <MudElement Class="d-flex align-center">
-                                    @if (!context.IsPrivate)
-                                    {
-                                        <MudElement Class="mr-2">
-                                            <MudTooltip RootClass="d-flex" Arrow="true" Placement="Placement.Top" Text="Public Note">
-                                                <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Public"/>
-                                            </MudTooltip>
-                                        </MudElement>
+                </RadzenStack>
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+                    @if (_player.WebRole is not WebRole.User)
+                    {
+                        <RadzenBadge BadgeStyle="BadgeStyle.Info" Shade="Shade.Lighter" IsPill="true" Variant="Radzen.Variant.Flat"
+                                     Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem" Text="@($"Web {_player.WebRole}")"/>
+                    }
+                    @if (_player.CommunityRole is not CommunityRole.User)
+                    {
+                        <RadzenBadge BadgeStyle="BadgeStyle.Info" Shade="Shade.Lighter" IsPill="true" Variant="Radzen.Variant.Flat"
+                                     Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem" Text="@($"Community {_player.CommunityRole}")"/>
+                    }
+                    <RadzenBadge BadgeStyle="@(_player.Connected ? BadgeStyle.Info : BadgeStyle.Warning)" Shade="Shade.Lighter"
+                                 IsPill="true" Variant="Radzen.Variant.Flat" Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem"
+                                 Text="@(_player.Connected ? "Online" : "Offline")"/>
+                    <RadzenBadge BadgeStyle="@(_player.IsGloballyBanned ? BadgeStyle.Danger : BadgeStyle.Info)" Shade="Shade.Lighter"
+                                 IsPill="true" Variant="Radzen.Variant.Flat" Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem"
+                                 Text="@(_player.IsGloballyBanned ? "Globally Banned" : "Compliant")"/>
+                    @if (_player.IsGloballyBanned)
+                    {
+                        <a class="rz-button rz-button-md rz-variant-outlined rz-danger rz-shade-default rz-ml-4" href="https://discord.gg/UHdqh6ZfjM" target="_blank">Appeal!</a>
+                    }
+                </RadzenStack>
+            </RadzenStack>
+            <RadzenStack Orientation="Orientation.Vertical">
+                <RadzenRow JustifyContent="JustifyContent.Start">
+                    <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
+                        <RadzenCard>
+                            <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                                <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@_player.Created.Humanize()"/>
+                                <RadzenText class="rz-text-tertiary-color" Text="First Seen"/>
+                            </RadzenStack>
+                        </RadzenCard>
+                    </RadzenColumn>
+                    <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
+                        <RadzenCard>
+                            <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                                <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@(_player.Connected ? "Now" : _player.HeartBeat.Humanize())"/>
+                                <RadzenText class="rz-text-tertiary-color" Text="Last Seen"/>
+                            </RadzenStack>
+                        </RadzenCard>
+                    </RadzenColumn>
+                    @if (_player.LastConnectedCommunityName is not null)
+                    {
+                        <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
+                            <RadzenCard>
+                                <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                                    <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@_player.LastConnectedServerName"/>
+                                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+                                        <RadzenText class="rz-text-tertiary-color" Text="Last Seen"/>
+                                        <RadzenText class="rz-text-tertiary-color" Text="@_player.LastConnectedCommunityName"/>
+                                    </RadzenStack>
+                                </RadzenStack>
+                            </RadzenCard>
+                        </RadzenColumn>
+                    }
+                    <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
+                        <RadzenCard>
+                            <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                                <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@(_player.TotalConnections is 0 ? "None" : _player.TotalConnections.ToString("N0"))"/>
+                                <RadzenText class="rz-text-tertiary-color" Text="Total Connections"/>
+                            </RadzenStack>
+                        </RadzenCard>
+                    </RadzenColumn>
+                    <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
+                        <RadzenCard>
+                            <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                                <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@(_player.PlayTime == TimeSpan.Zero ? "None" : _player.PlayTime.Humanize())"/>
+                                <RadzenText class="rz-text-tertiary-color" Text="Total Playtime"/>
+                            </RadzenStack>
+                        </RadzenCard>
+                    </RadzenColumn>
+                    <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
+                        <RadzenCard>
+                            <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                                <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@(_player.TotalConnections is 0 || _player.PlayTime == TimeSpan.Zero ? "None" : (_player.PlayTime / _player.TotalConnections).Humanize())"/>
+                                <RadzenText class="rz-text-tertiary-color" Text="Average Playtime"/>
+                            </RadzenStack>
+                        </RadzenCard>
+                    </RadzenColumn>
+                    <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
+                        <RadzenCard>
+                            <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                                <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@(_player.ChatCount is 0 ? "None" : _player.ChatCount.ToString("N0"))"/>
+                                <RadzenText class="rz-text-tertiary-color" Text="Total Chat Messages"/>
+                            </RadzenStack>
+                        </RadzenCard>
+                    </RadzenColumn>
+                    <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
+                        <RadzenCard>
+                            <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+                                    <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@(_player.NoteCount is 0 ? "None" : _player.NoteCount.ToString("N0"))"/>
+                                    @{
+                                        /*TODO REVERT NOT AUTHORISED TAG AND CHECK IF THIS CORRECT RENDERS WITHOUT AUTO*/
                                     }
-                                    <MudElement>@context.Message</MudElement>
-                                </MudElement>
-                            </MudTd>
-                            <MudTd DataLabel="Admin">@context.AdminUserName</MudTd>
-                            <MudTd DataLabel="Created">@context.Created.Humanize()</MudTd>
-                            @if (_webAdmin)
-                            {
-                                <MudTd DataLabel="Delete">
-                                    <MudElement Class="d-flex justify-center">
-                                        <MudChip Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" Style="margin: 0">
-                                            <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Delete"/>
-                                        </MudChip>
-                                    </MudElement>
-                                </MudTd>
-                            }
-                        </RowTemplate>
-                        <PagerContent>
-                            <MudTablePager/>
-                        </PagerContent>
-                    </MudTable>
-                }
-            </MudElement>
-        </MudTabPanel>
-        <MudTabPanel Text="Chat">
-            <MudElement Class="flex-grow-1 d-flex flex-column">
-                <MudPaper Elevation="2" Class="d-flex flex-row align-center pa-4 rounded-b-0">
-                    <MudSpacer/>
-                    <MudElement Class="ml-2 mt-0">
-                        <MudTextField T="string" ValueChanged="OnSearch" AutoFocus="false" Placeholder="Filter"
-                                      Variant="Variant.Outlined" Adornment="Adornment.End" Margin="Margin.Dense" AdornmentIcon="@Icons.Material.Filled.Search"
-                                      AdornmentColor="Color.Default"/>
-                    </MudElement>
-                </MudPaper>
-                <MudTable Striped="true" HeaderClass="mud-theme-info-darken" Outlined="false" Bordered="false"
-                          ServerData="@(new Func<TableState, Task<TableData<Chat>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true"
-                          @ref="_chatTable">
-                    <HeaderContent>
-                        <MudTh Class="py-2">
-                            <MudTableSortLabel SortLabel="Message" T="Chat">Message</MudTableSortLabel>
-                        </MudTh>
-                        <MudTh Class="py-2">
-                            <MudTableSortLabel SortLabel="Server" T="Chat">Server</MudTableSortLabel>
-                        </MudTh>
-                        <MudTh>
-                            <MudTableSortLabel SortLabel="CommunityName" T="Chat">Community</MudTableSortLabel>
-                        </MudTh>
-                        <MudTh>
-                            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="Submitted" T="Chat">Submitted</MudTableSortLabel>
-                        </MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="Message">
-                            <MudStack Row="true" AlignItems="AlignItems.Center">
-                                @{
-                                    _chatClickStates.TryAdd(context.Submitted, false);
-                                    _chatContext.TryAdd(context.Submitted, new ChatContextRoot());
-                                }
-                                <MudIconButton OnClick="() => OnChatClick(context)"
-                                               Icon="@GetChatIconState(context.Submitted)"
-                                               Size="Size.Small"
-                                               Color="Color.Info"/>
-                                @context.Message.Truncate(64)
-                                <MudPopover OverflowBehavior="OverflowBehavior.FlipOnOpen"
-                                            Open="_chatClickStates[context.Submitted]"
-                                            AnchorOrigin="Origin.TopCenter"
-                                            RelativeWidth="true"
-                                            TransformOrigin="Origin.BottomCenter"
-                                            Class="pa-4">
-                                    <MudElement Class="d-flex flex-column" Style="overflow: auto; max-height: 450px">
-                                        @if (!_chatContext[context.Submitted].Loaded)
-                                        {
-                                            <MudElement Class="justify-center">
-                                                <MudProgressCircular Indeterminate="true" Size="Size.Large" Color="Color.Tertiary"/>
-                                            </MudElement>
-                                        }
-                                        else
-                                        {
-                                            @foreach (var chat in _chatContext[context.Submitted].Messages)
-                                            {
-                                                @if (chat.Submitted == context.Submitted)
-                                                {
-                                                    <MudDivider FlexItem="true" Light="true" DividerType="DividerType.FullWidth" Class="mt-2"/>
-                                                }
-                                                <MudStack Row="true" Spacing="1">
-                                                    <MudText Typo="Typo.body2" Class="mud-text-disabled">
-                                                        @chat.Submitted.ToString("hh:mm:ss")
-                                                    </MudText>
-                                                    <MudText Typo="Typo.body2" Class="mud-text-secondary">
-                                                        @chat.PlayerUserName
-                                                    </MudText>
-                                                    <MudText Typo="Typo.body2">
-                                                        @chat.Message
-                                                    </MudText>
-                                                </MudStack>
-                                                @if (chat.Submitted == context.Submitted)
-                                                {
-                                                    <MudDivider FlexItem="true" Light="true" DividerType="DividerType.FullWidth" Class="mb-2"/>
-                                                }
-                                            }
-                                        }
-                                    </MudElement>
-                                </MudPopover>
-                            </MudStack>
-                        </MudTd>
-                        <MudTd DataLabel="Server">@context.ServerName</MudTd>
-                        <MudTd DataLabel="CommunityName">
-                            <MudLink Href="@($"/Communities/{context.CommunityGuid}")" Typo="Typo.body2" Color="Color.Info">@context.CommunityName</MudLink>
-                        </MudTd>
-                        <MudTd DataLabel="Submitted">@context.Submitted.Humanize()</MudTd>
-                    </RowTemplate>
-                    <NoRecordsContent>
-                        <MudText Align="Align.Center" Class="flex-grow-1 mud-text-secondary" Typo="Typo.h6">The user has no chat</MudText>
-                    </NoRecordsContent>
-                    <LoadingContent>
-                        <MudText>Loading...</MudText>
-                    </LoadingContent>
-                    <PagerContent>
-                        <MudTablePager PageSizeOptions="new[] {20, 50, 100}"/>
-                    </PagerContent>
-                </MudTable>
-            </MudElement>
-        </MudTabPanel>
-        </MudTabs>
-        </MudElement>
-        </MudElement>
-    }
-}
-
-@code
-{
-    [Parameter]
-    public string? Identity { get; set; }
-
-    private Player? _player;
-    private List<Connection> _connections = new();
-    private List<Note> _notes = new();
-    private List<Penalty> _penalties = new();
-    private int _totalChatMessages;
-    private readonly Dictionary<DateTimeOffset, ChatContextRoot> _chatContext = new();
-    private readonly Dictionary<DateTimeOffset, bool> _chatClickStates = new();
-    private string _lastConnectedServer = "--";
-    private string _lastConnectedCommunity = "--";
-
-    private string _title = "Not Found";
-    private bool _loading = true;
-    private string _guid = string.Empty;
-    private string _gameName = string.Empty;
-    private bool _webAdmin;
-    private bool _communityAdmin;
-    private MudTable<Penalty>? _penaltyTable;
-    private MudTable<Note>? _noteTable;
-    private MudTable<Connection>? _connectionTable;
-
-    // Pagination Chat
-    private MudTable<Chat>? _chatTable;
-    private string? _chatSearchString;
-
-    protected override async Task OnInitializedAsync()
-    {
-        NavigationManager.LocationChanged += OnLocationChanged;
-
-        var user = (await (AuthStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
-        _webAdmin = user.IsInAnyRole("WebAdmin", "WebSuperAdmin");
-        _communityAdmin = user.IsInAnyRole("InstanceModerator", "InstanceAdministrator", "InstanceSeniorAdmin", "InstanceOwner");
-        Identity ??= user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-        await LoadProfile();
-    }
-
-    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        var relativeUri = NavigationManager.ToBaseRelativePath(new Uri(e.Location).AbsoluteUri);
-
-        var uriParts = relativeUri.Split('/');
-        if (uriParts.Length < 2 || uriParts[0] != "Players") return;
-
-        Identity = uriParts[1];
-        if (string.IsNullOrEmpty(Identity)) return;
-
-        _loading = true;
-        await LoadProfile();
-        StateHasChanged();
-    }
-
-    private async Task LoadProfile()
-    {
-        if (string.IsNullOrEmpty(Identity)) return;
-        _player = await PlayerProfileService.GetProfileAsync(Identity!);
-        _connections = (await PlayerProfileService.GetConnectionsAsync(Identity!)).ToList();
-        _notes = (await NoteService.GetNotesAsync(Identity!)).ToList();
-        _penalties = (await PenaltyService.GetProfilePenaltiesAsync(Identity!)).ToList();
-        _totalChatMessages = await ChatService.GetChatCountAsync(Identity!);
-
-        var nameSplit = _player.Identity.ToUpper().Split(':');
-        _guid = nameSplit[0];
-        _gameName = nameSplit[1];
-        _title = _player.UserName;
-
-        if (_connections.Any())
-        {
-            var connection = _connections.MaxBy(x => x.Connected);
-            _lastConnectedCommunity = connection?.CommunityName ?? "None";
-            _lastConnectedServer = connection?.ServerName ?? "None";
-        }
-
-        _loading = false;
-    }
-
-    private async Task<TableData<Chat>> ServerReload(TableState state)
-    {
-        var paginationQuery = new GetChatPaginationCommand
-        {
-            Page = state.Page,
-            PageSize = state.PageSize,
-            SortLabel = state.SortLabel,
-            SortDirection = (int)state.SortDirection,
-            SearchString = _chatSearchString,
-            PlayerIdentity = Identity!
-        };
-
-        var chatContext = await ChatService.GetChatPaginationAsync(paginationQuery);
-        return new TableData<Chat> {TotalItems = chatContext.Count, Items = chatContext.Data};
-    }
-
-    private void OnSearch(string text)
-    {
-        _chatSearchString = text;
-        _chatTable!.ReloadServerData();
-    }
-
-    private async Task PenaltyRowClickEvent(TableRowClickEventArgs<Penalty> tableRowClickEventArgs)
-    {
-        var parameters = new DialogParameters
-        {
-            {"Penalty", tableRowClickEventArgs.Item}
-        };
-
-        var options = new DialogOptions {CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Medium, CloseOnEscapeKey = true};
-        var title = $"{tableRowClickEventArgs.Item.PenaltyType} - {_player?.UserName} - {tableRowClickEventArgs.Item.Submitted.Humanize().Titleize()}";
-
-        var dialog = await DialogService.ShowAsync<ProfilePenaltyDialog>(title, parameters, options);
-        var result = await dialog.Result;
-
-        switch (result?.Data)
-        {
-            case Penalty penalty:
-                _penalties.Remove(penalty);
-                StateHasChanged();
-                break;
-            case AddPlayerPenaltyEvidenceCommand:
-                _penalties = (await PenaltyService.GetProfilePenaltiesAsync(Identity!)).ToList();
-                StateHasChanged();
-                break;
+                                    <AuthorizeView Roles="@HelperMethods.GetRolesAsString(new[] {WebRole.Admin, WebRole.SuperAdmin}, new[] {CommunityRole.Moderator, CommunityRole.Administrator, CommunityRole.SeniorAdmin, CommunityRole.Owner})">
+                                        <NotAuthorized>
+                                            <RadzenButton Click="AddNote" Size="ButtonSize.Small" Shade="Shade.Lighter" Icon="add"/>
+                                        </NotAuthorized>
+                                    </AuthorizeView>
+                                </RadzenStack>
+                                <RadzenText class="rz-text-tertiary-color" Text="Total Notes"/>
+                            </RadzenStack>
+                        </RadzenCard>
+                    </RadzenColumn>
+                    <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
+                        <RadzenCard>
+                            <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                                <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@_player.PenaltyCount.ToString("N0")"/>
+                                <RadzenText class="rz-text-tertiary-color" Text="Total Penalties"/>
+                            </RadzenStack>
+                        </RadzenCard>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenTabs RenderMode="TabRenderMode.Client">
+                    <Tabs>
+                        <RadzenTabsItem Text="Penalties">
+                            <PlayerProfilePenaltyTable Player="_player"/>
+                        </RadzenTabsItem>
+                        <RadzenTabsItem Text="Connections">
+                            <PlayerProfileConnectionTable Player="_player"/>
+                        </RadzenTabsItem>
+                        <RadzenTabsItem Text="Notes">
+                            <PlayerProfileNoteTable Player="_player" Privileged="_privileged"/>
+                        </RadzenTabsItem>
+                        <RadzenTabsItem Text="Chat">
+                            <PlayerProfileChatTable Player="_player"/>
+                        </RadzenTabsItem>
+                    </Tabs>
+                </RadzenTabs>
+            </RadzenStack>
         }
     }
-
-    private async Task NoteRowClickEvent(TableRowClickEventArgs<Note> clickEvent)
-    {
-        if (!_communityAdmin && !_webAdmin) return;
-
-        var parameters = new DialogParameters
-        {
-            {"Note", clickEvent.Item}
-        };
-
-        var options = new DialogOptions {CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Medium, CloseOnEscapeKey = true};
-
-        var dialog = await DialogService.ShowAsync<ProfileDeleteNoteDialog>("Delete Note?", parameters, options);
-        var result = await dialog.Result;
-
-        if (result?.Data is Note note)
-        {
-            _notes.Remove(note);
-            StateHasChanged();
-        }
-    }
-
-    private async Task AddNote()
-    {
-        var parameters = new DialogParameters
-        {
-            {"Identity", _player?.Identity}
-        };
-
-        var options = new DialogOptions {CloseButton = true, FullWidth = true, MaxWidth = MaxWidth.Medium, CloseOnEscapeKey = true};
-        var result = await DialogService.ShowAsync<ProfileAddNoteDialog>("Add Note?", parameters, options);
-        await result.Result;
-        _notes = (await NoteService.GetNotesAsync(Identity!)).ToList();
-        StateHasChanged();
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        NavigationManager.LocationChanged -= OnLocationChanged;
-        return ValueTask.CompletedTask;
-    }
-
-    private string GetChatIconState(DateTimeOffset submitted)
-    {
-        return _chatClickStates[submitted] ? Icons.Material.Filled.ExpandMore : Icons.Material.Filled.ChevronRight;
-    }
-
-    private async Task OnChatClick(Chat message)
-    {
-        _chatClickStates[message.Submitted] = !_chatClickStates[message.Submitted];
-
-        foreach (var state in _chatClickStates.Where(x => x.Value))
-        {
-            if (state.Key == message.Submitted) continue;
-            _chatClickStates[state.Key] = false;
-        }
-
-        if (_chatContext.ContainsKey(message.Submitted) && _chatContext[message.Submitted].Loaded) return;
-
-        var chatContext = await ChatService.GetChatContextAsync(new GetMessageContextCommand
-        {
-            Submitted = message.Submitted,
-            ServerId = message.ServerId
-        });
-
-        _chatContext[message.Submitted] = chatContext;
-    }
-}
+</RadzenCard>

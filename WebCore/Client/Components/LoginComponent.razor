@@ -1,82 +1,54 @@
-﻿@using System.Security.Claims
-@inject AuthenticationStateProvider AuthStateProvider
-@inject NavigationManager NavigationManager
-@inject AuthService AuthService
-@inject ILocalStorageService LocalStorageService
-@inject IDialogService DialogService
+﻿@using DialogService = Radzen.DialogService
+@using DialogOptions = Radzen.DialogOptions
+@using Radzen.Blazor.Rendering
+@using AlignItems = Radzen.AlignItems
+@using Orientation = Radzen.Orientation
 
 <AuthorizeView>
     <Authorized>
-        <MudElement Class="d-inline-flex align-center">
-            <MudElement Class="flex-grow-1 mr-1">
-                <MudButton @onmouseenter="@(() => _isOpen = true)" @onmouseleave="@(() => _isOpen = false)" Variant="Variant.Text" 
-                           FullWidth="true" Color="Color.Info" DisableElevation="true" OnClick="@ToggleOpen"
-                           StartIcon="@(_isOpen ? Icons.Material.Filled.Close : Icons.Material.Filled.Info)">
-                    @context.User.Identity!.Name
-                </MudButton>
-                <MudPopover OverflowBehavior="OverflowBehavior.FlipNever" Open="_isOpen" AnchorOrigin="Origin.TopCenter"
-                            TransformOrigin="Origin.BottomCenter" Class="pa-4">
-                    <MudElement Class="d-flex flex-column">
-                        <MudText Typo="Typo.body1">Your assigned roles</MudText>
-                        <MudDivider Class="my-2" FlexItem="true" DividerType="DividerType.FullWidth"/>
-                        <MudElement Class="d-flex flex-row">
-                            <MudText Typo="Typo.body1" Color="Color.Primary">
-                                <b>Web</b>
-                            </MudText>
-                            <MudText Class="mx-2 mud-text-secondary">&bull;</MudText>
-                            <MudText Typo="Typo.body1">
-                                @(context.User.Claims
-                                    .Where(c => c.Type == ClaimTypes.Role)
-                                    .Select(c => c.Value)
-                                    .ToList()[0]
-                                    .GetRoleName())
-                            </MudText>
-                        </MudElement>
-                        <MudElement Class="d-flex flex-row">
-                            <MudText Typo="Typo.body1" Color="Color.Secondary">
-                                <b>Community</b>
-                            </MudText>
-                            <MudText Class="mx-2 mud-text-secondary">&bull;</MudText>
-                            <MudText Typo="Typo.body1">
-                                @(context.User.Claims
-                                    .Where(c => c.Type == ClaimTypes.Role)
-                                    .Select(c => c.Value)
-                                    .ToList()[1]
-                                    .GetRoleName())
-                            </MudText>
-                        </MudElement>
-                    </MudElement>
-                </MudPopover>
-            </MudElement>
-            <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Error" OnClick="Logout" Size="Size.Small"
-                           ButtonType="ButtonType.Button" Title="Logout"/>
-        </MudElement>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+            <RadzenButton @ref="_popupButton" Click="@(args => _popup.ToggleAsync(_popupButton.Element))" Text="@context.User.Identity!.Name"
+                          ButtonStyle="ButtonStyle.Info" Style="width: 100%"/>
+            <RadzenButton Click="Logout" Icon="logout" ButtonStyle="ButtonStyle.Danger" Shade="Shade.Lighter" Size="ButtonSize.Small"/>
+        </RadzenStack>
+        <Popup @ref="_popup" Lazy="true" class="rz-border-radius-3"
+               Style="display:none;position:absolute;height:auto;width:auto;padding:5px;border:var(--rz-panel-border);background-color:var(--rz-panel-background-color);">
+            <RadzenCard>
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="0">
+                    <RadzenText Text="Assigned Roles"/>
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                        <RadzenText class="rz-mb-0 rz-color-series-2">
+                            <strong>Web</strong>
+                        </RadzenText>
+                        <RadzenText>&bull;</RadzenText>
+                        <RadzenText>
+                            @(context.User.Claims
+                                .Where(c => c.Type == ClaimTypes.Role)
+                                .Select(c => c.Value)
+                                .ToList()[0]
+                                .ToString()
+                                .Split("_")[1])
+                        </RadzenText>
+                    </RadzenStack>
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                        <RadzenText class="rz-mb-0 rz-color-series-3">
+                            <strong>Community</strong>
+                        </RadzenText>
+                        <RadzenText>&bull;</RadzenText>
+                        <RadzenText>
+                            @(context.User.Claims
+                                .Where(c => c.Type == ClaimTypes.Role)
+                                .Select(c => c.Value)
+                                .ToList()[1]
+                                .ToString()
+                                .Split("_")[1])
+                        </RadzenText>
+                    </RadzenStack>
+                </RadzenStack>
+            </RadzenCard>
+        </Popup>
     </Authorized>
     <NotAuthorized>
-        <MudButton Class="mb-2" FullWidth="true" Variant="Variant.Filled" Color="Color.Info" OnClick="OpenDialog">Log In</MudButton>
+        <RadzenButton Click="OpenDialog" Text="Login" ButtonStyle="ButtonStyle.Info" Style="width: 100%"/>
     </NotAuthorized>
 </AuthorizeView>
-
-@code {
-
-    private bool _isOpen;
-    private void ToggleOpen() => _isOpen = !_isOpen;
-
-    private async Task Logout()
-    {
-        var response = await AuthService.LogoutAsync();
-        if (response)
-        {
-            (AuthStateProvider as CustomAuthStateProvider)?.ClearAuthInfo();
-            await LocalStorageService.RemoveItemAsync("IsAuthenticated");
-            NavigationManager.NavigateTo(NavigationManager.Uri, true);
-        }
-    }
-
-    private void OpenDialog()
-    {
-        var options = new DialogOptions {CloseOnEscapeKey = true, NoHeader = true};
-        DialogService.Show<LoginDialog>("Login", options);
-    }
-
-}

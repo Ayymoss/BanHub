@@ -1,0 +1,24 @@
+﻿@using Orientation = Radzen.Orientation
+@using AlignItems = Radzen.AlignItems
+
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="0">
+    <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+        <RadzenFormField Text="Note" Variant="Radzen.Variant.Outlined">
+            <ChildContent>
+                <RadzenTextBox @bind-Value="_noteMessage"/>
+            </ChildContent>
+            <End>
+                <RadzenIcon Icon="description" IconStyle="IconStyle.Info"/>
+            </End>
+        </RadzenFormField>
+    </RadzenStack>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Start" class="rz-my-4">
+        <RadzenCheckBox @bind-Value="_isPrivateNote" Name="NoteCheckBox"/>
+        <RadzenText class="rz-ml-2 rz-mb-0" Text="Privileged Note"/>
+    </RadzenStack>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.End">
+        <RadzenButton Click="CreateNote" Text="Add" ButtonStyle="ButtonStyle.Success" IsBusy="_processing" BusyText="Adding..."/>
+    </RadzenStack>
+</RadzenStack>
+

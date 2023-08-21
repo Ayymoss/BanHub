@@ -1,15 +1,15 @@
 ﻿using BanHub.WebCore.Server.Context;
+using BanHub.WebCore.Server.Utilities;
 using BanHub.WebCore.Shared.Commands.Penalty;
-using BanHub.WebCore.Shared.Models.PenaltiesView;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using MudBlazor;
 
 namespace BanHub.WebCore.Server.Handlers.Web.Penalty;
 
-public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginationCommand, PaginationContext<Shared.Models.PenaltiesView.Penalty>>
+public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginationCommand,
+    PaginationContext<Shared.Models.PenaltiesView.Penalty>>
 {
     private readonly DataContext _context;
 
@@ -29,33 +29,31 @@ public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginat
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(request.SearchString))
-        {
             query = query.Where(search =>
                 EF.Functions.ILike(search.PenaltyGuid.ToString(), $"%{request.SearchString}%") ||
                 EF.Functions.ILike(search.Reason, $"%{request.SearchString}%") ||
                 EF.Functions.ILike(search.Issuer.CurrentAlias.Alias.UserName, $"%{request.SearchString}%") ||
                 EF.Functions.ILike(search.Recipient.CurrentAlias.Alias.UserName, $"%{request.SearchString}%"));
-        }
 
-        query = request.SortLabel switch
-        {
-            "Id" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.PenaltyGuid),
-            "IssuerName" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.Issuer.CurrentAlias.Alias.UserName),
-            "RecipientName" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.Recipient.Penalties.Count),
-            "Reason" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.Reason),
-            "Type" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.PenaltyType),
-            "Status" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.PenaltyStatus),
-            "Scope" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.PenaltyScope),
-            "Community" => query.OrderByDirection((SortDirection)request.SortDirection,
-                key => key.Community.CommunityName),
-            "Submitted" => query.OrderByDirection((SortDirection)request.SortDirection, key => key.Submitted),
-            _ => query
-        };
+        if (request.Sorts.Any())
+            query = request.Sorts.Aggregate(query, (current, sort) => sort.Property switch
+            {
+                "PenaltyGuid" => current.ApplySort(sort, p => p.PenaltyGuid),
+                "IssuerUserName" => current.ApplySort(sort, p => p.Issuer.CurrentAlias.Alias.UserName),
+                "RecipientUserName" => current.ApplySort(sort, p => p.Recipient.CurrentAlias.Alias.UserName),
+                "Reason" => current.ApplySort(sort, p => p.Reason),
+                "PenaltyType" => current.ApplySort(sort, p => p.PenaltyType),
+                "PenaltyStatus" => current.ApplySort(sort, p => p.PenaltyStatus),
+                "PenaltyScope" => current.ApplySort(sort, p => p.PenaltyScope),
+                "CommunityName" => current.ApplySort(sort, p => p.Community.CommunityName),
+                "Submitted" => current.ApplySort(sort, p => p.Submitted),
+                _ => current
+            });
 
         var count = await query.CountAsync(cancellationToken: cancellationToken);
         var pagedData = await query
-            .Skip(request.Page * request.PageSize)
-            .Take(request.PageSize)
+            .Skip(request.Skip)
+            .Take(request.Top)
             .Select(penalty => new Shared.Models.PenaltiesView.Penalty
             {
                 PenaltyGuid = penalty.PenaltyGuid,
@@ -63,8 +61,8 @@ public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginat
                 PenaltyStatus = penalty.PenaltyStatus,
                 PenaltyScope = penalty.PenaltyScope,
                 Submitted = penalty.Submitted,
-                AdminIdentity = penalty.Issuer.Identity,
-                AdminUserName = penalty.Issuer.CurrentAlias.Alias.UserName,
+                IssuerIdentity = penalty.Issuer.Identity,
+                IssuerUserName = penalty.Issuer.CurrentAlias.Alias.UserName,
                 Reason = request.Privileged && penalty.Automated
                     ? penalty.Reason
                     : penalty.Automated
@@ -73,10 +71,10 @@ public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginat
                 Evidence = penalty.Evidence,
                 Expiration = penalty.Expiration,
                 CommunityGuid = penalty.Community.CommunityGuid,
-                TargetIdentity = penalty.Recipient.Identity,
-                TargetUserName = penalty.Recipient.CurrentAlias.Alias.UserName,
+                RecipientIdentity = penalty.Recipient.Identity,
+                RecipientUserName = penalty.Recipient.CurrentAlias.Alias.UserName,
                 CommunityName = penalty.Community.CommunityName,
-                EvidenceMissing = string.IsNullOrWhiteSpace(penalty.Evidence) && penalty.PenaltyScope == PenaltyScope.Global 
+                EvidenceMissing = string.IsNullOrWhiteSpace(penalty.Evidence) && penalty.PenaltyScope == PenaltyScope.Global
                                                                               && penalty.PenaltyStatus == PenaltyStatus.Active
                                                                               && !penalty.Automated
             }).ToListAsync(cancellationToken: cancellationToken);

@@ -1,0 +1,86 @@
+
+/* Radzen Overrides Start */
+
+/* Fix for weird padding from body class */
+.rz-body {
+    --rz-body-padding: 0;
+}
+
+/* Fix for awkward padding in compact paginator */
+.rz-paginator.rz-density-compact {
+    --rz-paginator-padding: 0.5rem 1rem !important;
+}
+
+:root {
+    font-size: var(--rz-root-font-size);
+    --rz-layout-body-margin: 0 0.6rem 0.6rem !important;
+    --rz-sidebar-toggle-margin: 0 0.3rem 0 0 !important;
+}
+
+body {
+    font-family: var(--rz-text-font-family);
+    color: var(--rz-text-color);
+    font-size: var(--rz-body-font-size);
+    line-height: var(--rz-body-line-height);
+    background-color: var(--rz-body-background-color);
+}
+
+a {
+    color: var(--rz-link-color);
+}
+
+a:hover,
+a:focus {
+    color: var(--rz-link-hover-color);
+}
+
+/* Radzen Overrides End */
+
+/* Tomato Start */
+.tomato-wrapper {
+    position: absolute;
+    opacity: 0;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+
+@keyframes dropRotateClockwise {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(calc(100vh - 50px));
+        opacity: 0;
+    }
+}
+
+@keyframes dropRotateCounterClockwise {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(calc(100vh - 50px));
+        opacity: 0;
+    }
+}
+
+@keyframes rotateClockwise {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes rotateCounterClockwise {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(-360deg);
+    }
+}
+/* Tomato End */

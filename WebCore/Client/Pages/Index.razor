@@ -1,128 +1,114 @@
 ﻿@page "/"
+@using Orientation = Radzen.Orientation
 @using Penalty = BanHub.WebCore.Shared.Models.IndexView.Penalty
-@inject StatisticService StatisticService
-@inject PenaltyService PenaltyService
 
 <PageTitle>Index | Ban Hub</PageTitle>
 
-<MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true" Class="d-flex flex-column align-center">
-    <MudText Align="Align.Center">You're accessing this site from a mobile. </MudText>
-    <MudText Align="Align.Center">A lot of the pages have not yet been recreated for mobile views.</MudText>
-    <MudText Align="Align.Center">Please view this on a desktop.</MudText>
-</MudHidden>
+<RadzenRow JustifyContent="JustifyContent.SpaceEvenly">
+    <RadzenColumn Size="6" SizeXX="5">
+        <RadzenCard>
+            <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.DisplayH3" Text="Welcome to Ban Hub!"/>
+            <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.DisplayH6" Text="We provide a service which aims to clean up the state of 3rd party Call of Duty clients."/>
+            <br/>
+            <hr/>
+            <br/>
+            <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.H6" Text="Latest Global Bans"/>
+            <RadzenDataGrid @ref="_dataGrid" TItem="Penalty" IsLoading="@_isLoading" Count="@_count" Data="@_indexTable" LoadData="@LoadData" Style="min-height: 175px">
+                <Columns>
+                    <RadzenDataGridColumn TItem="Penalty" Title="Community">
+                        <Template Context="context">
+                            <RadzenLink Path="@($"/Communities/{context.CommunityGuid}")" Text="@context.CommunityName"/>
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="Penalty" Title="Offender">
+                        <Template Context="context">
+                            <RadzenLink Path="@($"/Players/{context.RecipientIdentity}")" Text="@context.RecipientUserName"/>
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="Penalty" Property="Reason" Title="Reason"/>
+                    <RadzenDataGridColumn TItem="Penalty" Title="Submitted" SortOrder="SortOrder.Descending">
+                        <Template Context="context">
+                            @context.Submitted.Humanize().Titleize()
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+                <EmptyTemplate>
+                    <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.H6" class="rz-my-4" Text="There are no global bans..."/>
+                </EmptyTemplate>
+            </RadzenDataGrid>
+        </RadzenCard>
+    </RadzenColumn>
+    <RadzenColumn Size="6" SizeXX="5">
+        <RadzenRow>
+            <RadzenStack Orientation="Orientation.Vertical">
+                <RadzenColumn Size="6">
+                    <RadzenRow JustifyContent="JustifyContent.Start">
+                        <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3">
+                            <RadzenCard>
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="0">
+                                    <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@_statistic.PenaltyCount.ToString("N0")"/>
+                                    <RadzenText class="rz-text-tertiary-color" Text="Penalties"/>
+                                </RadzenStack>
+                            </RadzenCard>
+                        </RadzenColumn>
+                        <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3">
+                            <RadzenCard>
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="0">
+                                    <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@_statistic.PlayerCount.ToString("N0")"/>
+                                    <RadzenText class="rz-text-tertiary-color" Text="Players"/>
+                                </RadzenStack>
+                            </RadzenCard>
+                        </RadzenColumn>
+                        <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3">
+                            <RadzenCard>
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="0">
+                                    <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@_statistic.CommunityCount.ToString("N0")"/>
+                                    <RadzenText class="rz-text-tertiary-color" Text="Communities"/>
+                                </RadzenStack>
+                            </RadzenCard>
+                        </RadzenColumn>
+                        <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3">
+                            <RadzenCard>
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="0">
+                                    <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@_statistic.ServerCount.ToString("N0")"/>
+                                    <RadzenText class="rz-text-tertiary-color" Text="Servers"/>
+                                </RadzenStack>
+                            </RadzenCard>
+                        </RadzenColumn>
+                    </RadzenRow>
+                </RadzenColumn>
+                <RadzenColumn Size="6">
+                    <RadzenCard>
+                        <RadzenText TextStyle="TextStyle.DisplayH6" Text="Requirements for Activating Server for Read-Write Access to BanHub"/>
+                        <RadzenText TextStyle="TextStyle.Body2" class="rz-text-tertiary-color">&bull; <b>Daily Client Count:</b> Minimum of 750 unique clients seen daily.</RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body2" class="rz-text-tertiary-color">&bull; <b>Minimum Clients:</b> Above 50,000 clients.</RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body2" class="rz-text-tertiary-color">&bull; <b>Community Age:</b> Active for at least 3 months with no long periods of inactivity.</RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body2" class="rz-text-tertiary-color">&bull; <b>Staff Presence:</b> Active staff presence. Responsible staff for global ban(s) to respond within reasonable period. (~3 working days)</RadzenText>
+                        <RadzenText TextStyle="TextStyle.Body2" class="rz-text-tertiary-color">&bull; <b>No Unjustified Bans:</b> Server must not be known for imposing bans on players without proper justification or in a discriminatory manner.</RadzenText>
+                        <br/>
+                        <RadzenText Text="If all of these requirements are met, the server will be deemed sufficiently established, well-managed, and dependable, making it eligible for read-write access to BanHub."/>
+                        <br/>
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenButton href="https://discord.gg/39rMB7YE2R" ButtonStyle="ButtonStyle.Primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-discord" viewBox="0 0 16 16">
+                                    <title>Discord</title>
+                                    <path d="M13.545 2.907a13.227 13.227 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.19 12.19 0 0 0-3.658 0 8.258 8.258 0 0 0-.412-.833.051.051 0 0 0-.052-.025c-1.125.194-2.22.534-3.257 1.011a.041.041 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032c.001.014.01.028.021.037a13.276 13.276 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019c.308-.42.582-.863.818-1.329a.05.05 0 0 0-.01-.059.051.051 0 0 0-.018-.011 8.875 8.875 0 0 1-1.248-.595.05.05 0 0 1-.02-.066.051.051 0 0 1 .015-.019c.084-.063.168-.129.248-.195a.05.05 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.052.052 0 0 1 .053.007c.08.066.164.132.248.195a.051.051 0 0 1-.004.085 8.254 8.254 0 0 1-1.249.594.05.05 0 0 0-.03.03.052.052 0 0 0 .003.041c.24.465.515.909.817 1.329a.05.05 0 0 0 .056.019 13.235 13.235 0 0 0 4.001-2.02.049.049 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.034.034 0 0 0-.02-.019Zm-8.198 7.307c-.789 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.45.73 1.438 1.613 0 .888-.637 1.612-1.438 1.612Zm5.316 0c-.788 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612Z"/>
+                                </svg>
+                                <span class="rz-button-text">Discord</span>
+                            </RadzenButton>
+                            <RadzenButton href="https://discord.gg/39rMB7YE2R" ButtonStyle="ButtonStyle.Info">
+                                <svg width="24" height="24" viewBox="0 0 512 499.36" xmlns="http://www.w3.org/2000/svg">
+                                    <title>GitHub</title>
+                                    <path fill="currentColor" fill-rule="evenodd" d="M256 0C114.64 0 0 114.61 0 256c0 113.09 73.34 209 175.08 242.9 12.8 2.35 17.47-5.56 17.47-12.34 0-6.08-.22-22.18-.35-43.54-71.2 15.49-86.2-34.34-86.2-34.34-11.64-29.57-28.42-37.45-28.42-37.45-23.27-15.84 1.73-15.55 1.73-15.55 25.69 1.81 39.21 26.38 39.21 26.38 22.84 39.12 59.92 27.82 74.5 21.27 2.33-16.54 8.94-27.82 16.25-34.22-56.84-6.43-116.6-28.43-116.6-126.49 0-27.95 10-50.8 26.35-68.69-2.63-6.48-11.42-32.5 2.51-67.75 0 0 21.49-6.88 70.4 26.24a242.65 242.65 0 0 1 128.18 0c48.87-33.13 70.33-26.24 70.33-26.24 14 35.25 5.18 61.27 2.55 67.75 16.41 17.9 26.31 40.75 26.31 68.69 0 98.35-59.85 120-116.88 126.32 9.19 7.9 17.38 23.53 17.38 47.41 0 34.22-.31 61.83-.31 70.23 0 6.85 4.61 14.81 17.6 12.31C438.72 464.97 512 369.08 512 256.02 512 114.62 397.37 0 256 0z"></path>
+                                </svg>
+                                <span class="rz-button-text">GitHub</span>
+                            </RadzenButton>
+                        </RadzenStack>
+                    </RadzenCard>
+                </RadzenColumn>
+            </RadzenStack>
+        </RadzenRow>
+    </RadzenColumn>
+</RadzenRow>
 
-<MudContainer Class="mt-16 px-8" MaxWidth="MaxWidth.False">
-    <MudGrid>
-        <MudItem xs="12" sm="6">
-            <MudPaper Elevation="2" Class="pa-4" Style="height: 100%">
-                <MudText Align="Align.Center" Typo="Typo.h3" GutterBottom="true">Welcome to Ban Hub!</MudText>
-                <MudText Align="Align.Center" Class="mb-8">We provide a service which aims to clean up the state of 3rd party Call of Duty clients.</MudText>
-                <br/>
-                <MudDivider/>
-                <br/>
-                @if (!_penaltyTable.Any())
-                {
-                    <MudText Align="Align.Center" Typo="Typo.body2">There are no global bans...</MudText>
-                }
-                else
-                {
-                    <MudText Align="Align.Center" Typo="Typo.h6">Latest 3 global bans</MudText>
-                    <br/>
-                    <MudTable Dense="true" Items="@_penaltyTable" Hover="true" FixedHeader="true" Height="100%" T="Penalty">
-                        <HeaderContent>
-                            <MudTh>Community</MudTh>
-                            <MudTh>Offender</MudTh>
-                            <MudTh>Reason</MudTh>
-                            <MudTh>When?</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Instance">
-                                <MudLink Href="@($"/Communities/{context.CommunityGuid}")" Typo="Typo.body2" Color="Color.Info">@context.CommunityName</MudLink>
-                            </MudTd>
-                            <MudTd DataLabel="Target">
-                                <MudLink Href="@($"/Players/{context.TargetIdentity}")" Typo="Typo.body2" Color="Color.Info">@context.TargetUserName</MudLink>
-                            </MudTd>
-                            <MudTd DataLabel="Reason">@context.Reason</MudTd>
-                            <MudTd DataLabel="When?">@context.Submitted.Humanize().Titleize()</MudTd>
-                        </RowTemplate>
-                    </MudTable>
-                }
-            </MudPaper>
-        </MudItem>
-        <MudItem xs="12" sm="6">
-            <MudGrid>
-                <MudItem xs="12">
-                    <MudGrid Spacing="2" Justify="Justify.FlexStart">
-                        <MudItem xs="12" sm="4" xl="3">
-                            <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
-                                <MudText Typo="Typo.subtitle1" Color="Color.Info">@_penalties</MudText>
-                                <MudText Class="mud-text-secondary">Penalties</MudText>
-                            </MudPaper>
-                        </MudItem>
-                        <MudItem xs="12" sm="4" xl="3">
-                            <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
-                                <MudText Typo="Typo.subtitle1" Color="Color.Info">@_entities</MudText>
-                                <MudText Class="mud-text-secondary">Players</MudText>
-                            </MudPaper>
-                        </MudItem>
-                        <MudItem xs="12" sm="4" xl="3">
-                            <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
-                                <MudText Typo="Typo.subtitle1" Color="Color.Info">@_communities</MudText>
-                                <MudText Class="mud-text-secondary">Communities</MudText>
-                            </MudPaper>
-                        </MudItem>
-                        <MudItem xs="12" sm="4" xl="3">
-                            <MudPaper Class="d-flex justify-center flex-column align-self-center pa-6" Elevation="2">
-                                <MudText Typo="Typo.subtitle1" Color="Color.Info">@_servers</MudText>
-                                <MudText Class="mud-text-secondary">Servers</MudText>
-                            </MudPaper>
-                        </MudItem>
-                    </MudGrid>
-                </MudItem>
-                <MudItem xs="12" class="align-self-stretch">
-                    <MudPaper Elevation="2" Class="pa-4 d-flex flex-column">
-                        <MudText Typo="Typo.h6">Requirements for Activating Server for Read-Write Access to BanHub</MudText>
-                        <MudText Typo="Typo.body2" Class="mud-text-secondary">&bull; <b>Daily Client Count:</b> Minimum of 750 unique clients seen daily.</MudText>
-                        <MudText Typo="Typo.body2" Class="mud-text-secondary">&bull; <b>Minimum Clients:</b> Above 50,000 clients.</MudText>
-                        <MudText Typo="Typo.body2" Class="mud-text-secondary">&bull; <b>Community Age:</b> Active for at least 3 months with no long periods of inactivity.</MudText>
-                        <MudText Typo="Typo.body2" Class="mud-text-secondary">&bull; <b>Staff Presence:</b> Active staff presence. Responsible staff for global ban(s) to respond within reasonable period. (~3 working days)</MudText>
-                        <MudText Typo="Typo.body2" Class="mud-text-secondary">&bull; <b>No Unjustified Bans:</b> Server must not be known for imposing bans on players without proper justification or in a discriminatory manner.</MudText>
-                        <MudText Class="mt-2">If all of these requirements are met, the server will be deemed sufficiently established, well-managed, and dependable, making it eligible for read-write access to BanHub.</MudText>
-                        <MudText Typo="Typo.h6" Class="my-2">Follow us</MudText>
-                        <MudElement>
-                            <MudChip Size="Size.Large" Icon="@Icons.Custom.Brands.Discord" Href="https://discord.gg/39rMB7YE2R" Label="true" Color="Color.Primary">
-                                Discord
-                            </MudChip>
-                            <MudChip Size="Size.Large" Icon="@Icons.Custom.Brands.GitHub" Href="https://github.com/Ayymoss/BanHub" Label="true" Color="Color.Info">
-                                GitHub
-                            </MudChip>
-                        </MudElement>
-                    </MudPaper>
-                </MudItem>
-            </MudGrid>
-        </MudItem>
-    </MudGrid>
-</MudContainer>
 
-@code {
-
-    private string? _communities;
-    private string? _penalties;
-    private string? _entities;
-    private string? _servers;
-
-    private List<Penalty> _penaltyTable = new();
-
-    protected override async Task OnInitializedAsync()
-    {
-        var statistics = await StatisticService.GetStatisticAsync();
-        _entities = $"{statistics.PlayerCount:N0}";
-        _communities = $"{statistics.CommunityCount:N0}";
-        _penalties = $"{statistics.PenaltyCount:N0}";
-        _servers = $"{statistics.ServerCount:N0}";
-
-        _penaltyTable = (await PenaltyService.GetLatestBansAsync()).ToList();
-        await base.OnInitializedAsync();
-    }
-
-}

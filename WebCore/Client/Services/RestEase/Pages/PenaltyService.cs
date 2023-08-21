@@ -2,6 +2,8 @@
 using BanHub.WebCore.Shared.Commands.Penalty;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHub.WebCore.Client.Utilities;
+using BanHub.WebCore.Shared.Commands.PlayerProfile;
+using BanHub.WebCore.Shared.Models.PlayerProfileView;
 using BanHubData.Commands.Penalty;
 using RestEase;
 using Penalty = BanHub.WebCore.Shared.Models.PlayerProfileView.Penalty;
@@ -46,23 +48,7 @@ public class PenaltyService
 
         return false;
     }
-
-    public async Task<IEnumerable<Penalty>> GetProfilePenaltiesAsync(string identity)
-    {
-        try
-        {
-            var response = await _api.GetProfilePenaltiesAsync(identity);
-            var result = await response.DeserializeHttpResponseContentAsync<IEnumerable<Penalty>>();
-            return result ?? new List<Penalty>();
-        }
-        catch (ApiException e)
-        {
-            Console.WriteLine($"API->Failed to get player penalties: {e.Message}");
-        }
-
-        return new List<Penalty>();
-    }
-
+    
     public async Task<PaginationContext<BanHub.WebCore.Shared.Models.PenaltiesView.Penalty>> GetPenaltiesPaginationAsync(
         GetPenaltiesPaginationCommand paginationQuery)
     {
@@ -96,20 +82,5 @@ public class PenaltyService
         return new List<WebCore.Shared.Models.IndexView.Penalty>();
     }
 
-    public async Task<IEnumerable<WebCore.Shared.Models.CommunityProfileView.Penalty>> GetCommunityPenaltiesAsync(string identity)
-    {
-        try
-        {
-            var response = await _api.GetCommunityPenaltiesAsync(identity);
-            var result =
-                await response.DeserializeHttpResponseContentAsync<IEnumerable<WebCore.Shared.Models.CommunityProfileView.Penalty>>();
-            return result ?? new List<WebCore.Shared.Models.CommunityProfileView.Penalty>();
-        }
-        catch (ApiException e)
-        {
-            Console.WriteLine($"API->Failed to get player penalties: {e.Message}");
-        }
-
-        return new List<WebCore.Shared.Models.CommunityProfileView.Penalty>();
-    }
+   
 }

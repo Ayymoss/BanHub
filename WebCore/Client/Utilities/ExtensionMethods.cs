@@ -1,28 +1,22 @@
 ﻿using System.Security.Principal;
 using System.Text.Json;
 using BanHubData.Enums;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace BanHub.WebCore.Client.Utilities;
 
 public static class ExtensionMethods
 {
-    public static bool IsInAnyRole(this IPrincipal principal, params string[] roles) => roles.Any(principal.IsInRole);
-
-    public static string GetRoleName(this string role)
+    public static bool IsInEqualOrHigherRole<TEnum>(this IPrincipal principal, TEnum role) where TEnum : Enum
     {
-        return role switch
-        {
-            "Web_User" => "User",
-            "Web_Admin" => "Admin",
-            "Web_SuperAdmin" => "Super Admin",
-            "Community_User" => "User",
-            "Community_Trusted" => "Trusted",
-            "Community_Moderator" => "Moderator",
-            "Community_Administrator" => "Admin",
-            "Community_SeniorAdmin" => "Senior Admin",
-            "Community_Owner" => "Owner",
-            _ => "Unknown"
-        };
+        var roleValue = Convert.ToInt32(role);
+
+        var higherRoles = Enum.GetValues(typeof(TEnum))
+            .Cast<TEnum>()
+            .Where(r => Convert.ToInt32(r) >= roleValue);
+
+        return higherRoles.Any(higherRole => principal.IsInRole(higherRole.ToString()));
     }
 
     public static string GetGameName(this Game game)
@@ -65,5 +59,35 @@ public static class ExtensionMethods
         }
 
         return null;
+    }
+
+
+    public static bool TryGetQueryString<T>(this NavigationManager navManager, string key, out T value)
+    {
+        var uri = navManager.ToAbsoluteUri(navManager.Uri);
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue(key, out var valueFromQueryString))
+        {
+            if (typeof(T) == typeof(int) && int.TryParse(valueFromQueryString, out var valueAsInt))
+            {
+                value = (T)(object)valueAsInt;
+                return true;
+            }
+
+            if (typeof(T) == typeof(string))
+            {
+                value = (T)(object)valueFromQueryString.ToString();
+                return true;
+            }
+
+            if (typeof(T) == typeof(decimal) && decimal.TryParse(valueFromQueryString, out var valueAsDecimal))
+            {
+                value = (T)(object)valueAsDecimal;
+                return true;
+            }
+        }
+
+        value = default;
+        return false;
     }
 }

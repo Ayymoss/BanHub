@@ -1,4 +1,5 @@
-﻿using BanHub.WebCore.Shared.Commands.Community;
+﻿using BanHub.WebCore.Shared.Commands.Chat;
+using BanHub.WebCore.Shared.Commands.Community;
 using RestEase;
 
 namespace BanHub.WebCore.Client.Interfaces.RestEase;
@@ -11,9 +12,12 @@ public interface ICommunityService
     [Get("/Community/{identity}")]
     Task<HttpResponseMessage> GetCommunityAsync([Path("identity")] string identity);
 
-    [Get("/Community/Profile/Servers/{identity}")]
-    Task<HttpResponseMessage> GetCommunityProfileServersAsync([Path("identity")] string identity);
-
     [Patch("/Community/Activation/{identity}")]
     Task<HttpResponseMessage> ToggleCommunityActivationAsync([Path("identity")] string identity);
+
+    [Post("/Community/Profile/Servers")]
+    Task<HttpResponseMessage> GetCommunityProfileServersPaginationAsync([Body] GetCommunityProfileServersPaginationCommand pagination);
+
+    [Post("/Community/Profile/Penalties")]
+    Task<HttpResponseMessage> GetCommunityProfilePenaltiesPaginationAsync([Body] GetCommunityProfilePenaltiesPaginationCommand paginationQuery);
 }

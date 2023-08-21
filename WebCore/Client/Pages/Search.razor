@@ -1,57 +1,77 @@
 ﻿@page "/Search"
-@inject SearchService SearchService
+@using Orientation = Radzen.Orientation
+@using AlignItems = Radzen.AlignItems
+
+
 
 <PageTitle>Search | Ban Hub</PageTitle>
-
-<MudText Typo="Typo.h4" GutterBottom="true" Class="ml-6 mud-text-secondary">Search</MudText>
-
-<MudText Typo="Typo.body2" GutterBottom="true">Search is a bit scuffed right now. You need to navigate to a different page then search again.</MudText>
-
-@if (_searchResults is null || _empty)
-{
-    @if (_empty)
+<RadzenCard>
+    @if (_badQuery)
     {
-        <MudText Typo="Typo.body1" GutterBottom="true">No results</MudText>
+        <RadzenText TextStyle="TextStyle.DisplayH4" Text="Search"/>
+        <RadzenText TextStyle="TextStyle.Body1" Text="Bad query"/>
     }
     else
     {
-        <MudText Typo="Typo.body1" GutterBottom="true">Loading...</MudText>
+        @if (_loading)
+        {
+            <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+        }
+        else
+        {
+            <RadzenText TextStyle="TextStyle.DisplayH4" Text="Search"/>
+            <RadzenRow>
+                <RadzenColumn>
+                    <RadzenText TextStyle="TextStyle.H5" Text="Players"/>
+                    <RadzenCard>
+                        @if (!_playerEmpty)
+                        {
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0">
+                                @foreach (var context in _searchResults.Players)
+                                {
+                                    <RadzenLink Path="@($"/Players/{context.Identity}")" Text="@context.Username"/>
+                                }
+                            </RadzenStack>
+                        }
+                        else
+                        {
+                            <RadzenText TextStyle="TextStyle.Body1" Text="No results"/>
+                        }
+                    </RadzenCard>
+                </RadzenColumn>
+                <RadzenColumn>
+                    <RadzenText TextStyle="TextStyle.H5" Text="Chats"/>
+                    <RadzenCard>
+                        @if (!_chatEmpty)
+                        {
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0">
+                                @foreach (var context in _searchResults.Messages)
+                                {
+                                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Left"
+                                                 AlignItems="AlignItems.Center" Gap="0.5rem">
+                                        <RadzenLink Path="@($"/Players/{context.Player.Identity}")" Text="@context.Player.Username"/>
+                                        <RadzenText TextStyle="TextStyle.Body1" Text="@context.Message"/>
+                                    </RadzenStack>
+                                }
+                            </RadzenStack>
+                        }
+                        else
+                        {
+                            <RadzenText TextStyle="TextStyle.Body1" Text="No results"/>
+                        }
+                    </RadzenCard>
+                </RadzenColumn>
+            </RadzenRow>
+        }
     }
-}
-else
-{
-    <MudTable Elevation="3" Items="@_searchResults" FixedHeader="true" Height="400px">
-        <HeaderContent>
-            <MudTh>Identity</MudTh>
-            <MudTh>Username</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd DataLabel="ID">@context.Identity</MudTd>
-            <MudTd DataLabel="User">
-                <MudLink Href="@($"/Communities/{context.Identity}")" Typo="Typo.body2" Color="Color.Info">@context.Username</MudLink>
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
-}
+</RadzenCard>
 
+<RadzenCard class="rz-my-4">
+    <RadzenText Text="Search is likely to change in the future... Note, if there's more than 1,000 results, you'll receive a bad request."/>
+</RadzenCard>
 
 @code {
 
-    [Parameter, SupplyParameterFromQuery(Name = "q")]
-    public string? Query { get; set; }
-
-    private List<WebCore.Shared.Models.SearchView.Search>? _searchResults;
-    private bool _empty;
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (string.IsNullOrEmpty(Query))
-        {
-            _empty = true;
-            return;
-        }
-        _searchResults = (await SearchService.GetPlayersAsync(Query)).ToList();
-        if (_searchResults is null || !_searchResults.Any()) _empty = true;
-    }
+    
 
 }

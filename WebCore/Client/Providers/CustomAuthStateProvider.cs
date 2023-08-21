@@ -1,5 +1,7 @@
 ﻿using System.Security.Claims;
+using BanHub.WebCore.Client.Utilities;
 using BanHub.WebCore.Shared.Models.Shared;
+using BanHubData.Enums;
 using Microsoft.AspNetCore.Components.Authorization;
 
 namespace BanHub.WebCore.Client.Providers;
@@ -17,8 +19,8 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
     {
         var identity = new ClaimsIdentity(new[]
         {
-            new Claim(ClaimTypes.Role, $"Web_{webUserProfile.WebRole}"),
-            new Claim(ClaimTypes.Role, $"Community_{webUserProfile.CommunityRole}"),
+            new Claim(ClaimTypes.Role, HelperMethods.GetRolesAsString(webRoles: new [] {Enum.Parse<WebRole>(webUserProfile.WebRole)})),
+            new Claim(ClaimTypes.Role, HelperMethods.GetRolesAsString(communityRoles: new [] {Enum.Parse<CommunityRole>(webUserProfile.CommunityRole)})),
             new Claim(ClaimTypes.Name, webUserProfile.UserName),
             new Claim(ClaimTypes.NameIdentifier, webUserProfile.Identity),
             new("SignedInGuid", webUserProfile.SignedInGuid)

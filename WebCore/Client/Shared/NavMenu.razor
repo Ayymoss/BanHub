@@ -1,58 +1,31 @@
-﻿@inject ISnackbar Snackbar
-@inject NavigationManager NavigationManager
-@inject AuthenticationStateProvider AuthStateProvider
+﻿@using Orientation = Radzen.Orientation
+@using Variant = Radzen.Variant
 
-<MudPaper Class="d-flex flex-column" Width="240px" Height="100%" Elevation="0">
-    <MudNavMenu Rounded="true" Margin="Margin.Normal" Color="Color.Info" Class="pa-2">
-        <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-        <MudNavLink Href="Penalties" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Report">Penalties</MudNavLink>
-        <MudNavLink Href="Players" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Players</MudNavLink>
-        <MudNavLink Href="Communities" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Storage">Communities</MudNavLink>
+<RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.SpaceBetween" Style="height: 100%">
+    <RadzenPanelMenu>
+        <RadzenPanelMenuItem Match="NavLinkMatch.All" Path="/" Text="Home" Icon="home"/>
+        <RadzenPanelMenuItem Match="NavLinkMatch.Prefix" Path="/Players" Text="Players" Icon="groups"/>
+        <RadzenPanelMenuItem Match="NavLinkMatch.Prefix" Path="/Penalties" Text="Penalties" Icon="report"/>
+        <RadzenPanelMenuItem Match="NavLinkMatch.Prefix" Path="/Communities" Text="Communities" Icon="dns"/>
         <AuthorizeView>
             <Authorized>
-                <MudNavLink Href="@($"Players/{_identity}")" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Person">My Profile</MudNavLink>
+                <RadzenPanelMenuItem Match="NavLinkMatch.Prefix" Path="@($"/Players/{_identity}")" Text="My Profile" Icon="person"/>
             </Authorized>
         </AuthorizeView>
-    </MudNavMenu>
-    <MudSpacer/>
-    <MudStack Spacing="2" Class="pa-2">
+    </RadzenPanelMenu>
+    <RadzenStack Orientation="Orientation.Vertical" class="rz-ml-2">
         <LoginComponent/>
-        <MudTextField @bind-Value="_searchValue" Disabled="true" @onkeypress="OnKeyPress" AutoFocus="false" Immediate="true" Placeholder="Search Disabled"
-                          Variant="Variant.Outlined" Adornment="Adornment.End" Margin="Margin.Dense" AdornmentIcon="@Icons.Material.Filled.Search"
-                          AdornmentColor="Color.Info"/>
-        <MudElement Class="d-inline-flex align-center mb-n1">
-            <MudElement>
-                <MudText Typo="Typo.caption" Class="mud-text-disabled">BanHub by Amos</MudText>
-            </MudElement>
-            <MudSpacer/>
-            <MudElement>
-                <MudText Typo="Typo.caption" Class="mud-text-disabled">@_versionNumber</MudText>
-            </MudElement>
-        </MudElement>
-    </MudStack>
-</MudPaper>
-
-@code {
-    private string? _identity;
-    private string? _searchValue;
-    private string _versionNumber = HelperMethods.GetVersionAsString();
-
-    private void OnKeyPress(KeyboardEventArgs e)
-    {
-        if (e.Key != "Enter") return;
-        if (_searchValue is null || _searchValue?.Length < 3)
-        {
-            Snackbar.Add("Search must be at least 3 characters long.", Severity.Info);
-            return;
-        }
-
-        NavigationManager.NavigateTo($"/Search?q={_searchValue}");
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        var user = (await (AuthStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
-        _identity ??= user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-    }
-
-}
+        <RadzenFormField Text="Search" Variant="Variant.Outlined">
+            <ChildContent>
+                <RadzenTextBox @bind-Value="_searchValue" Change="OnSearch" Style="width:100%"/>
+            </ChildContent>
+            <End>
+                <RadzenIcon Icon="search" IconStyle="IconStyle.Info"/>
+            </End>
+        </RadzenFormField>
+        <RadzenStack AlignItems="Radzen.AlignItems.Center" Orientation="Radzen.Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Gap="0" class="rz-py-2">
+            <RadzenText Text="BanHub by Amos" TextStyle="TextStyle.Caption" class="rz-mb-0" style="color: var(--rz-text-disabled-color);" TagName="TagName.P" TextAlign="TextAlign.Center"/>
+            <RadzenText Text="@_versionNumber" TextStyle="TextStyle.Caption" class="rz-mb-0" style="color: var(--rz-text-disabled-color);" TagName="TagName.P" TextAlign="TextAlign.Center"/>
+        </RadzenStack>
+    </RadzenStack>
+</RadzenStack>

@@ -61,7 +61,7 @@ public class DataContext : DbContext
         {
             Id = -1,
             Identity = "0:UKN",
-            HeartBeat = DateTimeOffset.UtcNow,
+            Heartbeat = DateTimeOffset.UtcNow,
             Created = DateTimeOffset.UtcNow,
             WebRole = WebRole.User,
             CommunityRole = CommunityRole.User,

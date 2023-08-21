@@ -82,11 +82,11 @@ public class PlayerController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("Profile/Connections/{identity}")]
+    [HttpPost("Profile/Connections")]
     public async Task<ActionResult<IEnumerable<Shared.Models.PlayerProfileView.Connection>>> GetProfileConnectionsAsync(
-        [FromRoute] string identity)
+        [FromBody] GetProfileConnectionsPaginationCommand pagination)
     {
-        var result = await _mediator.Send(new GetProfileConnectionsCommand {Identity = identity});
+        var result = await _mediator.Send(pagination);
         return Ok(result);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Shared.Commands.Penalty;
+using BanHub.WebCore.Shared.Commands.PlayerProfile;
 using BanHub.WebCore.Shared.Models.PenaltiesView;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Commands.Penalty;
@@ -96,9 +97,9 @@ public class PenaltyController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("Profile/Penalties/{identity}")]
-    public async Task<ActionResult<IEnumerable<Shared.Models.PlayerProfileView.Penalty>>> GetProfilePenaltiesAsync(
-        [FromRoute] string identity)
+    [HttpPost("Profile/Penalties")]
+    public async Task<ActionResult<IEnumerable<Shared.Models.PlayerProfileView.Penalty>>> GetProfilePenaltiesPaginationAsync(
+        [FromBody] GetProfilePenaltiesPaginationCommand penaltiesPagination)
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
 
@@ -115,41 +116,12 @@ public class PenaltyController : ControllerBase
                              WebRole.SuperAdmin
                          }, _signedInUsers.IsUserInWebRole);
 
-        var result = await _mediator.Send(new GetProfilePenaltiesCommand
-        {
-            Identity = identity,
-            Privileged = authorised
-        });
+        penaltiesPagination.Privileged = authorised;
+        var result = await _mediator.Send(penaltiesPagination);
         return Ok(result);
     }
 
-    [HttpGet("Community/Penalties/{identity}")]
-    public async Task<ActionResult<IEnumerable<Shared.Models.PlayerProfileView.Penalty>>> GetCommunityPenaltiesAsync(
-        [FromRoute] string identity)
-    {
-        if (!Guid.TryParse(identity, out var guid)) return BadRequest();
-        var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
-
-        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
-                         {
-                             CommunityRole.Moderator,
-                             CommunityRole.Administrator,
-                             CommunityRole.SeniorAdmin,
-                             CommunityRole.Owner
-                         }, _signedInUsers.IsUserInCommunityRole) ||
-                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
-                         {
-                             WebRole.Admin,
-                             WebRole.SuperAdmin
-                         }, _signedInUsers.IsUserInWebRole);
-
-        var result = await _mediator.Send(new GetCommunityPenaltiesCommand
-        {
-            Identity = guid,
-            Privileged = authorised
-        });
-        return Ok(result);
-    }
+    
 
     [HttpGet("Latest")]
     public async Task<ActionResult<IEnumerable<Shared.Models.IndexView.Penalty>>> GetLatestBansAsync()
@@ -193,8 +165,8 @@ public class PenaltyController : ControllerBase
 
         if (!authorised) return Unauthorized("You are not authorised to perform this action");
 
-        request.ActionAdminUserName = adminName;
-        request.ActionAdminIdentity = adminNameIdentity;
+        request.IssuerUserName = adminName;
+        request.IssuerIdentity = adminNameIdentity;
         var result = await _mediator.Send(request);
         if (!result) return BadRequest();
         return Ok();

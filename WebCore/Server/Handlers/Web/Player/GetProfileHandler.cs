@@ -17,15 +17,24 @@ public class GetProfileHandler : IRequestHandler<GetProfileCommand, Shared.Model
 
     public async Task<Shared.Models.PlayerProfileView.Player?> Handle(GetProfileCommand request, CancellationToken cancellationToken)
     {
+        var lastServer = await _context.ServerConnections
+            .Where(x => x.Player.Identity == request.Identity)
+            .OrderByDescending(x => x.Connected)
+            .Select(x=>new
+            {
+                x.Server.ServerName,
+                 x.Server.Community.CommunityName
+            }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        
         var entity = await _context.Players
             .Where(profile => profile.Identity == request.Identity)
             .Select(profile => new BanHub.WebCore.Shared.Models.PlayerProfileView.Player
             {
                 Identity = profile.Identity,
                 UserName = profile.CurrentAlias.Alias.UserName,
-                HeartBeat = profile.HeartBeat,
+                HeartBeat = profile.Heartbeat,
                 IpAddress = request.Privileged ? profile.CurrentAlias.Alias.IpAddress : null,
-                Connected = profile.HeartBeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow,
+                Connected = profile.Heartbeat + TimeSpan.FromMinutes(5) > DateTimeOffset.UtcNow,
                 TotalConnections = profile.TotalConnections,
                 PlayTime = profile.PlayTime,
                 Created = profile.Created,
@@ -33,7 +42,12 @@ public class GetProfileHandler : IRequestHandler<GetProfileCommand, Shared.Model
                     .Where(x => x.PenaltyStatus == PenaltyStatus.Active)
                     .Any(x => x.PenaltyScope == PenaltyScope.Global),
                 CommunityRole = profile.CommunityRole,
-                WebRole = profile.WebRole
+                WebRole = profile.WebRole,
+                LastConnectedServerName = lastServer != null ? lastServer.ServerName : null,
+                LastConnectedCommunityName = lastServer != null ? lastServer.CommunityName : null,
+                PenaltyCount = profile.Penalties.Count,
+                NoteCount = profile.Notes.Count(x => !x.IsPrivate || request.Privileged),
+                ChatCount = profile.Chats.Count
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         return entity;

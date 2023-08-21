@@ -18,7 +18,7 @@ public class EFPlayer
     /// <summary>
     /// The last time the player was seen
     /// </summary>
-    public required DateTimeOffset HeartBeat { get; set; }
+    public required DateTimeOffset Heartbeat { get; set; }
 
     /// <summary>
     /// Total time played

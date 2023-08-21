@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Radzen;
 
 // TODO: LOGGING!!!!
 
@@ -55,6 +56,11 @@ builder.Services.AddSingleton(new DiscordWebhookService(configuration));
 builder.Services.AddTransient<ApiKeyMiddleware>();
 
 builder.Services.AddScoped<IStatisticService, StatisticService>();
+
+builder.Services.AddScoped<DialogService>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<TooltipService>();
+builder.Services.AddScoped<ContextMenuService>();
 
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(@"./Account/"))

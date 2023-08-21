@@ -1,122 +1,74 @@
 ﻿@page "/Penalties"
 @using Penalty = BanHub.WebCore.Shared.Models.PenaltiesView.Penalty
-@inject PenaltyService PenaltyService
+@using Orientation = Radzen.Orientation
 
 <PageTitle>Penalties | Ban Hub</PageTitle>
 
-<MudPaper Elevation="2" Class="d-flex flex-row justify-space-between align-center pa-4 rounded-b-0">
-    <MudText Typo="Typo.h4" Align="Align.Center" Class="mud-text-secondary">Penalties</MudText>
-    <MudElement Class="ml-2 mt-0">
-        <MudTextField T="string" ValueChanged="OnSearch" AutoFocus="false" Placeholder="Filter"
-                      Variant="Variant.Outlined" Adornment="Adornment.End" Margin="Margin.Dense" AdornmentIcon="@Icons.Material.Filled.Search"
-                      AdornmentColor="Color.Default"/>
-    </MudElement>
-</MudPaper>
-<MudTable Striped="true" HeaderClass="mud-theme-info-darken" Outlined="false" Bordered="false"
-          ServerData="@(new Func<TableState, Task<TableData<Penalty>>>(ServerReload))" Elevation="2" RowsPerPage="20" Dense="true"
-          @ref="_table">
-    <HeaderContent>
-        <MudTh Class="py-2">
-            <MudTableSortLabel SortLabel="Id" T="Penalty">ID</MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortLabel="RecipientName" T="Penalty">Offender</MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortLabel="IssuerName" T="Penalty">Issuer</MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortLabel="Reason" T="Penalty">Reason</MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortLabel="Type" T="Penalty">Type</MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortLabel="Status" T="Penalty">Status</MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortLabel="Scope" T="Penalty">Scope</MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortLabel="Community" T="Penalty">Community</MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel InitialDirection="SortDirection.Descending" SortLabel="Submitted" T="Penalty">Submitted</MudTableSortLabel>
-        </MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="Id">
-            @if (context.EvidenceMissing)
-            {
-                <MudElement Class="d-flex flex-row align-center">
-                    <MudTooltip Arrow="true" Placement="Placement.Top" Text="Evidence Missing" RootClass="d-flex">
-                        <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" Color="Color.Error"/>
-                    </MudTooltip>
-                    <MudText Typo="Typo.body2" Class="ml-2">@context.PenaltyGuid</MudText>
-                </MudElement>
-            }
-            else
-            {
-                @context.PenaltyGuid
-            }
-        </MudTd>
-        <MudTd DataLabel="IssuerName">
-            <MudLink Href="@($"/Players/{context.TargetIdentity}")" Typo="Typo.body2" Color="Color.Info">@context.TargetUserName</MudLink>
-        </MudTd>
-        <MudTd DataLabel="RecipientName">
-            <MudLink Href="@($"/Players/{context.AdminIdentity}")" Typo="Typo.body2" Color="Color.Info">@context.AdminUserName</MudLink>
-        </MudTd>
-        <MudTd DataLabel="Reason">@context.Reason</MudTd>
-        <MudTd DataLabel="Type">
-            <EnumMudChip Value="@context.PenaltyType"/>
-        </MudTd>
-        <MudTd DataLabel="Status">
-            <EnumMudChip Value="@context.PenaltyStatus"/>
-        </MudTd>
-        <MudTd DataLabel="Scope">
-            <EnumMudChip Value="@context.PenaltyScope"/>
-        </MudTd>
-        <MudTd DataLabel="Community">
-            <MudLink Href="@($"/Communities/{context.CommunityGuid}")" Typo="Typo.body2" Color="Color.Info">@context.CommunityName</MudLink>
-        </MudTd>
-        <MudTd DataLabel="Submitted">@context.Submitted.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
-    </RowTemplate>
-    <NoRecordsContent>
-        <MudText Class="mb-8" Color="Color.Warning">No penalties found.</MudText>
-    </NoRecordsContent>
-    <LoadingContent>
-        <MudText>Loading...</MudText>
-    </LoadingContent>
-    <PagerContent>
-        <MudTablePager PageSizeOptions="new[] {20, 50, 100}"/>
-    </PagerContent>
-</MudTable>
-
-
-@code
-{
-    private MudTable<Penalty>? _table;
-    private string? _searchString;
-
-    private async Task<TableData<Penalty>> ServerReload(TableState state)
-    {
-        var paginationQuery = new GetPenaltiesPaginationCommand
-        {
-            Page = state.Page,
-            PageSize = state.PageSize,
-            SortLabel = state.SortLabel,
-            SortDirection = (int)state.SortDirection,
-            SearchString = _searchString
-        };
-
-        var context = await PenaltyService.GetPenaltiesPaginationAsync(paginationQuery);
-        return new TableData<Penalty> {TotalItems = context.Count, Items = context.Data};
-    }
-
-    private void OnSearch(string text)
-    {
-        _searchString = text;
-        _table!.ReloadServerData();
-    }
-
-}
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
+        <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.DisplayH4" Text="Penalties" class="rz-mb-0 rz-mt-2"/>
+        <RadzenFormField Text="Search" Variant="Radzen.Variant.Outlined">
+            <ChildContent>
+                <RadzenTextBox @bind-Value="_searchString" Change="OnSearch"/>
+            </ChildContent>
+            <End>
+                <RadzenIcon Icon="search" IconStyle="IconStyle.Info"/>
+            </End>
+        </RadzenFormField>
+    </RadzenStack>
+    <RadzenDataGrid @ref="_dataGrid" TItem="Penalty" IsLoading="@_isLoading" Count="@_count" Data="@_playerTable" LoadData="@LoadData"
+                    Density="Density.Compact" AllowPaging="true" PageSize="20" AllowSorting="true" PagerAlwaysVisible="true"
+                    PagerHorizontalAlign="HorizontalAlign.Center" PageSizeOptions="new[] {20, 50, 100}" ShowPagingSummary="true"
+                    PagingSummaryFormat="Displaying page {0} of {1} <b>(total {2} records)</b>" AllowColumnResize="true" RowClick="RowClickEvent" Style="min-height: 200px">
+        <Columns>
+            <RadzenDataGridColumn TItem="Penalty" Property="PenaltyGuid" Title="ID">
+                <Template Context="context">
+                    <RadzenText TextStyle="TextStyle.Body2" Text="@context.PenaltyGuid.ToString()" class="@(context.EvidenceMissing ? "rz-color-series-5" : "")"/>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Property="RecipientUserName" Title="Offender">
+                <Template Context="context">
+                    <RadzenLink Path="@($"/Players/{context.RecipientIdentity}")" Text="@context.RecipientUserName"/>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Property="IssuerUserName" Title="Issuer">
+                <Template Context="context">
+                    <RadzenLink Path="@($"/Players/{context.IssuerIdentity}")" Text="@context.IssuerUserName"/>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Property="Reason" Title="Reason">
+                <Template Context="context">
+                    @context.Reason
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Property="PenaltyType" Title="Type">
+                <Template Context="context">
+                    <EnumMudChip Penalty="@context.PenaltyType"/>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Property="PenaltyStatus" Title="Status">
+                <Template Context="context">
+                    <EnumMudChip Penalty="@context.PenaltyStatus"/>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Property="PenaltyScope" Title="Scope">
+                <Template Context="context">
+                    <EnumMudChip Penalty="@context.PenaltyScope"/>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Property="CommunityName" Title="Community">
+                <Template Context="context">
+                    @context.CommunityName
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Property="Submitted" Title="Submitted" SortOrder="SortOrder.Descending">
+                <Template Context="context">
+                    @context.Submitted.ToString("yyyy-MM-dd HH:mm:ss")
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+        <EmptyTemplate>
+            <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.H6" class="rz-my-4" Text="There are no penalties..."/>
+        </EmptyTemplate>
+    </RadzenDataGrid>
+</RadzenCard>

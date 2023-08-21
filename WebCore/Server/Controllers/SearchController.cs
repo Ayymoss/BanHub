@@ -1,5 +1,6 @@
 ﻿using BanHub.WebCore.Shared.Commands.Search;
 using BanHub.WebCore.Shared.Models.SearchView;
+using BanHubData.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,11 +17,12 @@ public class SearchController : ControllerBase
         _mediator = mediator;
     }
 
-    [HttpGet("{query}")]
-    public async Task<ActionResult<IEnumerable<Search>>> Search([FromRoute] string query)
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Search>>> Search([FromQuery] string query)
     {
         if (query.Length < 3) return BadRequest();
         var result = await _mediator.Send(new GetSearchCommand {Query = query});
-        return Ok(result);
+        if (result.State is ControllerEnums.ReturnState.BadRequest) return BadRequest();
+        return Ok(result.Search);
     }
 }

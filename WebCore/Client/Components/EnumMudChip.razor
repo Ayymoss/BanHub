@@ -1,25 +1,6 @@
-﻿
-@if (_enumDetails.TryGetValue(Value, out var details))
+﻿@if (_enumDetails.TryGetValue(Penalty, out var details))
 {
-    <MudChip Variant="Variant.Text" Size="Size.Small" Color="@details.Color" Style="margin: 0">@details.Text</MudChip>
+    <RadzenBadge BadgeStyle="@details" Shade="Shade.Lighter" IsPill="true" Variant="Radzen.Variant.Flat" 
+                 Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem" Text="@Penalty.ToString()"/>
 }
 
-@code {
-    [Parameter] public required Enum Value { get; set; }
-
-    private readonly Dictionary<Enum, (string Text, Color Color)> _enumDetails = new()
-    {
-        {PenaltyType.Warning, ("Warn", Color.Default)},
-        {PenaltyType.Mute, ("Mute", Color.Default)},
-        {PenaltyType.Kick, ("Kick", Color.Default)},
-        {PenaltyType.Unban, ("Unban", Color.Info)},
-        {PenaltyType.TempBan, ("Tempban", Color.Warning)},
-        {PenaltyType.Ban, ("Ban", Color.Error)},
-        {PenaltyStatus.Informational, ("Informational", Color.Info)},
-        {PenaltyStatus.Active, ("Active", Color.Success)},
-        {PenaltyStatus.Revoked, ("Revoked", Color.Info)},
-        {PenaltyStatus.Expired, ("Expired", Color.Info)},
-        {PenaltyScope.Local, ("Local", Color.Info)},
-        {PenaltyScope.Global, ("Global", Color.Error)},
-    };
-}

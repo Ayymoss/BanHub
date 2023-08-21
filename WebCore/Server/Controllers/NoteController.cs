@@ -2,6 +2,7 @@
 using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Shared.Commands.PlayerProfile;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
+using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Commands.Note;
 using BanHubData.Enums;
 using MediatR;
@@ -73,15 +74,15 @@ public class NoteController : ControllerBase
 
         if (!authorised) return Unauthorized("You are not authorised to perform this action");
 
-        request.ActionAdminUserName = adminName;
-        request.ActionAdminIdentity = adminNameIdentity;
+        request.IssuerUserName = adminName;
+        request.IssuerIdentity = adminNameIdentity;
         var result = await _mediator.Send(request);
         if (!result) return BadRequest();
         return Ok();
     }
 
-    [HttpGet("{identity}")]
-    public async Task<ActionResult<IEnumerable<Note>>> GetNotesAsync([FromRoute] string identity)
+    [HttpPost("Profile/Notes")]
+    public async Task<ActionResult<PaginationContext<Note>>> GetProfileNotesPaginationAsync([FromBody] GetProfileNotesPaginationCommand pagination)
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
 
@@ -98,7 +99,8 @@ public class NoteController : ControllerBase
                              WebRole.SuperAdmin
                          }, _signedInUsers.IsUserInWebRole);
 
-        var result = await _mediator.Send(new GetNotesCommand {Identity = identity, Authorised = authorised});
+        pagination.Privileged = authorised;
+        var result = await _mediator.Send(pagination);
         return Ok(result);
     }
 

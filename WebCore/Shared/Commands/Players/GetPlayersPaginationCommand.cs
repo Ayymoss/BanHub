@@ -6,7 +6,4 @@ namespace BanHub.WebCore.Shared.Commands.Players;
 
 public class GetPlayersPaginationCommand : Pagination, IRequest<PaginationContext<Player>>
 {
-    
 }
-
-
