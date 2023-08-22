@@ -1,7 +1,4 @@
-﻿@using Orientation = Radzen.Orientation
-@using AlignItems = Radzen.AlignItems
-
-<RadzenRow JustifyContent="JustifyContent.SpaceEvenly" class="rz-mb-4">
+﻿<RadzenRow JustifyContent="JustifyContent.SpaceEvenly" class="rz-mb-4">
     <RadzenColumn class="rz-display-flex">
         <RadzenCard class="rz-display-flex rz-justify-content-center" Style="flex:1">
             <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" Gap="0">
@@ -65,7 +62,6 @@
         </RadzenCard>
     </RadzenColumn>
 </RadzenRow>
-
 <RadzenCard>
     <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Orientation="Orientation.Vertical">
         @if (Penalty.Evidence is not null)

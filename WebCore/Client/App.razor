@@ -1,8 +1,4 @@
-﻿@inject ILocalStorageService LocalStorageService;
-@inject AuthService AuthService
-@inject AuthenticationStateProvider AuthStateProvider
-
-<CascadingAuthenticationState>
+﻿<CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly" OnNavigateAsync="OnNavigateAsync">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
@@ -11,32 +7,9 @@
         <NotFound>
             <PageTitle>Not Found</PageTitle>
             <LayoutView Layout="@typeof(MainLayout)">
-                <MudText Typo="Typo.h4" Color="Color.Info">404 :(</MudText>
-                <MudText Typo="Typo.h5" Color="Color.Error">Whoops, there's nothing here!</MudText>
+                <RadzenText TextStyle="TextStyle.DisplayH4" Text="404 :(" class="rz-color-primary"/>
+                <RadzenText TextStyle="TextStyle.DisplayH5" Text="Whoops, there's nothing here!" class="rz-color-error"/>
             </LayoutView>
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
-
-@code{
-
-    private async Task OnNavigateAsync(NavigationContext args)
-    {
-        var auth = await LocalStorageService.GetItemAsync<string>("IsAuthenticated");
-        var user = (await (AuthStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
-
-        if (!string.IsNullOrEmpty(auth) && !user.Identity!.IsAuthenticated)
-        {
-            var response = await AuthService.UserProfileAsync();
-            if (response.Item1)
-            {
-                (AuthStateProvider as CustomAuthStateProvider)?.SetAuthInfo(response.Item2!);
-                return;
-            }
-
-            (AuthStateProvider as CustomAuthStateProvider)?.ClearAuthInfo();
-            await LocalStorageService.RemoveItemAsync("IsAuthenticated");
-        }
-    }
-
-}

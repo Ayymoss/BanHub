@@ -1,7 +1,4 @@
-﻿@using Orientation = Radzen.Orientation
-@using Variant = Radzen.Variant
-
-<RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.SpaceBetween" Style="height: 100%">
+﻿<RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.SpaceBetween" Style="height: 100%">
     <RadzenPanelMenu>
         <RadzenPanelMenuItem Match="NavLinkMatch.All" Path="/" Text="Home" Icon="home"/>
         <RadzenPanelMenuItem Match="NavLinkMatch.Prefix" Path="/Players" Text="Players" Icon="groups"/>
@@ -23,7 +20,7 @@
                 <RadzenIcon Icon="search" IconStyle="IconStyle.Info"/>
             </End>
         </RadzenFormField>
-        <RadzenStack AlignItems="Radzen.AlignItems.Center" Orientation="Radzen.Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Gap="0" class="rz-py-2">
+        <RadzenStack AlignItems="AlignItems.Center" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Gap="0" class="rz-py-2">
             <RadzenText Text="BanHub by Amos" TextStyle="TextStyle.Caption" class="rz-mb-0" style="color: var(--rz-text-disabled-color);" TagName="TagName.P" TextAlign="TextAlign.Center"/>
             <RadzenText Text="@_versionNumber" TextStyle="TextStyle.Caption" class="rz-mb-0" style="color: var(--rz-text-disabled-color);" TagName="TagName.P" TextAlign="TextAlign.Center"/>
         </RadzenStack>

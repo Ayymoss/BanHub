@@ -8,6 +8,7 @@ namespace BanHub.WebCore.Client.Components.Dialogs;
 partial class ProfileAddNoteDialog
 {
     [Parameter] public required string Identity { get; set; }
+
     [Inject] protected NoteService NoteService { get; set; }
     [Inject] protected NotificationService NotificationService { get; set; }
     [Inject] protected DialogService DialogService { get; set; }

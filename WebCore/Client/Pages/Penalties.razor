@@ -1,13 +1,12 @@
 ﻿@page "/Penalties"
 @using Penalty = BanHub.WebCore.Shared.Models.PenaltiesView.Penalty
-@using Orientation = Radzen.Orientation
 
 <PageTitle>Penalties | Ban Hub</PageTitle>
 
 <RadzenCard>
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
         <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.DisplayH4" Text="Penalties" class="rz-mb-0 rz-mt-2"/>
-        <RadzenFormField Text="Search" Variant="Radzen.Variant.Outlined">
+        <RadzenFormField Text="Search" Variant="Variant.Outlined">
             <ChildContent>
                 <RadzenTextBox @bind-Value="_searchString" Change="OnSearch"/>
             </ChildContent>
@@ -26,7 +25,7 @@
                     <RadzenText TextStyle="TextStyle.Body2" Text="@context.PenaltyGuid.ToString()" class="@(context.EvidenceMissing ? "rz-color-series-5" : "")"/>
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Penalty" Property="RecipientUserName" Title="Offender">
+            <RadzenDataGridColumn TItem="Penalty" Property="RecipientUserName" Title="Recipient">
                 <Template Context="context">
                     <RadzenLink Path="@($"/Players/{context.RecipientIdentity}")" Text="@context.RecipientUserName"/>
                 </Template>

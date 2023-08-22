@@ -1,10 +1,6 @@
 ﻿@page "/Communities/{Identity}"
-@using Orientation = Radzen.Orientation
-@using AlignItems = Radzen.AlignItems
-
 
 <PageTitle>@_title | Community | Ban Hub</PageTitle>
-
 
 <RadzenCard>
     @if (_loading)
@@ -27,10 +23,10 @@
                 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
 
                     <RadzenBadge BadgeStyle="@(_community.Connected ? BadgeStyle.Info : BadgeStyle.Warning)" Shade="Shade.Lighter"
-                                 IsPill="true" Variant="Radzen.Variant.Flat" Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem"
+                                 IsPill="true" Variant="Variant.Flat" Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem"
                                  Text="@(_community.Connected ? "Connected" : "Disconnected")"/>
                     <RadzenBadge BadgeStyle="@(_community.Active ? BadgeStyle.Primary : BadgeStyle.Danger)" Shade="Shade.Lighter"
-                                 IsPill="true" Variant="Radzen.Variant.Flat" Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem"
+                                 IsPill="true" Variant="Variant.Flat" Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem"
                                  Text="@(_community.Active ? "Activated" : "Not Activated")"/>
                     <AuthorizeView Roles="@HelperMethods.GetRolesAsString(new[] {WebRole.SuperAdmin})">
                         <Authorized>

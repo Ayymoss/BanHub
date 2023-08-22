@@ -8,6 +8,7 @@ namespace BanHub.WebCore.Client.Components.Dialogs;
 partial class ProfilePenaltyDialog
 {
     [Parameter] public required Penalty Penalty { get; set; }
+
     [Inject] protected DialogService DialogService { get; set; }
 
     private async Task OpenDeleteConfirmDialog()

@@ -59,7 +59,6 @@ partial class PlayerProfileChatTable
         return "chevron_right";
     }
 
-
     private async Task OnChatClick(MouseEventArgs arg, Chat message)
     {
         if (_chatClickStates.ContainsKey(message.Submitted))
@@ -73,7 +72,7 @@ partial class PlayerProfileChatTable
             _chatClickStates[state.Key] = false;
         }
 
-        if (_chatContext.ContainsKey(message.Submitted) && _chatContext[message.Submitted].Loaded) return;
+        if (_chatContext.TryGetValue(message.Submitted, out var value) && value.Loaded) return;
 
         var chatContext = await ChatService.GetChatContextAsync(new GetMessageContextCommand
         {

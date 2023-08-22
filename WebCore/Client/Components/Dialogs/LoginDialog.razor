@@ -1,13 +1,10 @@
-﻿@using Orientation = Radzen.Orientation
-@using AlignItems = Radzen.AlignItems
-
-<RadzenStack Orientation="Orientation.Vertical" Gap="0">
+﻿<RadzenStack Orientation="Orientation.Vertical" Gap="0">
     <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.H4" class="rz-mb-0" Text="Enter your token"/>
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Gap="0">
         <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.Body1" class="rz-text-tertiary-color rz-mb-0 rz-mr-1" Text="Generate a new token in-game with"/>
         <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.Body1" class="rz-color-primary rz-mb-0" Text="!BHAuth"/>
     </RadzenStack>
-    <RadzenFormField class="rz-my-2" Text="Token" Variant="Radzen.Variant.Text">
+    <RadzenFormField class="rz-my-2" Text="Token" Variant="Variant.Text">
         <ChildContent>
             <RadzenTextBox @bind-Value="_token" Change="UserLogin"/>
         </ChildContent>

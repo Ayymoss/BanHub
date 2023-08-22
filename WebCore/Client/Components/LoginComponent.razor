@@ -1,10 +1,4 @@
-﻿@using DialogService = Radzen.DialogService
-@using DialogOptions = Radzen.DialogOptions
-@using Radzen.Blazor.Rendering
-@using AlignItems = Radzen.AlignItems
-@using Orientation = Radzen.Orientation
-
-<AuthorizeView>
+﻿<AuthorizeView>
     <Authorized>
         <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
             <RadzenButton @ref="_popupButton" Click="@(args => _popup.ToggleAsync(_popupButton.Element))" Text="@context.User.Identity!.Name"

@@ -1,5 +1,4 @@
 ﻿@page "/Communities"
-@using Orientation = Radzen.Orientation
 @using Community = BanHub.WebCore.Shared.Models.CommunitiesView.Community
 
 <PageTitle>Communities | Ban Hub</PageTitle>
@@ -7,7 +6,7 @@
 <RadzenCard>
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
         <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.DisplayH4" Text="Communities" class="rz-mb-0 rz-mt-2"/>
-        <RadzenFormField Text="Search" Variant="Radzen.Variant.Outlined">
+        <RadzenFormField Text="Search" Variant="Variant.Outlined">
             <ChildContent>
                 <RadzenTextBox @bind-Value="_searchString" Change="OnSearch"/>
             </ChildContent>

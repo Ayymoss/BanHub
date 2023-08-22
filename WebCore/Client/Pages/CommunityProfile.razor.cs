@@ -1,5 +1,4 @@
-﻿using BanHub.WebCore.Client.Components.Dialogs;
-using BanHub.WebCore.Client.Services.RestEase.Pages;
+﻿using BanHub.WebCore.Client.Services.RestEase.Pages;
 using BanHub.WebCore.Shared.Models.CommunityProfileView;
 using Microsoft.AspNetCore.Components;
 using Radzen;

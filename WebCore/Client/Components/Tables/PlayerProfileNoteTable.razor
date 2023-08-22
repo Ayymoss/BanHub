@@ -1,8 +1,5 @@
-﻿@using Orientation = Radzen.Orientation
-@using DialogService = Radzen.DialogService
-
-<RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" class="rz-mb-4">
-    <RadzenFormField Text="Filter" Variant="Radzen.Variant.Outlined">
+﻿<RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" class="rz-mb-4">
+    <RadzenFormField Text="Filter" Variant="Variant.Outlined">
         <ChildContent>
             <RadzenTextBox @bind-Value="_searchString" Change="OnSearch"/>
         </ChildContent>
@@ -28,7 +25,7 @@
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Note" Property="Created" Title="Created" SortOrder="SortOrder.Descending"/>
-        @if (!Privileged) // TODO revert !
+        @if (Privileged)
         {
             <RadzenDataGridColumn TItem="Note" Width="40px" TextAlign="TextAlign.End" Sortable="false" Frozen="true">
                 <Template>

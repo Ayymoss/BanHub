@@ -1,9 +1,5 @@
-﻿@using Orientation = Radzen.Orientation
-@using DialogService = Radzen.DialogService
-
-
-<RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" class="rz-mb-4">
-    <RadzenFormField Text="Filter" Variant="Radzen.Variant.Outlined">
+﻿<RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" class="rz-mb-4">
+    <RadzenFormField Text="Filter" Variant="Variant.Outlined">
         <ChildContent>
             <RadzenTextBox @bind-Value="_searchString" Change="OnSearch"/>
         </ChildContent>
@@ -43,4 +39,3 @@
         <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.H6" class="rz-my-4" Text="The user has no penalties."/>
     </EmptyTemplate>
 </RadzenDataGrid>
-

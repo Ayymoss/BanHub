@@ -1,11 +1,8 @@
-﻿@using Orientation = Radzen.Orientation
-@using AlignItems = Radzen.AlignItems
-
-<RadzenStack Orientation="Orientation.Vertical" Gap="0">
+﻿<RadzenStack Orientation="Orientation.Vertical" Gap="0">
     <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
         <RadzenText Text="You're about to delete this penalty" TextStyle="TextStyle.Subtitle1" class="rz-mb-0"/>
         <RadzenText TextStyle="TextStyle.Subtitle2" Text="@Penalty.PenaltyGuid.ToString()" class="rz-mb-0 rz-text-tertiary-color"/>
-        <RadzenFormField Text="Reason" Variant="Radzen.Variant.Outlined" Style="min-width:300px;width:75%">
+        <RadzenFormField Text="Reason" Variant="Variant.Outlined" Style="min-width:300px;width:75%">
             <ChildContent>
                 <RadzenTextBox @bind-Value="_deletionReason"/>
             </ChildContent>

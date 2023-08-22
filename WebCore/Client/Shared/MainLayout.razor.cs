@@ -19,6 +19,7 @@ partial class MainLayout
     private int _activeUserCount;
     private RadzenBody _body;
     private bool _isDarkTheme;
+
     private string ThemeButtonClass => $"{(_isDarkTheme ? "rz-info" : "rz-warning")} rz-mr-4";
 
     protected override async Task OnInitializedAsync()

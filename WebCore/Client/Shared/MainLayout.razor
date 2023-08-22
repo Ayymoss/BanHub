@@ -1,5 +1,4 @@
-﻿@using Variant = Radzen.Variant
-@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
 
 <RadzenDialog/>
 <RadzenNotification/>
@@ -8,25 +7,25 @@
 
 <RadzenLayout Style="height: 100vh; grid-template-columns: auto 1fr auto; grid-template-areas: 'rz-header rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
     <RadzenHeader>
-        <RadzenRow JustifyContent="JustifyContent.Start" AlignItems="Radzen.AlignItems.Center" Gap="0">
+        <RadzenRow JustifyContent="JustifyContent.Start" AlignItems="AlignItems.Center" Gap="0">
             <RadzenColumn Size="5">
-                <RadzenStack Orientation="Radzen.Orientation.Horizontal" AlignItems="Radzen.AlignItems.Center">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
                     <RadzenSidebarToggle Click="@(() => _drawerOpen = !_drawerOpen)"/>
                     <RadzenText Text="Ban Hub" TextStyle="TextStyle.DisplayH5" class="rz-mb-0"/>
                     <RadzenBadge BadgeStyle="BadgeStyle.Primary" Shade="Shade.Lighter" IsPill="true" Variant="Variant.Flat" class="rz-ml-4">
-                        <RadzenStack Orientation="Radzen.Orientation.Horizontal" AlignItems="Radzen.AlignItems.Center" Gap="0.25rem" Style="padding: 0.25rem 0.25rem 0.25rem 0.25rem; text-transform: none;">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.25rem" Style="padding: 0.25rem 0.25rem 0.25rem 0.25rem; text-transform: none;">
                             <RadzenIcon Icon="group"/> Online &bull; @_online
                         </RadzenStack>
                     </RadzenBadge>
                     <RadzenBadge BadgeStyle="BadgeStyle.Danger" Shade="Shade.Lighter" IsPill="true" Variant="Variant.Flat" class="rz-ml-4">
-                        <RadzenStack Orientation="Radzen.Orientation.Horizontal" AlignItems="Radzen.AlignItems.Center" Gap="0.25rem" Style="padding: 0.25rem 0.25rem 0.25rem 0.25rem; text-transform: none;">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.25rem" Style="padding: 0.25rem 0.25rem 0.25rem 0.25rem; text-transform: none;">
                             <RadzenIcon Icon="block"/> 7d Global Bans &bull; @_bans
                         </RadzenStack>
                     </RadzenBadge>
                 </RadzenStack>
             </RadzenColumn>
             <RadzenColumn Size="7">
-                <RadzenStack AlignItems="Radzen.AlignItems.Center" Orientation="Radzen.Orientation.Horizontal" JustifyContent="JustifyContent.End">
+                <RadzenStack AlignItems="AlignItems.Center" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
                     <a href="https://discord.gg/Arruj6DWvp" title="GitHub" target="_blank" Class="rz-mr-4">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-discord" viewBox="0 0 16 16">
                             <title>Discord</title>

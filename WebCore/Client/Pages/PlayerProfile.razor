@@ -1,6 +1,4 @@
 ﻿@page "/Players/{Identity}"
-@using Orientation = Radzen.Orientation
-@using AlignItems = Radzen.AlignItems
 
 <PageTitle>@_title | Profile | Ban Hub</PageTitle>
 
@@ -35,19 +33,19 @@
                 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
                     @if (_player.WebRole is not WebRole.User)
                     {
-                        <RadzenBadge BadgeStyle="BadgeStyle.Info" Shade="Shade.Lighter" IsPill="true" Variant="Radzen.Variant.Flat"
+                        <RadzenBadge BadgeStyle="BadgeStyle.Info" Shade="Shade.Lighter" IsPill="true" Variant="Variant.Flat"
                                      Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem" Text="@($"Web {_player.WebRole}")"/>
                     }
                     @if (_player.CommunityRole is not CommunityRole.User)
                     {
-                        <RadzenBadge BadgeStyle="BadgeStyle.Info" Shade="Shade.Lighter" IsPill="true" Variant="Radzen.Variant.Flat"
+                        <RadzenBadge BadgeStyle="BadgeStyle.Info" Shade="Shade.Lighter" IsPill="true" Variant="Variant.Flat"
                                      Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem" Text="@($"Community {_player.CommunityRole}")"/>
                     }
                     <RadzenBadge BadgeStyle="@(_player.Connected ? BadgeStyle.Info : BadgeStyle.Warning)" Shade="Shade.Lighter"
-                                 IsPill="true" Variant="Radzen.Variant.Flat" Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem"
+                                 IsPill="true" Variant="Variant.Flat" Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem"
                                  Text="@(_player.Connected ? "Online" : "Offline")"/>
                     <RadzenBadge BadgeStyle="@(_player.IsGloballyBanned ? BadgeStyle.Danger : BadgeStyle.Info)" Shade="Shade.Lighter"
-                                 IsPill="true" Variant="Radzen.Variant.Flat" Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem"
+                                 IsPill="true" Variant="Variant.Flat" Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem"
                                  Text="@(_player.IsGloballyBanned ? "Globally Banned" : "Compliant")"/>
                     @if (_player.IsGloballyBanned)
                     {
@@ -59,7 +57,7 @@
                 <RadzenRow JustifyContent="JustifyContent.Start">
                     <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
                         <RadzenCard>
-                            <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0">
                                 <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@_player.Created.Humanize()"/>
                                 <RadzenText class="rz-text-tertiary-color" Text="First Seen"/>
                             </RadzenStack>
@@ -67,7 +65,7 @@
                     </RadzenColumn>
                     <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
                         <RadzenCard>
-                            <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0">
                                 <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@(_player.Connected ? "Now" : _player.HeartBeat.Humanize())"/>
                                 <RadzenText class="rz-text-tertiary-color" Text="Last Seen"/>
                             </RadzenStack>
@@ -77,7 +75,7 @@
                     {
                         <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
                             <RadzenCard>
-                                <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="0">
                                     <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@_player.LastConnectedServerName"/>
                                     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
                                         <RadzenText class="rz-text-tertiary-color" Text="Last Seen"/>
@@ -89,7 +87,7 @@
                     }
                     <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
                         <RadzenCard>
-                            <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0">
                                 <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@(_player.TotalConnections is 0 ? "None" : _player.TotalConnections.ToString("N0"))"/>
                                 <RadzenText class="rz-text-tertiary-color" Text="Total Connections"/>
                             </RadzenStack>
@@ -97,7 +95,7 @@
                     </RadzenColumn>
                     <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
                         <RadzenCard>
-                            <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0">
                                 <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@(_player.PlayTime == TimeSpan.Zero ? "None" : _player.PlayTime.Humanize())"/>
                                 <RadzenText class="rz-text-tertiary-color" Text="Total Playtime"/>
                             </RadzenStack>
@@ -105,7 +103,7 @@
                     </RadzenColumn>
                     <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
                         <RadzenCard>
-                            <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0">
                                 <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@(_player.TotalConnections is 0 || _player.PlayTime == TimeSpan.Zero ? "None" : (_player.PlayTime / _player.TotalConnections).Humanize())"/>
                                 <RadzenText class="rz-text-tertiary-color" Text="Average Playtime"/>
                             </RadzenStack>
@@ -113,7 +111,7 @@
                     </RadzenColumn>
                     <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
                         <RadzenCard>
-                            <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0">
                                 <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@(_player.ChatCount is 0 ? "None" : _player.ChatCount.ToString("N0"))"/>
                                 <RadzenText class="rz-text-tertiary-color" Text="Total Chat Messages"/>
                             </RadzenStack>
@@ -121,16 +119,13 @@
                     </RadzenColumn>
                     <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
                         <RadzenCard>
-                            <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0">
                                 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
                                     <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@(_player.NoteCount is 0 ? "None" : _player.NoteCount.ToString("N0"))"/>
-                                    @{
-                                        /*TODO REVERT NOT AUTHORISED TAG AND CHECK IF THIS CORRECT RENDERS WITHOUT AUTO*/
-                                    }
                                     <AuthorizeView Roles="@HelperMethods.GetRolesAsString(new[] {WebRole.Admin, WebRole.SuperAdmin}, new[] {CommunityRole.Moderator, CommunityRole.Administrator, CommunityRole.SeniorAdmin, CommunityRole.Owner})">
-                                        <NotAuthorized>
+                                        <Authorized>
                                             <RadzenButton Click="AddNote" Size="ButtonSize.Small" Shade="Shade.Lighter" Icon="add"/>
-                                        </NotAuthorized>
+                                        </Authorized>
                                     </AuthorizeView>
                                 </RadzenStack>
                                 <RadzenText class="rz-text-tertiary-color" Text="Total Notes"/>
@@ -139,7 +134,7 @@
                     </RadzenColumn>
                     <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
                         <RadzenCard>
-                            <RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0">
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0">
                                 <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@_player.PenaltyCount.ToString("N0")"/>
                                 <RadzenText class="rz-text-tertiary-color" Text="Total Penalties"/>
                             </RadzenStack>

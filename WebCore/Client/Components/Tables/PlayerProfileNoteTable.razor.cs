@@ -48,14 +48,14 @@ partial class PlayerProfileNoteTable
 
     private async Task RowClickEvent(DataGridRowMouseEventArgs<Note> arg)
     {
-        //if (!Privileged) return; // TODO: Remove Comment
+        if (!Privileged) return;
 
         var parameters = new Dictionary<string, object>
         {
             {"Note", arg.Data}
         };
 
-        var options = new Radzen.DialogOptions
+        var options = new DialogOptions
         {
             Style = "min-height:auto;min-width:auto;width:auto;max-width:75%;max-height:97%",
             CloseDialogOnOverlayClick = true

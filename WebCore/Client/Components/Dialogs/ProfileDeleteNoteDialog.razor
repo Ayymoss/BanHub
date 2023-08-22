@@ -1,13 +1,10 @@
-﻿@using AlignItems = Radzen.AlignItems
-@using Orientation = Radzen.Orientation
-
-<RadzenStack Orientation="Orientation.Vertical" Gap="0">
+﻿<RadzenStack Orientation="Orientation.Vertical" Gap="0">
     <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
         <RadzenText Text="You're about to delete this note" TextStyle="TextStyle.Subtitle1" class="rz-mb-0"/>
         <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-mb-0 rz-text-tertiary-color">
             @Note.Message by @Note.IssuerUserName
         </RadzenText>
-        <RadzenFormField Text="Reason" Variant="Radzen.Variant.Outlined" Style="min-width:300px;width:75%">
+        <RadzenFormField Text="Reason" Variant="Variant.Outlined" Style="min-width:300px;width:75%">
             <ChildContent>
                 <RadzenTextBox @bind-Value="_deletionReason"/>
             </ChildContent>

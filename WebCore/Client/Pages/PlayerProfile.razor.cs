@@ -77,7 +77,7 @@ partial class PlayerProfile : IAsyncDisposable
             {"Identity", _player.Identity}
         };
 
-        var options = new Radzen.DialogOptions
+        var options = new DialogOptions
         {
             Style = "min-height:auto;min-width:auto;width:auto",
             CloseDialogOnOverlayClick = true

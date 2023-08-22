@@ -1,9 +1,7 @@
-﻿@using Orientation = Radzen.Orientation
-@using DialogService = Radzen.DialogService
-@using Penalty = BanHub.WebCore.Shared.Models.CommunityProfileView.Penalty
+﻿@using Penalty = BanHub.WebCore.Shared.Models.CommunityProfileView.Penalty
 
 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" class="rz-mb-4">
-    <RadzenFormField Text="Filter" Variant="Radzen.Variant.Outlined">
+    <RadzenFormField Text="Filter" Variant="Variant.Outlined">
         <ChildContent>
             <RadzenTextBox @bind-Value="_searchString" Change="OnSearch"/>
         </ChildContent>

@@ -1,10 +1,6 @@
-﻿@using Orientation = Radzen.Orientation
-@using AlignItems = Radzen.AlignItems
-
-
-<RadzenStack Orientation="Orientation.Vertical" Gap="0">
+﻿<RadzenStack Orientation="Orientation.Vertical" Gap="0">
     <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
-        <RadzenFormField Text="Note" Variant="Radzen.Variant.Outlined">
+        <RadzenFormField Text="Note" Variant="Variant.Outlined">
             <ChildContent>
                 <RadzenTextBox @bind-Value="_noteMessage"/>
             </ChildContent>

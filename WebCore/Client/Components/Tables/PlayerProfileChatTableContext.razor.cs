@@ -8,6 +8,4 @@ partial class PlayerProfileChatTableContext
 {
     [Parameter] public required Chat Chat { get; set; }
     [Parameter] public required ChatContextRoot Context { get; set; }
-
-    [Inject] protected ChatService ChatService { get; set; }
 }

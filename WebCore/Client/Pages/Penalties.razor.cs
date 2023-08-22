@@ -13,7 +13,6 @@ namespace BanHub.WebCore.Client.Pages;
 partial class Penalties
 {
     [Inject] protected PenaltyService PenaltyService { get; set; }
-    [Inject] protected TooltipService TooltipService { get; set; }
     [Inject] protected DialogService DialogService { get; set; }
 
     private RadzenDataGrid<Penalty> _dataGrid;

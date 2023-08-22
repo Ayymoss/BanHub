@@ -1,6 +1,5 @@
 ﻿@page "/Players"
 @using Player = BanHub.WebCore.Shared.Models.PlayersView.Player
-@using Orientation = Radzen.Orientation
 
 <PageTitle>Players | Ban Hub</PageTitle>
 
@@ -35,7 +34,7 @@
             <RadzenDataGridColumn TItem="Player" Property="Heartbeat" Title="Online" SortOrder="SortOrder.Descending">
                 <Template Context="context">
                     <RadzenBadge BadgeStyle="@(context.IsOnline ? BadgeStyle.Info : BadgeStyle.Warning)" Shade="Shade.Lighter"
-                                 IsPill="true" Variant="Radzen.Variant.Flat" Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem"
+                                 IsPill="true" Variant="Variant.Flat" Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem"
                                  Text="@(context.IsOnline ? "Online" : "Offline")"/>
                 </Template>
             </RadzenDataGridColumn>
