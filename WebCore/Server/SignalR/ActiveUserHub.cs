@@ -1,5 +1,4 @@
-﻿using BanHub.WebCore.Shared.Models.Shared;
-using BanHubData.SignalR;
+﻿using BanHubData.SignalR;
 using Microsoft.AspNetCore.SignalR;
 
 namespace BanHub.WebCore.Server.SignalR;

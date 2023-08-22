@@ -49,6 +49,7 @@
                                  Text="@(_player.IsGloballyBanned ? "Globally Banned" : "Compliant")"/>
                     @if (_player.IsGloballyBanned)
                     {
+                        <TomatoButton Identity="@_player.Identity"/>
                         <a class="rz-button rz-button-md rz-variant-outlined rz-danger rz-shade-default rz-ml-4" href="https://discord.gg/UHdqh6ZfjM" target="_blank">Appeal!</a>
                     }
                 </RadzenStack>

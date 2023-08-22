@@ -28,6 +28,8 @@ builder.Services.AddScoped<CookieHandler>();
 
 builder.Services.AddSingleton<ActiveUserHub>();
 builder.Services.AddSingleton<StatisticsHub>();
+builder.Services.AddSingleton<TomatoCounterHub>();
+
 builder.Services.AddSingleton<CommunityService>();
 builder.Services.AddSingleton<NoteService>();
 builder.Services.AddSingleton<PenaltyService>();

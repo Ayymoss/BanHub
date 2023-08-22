@@ -1,4 +1,7 @@
-﻿<button @onclick="DropTomatoes">🍅 Click me!</button>
+﻿<RadzenButton ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" class="rz-ml-4" Click="IncrementCount">
+    🤢
+    <RadzenBadge BadgeStyle="BadgeStyle.Secondary" IsPill="true" Text="@_tomatoCount.ToString()" class="rz-ml-2"/>
+</RadzenButton>
 
 @foreach (var tomato in _tomatoes)
 {
@@ -7,8 +10,8 @@
         : $"rotateCounterClockwise {tomato.RotationSpeed}s infinite linear";
 
     var fallingAnimation = tomato.RotationDirection == "clockwise"
-        ? $"dropRotateClockwise {tomato.FallSpeed * 0.5}s linear forwards"
-        : $"dropRotateCounterClockwise {tomato.FallSpeed * 0.5}s linear forwards";
+        ? $"dropRotateClockwise {tomato.FallSpeed * 0.75}s linear forwards"
+        : $"dropRotateCounterClockwise {tomato.FallSpeed * 0.75}s linear forwards";
 
     <div class="tomato-wrapper"
          id="@tomato.Id"

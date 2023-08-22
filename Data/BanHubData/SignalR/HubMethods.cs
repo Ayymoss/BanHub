@@ -36,4 +36,19 @@ public static class HubMethods
     /// PluginHub: Broadcast global ban
     /// </summary>
     public const string OnGlobalBan = nameof(OnGlobalBan);
+
+    /// <summary>
+    /// TomatoCounterHub: Get current tomato count
+    /// </summary>
+    public const string GetTomatoCount = nameof(GetTomatoCount);
+
+    /// <summary>
+    /// TomatoCounterHub: Broadcast tomato count
+    /// </summary>
+    public const string OnTomatoCountUpdate = nameof(OnTomatoCountUpdate);
+    
+    /// <summary>
+    /// TomatoCounterHub: Increment tomato count
+    /// </summary>
+    public const string IncrementTomatoCount = nameof(IncrementTomatoCount);
 }

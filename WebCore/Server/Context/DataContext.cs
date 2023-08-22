@@ -21,6 +21,7 @@ public class DataContext : DbContext
     public DbSet<EFAuthToken> AuthTokens { get; set; }
     public DbSet<EFNote> Notes { get; set; }
     public DbSet<EFPenaltyIdentifier> PenaltyIdentifiers { get; set; }
+    public DbSet<EFTomatoCounter> TomatoCounters { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -35,6 +36,7 @@ public class DataContext : DbContext
         modelBuilder.Entity<EFAuthToken>().ToTable("EFAuthTokens");
         modelBuilder.Entity<EFNote>().ToTable("EFNotes");
         modelBuilder.Entity<EFPenaltyIdentifier>().ToTable("EFPenaltyIdentifiers");
+        modelBuilder.Entity<EFTomatoCounter>().ToTable("EFTomatoCounters");
 
         modelBuilder.Entity<EFPenalty>()
             .HasOne(a => a.Recipient)

@@ -130,6 +130,7 @@ app.MapRazorPages();
 app.MapHub<PluginHub>("/SignalR/PluginHub");
 app.MapHub<ActiveUserHub>("/SignalR/ActiveUsersHub");
 app.MapHub<StatisticsHub>("/SignalR/StatisticsHub");
+app.MapHub<TomatoCounterHub>("/SignalR/TomatoCounterHub");
 
 app.UseCors("CorsSpecs");
 app.UseAuthentication();

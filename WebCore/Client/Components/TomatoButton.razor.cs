@@ -1,8 +1,22 @@
-﻿namespace BanHub.WebCore.Client.Components;
+﻿using BanHub.WebCore.Client.SignalR;
+using Microsoft.AspNetCore.Components;
+
+namespace BanHub.WebCore.Client.Components;
 
 partial class TomatoButton
 {
-    private readonly List<Tomato> _tomatoes = new();
+    [Parameter] public required string Identity { get; set; }
+
+    [Inject] protected TomatoCounterHub TomatoCounterHub { get; set; }
+
+    private int _tomatoCount;
+    private readonly Queue<Tomato> _tomatoes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await InitializeSignalRHubs();
+        await base.OnInitializedAsync();
+    }
 
     private void DropTomatoes()
     {
@@ -13,7 +27,7 @@ partial class TomatoButton
             var rotationDirection = Random.Shared.Next(0, 2) == 0 ? "clockwise" : "counter-clockwise";
             var rotationSpeed = 0.4 + 1.6 * Random.Shared.NextDouble();
 
-            _tomatoes.Add(new Tomato
+            _tomatoes.Enqueue(new Tomato
             {
                 Id = Guid.NewGuid().ToString(),
                 Size = size,
@@ -21,10 +35,35 @@ partial class TomatoButton
                 RotationDirection = rotationDirection,
                 RotationSpeed = rotationSpeed,
                 FallSpeed = (int)(10.0 - 5.0 * size / 50.0),
-                LeftPosition = Random.Shared.Next(100),
+                LeftPosition = Random.Shared.Next(1, 80),
                 TopPosition = -Random.Shared.Next(10, 20)
             });
         }
+    }
+
+    private async Task InitializeSignalRHubs()
+    {
+        SubscribeToHubEvents();
+        await TomatoCounterHub.InitializeAsync(Identity);
+    }
+
+    private void SubscribeToHubEvents()
+    {
+        TomatoCounterHub.TomatoCountChanged += TomatoCountChanged;
+    }
+
+    private void TomatoCountChanged(int count)
+    {
+        _tomatoCount = count;
+        DropTomatoes();
+        StateHasChanged();
+    }
+
+    private async Task IncrementCount()
+    {
+        _tomatoCount++;
+        await TomatoCounterHub.IncrementCount(Identity);
+        StateHasChanged();
     }
 
     private class Tomato
