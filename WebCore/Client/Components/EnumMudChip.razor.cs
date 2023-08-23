@@ -10,9 +10,10 @@ partial class EnumMudChip
 
     private readonly Dictionary<Enum, BadgeStyle> _enumDetails = new()
     {
-        {PenaltyType.Warning, BadgeStyle.Primary},
-        {PenaltyType.Mute, BadgeStyle.Primary},
-        {PenaltyType.Kick, BadgeStyle.Primary},
+        {PenaltyType.Report, BadgeStyle.Light},
+        {PenaltyType.Warning, BadgeStyle.Light},
+        {PenaltyType.Mute, BadgeStyle.Light},
+        {PenaltyType.Kick, BadgeStyle.Light},
         {PenaltyType.Unban, BadgeStyle.Info},
         {PenaltyType.TempBan, BadgeStyle.Warning},
         {PenaltyType.Ban, BadgeStyle.Danger},

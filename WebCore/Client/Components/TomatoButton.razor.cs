@@ -1,16 +1,17 @@
 ﻿using BanHub.WebCore.Client.SignalR;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace BanHub.WebCore.Client.Components;
 
-partial class TomatoButton
+partial class TomatoButton : IAsyncDisposable
 {
     [Parameter] public required string Identity { get; set; }
 
     [Inject] protected TomatoCounterHub TomatoCounterHub { get; set; }
 
     private int _tomatoCount;
-    private readonly Queue<Tomato> _tomatoes = new();
+    private readonly List<Tomato> _tomatoes = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -27,7 +28,7 @@ partial class TomatoButton
             var rotationDirection = Random.Shared.Next(0, 2) == 0 ? "clockwise" : "counter-clockwise";
             var rotationSpeed = 0.4 + 1.6 * Random.Shared.NextDouble();
 
-            _tomatoes.Enqueue(new Tomato
+            _tomatoes.Add(new Tomato
             {
                 Id = Guid.NewGuid().ToString(),
                 Size = size,
@@ -36,8 +37,21 @@ partial class TomatoButton
                 RotationSpeed = rotationSpeed,
                 FallSpeed = (int)(10.0 - 5.0 * size / 50.0),
                 LeftPosition = Random.Shared.Next(1, 80),
-                TopPosition = -Random.Shared.Next(10, 20)
+                TopPosition = -Random.Shared.Next(10, 20),
+                CreatedOn = DateTimeOffset.UtcNow
             });
+        }
+    }
+
+    private void CleanupOldTomatoes()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var oldTomatoes = _tomatoes.Where(t => (now - t.CreatedOn).TotalSeconds > 10).ToList();
+        foreach (var oldTomato in oldTomatoes)
+        {
+            oldTomato.LeftPosition = 1;
+            // I don't know how to remove the objects without the animation rendering again for all objects. :(
+            // This is my solution to move them to the far left so any issues with horizontal scrolling are avoided.
         }
     }
 
@@ -56,6 +70,7 @@ partial class TomatoButton
     {
         _tomatoCount = count;
         DropTomatoes();
+        CleanupOldTomatoes();
         StateHasChanged();
     }
 
@@ -76,5 +91,11 @@ partial class TomatoButton
         public int FallSpeed { get; set; }
         public int LeftPosition { get; set; }
         public int TopPosition { get; set; }
+        public DateTimeOffset CreatedOn { get; set; }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await TomatoCounterHub.DisposeAsync();
     }
 }

@@ -1,7 +1,7 @@
 ﻿@using Penalty = BanHub.WebCore.Shared.Models.PlayerProfileView.Penalty
 
 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" class="rz-mb-4">
-    <RadzenFormField Text="Filter" Variant="Variant.Outlined">
+    <RadzenFormField Text="Filter" Variant="Variant.Text">
         <ChildContent>
             <RadzenTextBox @bind-Value="_searchString" Change="OnSearch"/>
         </ChildContent>
@@ -13,7 +13,8 @@
 <RadzenDataGrid @ref="_dataGrid" TItem="Penalty" IsLoading="@_loading" Count="@_totalCount" Data="@_data" LoadData="@LoadData"
                 Density="Density.Compact" AllowPaging="true" PageSize="10" AllowSorting="true" PagerAlwaysVisible="true"
                 PagerHorizontalAlign="HorizontalAlign.Center" PageSizeOptions="new[] {10, 20}" ShowPagingSummary="true"
-                PagingSummaryFormat="Displaying page {0} of {1} <b>(total {2} records)</b>" AllowColumnResize="true" RowClick="RowClickEvent" Style="min-height: 200px">
+                PagingSummaryFormat="Displaying page {0} of {1} <b>(total {2} records)</b>" AllowColumnResize="true" 
+                RowClick="RowClickEvent" Style="min-height: 200px" class="rz-selectable">
     <Columns>
         <RadzenDataGridColumn TItem="Penalty" Property="IssuerUserName" Title="Issuer">
             <Template Context="context">

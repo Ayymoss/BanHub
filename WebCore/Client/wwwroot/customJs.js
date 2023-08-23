@@ -1,4 +1,5 @@
-﻿let currentTheme = localStorage.getItem('theme') || 'dark';
+﻿// Theme switching
+let currentTheme = localStorage.getItem('theme') || 'dark';
 const themeStyle = document.getElementById('theme-style');
 
 function setTheme(theme) {
@@ -21,4 +22,3 @@ window.toggleTheme = () => {
     localStorage.setItem('theme', currentTheme);
     return currentTheme;
 };
-

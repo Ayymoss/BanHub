@@ -18,7 +18,8 @@
     <RadzenDataGrid @ref="_dataGrid" TItem="Community" IsLoading="@_isLoading" Count="@_count" Data="@_playerTable" LoadData="@LoadData"
                     Density="Density.Compact" AllowPaging="true" PageSize="20" AllowSorting="true" PagerAlwaysVisible="true"
                     PagerHorizontalAlign="HorizontalAlign.Center" PageSizeOptions="new[] {20, 50, 100}" ShowPagingSummary="true"
-                    PagingSummaryFormat="Displaying page {0} of {1} <b>(total {2} records)</b>" AllowColumnResize="true" Style="min-height: 200px">
+                    PagingSummaryFormat="Displaying page {0} of {1} <b>(total {2} records)</b>" AllowColumnResize="true"
+                    Style="min-height: 200px">
         <Columns>
             <RadzenDataGridColumn TItem="Community" Width="40px" TextAlign="TextAlign.Center" Sortable="false" Frozen="true">
                 <Template Context="context">

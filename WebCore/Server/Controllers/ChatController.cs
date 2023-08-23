@@ -14,10 +14,12 @@ namespace BanHub.WebCore.Server.Controllers;
 public class ChatController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly ILogger<ChatController> _logger;
 
-    public ChatController(IMediator mediator)
+    public ChatController(IMediator mediator, ILogger<ChatController> logger)
     {
         _mediator = mediator;
+        _logger = logger;
     }
 
     [HttpPost("AddMessages"), PluginAuthentication]

@@ -9,10 +9,12 @@ namespace BanHub.WebCore.Server.Handlers.Plugin.Chat;
 public class AddCommunityChatMessagesHandler : IRequestHandler<AddCommunityChatMessagesCommand>
 {
     private readonly DataContext _context;
+    private readonly ILogger<AddCommunityChatMessagesHandler> _logger;
 
-    public AddCommunityChatMessagesHandler(DataContext context)
+    public AddCommunityChatMessagesHandler(DataContext context, ILogger<AddCommunityChatMessagesHandler> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task Handle(AddCommunityChatMessagesCommand request, CancellationToken cancellationToken)
@@ -30,12 +32,14 @@ public class AddCommunityChatMessagesHandler : IRequestHandler<AddCommunityChatM
                 x.Id,
                 x.Identity
             }).ToListAsync(cancellationToken: cancellationToken);
-        
+
+        var serverIds = request.PlayerMessages.Values
+            .SelectMany(y => y)
+            .Select(y => y.ServerId)
+            .ToList();
+
         var servers = await _context.Servers
-            .Where(x => request.PlayerMessages.Values
-                .SelectMany(y => y)
-                .Select(y => y.ServerId)
-                .Contains(x.ServerId))
+            .Where(x => serverIds.Contains(x.ServerId))
             .Select(x => new
             {
                 x.Id,

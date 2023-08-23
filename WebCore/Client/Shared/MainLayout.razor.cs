@@ -25,7 +25,7 @@ partial class MainLayout
     protected override async Task OnInitializedAsync()
     {
         var currentTheme = await LocalStorage.GetItemAsync<string>("theme");
-        _isDarkTheme = currentTheme.Contains("dark");
+        _isDarkTheme = currentTheme?.Contains("dark") ?? true;
         await InitializeSignalRHubs();
         await base.OnInitializedAsync();
     }

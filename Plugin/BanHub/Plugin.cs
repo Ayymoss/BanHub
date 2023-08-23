@@ -23,7 +23,7 @@ namespace BanHub;
 public class Plugin : IPluginV2
 {
     public string Name => "Ban Hub";
-    public string Version => "2023.08.11.01";
+    public string Version => "2023.08.22.02";
     public string Author => "Amos";
 
     private readonly CommunitySlim _communitySlim;
@@ -58,7 +58,7 @@ public class Plugin : IPluginV2
 
     public static void RegisterDependencies(IServiceCollection serviceCollection)
     {
-        serviceCollection.AddConfiguration("BanHubSettings", new BanHubConfiguration());
+        serviceCollection.AddConfiguration("BanHubSettingsTest", new BanHubConfiguration());
 
         serviceCollection.AddSingleton(new CommunitySlim());
         serviceCollection.AddSingleton<PluginHub>();

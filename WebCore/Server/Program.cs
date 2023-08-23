@@ -9,25 +9,16 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Radzen;
+using Serilog;
+using Serilog.Events;
 
 // TODO: LOGGING!!!!
-
-/*
- fail: Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware[1]
-      An unhandled exception has occurred while executing the request.
-      System.InvalidOperationException: Sequence contains more than one element.
-         at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
-         at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
-         at BanHub.WebCore.Server.Handlers.Plugin.Player.CreateOrUpdatePlayerHandler.Handle(CreateOrUpdatePlayerCommand request, CancellationToken cancellationToken) in C:\Users\AmosDev\RiderProjects\_IW4MAdmin Plugins\OnlyBans\WebCore\Server\Handlers\Plugin\Player\CreateOrUpdatePlayerHandler.cs:line 122
-         at BanHub.WebCore.Server.Controllers.PlayerController.CreateOrUpdatePlayerAsync(String authToken, CreateOrUpdatePlayerCommand request) in C:\Users\AmosDev\RiderProjects\_IW4MAdmin Plugins\OnlyBans\WebCore\Server\Controllers\PlayerController.cs:line 31
-         at lambda_method285(Closure, Object)
- */
 
 SetupConfiguration.InitConfigurationAsync();
 var configuration = SetupConfiguration.ReadConfiguration();
 
 var builder = WebApplication.CreateBuilder(args);
-    
+
 #if DEBUG
 builder.WebHost.ConfigureKestrel(options => { options.ListenLocalhost(8123); });
 #else
@@ -35,7 +26,7 @@ builder.WebHost.ConfigureKestrel(options => { options.ListenAnyIP(configuration.
 #endif
 
 // TODO: TOGGLE MANUALLY - Migrations don't seem to honour build state
-configuration.Database.Database = "BH-Test2";
+configuration.Database.Database = "LiveTestBanHub";
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
@@ -78,8 +69,22 @@ builder.Services.AddSwaggerGen(genOptions =>
 });
 builder.Services.AddMediatR(cfg => { cfg.RegisterServicesFromAssembly(typeof(Program).Assembly); });
 
-builder.Logging.ClearProviders().AddConsole();
+if (!Directory.Exists(Path.Join(AppContext.BaseDirectory, "Log")))
+    Directory.CreateDirectory(Path.Join(AppContext.BaseDirectory, "Log"));
 
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File(
+        Path.Join(AppContext.BaseDirectory, "Log", "banhub-.log"),
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 10,
+        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff}] [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(opt =>
     {

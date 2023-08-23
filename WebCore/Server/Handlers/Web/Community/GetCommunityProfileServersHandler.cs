@@ -31,7 +31,7 @@ public class GetCommunityProfileServersHandler : IRequestHandler<GetCommunityPro
         if (!string.IsNullOrWhiteSpace(request.SearchString))
             query = query.Where(search =>
                 EF.Functions.ILike(search.ServerName, $"%{request.SearchString}%") ||
-                EF.Functions.ILike(search.ServerGame.ToString(), $"%{request.SearchString}%") ||
+                // EF.Functions.ILike(search.ServerGame.ToString(), $"%{request.SearchString}%") || // TODO: I need a way to accessing the enum as a string. EFCore doesn't like the translation of .ToString()
                 EF.Functions.ILike(search.ServerIp, $"%{request.SearchString}%"));
 
         if (request.Sorts.Any())

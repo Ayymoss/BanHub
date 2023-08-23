@@ -31,7 +31,7 @@ partial class ProfilePenaltyDialog
 
         var options = new DialogOptions
         {
-            Style = "min-height:auto;min-width:auto;width:auto",
+            Style = "min-height:auto;min-width:auto;width:600px",
             CloseDialogOnOverlayClick = true
         };
 

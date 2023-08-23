@@ -17,16 +17,14 @@
         else
         {
             <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center"
-                         Gap="0.1rem" class="rz-mb-4 rz-mx-1">
+                         Gap="0.4rem" class="rz-mb-4 rz-mx-1">
                 <RadzenLink class="rz-text-display-h4" Path="@($"https://{_community.CommunityWebsite}/")" Text="@_community.CommunityName"/>
-
                 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
-
                     <RadzenBadge BadgeStyle="@(_community.Connected ? BadgeStyle.Info : BadgeStyle.Warning)" Shade="Shade.Lighter"
-                                 IsPill="true" Variant="Variant.Flat" Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem"
+                                 IsPill="true" Variant="Variant.Flat" Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px"
                                  Text="@(_community.Connected ? "Connected" : "Disconnected")"/>
                     <RadzenBadge BadgeStyle="@(_community.Active ? BadgeStyle.Primary : BadgeStyle.Danger)" Shade="Shade.Lighter"
-                                 IsPill="true" Variant="Variant.Flat" Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem"
+                                 IsPill="true" Variant="Variant.Flat" Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px"
                                  Text="@(_community.Active ? "Activated" : "Not Activated")"/>
                     <AuthorizeView Roles="@HelperMethods.GetRolesAsString(new[] {WebRole.SuperAdmin})">
                         <Authorized>
@@ -66,7 +64,7 @@
                     <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
                         <RadzenCard>
                             <RadzenStack Orientation="Orientation.Vertical" Gap="0">
-                                <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@_community.ServerCount.ToString()"/>
+                                <RadzenText TextStyle="TextStyle.H5" class="rz-color-primary" Style="margin: 0" Text="@_community.ServerCount.ToString()"/>
                                 <RadzenText class="rz-text-tertiary-color" Text="Servers"/>
                             </RadzenStack>
                         </RadzenCard>
@@ -74,7 +72,7 @@
                     <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
                         <RadzenCard>
                             <RadzenStack Orientation="Orientation.Vertical" Gap="0">
-                                <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@_community.Created.Humanize()"/>
+                                <RadzenText TextStyle="TextStyle.H5" class="rz-color-primary" Style="margin: 0" Text="@_community.Created.Humanize()"/>
                                 <RadzenText class="rz-text-tertiary-color" Text="Created"/>
                             </RadzenStack>
                         </RadzenCard>
@@ -82,7 +80,7 @@
                     <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
                         <RadzenCard>
                             <RadzenStack Orientation="Orientation.Vertical" Gap="0">
-                                <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0">
+                                <RadzenText TextStyle="TextStyle.H5" class="rz-color-primary" Style="margin: 0">
                                     @_community.PenaltiesCount (@_community.AutomatedPenaltiesCount)
                                 </RadzenText>
                                 <RadzenText class="rz-text-tertiary-color" Text="Penalties (Automated)"/>

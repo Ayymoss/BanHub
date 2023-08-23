@@ -1,4 +1,4 @@
-﻿<RadzenButton ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" class="rz-ml-4" Click="IncrementCount">
+﻿<RadzenButton ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" Click="IncrementCount">
     🤢
     <RadzenBadge BadgeStyle="BadgeStyle.Secondary" IsPill="true" Text="@_tomatoCount.ToString()" class="rz-ml-2"/>
 </RadzenButton>
@@ -13,9 +13,7 @@
         ? $"dropRotateClockwise {tomato.FallSpeed * 0.75}s linear forwards"
         : $"dropRotateCounterClockwise {tomato.FallSpeed * 0.75}s linear forwards";
 
-    <div class="tomato-wrapper"
-         id="@tomato.Id"
-         style="@($"left: {tomato.LeftPosition}vw; top: {tomato.TopPosition}vh; animation: {fallingAnimation}")">
+    <div class="tomato-wrapper" id="@tomato.Id" style="@($"left: {tomato.LeftPosition}vw; top: {tomato.TopPosition}vh; animation: {fallingAnimation}")">
         <div class="tomato" style="@($"font-size: {tomato.Size}px; animation: {rotationAnimation}")">
             @(tomato.IsRotten ? "🤢" : "🍅")
         </div>

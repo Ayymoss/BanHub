@@ -18,7 +18,8 @@
     <RadzenDataGrid @ref="_dataGrid" TItem="Penalty" IsLoading="@_isLoading" Count="@_count" Data="@_playerTable" LoadData="@LoadData"
                     Density="Density.Compact" AllowPaging="true" PageSize="20" AllowSorting="true" PagerAlwaysVisible="true"
                     PagerHorizontalAlign="HorizontalAlign.Center" PageSizeOptions="new[] {20, 50, 100}" ShowPagingSummary="true"
-                    PagingSummaryFormat="Displaying page {0} of {1} <b>(total {2} records)</b>" AllowColumnResize="true" RowClick="RowClickEvent" Style="min-height: 200px">
+                    PagingSummaryFormat="Displaying page {0} of {1} <b>(total {2} records)</b>" AllowColumnResize="true"
+                    RowClick="RowClickEvent" Style="min-height: 200px" class="rz-selectable">
         <Columns>
             <RadzenDataGridColumn TItem="Penalty" Property="PenaltyGuid" Title="ID">
                 <Template Context="context">
@@ -57,12 +58,17 @@
             </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="Penalty" Property="CommunityName" Title="Community">
                 <Template Context="context">
-                    @context.CommunityName
+                    <RadzenLink Path="@($"/Communities/{context.CommunityGuid}")" Text="@context.CommunityName"/>
                 </Template>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="Penalty" Property="Submitted" Title="Submitted" SortOrder="SortOrder.Descending">
                 <Template Context="context">
                     @context.Submitted.ToString("yyyy-MM-dd HH:mm:ss")
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Width="40px" TextAlign="TextAlign.End" Sortable="false" Frozen="true">
+                <Template>
+                    <RadzenIcon Icon="touch_app" class="rzi-primary"/>
                 </Template>
             </RadzenDataGridColumn>
         </Columns>

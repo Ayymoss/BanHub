@@ -1,5 +1,5 @@
 ﻿<RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" class="rz-mb-4">
-    <RadzenFormField Text="Filter" Variant="Variant.Outlined">
+    <RadzenFormField Text="Filter" Variant="Variant.Text">
         <ChildContent>
             <RadzenTextBox @bind-Value="_searchString" Change="OnSearch"/>
         </ChildContent>
@@ -48,6 +48,6 @@
         </RadzenDataGridColumn>
     </Columns>
     <EmptyTemplate>
-        <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.H6" class="rz-my-4" Text="The user has no penalties."/>
+        <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.H6" class="rz-my-4" Text="The user has no chat."/>
     </EmptyTemplate>
 </RadzenDataGrid>
