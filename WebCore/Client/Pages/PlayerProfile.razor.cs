@@ -91,6 +91,30 @@ partial class PlayerProfile : IAsyncDisposable
         }
     }
 
+    private static BadgeStyle GetSentimentColour(float? sentiment)
+    {
+        return sentiment switch
+        {
+            > 0.5f => BadgeStyle.Danger,
+            > 0.35f => BadgeStyle.Warning,
+            > 0.1f => BadgeStyle.Info,
+            > 0f => BadgeStyle.Success,
+            _ => BadgeStyle.Primary
+        };
+    }
+
+    private static string GetSentimentText(float? sentiment)
+    {
+        return sentiment switch
+        {
+            > 0.5f => "Very Negative",
+            > 0.35f => "Negative",
+            > 0.1f => "Neutral",
+            > 0f => "Positive",
+            _ => "--"
+        };
+    }
+
     public ValueTask DisposeAsync()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;

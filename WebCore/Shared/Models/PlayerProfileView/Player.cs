@@ -20,4 +20,5 @@ public class Player
     public int PenaltyCount { get; set; }
     public int NoteCount { get; set; }
     public int ChatCount { get; set; }
+    public float? ChatSentimentScore { get; set; }
 }

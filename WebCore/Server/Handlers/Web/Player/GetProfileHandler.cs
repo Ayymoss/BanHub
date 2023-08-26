@@ -1,5 +1,6 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Shared.Commands.PlayerProfile;
+using BanHub.WebCore.Shared.Commands.Players;
 using BanHubData.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -9,10 +10,12 @@ namespace BanHub.WebCore.Server.Handlers.Web.Player;
 public class GetProfileHandler : IRequestHandler<GetProfileCommand, Shared.Models.PlayerProfileView.Player?>
 {
     private readonly DataContext _context;
+    private readonly IMediator _mediator;
 
-    public GetProfileHandler(DataContext context)
+    public GetProfileHandler(DataContext context, IMediator mediator)
     {
         _context = context;
+        _mediator = mediator;
     }
 
     public async Task<Shared.Models.PlayerProfileView.Player?> Handle(GetProfileCommand request, CancellationToken cancellationToken)
@@ -20,12 +23,12 @@ public class GetProfileHandler : IRequestHandler<GetProfileCommand, Shared.Model
         var lastServer = await _context.ServerConnections
             .Where(x => x.Player.Identity == request.Identity)
             .OrderByDescending(x => x.Connected)
-            .Select(x=>new
+            .Select(x => new
             {
                 x.Server.ServerName,
-                 x.Server.Community.CommunityName
+                x.Server.Community.CommunityName
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
-        
+
         var entity = await _context.Players
             .Where(profile => profile.Identity == request.Identity)
             .Select(profile => new BanHub.WebCore.Shared.Models.PlayerProfileView.Player
@@ -49,6 +52,12 @@ public class GetProfileHandler : IRequestHandler<GetProfileCommand, Shared.Model
                 NoteCount = profile.Notes.Count(x => !x.IsPrivate || request.Privileged),
                 ChatCount = profile.Chats.Count
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
+
+        if (entity is not null)
+        {
+            var sentiment = await _mediator.Send(new GetPlayerChatSentimentScoreCommand {Identity = request.Identity}, cancellationToken);
+            entity.ChatSentimentScore = sentiment;
+        }
 
         return entity;
     }

@@ -6,7 +6,7 @@
 <RadzenCard>
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
         <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.DisplayH4" Text="Players" class="rz-mb-0 rz-mt-2"/>
-        <RadzenFormField Text="Search" Variant="Radzen.Variant.Outlined">
+        <RadzenFormField Text="Search" Variant="Variant.Outlined">
             <ChildContent>
                 <RadzenTextBox @bind-Value="_searchString" Change="OnSearch"/>
             </ChildContent>
@@ -34,7 +34,7 @@
             </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="Player" Property="Heartbeat" Title="Online" SortOrder="SortOrder.Descending">
                 <Template Context="context">
-                    <RadzenBadge BadgeStyle="@(context.IsOnline ? BadgeStyle.Info : BadgeStyle.Warning)" Shade="Shade.Lighter"
+                    <RadzenBadge BadgeStyle="@(context.IsOnline ? BadgeStyle.Success : BadgeStyle.Danger)" Shade="Shade.Lighter"
                                  IsPill="true" Variant="Variant.Flat" Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem"
                                  Text="@(context.IsOnline ? "Online" : "Offline")"/>
                 </Template>

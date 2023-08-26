@@ -102,7 +102,7 @@ public class Plugin : IPluginV2
         if (await _whitelistManager.IsWhitelisted(penaltyEvent.Client.ToPartialClient())) return;
 
         var expiration = penaltyEvent.Penalty.Expires.HasValue &&
-                         penaltyEvent.Penalty.Expires.Value - DateTime.Now < TimeSpan.FromSeconds(1)
+                         penaltyEvent.Penalty.Expires.Value - DateTime.UtcNow < TimeSpan.FromSeconds(1)
             ? null
             : penaltyEvent.Penalty.Expires;
 

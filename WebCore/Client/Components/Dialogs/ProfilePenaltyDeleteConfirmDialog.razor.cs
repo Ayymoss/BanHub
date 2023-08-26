@@ -16,6 +16,7 @@ partial class ProfilePenaltyDeleteConfirmDialog
 
     private string _deletionReason = string.Empty;
     private bool _processing;
+    private bool _deletePenalty;
 
     private async Task DeletePenalty()
     {
@@ -31,7 +32,8 @@ partial class ProfilePenaltyDeleteConfirmDialog
         var request = await PenaltyService.DeletePenaltyAsync(new RemovePenaltyCommand
         {
             DeletionReason = _deletionReason,
-            PenaltyGuid = Penalty.PenaltyGuid
+            PenaltyGuid = Penalty.PenaltyGuid,
+            DeletePenalty = _deletePenalty
         });
 
         if (!request)

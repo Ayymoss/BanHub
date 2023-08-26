@@ -14,6 +14,7 @@ public class DataContext : DbContext
     public DbSet<EFPlayer> Players { get; set; }
     public DbSet<EFAlias> Aliases { get; set; }
     public DbSet<EFChat> Chats { get; set; }
+    public DbSet<EFChatSentiment> ChatSentiments { get; set; }
     public DbSet<EFCurrentAlias> CurrentAliases { get; set; }
     public DbSet<EFPenalty> Penalties { get; set; }
     public DbSet<EFServer> Servers { get; set; }
@@ -28,6 +29,7 @@ public class DataContext : DbContext
         modelBuilder.Entity<EFCommunity>().ToTable("EFCommunities");
         modelBuilder.Entity<EFPlayer>().ToTable("EFPlayers");
         modelBuilder.Entity<EFChat>().ToTable("EFChats");
+        modelBuilder.Entity<EFChatSentiment>().ToTable("EFChatSentiments");
         modelBuilder.Entity<EFAlias>().ToTable("EFAliases");
         modelBuilder.Entity<EFPenalty>().ToTable("EFPenalties");
         modelBuilder.Entity<EFCurrentAlias>().ToTable("EFCurrentAliases");

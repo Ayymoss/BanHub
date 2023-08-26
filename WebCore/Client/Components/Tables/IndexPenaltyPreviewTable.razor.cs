@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Radzen;
 using Radzen.Blazor;
 
-namespace BanHub.WebCore.Client.Components.Dialogs;
+namespace BanHub.WebCore.Client.Components.Tables;
 
 partial class IndexPenaltyPreviewTable
 {

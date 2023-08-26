@@ -19,4 +19,5 @@ public class Penalty
     public PenaltyStatus PenaltyStatus { get; set; }
     public DateTimeOffset Submitted { get; set; }
     public bool EvidenceMissing { get; set; }
+    public bool Automated { get; set; }
 }

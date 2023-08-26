@@ -25,6 +25,14 @@
     <RadzenColumn>
         <RadzenCard>
             <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="0">
+                <RadzenLink Path="@($"/Communities/{Penalty.CommunityGuid}")" Text="@Penalty.CommunityName"/>
+                <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.Body2" class="rz-text-tertiary-color rz-mb-0" Text="Community"/>
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenColumn>
+    <RadzenColumn>
+        <RadzenCard>
+            <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="0">
                 <RadzenLink Path="@($"/Players/{Penalty.IssuerIdentity}")" Text="@Penalty.IssuerUserName"/>
                 <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.Body2" class="rz-text-tertiary-color rz-mb-0" Text="Issuer"/>
             </RadzenStack>
@@ -43,19 +51,11 @@
             </RadzenCard>
         </RadzenColumn>
     }
-    <RadzenColumn>
-        <RadzenCard>
-            <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="0">
-                <RadzenLink Path="@($"/Communities/{Penalty.CommunityGuid}")" Text="@Penalty.CommunityName"/>
-                <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.Body2" class="rz-text-tertiary-color rz-mb-0" Text="Community"/>
-            </RadzenStack>
-        </RadzenCard>
-    </RadzenColumn>
     <RadzenColumn class="rz-display-flex">
         <RadzenCard class="rz-display-flex rz-justify-content-center" Style="flex:1">
             <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="0">
                 <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.Subtitle2" class="rz-color-primary rz-mb-0">
-                    @(Penalty.Submitted.Humanize().Titleize())
+                    @Penalty.Submitted.Humanize()
                 </RadzenText>
                 <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.Body2" class="rz-text-tertiary-color rz-mb-0" Text="Submitted"/>
             </RadzenStack>
@@ -66,12 +66,12 @@
     <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Orientation="Orientation.Vertical">
         @if (Penalty.Evidence is not null)
         {
-            <iframe src="https://www.youtube.com/embed/@Penalty.Evidence" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="height:500px;width:873px"></iframe>
+            <iframe src="https://www.youtube.com/embed/@Penalty.Evidence" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="height:489px;width:870px"></iframe>
         }
         else
         {
-            <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.H4" class="rz-text-tertiary-color rz-mb-0">
-                @(Penalty.PenaltyScope is PenaltyScope.Global ? "Evidence not submitted" : "Evidence isn't required for local penalties")
+            <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.H4" class="rz-mb-0">
+                @(Penalty.Automated ? "Evidence isn't required for automated penalties" : Penalty.PenaltyScope is PenaltyScope.Global ? "Evidence not submitted!" : "Evidence isn't required for local penalties")
             </RadzenText>
             <AuthorizeView Roles="@HelperMethods.GetRolesAsString(new[] {WebRole.Admin, WebRole.SuperAdmin}, new[] {CommunityRole.Moderator, CommunityRole.Administrator, CommunityRole.SeniorAdmin, CommunityRole.Owner})">
                 <Authorized>
@@ -81,10 +81,9 @@
         }
         <AuthorizeView Roles="@HelperMethods.GetRolesAsString(new[] {WebRole.Admin, WebRole.SuperAdmin})">
             <Authorized>
-                <RadzenButton Click="OpenDeleteConfirmDialog" Text="Delete Penalty" ButtonStyle="ButtonStyle.Danger"
+                <RadzenButton Click="OpenDeleteConfirmDialog" Text="Modify Penalty" ButtonStyle="ButtonStyle.Danger"
                               Size="ButtonSize.Small" Style="width: 25%"/>
             </Authorized>
         </AuthorizeView>
     </RadzenStack>
 </RadzenCard>
-

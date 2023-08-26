@@ -39,23 +39,24 @@ public class RemovePenaltyHandler : IRequestHandler<RemovePenaltyCommand, bool>
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         var message = penaltyInfo is null
-            ? $"Penalty **{penalty.PenaltyGuid}** was deleted by **{request.IssuerUserName}** but no information could be found."
+            ? $"Penalty **{penalty.PenaltyGuid}** was modified by **{request.IssuerUserName}** but no information could be found."
             : $"**Penalty**: {penaltyInfo.PenaltyGuid}\n" +
               $"**Issuer**: [{penaltyInfo.IssuerUserName}](https://BanHub.gg/Players/{penaltyInfo.RecipientIdentity})\n" +
-              $"**Admin**: {penaltyInfo.IssuerIdentity}\n" +
               $"**Offender**: [{penaltyInfo.RecipientUserName}](https://BanHub.gg/Players/{penaltyInfo.RecipientIdentity})\n" +
-              $"**Target**: {penaltyInfo.RecipientIdentity}\n" +
               $"**Reason**: {penaltyInfo.Reason}\n" +
               $"**Evidence**: {penaltyInfo.Evidence ?? "None"}\n\n" +
-              $"**Deleted By**: [{request.IssuerUserName}](https://BanHub.gg/Players/{request.IssuerIdentity})\n" +
-              $"**Deleted For**: {request.DeletionReason}";
+              $"**Modified By**: [{request.IssuerUserName}](https://BanHub.gg/Players/{request.IssuerIdentity})\n" +
+              $"**Modified For**: {request.DeletionReason}";
 
-        _context.Penalties.Remove(penalty);
+        if (request.DeletePenalty) _context.Penalties.Remove(penalty);
+        else penalty.PenaltyStatus = PenaltyStatus.Revoked;
+
         await _context.SaveChangesAsync(cancellationToken);
-        await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.PenaltyCount, ControllerEnums.StatisticTypeAction.Remove);
+        await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.PenaltyCount,
+            ControllerEnums.StatisticTypeAction.Remove);
         IDiscordWebhookSubscriptions.InvokeEvent(new CreateAdminActionEvent
         {
-            Title = "Penalty Deletion!",
+            Title = "Penalty Modified!",
             Message = message
         }, cancellationToken);
         return true;

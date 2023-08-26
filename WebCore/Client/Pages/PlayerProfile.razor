@@ -32,6 +32,11 @@
                     }
                 </RadzenStack>
                 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+                    @if (_player.ChatCount > 10)
+                    {
+                        <RadzenBadge BadgeStyle="@GetSentimentColour(_player.ChatSentimentScore)" Shade="Shade.Lighter" IsPill="true" 
+                                     Variant="Variant.Flat" Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px" Text="@GetSentimentText(_player.ChatSentimentScore)"/>
+                    }
                     @if (_player.WebRole is not WebRole.User)
                     {
                         <RadzenBadge BadgeStyle="BadgeStyle.Info" Shade="Shade.Lighter" IsPill="true" Variant="Variant.Flat"
@@ -42,7 +47,7 @@
                         <RadzenBadge BadgeStyle="BadgeStyle.Info" Shade="Shade.Lighter" IsPill="true" Variant="Variant.Flat"
                                      Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px" Text="@($"Community {_player.CommunityRole}")"/>
                     }
-                    <RadzenBadge BadgeStyle="@(_player.Connected ? BadgeStyle.Info : BadgeStyle.Warning)" Shade="Shade.Lighter"
+                    <RadzenBadge BadgeStyle="@(_player.Connected ? BadgeStyle.Success : BadgeStyle.Danger)" Shade="Shade.Lighter"
                                  IsPill="true" Variant="Variant.Flat" Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px"
                                  Text="@(_player.Connected ? "Online" : "Offline")"/>
                     <RadzenBadge BadgeStyle="@(_player.IsGloballyBanned ? BadgeStyle.Danger : BadgeStyle.Info)" Shade="Shade.Lighter"
@@ -126,7 +131,7 @@
                                     <RadzenText TextStyle="TextStyle.H5" class="rz-color-primary" Style="margin: 0" Text="@(_player.NoteCount is 0 ? "--" : _player.NoteCount.ToString("N0"))"/>
                                     <AuthorizeView Roles="@HelperMethods.GetRolesAsString(new[] {WebRole.Admin, WebRole.SuperAdmin}, new[] {CommunityRole.Moderator, CommunityRole.Administrator, CommunityRole.SeniorAdmin, CommunityRole.Owner})">
                                         <Authorized>
-                                            <RadzenButton Click="AddNote" Size="ButtonSize.Small" Shade="Shade.Lighter" Icon="add"/>
+                                            <RadzenButton Click="AddNote" Size="ButtonSize.ExtraSmall" Shade="Shade.Lighter" Icon="add"/>
                                         </Authorized>
                                     </AuthorizeView>
                                 </RadzenStack>

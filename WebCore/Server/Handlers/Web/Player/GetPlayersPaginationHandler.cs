@@ -7,11 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Handlers.Web.Player;
 
-public class GetPaginationHandler : IRequestHandler<GetPlayersPaginationCommand, PaginationContext<Shared.Models.PlayersView.Player>>
+public class GetPlayersPaginationHandler : IRequestHandler<GetPlayersPaginationCommand, PaginationContext<Shared.Models.PlayersView.Player>>
 {
     private readonly DataContext _context;
 
-    public GetPaginationHandler(DataContext context)
+    public GetPlayersPaginationHandler(DataContext context)
     {
         _context = context;
     }

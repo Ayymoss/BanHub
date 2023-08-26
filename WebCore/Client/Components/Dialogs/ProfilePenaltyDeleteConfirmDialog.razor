@@ -1,6 +1,6 @@
 ﻿<RadzenStack Orientation="Orientation.Vertical" Gap="0">
     <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
-        <RadzenText Text="You're about to delete this penalty" TextStyle="TextStyle.Subtitle1" class="rz-mb-0"/>
+        <RadzenText Text="You're about to modify this penalty" TextStyle="TextStyle.Subtitle1" class="rz-mb-0"/>
         <RadzenText TextStyle="TextStyle.Subtitle2" Text="@Penalty.PenaltyGuid.ToString()" class="rz-mb-0 rz-text-tertiary-color"/>
         <RadzenFormField Text="Reason" Variant="Variant.Outlined" Style="min-width:300px;width:75%">
             <ChildContent>
@@ -10,6 +10,12 @@
                 <RadzenIcon Icon="warning" IconStyle="IconStyle.Info"/>
             </End>
         </RadzenFormField>
+        <RadzenSelectBar @bind-Value="_deletePenalty" Size="ButtonSize.ExtraSmall" TValue="bool" class="rz-mt-3">
+            <Items>
+                <RadzenSelectBarItem Text="Revoke" Value="false"/>
+                <RadzenSelectBarItem Text="Delete" Value="true"/>
+            </Items>
+        </RadzenSelectBar>
     </RadzenStack>
     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mt-4">
         <RadzenText TextStyle="TextStyle.Caption" class="rz-mb-0 rz-color-danger" Text="This action is logged"/>

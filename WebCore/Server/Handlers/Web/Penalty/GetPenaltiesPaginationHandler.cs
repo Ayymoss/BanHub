@@ -76,7 +76,8 @@ public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginat
                 CommunityName = penalty.Community.CommunityName,
                 EvidenceMissing = string.IsNullOrWhiteSpace(penalty.Evidence) && penalty.PenaltyScope == PenaltyScope.Global
                                                                               && penalty.PenaltyStatus == PenaltyStatus.Active
-                                                                              && !penalty.Automated
+                                                                              && !penalty.Automated,
+                Automated = penalty.Automated
             }).ToListAsync(cancellationToken: cancellationToken);
 
         return new PaginationContext<Shared.Models.PenaltiesView.Penalty>

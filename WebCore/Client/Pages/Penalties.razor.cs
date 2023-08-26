@@ -59,11 +59,12 @@ partial class Penalties
             PenaltyType = arg.Data.PenaltyType,
             PenaltyScope = arg.Data.PenaltyScope,
             PenaltyStatus = arg.Data.PenaltyStatus,
-            Submitted = arg.Data.Submitted
+            Submitted = arg.Data.Submitted,
+            Automated = arg.Data.Automated
         };
 
         var parameters = new Dictionary<string, object> {{"Penalty", convertedPenalty}};
-        var options = new Radzen.DialogOptions
+        var options = new DialogOptions
         {
             Style = "min-height:auto;min-width:970px;max-height:97%;",
             CloseDialogOnOverlayClick = true

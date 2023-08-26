@@ -1,6 +1,10 @@
-﻿using BanHub.WebCore.Shared.Models.PlayerProfileView;
+﻿using BanHub.WebCore.Client.Providers;
+using BanHub.WebCore.Client.Utilities;
+using BanHub.WebCore.Shared.Models.PlayerProfileView;
 using BanHubData.Commands.Penalty;
+using BanHubData.Enums;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Radzen;
 
 namespace BanHub.WebCore.Client.Components.Dialogs;
@@ -10,6 +14,15 @@ partial class ProfilePenaltyDialog
     [Parameter] public required Penalty Penalty { get; set; }
 
     [Inject] protected DialogService DialogService { get; set; }
+    [Inject] protected AuthenticationStateProvider AuthStateProvider { get; set; }
+    
+    private bool _privileged;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await (AuthStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
+        _privileged = user.IsInEqualOrHigherRole(WebRole.Admin);
+    }
 
     private async Task OpenDeleteConfirmDialog()
     {
@@ -21,7 +34,7 @@ partial class ProfilePenaltyDialog
             CloseDialogOnOverlayClick = true
         };
 
-        var dialog = await DialogService.OpenAsync<ProfilePenaltyDeleteConfirmDialog>("Delete Penalty?", parameters, options);
+        var dialog = await DialogService.OpenAsync<ProfilePenaltyDeleteConfirmDialog>("Modify Penalty?", parameters, options);
         if (dialog is Penalty result) DialogService.Close(result);
     }
 

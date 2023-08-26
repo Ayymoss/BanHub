@@ -54,7 +54,7 @@ partial class PlayerProfilePenaltyTable
             {"Penalty", arg.Data}
         };
 
-        var options = new Radzen.DialogOptions
+        var options = new DialogOptions
         {
             Style = "min-height:auto;min-width:970px;max-height:97%;",
             CloseDialogOnOverlayClick = true

@@ -63,7 +63,8 @@ public class GetProfilePenaltiesPaginationHandler : IRequestHandler<GetProfilePe
                 PenaltyType = x.PenaltyType,
                 PenaltyScope = x.PenaltyScope,
                 PenaltyStatus = x.PenaltyStatus,
-                Submitted = x.Submitted
+                Submitted = x.Submitted,
+                Automated = x.Automated
             }).ToListAsync(cancellationToken: cancellationToken);
 
         return new PaginationContext<Shared.Models.PlayerProfileView.Penalty>

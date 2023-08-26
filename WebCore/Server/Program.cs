@@ -26,7 +26,7 @@ builder.WebHost.ConfigureKestrel(options => { options.ListenAnyIP(configuration.
 #endif
 
 // TODO: TOGGLE MANUALLY - Migrations don't seem to honour build state
-configuration.Database.Database = "LiveTestBanHub";
+configuration.Database.Database = "LiveTestBanHub-Dev";
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
@@ -42,6 +42,7 @@ builder.Services.AddSingleton<ApiKeyCache>();
 builder.Services.AddSingleton<SignedInUsers>();
 builder.Services.AddSingleton<PluginAuthentication>();
 builder.Services.AddSingleton<StatisticsTracking>();
+builder.Services.AddSingleton<ISentimentService, SentimentService>();
 builder.Services.AddSingleton(new DiscordWebhookService(configuration));
 
 builder.Services.AddTransient<ApiKeyMiddleware>();
