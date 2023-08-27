@@ -13,7 +13,6 @@ public class BanHubConfiguration
     public string? CommunityWebsite { get; set; }
     public TranslationStrings Translations { get; set; } = new();
     [JsonPropertyName("ApiKeyDoNotChange")] public Guid ApiKey { get; set; } = Guid.NewGuid();
-    public bool DebugMode { get; set; } = false;
 }
 
 public class TranslationStrings

@@ -71,11 +71,6 @@ public class EFPlayer
     public ICollection<EFServerConnection> ServerConnections { get; set; }
 
     /// <summary>
-    /// Penalty's identifiers
-    /// </summary>
-    public ICollection<EFPenaltyIdentifier> PenaltyIdentifiers { get; set; }
-
-    /// <summary>
     /// The player's chat messages
     /// </summary>
     public ICollection<EFChat> Chats { get; set; }

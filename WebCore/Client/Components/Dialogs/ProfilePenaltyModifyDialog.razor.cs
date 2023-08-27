@@ -1,12 +1,13 @@
 ﻿using BanHub.WebCore.Client.Services.RestEase.Pages;
 using BanHub.WebCore.Shared.Commands.Penalty;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
+using BanHubData.Enums;
 using Microsoft.AspNetCore.Components;
 using Radzen;
 
 namespace BanHub.WebCore.Client.Components.Dialogs;
 
-partial class ProfilePenaltyDeleteConfirmDialog
+partial class ProfilePenaltyModifyDialog
 {
     [Parameter] public required Penalty Penalty { get; set; }
 
@@ -16,9 +17,9 @@ partial class ProfilePenaltyDeleteConfirmDialog
 
     private string _deletionReason = string.Empty;
     private bool _processing;
-    private bool _deletePenalty;
+    private ModifyPenalty _modifyPenalty;
 
-    private async Task DeletePenalty()
+    private async Task ModifyPenalty()
     {
         _processing = true;
 
@@ -33,18 +34,18 @@ partial class ProfilePenaltyDeleteConfirmDialog
         {
             DeletionReason = _deletionReason,
             PenaltyGuid = Penalty.PenaltyGuid,
-            DeletePenalty = _deletePenalty
+            ModifyPenalty = _modifyPenalty
         });
 
         if (!request)
         {
-            NotificationService.Notify(NotificationSeverity.Error, "Failed to delete penalty!");
+            NotificationService.Notify(NotificationSeverity.Error, "Failed to modify penalty!");
             _processing = false;
             DialogService.Close();
             return;
         }
 
-        NotificationService.Notify(NotificationSeverity.Success, "Penalty deleted!");
+        NotificationService.Notify(NotificationSeverity.Success, "Penalty modified!");
         _processing = false;
         DialogService.Close(Penalty);
     }

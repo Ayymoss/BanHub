@@ -37,7 +37,7 @@ public class TomatoCounterHub : Hub
             count++;
             TomatoCounters[identity] = count;
 
-            await Clients.Group(identity).SendAsync(HubMethods.OnTomatoCountUpdate, count);
+            await Clients.Group(identity).SendAsync(SignalRMethods.TomatoMethods.OnTomatoCountUpdate, count);
             if (count % 123 is 0) await StoreTomatoes(identity);
         }
         finally

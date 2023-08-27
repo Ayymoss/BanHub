@@ -36,13 +36,13 @@ public class ActiveUserHub : IAsyncDisposable
 
     private void SubscribeToHubEvents()
     {
-        _hubConnection?.On<int>(HubMethods.OnActiveUsersUpdate, count => ActiveUserCountChanged?.Invoke(count));
+        _hubConnection?.On<int>(SignalRMethods.ActiveMethods.OnActiveUsersUpdate, count => ActiveUserCountChanged?.Invoke(count));
     }
 
     private async Task FetchInitialCounts()
     {
         if (_hubConnection is null) return;
-        var onlineCount = await _hubConnection.InvokeAsync<int>(HubMethods.GetActiveUsersCount);
+        var onlineCount = await _hubConnection.InvokeAsync<int>(SignalRMethods.ActiveMethods.GetActiveUsersCount);
         ActiveUserCountChanged?.Invoke(onlineCount);
     }
 

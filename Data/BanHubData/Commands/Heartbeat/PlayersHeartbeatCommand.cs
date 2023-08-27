@@ -1,8 +1,9 @@
-﻿using MediatR;
+﻿using BanHubData.Enums;
+using MediatR;
 
 namespace BanHubData.Commands.Heartbeat;
 
-public class PlayersHeartbeatCommand : IRequest<bool>
+public class PlayersHeartbeatCommand : IRequest<SignalREnums.ReturnState>
 {
     public Version PluginVersion { get; set; }
     public Guid CommunityGuid { get; set; }

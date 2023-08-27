@@ -28,11 +28,4 @@ public class EFPenaltyIdentifier
     public int PenaltyId { get; set; }
 
     [ForeignKey(nameof(PenaltyId))] public EFPenalty Penalty { get; set; }
-
-    /// <summary>
-    /// Referenced entity
-    /// </summary>
-    public int PlayerId { get; set; }
-
-    [ForeignKey(nameof(PlayerId))] public EFPlayer Player { get; set; }
 }

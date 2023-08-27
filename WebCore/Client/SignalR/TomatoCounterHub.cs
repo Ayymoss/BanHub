@@ -35,18 +35,18 @@ public class TomatoCounterHub : IAsyncDisposable
 
     private void SubscribeToHubEvents()
     {
-        _hubConnection?.On<int>(HubMethods.OnTomatoCountUpdate, count => TomatoCountChanged?.Invoke(count));
+        _hubConnection?.On<int>(SignalRMethods.TomatoMethods.OnTomatoCountUpdate, count => TomatoCountChanged?.Invoke(count));
     }
 
     public async Task IncrementCount(string identity)
     {
-        if (_hubConnection is not null) await _hubConnection.SendAsync(HubMethods.IncrementTomatoCount, identity);
+        if (_hubConnection is not null) await _hubConnection.SendAsync(SignalRMethods.TomatoMethods.IncrementTomatoCount, identity);
     }
 
     private async Task FetchInitialCounts(string identity)
     {
         if (_hubConnection is null) return;
-        var count = await _hubConnection.InvokeAsync<int>(HubMethods.GetTomatoCount, identity);
+        var count = await _hubConnection.InvokeAsync<int>(SignalRMethods.TomatoMethods.GetTomatoCount, identity);
         TomatoCountChanged?.Invoke(count);
     }
 

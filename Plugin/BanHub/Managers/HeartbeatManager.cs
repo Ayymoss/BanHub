@@ -1,56 +1,63 @@
 ﻿using BanHub.Models;
-using BanHub.Services;
+using BanHub.SignalR;
 using BanHubData.Commands.Heartbeat;
+using BanHubData.SignalR;
+using Microsoft.Extensions.Logging;
 
 namespace BanHub.Managers;
 
 public class HeartbeatManager
 {
     private readonly CommunitySlim _communitySlim;
-    private readonly HeartbeatService _heartbeatService;
+    private readonly PluginHub _pluginHub;
     private readonly EndpointManager _endpointManager;
+    private readonly ILogger<HeartbeatManager> _logger;
 
-    public HeartbeatManager(CommunitySlim communitySlim, HeartbeatService heartbeatService, EndpointManager endpointManager)
+    public HeartbeatManager(CommunitySlim communitySlim, PluginHub pluginHub, EndpointManager endpointManager,
+        ILogger<HeartbeatManager> logger)
     {
         _communitySlim = communitySlim;
-        _heartbeatService = heartbeatService;
+        _pluginHub = pluginHub;
         _endpointManager = endpointManager;
-    }
-    
-    public async Task CommunityHeartbeat(string version)
-    {
-        try
-        {
-            await _heartbeatService.PostCommunityHeartbeat(new CommunityHeartbeatCommand
-            {
-                PluginVersion = new Version(version),
-                ApiKey = _communitySlim.ApiKey,
-                CommunityGuid = _communitySlim.CommunityGuid
-            });
-        }
-        catch (Exception exception)
-        {
-            Console.WriteLine(exception);
-        }
+        _logger = logger;
     }
 
-    public async Task ClientHeartbeat(string version)
+    public async Task CommunityHeartbeatAsync(string version)
+    {
+        await _pluginHub.Heartbeat(new CommunityHeartbeatCommand
+        {
+            PluginVersion = new Version(version),
+            ApiKey = _communitySlim.ApiKey,
+            CommunityGuid = _communitySlim.CommunityGuid
+        });
+        _logger.LogDebug("Community heartbeat sent");
+    }
+
+    public async Task ClientHeartbeatAsync(string version)
     {
         if (!_communitySlim.Active) return;
-        try
+
+        if (_endpointManager.Profiles.Count is 0) return;
+        var players = _endpointManager.Profiles.Select(x => x.Value).ToList();
+        await _pluginHub.Heartbeat(new PlayersHeartbeatCommand
         {
-            if (_endpointManager.Profiles.Count is 0) return;
-            var players = _endpointManager.Profiles.Select(x => x.Value).ToList();
-            await _heartbeatService.PostEntityHeartbeat(new PlayersHeartbeatCommand
-            {
-                PluginVersion = new Version(version),
-                CommunityGuid = _communitySlim.CommunityGuid,
-                PlayerIdentities = players
-            });
-        }
-        catch (Exception exception)
-        {
-            Console.WriteLine(exception);
-        }
+            PluginVersion = new Version(version),
+            CommunityGuid = _communitySlim.CommunityGuid,
+            PlayerIdentities = players
+        });
+        _logger.LogDebug("Client heartbeat sent");
+    }
+
+    public async Task PlayerJoinedAsync(string identity, string version)
+    {
+        if (!_communitySlim.Active) return;
+
+        await _pluginHub.Heartbeat(new PlayerJoined
+        { 
+            PluginVersion = new Version(version),
+            CommunityApiKey = _communitySlim.ApiKey,
+            Identity = identity
+        });
+        _logger.LogDebug("Player joined heartbeat sent");
     }
 }

@@ -7,30 +7,26 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Handlers.Plugin.Heartbeat;
 
-public class CommunityHeartbeatHandler : IRequestHandler<CommunityHeartbeatCommand, ControllerEnums.ReturnState>
+public class CommunityHeartbeatHandler : IRequestHandler<CommunityHeartbeatCommand, SignalREnums.ReturnState>
 {
     private readonly DataContext _context;
-    private readonly Configuration _config;
 
-    public CommunityHeartbeatHandler(DataContext context, Configuration config)
+    public CommunityHeartbeatHandler(DataContext context)
     {
         _context = context;
-        _config = config;
     }
 
-    public async Task<ControllerEnums.ReturnState> Handle(CommunityHeartbeatCommand request, CancellationToken cancellationToken)
+    public async Task<SignalREnums.ReturnState> Handle(CommunityHeartbeatCommand request, CancellationToken cancellationToken)
     {
-        if (request.PluginVersion < _config.PluginVersion) return ControllerEnums.ReturnState.BadRequest;
-
         var instance = await _context.Communities
             .AsTracking()
             .FirstOrDefaultAsync(x => x.CommunityGuid == request.CommunityGuid && x.ApiKey == request.ApiKey,
                 cancellationToken: cancellationToken);
-        if (instance is null) return ControllerEnums.ReturnState.NotFound;
+        if (instance is null) return SignalREnums.ReturnState.NotFound;
 
         instance.HeartBeat = DateTimeOffset.UtcNow;
         _context.Communities.Update(instance);
         await _context.SaveChangesAsync(cancellationToken);
-        return instance.Active ? ControllerEnums.ReturnState.Ok : ControllerEnums.ReturnState.Accepted;
+        return SignalREnums.ReturnState.Ok;
     }
 }

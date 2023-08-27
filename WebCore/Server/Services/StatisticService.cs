@@ -114,7 +114,7 @@ public class StatisticService : IStatisticService
         }
 
         var offlineUsers = _statisticsTracking.OnlinePlayers
-            .Where(x => x.Value < DateTimeOffset.UtcNow.AddMinutes(-4))
+            .Where(x => x.Value < DateTimeOffset.UtcNow.AddMinutes(-5))
             .Select(x => x.Key)
             .ToList();
 
@@ -123,7 +123,8 @@ public class StatisticService : IStatisticService
             _statisticsTracking.OnlinePlayers.TryRemove(user, out _);
         }
 
-        await _hubContext.Clients.All.SendAsync(HubMethods.OnPlayerCountUpdate, _statisticsTracking.OnlinePlayers.Count);
+        await _hubContext.Clients.All.SendAsync(SignalRMethods.StatisticMethods.OnPlayerCountUpdate,
+            _statisticsTracking.OnlinePlayers.Count);
     }
 
     public async Task UpdateRecentBansStatisticAsync(StatisticBan statisticBan)
@@ -142,7 +143,7 @@ public class StatisticService : IStatisticService
             _statisticsTracking.RecentBans.TryRemove(ban, out _);
         }
 
-        await _hubContext.Clients.All.SendAsync(HubMethods.OnRecentBansUpdate, _statisticsTracking.RecentBans.Count);
+        await _hubContext.Clients.All.SendAsync(SignalRMethods.StatisticMethods.OnRecentBansUpdate, _statisticsTracking.RecentBans.Count);
     }
 
     public int GetOnlinePlayerCount() => _statisticsTracking.OnlinePlayers.Count;

@@ -61,7 +61,7 @@ public class EndpointManager
 
     public async Task<bool> IsCommunityActive(Guid guid) => await _community.IsCommunityActiveAsync(guid.ToString());
 
-    private static string EntityToPlayerIdentity(EFClient client) => $"{client.GuidString}:{client.GameName.ToString()}";
+    internal static string EntityToPlayerIdentity(EFClient client) => $"{client.GuidString}:{client.GameName.ToString()}";
 
     public async Task OnStart(CreateOrUpdateServerCommand server)
     {
@@ -100,7 +100,7 @@ public class EndpointManager
             InformAdmins(player.CurrentServer, _banHubConfiguration.Translations.UserIsBanned
                 .FormatExt(_banHubConfiguration.Translations.BanHubName, player.Name));
             if (player.Level is Data.Models.Client.EFClient.Permission.User)
-                player.Flag("Ban Hub: Globally Banned", SharedLibraryCore.Utilities.IW4MAdminClient(player.CurrentServer));
+                player.Flag("BanHub: Globally Banned", SharedLibraryCore.Utilities.IW4MAdminClient(player.CurrentServer));
             return;
         }
 
@@ -129,13 +129,14 @@ public class EndpointManager
             CommunityGuid = _communitySlim.CommunityGuid,
             ServerId = player.CurrentServer?.Id
         };
-
+        
+        _logger.LogDebug("Creating or updating player {Identity}", createOrUpdate.PlayerIdentity);
         if (await _playerService.CreateOrUpdatePlayerAsync(createOrUpdate) is { } identity) return (true, identity);
 
         _logger.LogError("Failed to update entity {Identity}", createOrUpdate.PlayerIdentity);
         return (false, string.Empty);
     }
-    
+
     public void RemoveFromProfiles(EFClient client)
     {
         Profiles.TryRemove(client, out _);
@@ -155,11 +156,12 @@ public class EndpointManager
         var playerIdentity = EntityToPlayerIdentity(messageEvent.Client);
         var messageContext = new MessageContext(DateTimeOffset.UtcNow, messageEvent.Server.Id, message);
 
-        _communitySlim.PlayerMessages.AddOrUpdate(playerIdentity, new List<MessageContext> {messageContext}, (key, existingMessages) =>
-        {
-            existingMessages.Add(messageContext);
-            return existingMessages;
-        });
+        _communitySlim.PlayerMessages
+            .AddOrUpdate(playerIdentity, new List<MessageContext> {messageContext}, (key, existingMessages) =>
+            {
+                existingMessages.Add(messageContext);
+                return existingMessages;
+            });
 
         try
         {
@@ -180,7 +182,9 @@ public class EndpointManager
         finally
         {
             if (_chatLock.CurrentCount is 0) _chatLock.Release();
+            _logger.LogDebug("Chat message added to queue");
         }
+
     }
 
     public async Task<(bool, Guid?)> AddPlayerPenaltyAsync(string sourcePenaltyType, EFClient origin, EFClient target,
@@ -224,6 +228,9 @@ public class EndpointManager
                 $"{origin.CleanedName} -> {target.CleanedName} ({penaltyDto.Reason}) - {guid}");
         }
 
+        _logger.LogInformation("Penalty added: {PenaltyType} ({PenaltyScope}): {Admin} -> {Target} ({Reason}) - {Guid}",
+            penaltyType, penaltyDto.PenaltyScope, origin.CleanedName, target.CleanedName, penaltyDto.Reason, result.Item2);
+
         return result;
     }
 
@@ -236,22 +243,26 @@ public class EndpointManager
             IssuerIdentity = EntityToPlayerIdentity(issuer),
             IssuerUsername = issuer.CleanedName
         };
+        _logger.LogDebug("Adding evidence to {Guid}", guid);
         return await _penalty.SubmitEvidence(penalty);
     }
 
     public async Task<string?> GetTokenAsync(EFClient client)
     {
         var identity = EntityToPlayerIdentity(client);
+        _logger.LogDebug("Getting token for {Identity}", identity);
         return await _playerService.GetTokenAsync(identity);
     }
 
-    private static void InformAdmins(Server server, string message)
+    private void InformAdmins(Server server, string message)
     {
         var admins = server.GetClientsAsList().Where(x => x.IsPrivileged());
         foreach (var admin in admins)
         {
             admin.Tell(message);
         }
+
+        _logger.LogDebug("Informed admins: {Message}", message);
     }
 
     public void RegisterInteraction(IManager manager)
@@ -274,6 +285,8 @@ public class EndpointManager
 
             return isGlobalBanned ? null : CreateGlobalBanInteraction(targetClientId.Value, server, GetCommandName);
         });
+
+        _logger.LogDebug("Global ban interaction created");
     }
 
     private InteractionData CreateGlobalBanInteraction(int targetClientId, Server server, Func<Type, string> getCommandNameFunc)
@@ -333,5 +346,19 @@ public class EndpointManager
         foreach (var server in servers)
             server.Broadcast(_banHubConfiguration.Translations.BroadcastGlobalBan
                 .FormatExt(_banHubConfiguration.Translations.BanHubName, ban.UserName, ban.Identity));
+
+        _logger.LogDebug("Global ban received and broadcasted");
+    }
+
+    public void OnActivateCommunity(ActivateCommunity community)
+    {
+        if (community.ApiKey != _communitySlim.ApiKey) return;
+
+        _communitySlim.Active = community.Activated;
+        Console.WriteLine(_communitySlim.Active
+            ? $"[{BanHubConfiguration.Name}] Your instance has been activated. Penalties and players will be reported to the API."
+            : $"[{BanHubConfiguration.Name}] Your instance has been deactivated. Read-only access.");
+
+        _logger.LogDebug("Community activation toggled, now: {Active}", _communitySlim.Active);
     }
 }

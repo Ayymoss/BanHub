@@ -1,29 +1,29 @@
 ﻿using System.Collections.Concurrent;
 using BanHub.WebCore.Server.Context;
-using BanHub.WebCore.Server.Services;
+using BanHub.WebCore.Server.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Middleware;
 
 public class ApiKeyMiddleware : IMiddleware
 {
-    private readonly ApiKeyCache _apiKeyCache;
+    private readonly IPluginAuthenticationCache _pluginAuthenticationCache;
     private readonly DataContext _context;
 
-    public ApiKeyMiddleware(ApiKeyCache apiKeyCache, DataContext context)
+    public ApiKeyMiddleware(IPluginAuthenticationCache pluginAuthenticationCache, DataContext context)
     {
-        _apiKeyCache = apiKeyCache;
+        _pluginAuthenticationCache = pluginAuthenticationCache;
         _context = context;
     }
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
-        if (_apiKeyCache.IsEmpty)
+        if (_pluginAuthenticationCache.IsEmpty)
         {
             var keys = await _context.Communities
                 .Where(x => x.Active)
                 .ToDictionaryAsync(x => x.CommunityGuid, x => x.ApiKey);
-            _apiKeyCache.SetApiKeys(new ConcurrentDictionary<Guid, Guid>(keys));
+            _pluginAuthenticationCache.SetApiKeys(new ConcurrentDictionary<Guid, Guid>(keys));
         }
 
         await next(context);

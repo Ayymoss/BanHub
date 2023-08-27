@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using BanHub.WebCore.Server.Interfaces;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -18,7 +19,7 @@ public class PluginAuthentication : Attribute, IAuthorizationFilter
         filterContext.HttpContext.Request.Query.TryGetValue("authToken", out var authTokens);
         var token = authTokens.FirstOrDefault();
 
-        if (filterContext.HttpContext.RequestServices.GetService(typeof(ApiKeyCache)) is not ApiKeyCache apiKey) return;
+        if (filterContext.HttpContext.RequestServices.GetService(typeof(IPluginAuthenticationCache)) is not IPluginAuthenticationCache apiKey) return;
 
         if (token is not null)
         {
@@ -59,6 +60,6 @@ public class PluginAuthentication : Attribute, IAuthorizationFilter
         }
     }
 
-    private static bool IsValidToken(string authToken, ApiKeyCache apiKeyCache) =>
-        Guid.TryParse(authToken, out var key) && apiKeyCache.ExistsApiKey(key);
+    private static bool IsValidToken(string authToken, IPluginAuthenticationCache pluginAuthenticationCache) =>
+        Guid.TryParse(authToken, out var key) && pluginAuthenticationCache.ExistsApiKey(key);
 }

@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Handlers.Web.Search;
 
-public class GetSearchHandler : IRequestHandler<GetSearchCommand, (ControllerEnums.ReturnState State, Shared.Models.SearchView.Search? Search)>
+public class GetSearchHandler : IRequestHandler<GetSearchCommand, (ControllerEnums.ReturnState State, Shared.Models.SearchView.Search?
+    Search)>
 {
     private readonly DataContext _context;
 
@@ -41,7 +42,30 @@ public class GetSearchHandler : IRequestHandler<GetSearchCommand, (ControllerEnu
                 }
             }).ToListAsync(cancellationToken: cancellationToken);
 
-        if (chats.Count > 1_000 || players.Count > 1_000) return (ControllerEnums.ReturnState.BadRequest, null);
+        if (chats.Count > 2_500 || players.Count > 2_500)
+            return (ControllerEnums.ReturnState.Ok, new Shared.Models.SearchView.Search
+            {
+                Players = new List<SearchPlayer>
+                {
+                    new()
+                    {
+                        Identity = "0:UKN",
+                        Username = "Too many results"
+                    }
+                },
+                Messages = new List<SearchChat>
+                {
+                    new()
+                    {
+                        Message = "Too many results",
+                        Player = new SearchPlayer
+                        {
+                            Identity = "0:UKN",
+                            Username = "Too many results"
+                        }
+                    }
+                }
+            });
 
         var search = new Shared.Models.SearchView.Search
         {

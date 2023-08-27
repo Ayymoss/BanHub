@@ -120,15 +120,14 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
                 Identity = target.Identity,
                 IpAddress = target.IpAddress,
                 Expiration = DateTimeOffset.UtcNow.AddMonths(1),
-                Penalty = penaltyModel,
-                PlayerId = target.Id
+                PenaltyId = penaltyModel.Id,
             };
             _context.PenaltyIdentifiers.Add(identifier);
         }
 
         if (request.PenaltyScope is PenaltyScope.Global)
         {
-            await _hubContext.Clients.All.SendAsync(HubMethods.OnGlobalBan, new BroadcastGlobalBan
+            await _hubContext.Clients.All.SendAsync(SignalRMethods.PluginMethods.OnGlobalBan, new BroadcastGlobalBan
             {
                 Identity = target.Identity,
                 UserName = target.UserName

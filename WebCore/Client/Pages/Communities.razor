@@ -47,12 +47,12 @@
                     @context.ServerCount
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Community" Property="HeartBeat" Title="Response">
+            <RadzenDataGridColumn TItem="Community" Property="HeartBeat" Title="Response" SortOrder="SortOrder.Descending">
                 <Template Context="context">
                     @context.HeartBeat.ToString("yyyy-MM-dd HH:mm:ss")
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Community" Property="Created" Title="Created" SortOrder="SortOrder.Descending">
+            <RadzenDataGridColumn TItem="Community" Property="Created" Title="Created">
                 <Template Context="context">
                     @context.Created.ToString("yyyy-MM-dd HH:mm:ss")
                 </Template>

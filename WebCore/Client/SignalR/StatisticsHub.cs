@@ -36,15 +36,15 @@ public class StatisticsHub : IAsyncDisposable
 
     private void SubscribeToHubEvents()
     {
-        _hubConnection?.On<int>(HubMethods.OnPlayerCountUpdate, count => OnlineCountChanged?.Invoke(count));
-        _hubConnection?.On<int>(HubMethods.OnRecentBansUpdate, count => RecentBansCountChanged?.Invoke(count));
+        _hubConnection?.On<int>(SignalRMethods.StatisticMethods.OnPlayerCountUpdate, count => OnlineCountChanged?.Invoke(count));
+        _hubConnection?.On<int>(SignalRMethods.StatisticMethods.OnRecentBansUpdate, count => RecentBansCountChanged?.Invoke(count));
     }
 
     private async Task FetchInitialCounts()
     {
         if (_hubConnection is null) return;
-        var onlineCount = await _hubConnection.InvokeAsync<int>(HubMethods.GetCurrentOnlinePlayers);
-        var bansCount = await _hubConnection.InvokeAsync<int>(HubMethods.GetCurrentRecentBans);
+        var onlineCount = await _hubConnection.InvokeAsync<int>(SignalRMethods.StatisticMethods.GetCurrentOnlinePlayers);
+        var bansCount = await _hubConnection.InvokeAsync<int>(SignalRMethods.StatisticMethods.GetCurrentRecentBans);
         OnlineCountChanged?.Invoke(onlineCount);
         RecentBansCountChanged?.Invoke(bansCount);
     }

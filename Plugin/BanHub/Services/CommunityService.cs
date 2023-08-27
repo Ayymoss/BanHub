@@ -5,6 +5,7 @@ using BanHub.Configuration;
 using BanHub.Interfaces;
 using BanHubData.Commands.Community;
 using Humanizer;
+using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
 using RestEase;
@@ -21,6 +22,7 @@ public class CommunityService
 
     private readonly ICommunityService _api;
     private readonly BanHubConfiguration _banHubConfiguration;
+    private readonly ILogger<CommunityService> _logger;
 
     private readonly AsyncRetryPolicy _retryPolicy = Policy
         .Handle<HttpRequestException>(e => e.InnerException is SocketException)
@@ -31,9 +33,10 @@ public class CommunityService
                                   $"Retrying in {retryDelay.Humanize()}...");
             });
 
-    public CommunityService(BanHubConfiguration banHubConfiguration)
+    public CommunityService(BanHubConfiguration banHubConfiguration, ILogger<CommunityService> logger)
     {
         _banHubConfiguration = banHubConfiguration;
+        _logger = logger;
         _api = RestClient.For<ICommunityService>(ApiHost);
     }
 
@@ -44,14 +47,12 @@ public class CommunityService
             return await _retryPolicy.ExecuteAsync(async () =>
             {
                 var response = await _api.CreateOrUpdateCommunityAsync(community);
-                if (!response.IsSuccessStatusCode && _banHubConfiguration.DebugMode)
+                if (!response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"\n[{BanHubConfiguration.Name}] Error posting community {community.CommunityGuid}\n" +
-                                      $"SC: {response.StatusCode}\n" +
-                                      $"RP: {response.ReasonPhrase}\n" +
-                                      $"B: {await response.Content.ReadAsStringAsync()}\n" +
-                                      $"JSON: {JsonSerializer.Serialize(community)}\n" +
-                                      $"[{BanHubConfiguration.Name}] End of error");
+                    var body = await response.Content.ReadAsStringAsync();
+                    _logger.LogError(
+                        "Error posting community {CommunityGuid} SC: {StatusCode} RP: {ReasonPhrase} B: {Guid}, JSON: {@Community}",
+                        community.CommunityGuid, response.StatusCode, response.ReasonPhrase, body, community);
                 }
 
                 return true;

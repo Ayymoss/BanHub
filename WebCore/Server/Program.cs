@@ -38,24 +38,24 @@ builder.Services.AddDbContext<DataContext>(options =>
 });
 
 builder.Services.AddSingleton(configuration);
-builder.Services.AddSingleton<ApiKeyCache>();
+builder.Services.AddSingleton<IPluginAuthenticationCache, PluginAuthenticationCache>();
 builder.Services.AddSingleton<SignedInUsers>();
 builder.Services.AddSingleton<PluginAuthentication>();
 builder.Services.AddSingleton<StatisticsTracking>();
 builder.Services.AddSingleton<ISentimentService, SentimentService>();
 builder.Services.AddSingleton(new DiscordWebhookService(configuration));
+builder.Services.AddSingleton<ICommunityConnectionManager, CommunityConnectionManager>();
 
 builder.Services.AddTransient<ApiKeyMiddleware>();
 
 builder.Services.AddScoped<IStatisticService, StatisticService>();
-
 builder.Services.AddScoped<DialogService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<TooltipService>();
 builder.Services.AddScoped<ContextMenuService>();
 
 builder.Services.AddDataProtection()
-    .PersistKeysToFileSystem(new DirectoryInfo(@"./Account/"))
+    .PersistKeysToFileSystem(new DirectoryInfo("./Account/"))
     .SetApplicationName("BanHubAccount");
 
 // Add services to the container.

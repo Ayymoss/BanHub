@@ -7,6 +7,7 @@ using BanHub.Interfaces;
 using BanHub.Utilities;
 using BanHubData.Commands.Penalty;
 using Humanizer;
+using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
 using RestEase;
@@ -23,6 +24,7 @@ public class PenaltyService
 
     private readonly IPenaltyService _api;
     private readonly BanHubConfiguration _banHubConfiguration;
+    private readonly ILogger<PenaltyService> _logger;
 
     private readonly AsyncRetryPolicy _retryPolicy = Policy
         .Handle<HttpRequestException>(e => e.InnerException is SocketException)
@@ -34,9 +36,10 @@ public class PenaltyService
                     $"Retrying in {retryDelay.Humanize()}...");
             });
 
-    public PenaltyService(BanHubConfiguration banHubConfiguration)
+    public PenaltyService(BanHubConfiguration banHubConfiguration, ILogger<PenaltyService> logger)
     {
         _banHubConfiguration = banHubConfiguration;
+        _logger = logger;
         _api = RestClient.For<IPenaltyService>(ApiHost);
     }
 
@@ -50,14 +53,10 @@ public class PenaltyService
                 var preGuid = await response.Content.ReadAsStringAsync();
                 var parsedState = Guid.TryParse(preGuid.Replace("\"", ""), out var guid);
 
-                if (response.StatusCode is HttpStatusCode.BadRequest && _banHubConfiguration.DebugMode)
+                if (response.StatusCode is HttpStatusCode.BadRequest)
                 {
-                    Console.WriteLine($"\n[{BanHubConfiguration.Name}] Error posting penalty {penalty.Reason}\n" +
-                                      $"SC: {response.StatusCode}\n" +
-                                      $"RP: {response.ReasonPhrase}\n" +
-                                      $"B: {preGuid}\n" +
-                                      $"JSON: {JsonSerializer.Serialize(penalty)}\n" +
-                                      $"[{BanHubConfiguration.Name}] End of error");
+                    _logger.LogError("Error posting penalty {PenaltyReason} SC: {StatusCode} RP: {ReasonPhrase} B: {Guid} JSON: {@Penalty}",
+                        penalty.Reason, response.StatusCode, response.ReasonPhrase, preGuid, penalty);
                 }
 
                 return (response.IsSuccessStatusCode && parsedState, guid);
@@ -78,14 +77,11 @@ public class PenaltyService
         {
             var response = await _api.AddPlayerPenaltyEvidenceAsync(_banHubConfiguration.ApiKey.ToString(), penalty);
 
-            if (!response.IsSuccessStatusCode && _banHubConfiguration.DebugMode)
+            if (!response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"\n[{BanHubConfiguration.Name}] Error posting evidence {penalty.Evidence}\n" +
-                                  $"SC: {response.StatusCode}\n" +
-                                  $"RP: {response.ReasonPhrase}\n" +
-                                  $"B: {await response.Content.ReadAsStringAsync()}\n" +
-                                  $"JSON: {JsonSerializer.Serialize(penalty)}\n" +
-                                  $"[{BanHubConfiguration.Name}] End of error");
+                var body = await response.Content.ReadAsStringAsync();
+                _logger.LogError("Error posting evidence {PenaltyEvidence} SC: {StatusCode} RP: {ReasonPhrase} B: {Guid} JSON: {@Penalty}",
+                    penalty.Evidence, response.StatusCode, response.ReasonPhrase, body, penalty);
             }
 
             return response.IsSuccessStatusCode;

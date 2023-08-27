@@ -34,7 +34,7 @@ partial class ProfilePenaltyDialog
             CloseDialogOnOverlayClick = true
         };
 
-        var dialog = await DialogService.OpenAsync<ProfilePenaltyDeleteConfirmDialog>("Modify Penalty?", parameters, options);
+        var dialog = await DialogService.OpenAsync<ProfilePenaltyModifyDialog>("Modify Penalty?", parameters, options);
         if (dialog is Penalty result) DialogService.Close(result);
     }
 

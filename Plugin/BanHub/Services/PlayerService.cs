@@ -6,9 +6,11 @@ using BanHub.Interfaces;
 using BanHub.Utilities;
 using BanHubData.Commands.Player;
 using Humanizer;
+using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
 using RestEase;
+using Serilog;
 
 namespace BanHub.Services;
 
@@ -22,6 +24,7 @@ public class PlayerService
 
     private readonly IPlayerService _api;
     private readonly BanHubConfiguration _banHubConfiguration;
+    private readonly ILogger<PlayerService> _logger;
 
     private readonly AsyncRetryPolicy _retryPolicy = Policy
         .Handle<HttpRequestException>(e => e.InnerException is SocketException)
@@ -32,17 +35,13 @@ public class PlayerService
                                   $"Retrying in {retryDelay.Humanize()}...");
             });
 
-    public PlayerService(BanHubConfiguration banHubConfiguration)
+    public PlayerService(BanHubConfiguration banHubConfiguration, ILogger<PlayerService> logger)
     {
         _banHubConfiguration = banHubConfiguration;
+        _logger = logger;
         _api = RestClient.For<IPlayerService>(ApiHost);
     }
 
-    /// <summary>
-    /// Get player state from BanHub master
-    /// </summary>
-    /// <param name="identity"></param>
-    /// <returns>True if Banned, False if Not</returns>
     public async Task<bool> IsPlayerBannedAsync(IsPlayerBannedCommand identity)
     {
         try
@@ -61,7 +60,7 @@ public class PlayerService
 
         return false;
     }
-    
+
     public async Task<bool> IsPlayerBannedAsync(string identity)
     {
         try
@@ -109,14 +108,11 @@ public class PlayerService
             return await _retryPolicy.ExecuteAsync(async () =>
             {
                 var response = await _api.CreateOrUpdatePlayerAsync(_banHubConfiguration.ApiKey.ToString(), player);
-                if (!response.IsSuccessStatusCode && _banHubConfiguration.DebugMode)
+                if (!response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"\n[{BanHubConfiguration.Name}] Error posting evidence {player.PlayerIdentity}\n" +
-                                      $"SC: {response.StatusCode}\n" +
-                                      $"RP: {response.ReasonPhrase}\n" +
-                                      $"B: {await response.Content.ReadAsStringAsync()}\n" +
-                                      $"JSON: {JsonSerializer.Serialize(player)}\n" +
-                                      $"[{BanHubConfiguration.Name}] End of error");
+                    var body = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Error creating or updating player {PlayerIdentity} SC: {StatusCode} RP: {ReasonPhrase} B: {Guid}",
+                        player.PlayerIdentity, response.StatusCode, response.ReasonPhrase, body);
                     return null;
                 }
 

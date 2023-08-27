@@ -5,6 +5,7 @@ using BanHub.Interfaces;
 using BanHub.Utilities;
 using BanHubData.Commands.Community.Server;
 using Humanizer;
+using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
 using RestEase;
@@ -21,6 +22,7 @@ public class ServerService
 
     private readonly IServerService _api;
     private readonly BanHubConfiguration _banHubConfiguration;
+    private readonly ILogger<ServerService> _logger;
 
     private readonly AsyncRetryPolicy _retryPolicy = Policy
         .Handle<HttpRequestException>(e => e.InnerException is SocketException)
@@ -31,9 +33,10 @@ public class ServerService
                                   $"Retrying in {retryDelay.Humanize()}...");
             });
 
-    public ServerService(BanHubConfiguration banHubConfiguration)
+    public ServerService(BanHubConfiguration banHubConfiguration, ILogger<ServerService> logger)
     {
         _banHubConfiguration = banHubConfiguration;
+        _logger = logger;
         _api = RestClient.For<IServerService>(ApiHost);
     }
 
@@ -44,14 +47,11 @@ public class ServerService
             return await _retryPolicy.ExecuteAsync(async () =>
             {
                 var response = await _api.CreateOrUpdateServerAsync(_banHubConfiguration.ApiKey.ToString(), server);
-                if (!response.IsSuccessStatusCode && _banHubConfiguration.DebugMode)
+                if (!response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"\n[{BanHubConfiguration.Name}] Error posting server {server.ServerName}\n" +
-                                      $"SC: {response.StatusCode}\n" +
-                                      $"RP: {response.ReasonPhrase}\n" +
-                                      $"B: {await response.Content.ReadAsStringAsync()}\n" +
-                                      $"JSON: {JsonSerializer.Serialize(server)}\n" +
-                                      $"[{BanHubConfiguration.Name}] End of error");
+                    var body = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Error posting server {PenaltyReason} SC: {StatusCode} RP: {ReasonPhrase} B: {Guid}",
+                        server.ServerName, response.StatusCode, response.ReasonPhrase, body);
                 }
 
                 return response.IsSuccessStatusCode;

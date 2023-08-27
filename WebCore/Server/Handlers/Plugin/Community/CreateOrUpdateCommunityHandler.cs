@@ -15,15 +15,15 @@ public class CreateOrUpdateCommunityHandler : IRequestHandler<CreateOrUpdateComm
 {
     private readonly DataContext _context;
     private readonly IStatisticService _statisticService;
-    private readonly ApiKeyCache _apiKeyCache;
+    private readonly IPluginAuthenticationCache _pluginAuthenticationCache;
     private readonly Configuration _config;
 
-    public CreateOrUpdateCommunityHandler(DataContext context, IStatisticService statisticService, ApiKeyCache apiKeyCache,
+    public CreateOrUpdateCommunityHandler(DataContext context, IStatisticService statisticService, IPluginAuthenticationCache pluginAuthenticationCache,
         Configuration config)
     {
         _context = context;
         _statisticService = statisticService;
-        _apiKeyCache = apiKeyCache;
+        _pluginAuthenticationCache = pluginAuthenticationCache;
         _config = config;
     }
 
@@ -74,7 +74,7 @@ public class CreateOrUpdateCommunityHandler : IRequestHandler<CreateOrUpdateComm
         if (request.HeaderIp != community.CommunityIp)
         {
             community.Active = false;
-            _apiKeyCache.TryRemove(request.CommunityGuid);
+            _pluginAuthenticationCache.TryRemove(request.CommunityGuid);
 
             IDiscordWebhookSubscriptions.InvokeEvent(new CreateIssueEvent
             {

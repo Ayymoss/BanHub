@@ -8,12 +8,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Handlers.Web.Penalty;
 
-public class RemovePenaltyHandler : IRequestHandler<RemovePenaltyCommand, bool>
+public class ModifyPenaltyHandler : IRequestHandler<RemovePenaltyCommand, bool>
 {
     private readonly DataContext _context;
     private readonly IStatisticService _statisticService;
 
-    public RemovePenaltyHandler(DataContext context, IStatisticService statisticService)
+    public ModifyPenaltyHandler(DataContext context, IStatisticService statisticService)
     {
         _context = context;
         _statisticService = statisticService;
@@ -46,10 +46,23 @@ public class RemovePenaltyHandler : IRequestHandler<RemovePenaltyCommand, bool>
               $"**Reason**: {penaltyInfo.Reason}\n" +
               $"**Evidence**: {penaltyInfo.Evidence ?? "None"}\n\n" +
               $"**Modified By**: [{request.IssuerUserName}](https://BanHub.gg/Players/{request.IssuerIdentity})\n" +
-              $"**Modified For**: {request.DeletionReason}";
+              $"**Modified For**: {request.ModifyPenalty.ToString()} - {request.DeletionReason}";
 
-        if (request.DeletePenalty) _context.Penalties.Remove(penalty);
-        else penalty.PenaltyStatus = PenaltyStatus.Revoked;
+        switch (request.ModifyPenalty)
+        {
+            case ModifyPenalty.Revoke:
+                penalty.PenaltyStatus = PenaltyStatus.Revoked;
+                break;
+            case ModifyPenalty.Global:
+                penalty.PenaltyScope = PenaltyScope.Global;
+                break;
+            case ModifyPenalty.Local:
+                penalty.PenaltyScope = PenaltyScope.Local;
+                break;
+            case ModifyPenalty.Delete:
+                _context.Penalties.Remove(penalty);
+                break;
+        }
 
         await _context.SaveChangesAsync(cancellationToken);
         await _statisticService.UpdateStatisticAsync(ControllerEnums.StatisticType.PenaltyCount,

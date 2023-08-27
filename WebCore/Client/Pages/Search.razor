@@ -18,7 +18,7 @@
             <RadzenText TextStyle="TextStyle.DisplayH4" Text="Search"/>
             <RadzenRow>
                 <RadzenColumn>
-                    <RadzenText TextStyle="TextStyle.H5" Text="Players"/>
+                    <RadzenText TextStyle="TextStyle.H5">Players (@_searchResults.Players.Count)</RadzenText>
                     <RadzenCard>
                         @if (!_playerEmpty)
                         {
@@ -36,7 +36,7 @@
                     </RadzenCard>
                 </RadzenColumn>
                 <RadzenColumn>
-                    <RadzenText TextStyle="TextStyle.H5" Text="Chats"/>
+                    <RadzenText TextStyle="TextStyle.H5">Chats (@_searchResults.Messages.Count)</RadzenText>
                     <RadzenCard>
                         @if (!_chatEmpty)
                         {
@@ -60,8 +60,4 @@
             </RadzenRow>
         }
     }
-</RadzenCard>
-
-<RadzenCard class="rz-my-4">
-    <RadzenText Text="Search is likely to change in the future... Note, if there's more than 1,000 results, you'll receive a bad request."/>
 </RadzenCard>

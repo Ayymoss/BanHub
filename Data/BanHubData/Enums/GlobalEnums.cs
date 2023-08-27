@@ -60,3 +60,11 @@ public enum CommunityRole
     SeniorAdmin = 50,
     Owner = 60
 }
+
+public enum ModifyPenalty
+{
+    Revoke,
+    Global,
+    Local,
+    Delete
+}
