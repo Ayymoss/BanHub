@@ -1,11 +1,11 @@
 ﻿using System.Security.Claims;
 using BanHub.WebCore.Server.Services;
-using BanHub.WebCore.Shared.Mediatr.Commands.Penalty;
-using BanHub.WebCore.Shared.Mediatr.Commands.PlayerProfile;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Penalty;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.PlayerProfile;
 using BanHub.WebCore.Shared.Models.PenaltiesView;
 using BanHub.WebCore.Shared.Models.Shared;
-using BanHubData.Commands.Penalty;
 using BanHubData.Enums;
+using BanHubData.Mediatr.Commands.Requests.Penalty;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

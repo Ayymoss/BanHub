@@ -3,7 +3,7 @@ using System.Text.Json;
 using BanHub.Configuration;
 using BanHub.Interfaces;
 using BanHub.Utilities;
-using BanHubData.Commands.Community.Server;
+using BanHubData.Mediatr.Commands.Requests.Community.Server;
 using Humanizer;
 using Microsoft.Extensions.Logging;
 using Polly;

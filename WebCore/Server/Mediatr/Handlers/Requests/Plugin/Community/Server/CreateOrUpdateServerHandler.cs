@@ -2,8 +2,8 @@
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Mediatr.Commands.Events.Statistics;
 using BanHub.WebCore.Server.Models.Domains;
-using BanHubData.Commands.Community.Server;
 using BanHubData.Enums;
+using BanHubData.Mediatr.Commands.Requests.Community.Server;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

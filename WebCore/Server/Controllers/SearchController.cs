@@ -1,4 +1,4 @@
-﻿using BanHub.WebCore.Shared.Mediatr.Commands.Search;
+﻿using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Search;
 using BanHub.WebCore.Shared.Models.SearchView;
 using BanHubData.Enums;
 using MediatR;

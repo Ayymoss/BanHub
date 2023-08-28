@@ -1,7 +1,7 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Services;
-using BanHub.WebCore.Shared.Mediatr.Commands;
-using BanHub.WebCore.Shared.Mediatr.Commands;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests;
 using BanHub.WebCore.Shared.Models.Shared;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

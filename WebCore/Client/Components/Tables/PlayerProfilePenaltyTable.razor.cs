@@ -1,8 +1,8 @@
 ﻿using BanHub.WebCore.Client.Components.Dialogs;
 using BanHub.WebCore.Client.Services.RestEase.Pages;
-using BanHub.WebCore.Shared.Mediatr.Commands.PlayerProfile;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.PlayerProfile;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
-using BanHubData.Commands.Penalty;
+using BanHubData.Mediatr.Commands.Requests.Penalty;
 using Humanizer;
 using Microsoft.AspNetCore.Components;
 using Radzen;

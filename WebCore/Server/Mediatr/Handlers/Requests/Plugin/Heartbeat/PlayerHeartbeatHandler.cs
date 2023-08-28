@@ -1,8 +1,9 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Mediatr.Commands.Events.Statistics;
 using BanHub.WebCore.Server.Services;
-using BanHubData.Commands.Heartbeat;
+using BanHub.WebCore.Server.Utilities;
 using BanHubData.Enums;
+using BanHubData.Mediatr.Commands.Requests.Heartbeat;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

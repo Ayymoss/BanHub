@@ -1,5 +1,5 @@
 ﻿using BanHub.WebCore.Server.Context;
-using BanHub.WebCore.Shared.Mediatr.Commands.Chat;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Chat;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

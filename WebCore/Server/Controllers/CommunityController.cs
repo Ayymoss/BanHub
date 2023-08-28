@@ -1,9 +1,8 @@
 ﻿using BanHub.WebCore.Server.Services;
-using BanHub.WebCore.Shared.Mediatr.Commands.Chat;
-using BanHub.WebCore.Shared.Mediatr.Commands.Community;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Community;
 using BanHub.WebCore.Shared.Models.Shared;
-using BanHubData.Commands.Community;
 using BanHubData.Enums;
+using BanHubData.Mediatr.Commands.Requests.Community;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Community = BanHub.WebCore.Shared.Models.CommunityProfileView.Community;

@@ -1,8 +1,8 @@
 ﻿using BanHub.WebCore.Client.Providers;
 using BanHub.WebCore.Client.Utilities;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
-using BanHubData.Commands.Penalty;
 using BanHubData.Enums;
+using BanHubData.Mediatr.Commands.Requests.Penalty;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Radzen;

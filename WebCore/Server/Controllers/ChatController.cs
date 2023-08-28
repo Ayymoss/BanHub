@@ -1,9 +1,9 @@
 ﻿using BanHub.WebCore.Server.Services;
-using BanHub.WebCore.Shared.Mediatr.Commands.Chat;
-using BanHub.WebCore.Shared.Mediatr.Commands.PlayerProfile;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Chat;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.PlayerProfile;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
 using BanHub.WebCore.Shared.Models.Shared;
-using BanHubData.Commands.Chat;
+using BanHubData.Mediatr.Commands.Requests.Chat;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

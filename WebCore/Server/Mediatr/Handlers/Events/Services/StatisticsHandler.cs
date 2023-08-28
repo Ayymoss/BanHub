@@ -15,16 +15,16 @@ public class StatisticsHandler : INotificationHandler<EnsureInitialisedNotificat
     INotificationHandler<UpdateRecentBansNotification>
 {
     private readonly DataContext _context;
-    private readonly StatisticsTracking _statisticsTracking;
+    private readonly StatisticsCache _statisticsCache;
     private readonly IHubContext<StatisticsHub> _hubContext;
     private readonly IMediator _mediator;
     private readonly SemaphoreSlim _load = new(1, 1);
 
-    public StatisticsHandler(DataContext context, StatisticsTracking statisticsTracking, IHubContext<StatisticsHub> hubContext,
+    public StatisticsHandler(DataContext context, StatisticsCache statisticsCache, IHubContext<StatisticsHub> hubContext,
         IMediator mediator)
     {
         _context = context;
-        _statisticsTracking = statisticsTracking;
+        _statisticsCache = statisticsCache;
         _hubContext = hubContext;
         _mediator = mediator;
     }
@@ -35,13 +35,13 @@ public class StatisticsHandler : INotificationHandler<EnsureInitialisedNotificat
         {
             await _load.WaitAsync(cancellationToken);
 
-            if (!_statisticsTracking.Loaded)
+            if (!_statisticsCache.Loaded)
             {
-                _statisticsTracking.Penalties = await _context.Players.CountAsync(cancellationToken: cancellationToken);
-                _statisticsTracking.Servers = await _context.Communities.CountAsync(cancellationToken: cancellationToken);
-                _statisticsTracking.Communities = await _context.Servers.CountAsync(cancellationToken: cancellationToken);
-                _statisticsTracking.Players = await _context.Penalties.CountAsync(cancellationToken: cancellationToken);
-                _statisticsTracking.Loaded = true;
+                _statisticsCache.Penalties = await _context.Players.CountAsync(cancellationToken: cancellationToken);
+                _statisticsCache.Servers = await _context.Communities.CountAsync(cancellationToken: cancellationToken);
+                _statisticsCache.Communities = await _context.Servers.CountAsync(cancellationToken: cancellationToken);
+                _statisticsCache.Players = await _context.Penalties.CountAsync(cancellationToken: cancellationToken);
+                _statisticsCache.Loaded = true;
             }
         }
         finally
@@ -52,7 +52,7 @@ public class StatisticsHandler : INotificationHandler<EnsureInitialisedNotificat
 
     public async Task Handle(UpdateStatisticsNotification notification, CancellationToken cancellationToken)
     {
-        if (!_statisticsTracking.Loaded) await _mediator.Publish(new EnsureInitialisedNotification(), cancellationToken);
+        if (!_statisticsCache.Loaded) await _mediator.Publish(new EnsureInitialisedNotification(), cancellationToken);
 
         var statisticMapping = new Dictionary<ControllerEnums.StatisticType, Action>
         {
@@ -60,32 +60,32 @@ public class StatisticsHandler : INotificationHandler<EnsureInitialisedNotificat
                 ControllerEnums.StatisticType.PenaltyCount, () =>
                 {
                     if (notification.StatisticTypeAction is ControllerEnums.StatisticTypeAction.Add)
-                        Interlocked.Increment(ref _statisticsTracking.Penalties);
-                    else Interlocked.Decrement(ref _statisticsTracking.Penalties);
+                        Interlocked.Increment(ref _statisticsCache.Penalties);
+                    else Interlocked.Decrement(ref _statisticsCache.Penalties);
                 }
             },
             {
                 ControllerEnums.StatisticType.ServerCount, () =>
                 {
                     if (notification.StatisticTypeAction is ControllerEnums.StatisticTypeAction.Add)
-                        Interlocked.Increment(ref _statisticsTracking.Servers);
-                    else Interlocked.Decrement(ref _statisticsTracking.Servers);
+                        Interlocked.Increment(ref _statisticsCache.Servers);
+                    else Interlocked.Decrement(ref _statisticsCache.Servers);
                 }
             },
             {
                 ControllerEnums.StatisticType.CommunityCount, () =>
                 {
                     if (notification.StatisticTypeAction is ControllerEnums.StatisticTypeAction.Add)
-                        Interlocked.Increment(ref _statisticsTracking.Communities);
-                    else Interlocked.Decrement(ref _statisticsTracking.Communities);
+                        Interlocked.Increment(ref _statisticsCache.Communities);
+                    else Interlocked.Decrement(ref _statisticsCache.Communities);
                 }
             },
             {
                 ControllerEnums.StatisticType.PlayerCount, () =>
                 {
                     if (notification.StatisticTypeAction is ControllerEnums.StatisticTypeAction.Add)
-                        Interlocked.Increment(ref _statisticsTracking.Players);
-                    else Interlocked.Decrement(ref _statisticsTracking.Players);
+                        Interlocked.Increment(ref _statisticsCache.Players);
+                    else Interlocked.Decrement(ref _statisticsCache.Players);
                 }
             }
         };
@@ -95,7 +95,7 @@ public class StatisticsHandler : INotificationHandler<EnsureInitialisedNotificat
 
     public async Task Handle(UpdateOnlineStatisticNotification notification, CancellationToken cancellationToken)
     {
-        if (!_statisticsTracking.Loaded) await _mediator.Publish(new EnsureInitialisedNotification(), cancellationToken);
+        if (!_statisticsCache.Loaded) await _mediator.Publish(new EnsureInitialisedNotification(), cancellationToken);
 
         var statisticUsers = notification.Identities
             .Select(x => new {PlayerIdentity = x, Heartbeat = DateTimeOffset.UtcNow})
@@ -103,41 +103,41 @@ public class StatisticsHandler : INotificationHandler<EnsureInitialisedNotificat
 
         foreach (var user in statisticUsers)
         {
-            _statisticsTracking.OnlinePlayers.AddOrUpdate(user.PlayerIdentity, user.Heartbeat,
+            _statisticsCache.OnlinePlayers.AddOrUpdate(user.PlayerIdentity, user.Heartbeat,
                 (key, oldValue) => user.Heartbeat);
         }
 
-        var offlineUsers = _statisticsTracking.OnlinePlayers
+        var offlineUsers = _statisticsCache.OnlinePlayers
             .Where(x => x.Value < DateTimeOffset.UtcNow.AddMinutes(-5))
             .Select(x => x.Key)
             .ToList();
 
         foreach (var user in offlineUsers)
         {
-            _statisticsTracking.OnlinePlayers.TryRemove(user, out _);
+            _statisticsCache.OnlinePlayers.TryRemove(user, out _);
         }
 
         await _hubContext.Clients.All.SendAsync(SignalRMethods.StatisticMethods.OnPlayerCountUpdate,
-            _statisticsTracking.OnlinePlayers.Count, cancellationToken: cancellationToken);
+            _statisticsCache.OnlinePlayers.Count, cancellationToken: cancellationToken);
     }
 
     public async Task Handle(UpdateRecentBansNotification notification, CancellationToken cancellationToken)
     {
-        if (!_statisticsTracking.Loaded) await _mediator.Publish(new EnsureInitialisedNotification(), cancellationToken);
+        if (!_statisticsCache.Loaded) await _mediator.Publish(new EnsureInitialisedNotification(), cancellationToken);
 
-        _statisticsTracking.RecentBans.TryAdd(notification.BanGuid, notification.Submitted);
+        _statisticsCache.RecentBans.TryAdd(notification.BanGuid, notification.Submitted);
 
-        var oldBans = _statisticsTracking.RecentBans
+        var oldBans = _statisticsCache.RecentBans
             .Where(x => x.Value < DateTimeOffset.UtcNow.AddDays(-7))
             .Select(x => x.Key)
             .ToList();
 
         foreach (var ban in oldBans)
         {
-            _statisticsTracking.RecentBans.TryRemove(ban, out _);
+            _statisticsCache.RecentBans.TryRemove(ban, out _);
         }
 
-        await _hubContext.Clients.All.SendAsync(SignalRMethods.StatisticMethods.OnRecentBansUpdate, _statisticsTracking.RecentBans.Count,
+        await _hubContext.Clients.All.SendAsync(SignalRMethods.StatisticMethods.OnRecentBansUpdate, _statisticsCache.RecentBans.Count,
             cancellationToken: cancellationToken);
     }
 }

@@ -1,6 +1,6 @@
 ﻿using BanHub.WebCore.Server.Services;
-using BanHubData.Commands.Community.Server;
 using BanHubData.Enums;
+using BanHubData.Mediatr.Commands.Requests.Community.Server;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

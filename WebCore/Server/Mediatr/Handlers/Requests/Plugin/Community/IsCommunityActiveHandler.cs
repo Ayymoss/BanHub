@@ -1,5 +1,5 @@
 ﻿using BanHub.WebCore.Server.Context;
-using BanHubData.Commands.Community;
+using BanHubData.Mediatr.Commands.Requests.Community;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

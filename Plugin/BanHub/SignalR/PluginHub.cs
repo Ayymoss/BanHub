@@ -1,6 +1,6 @@
 ﻿using BanHub.Configuration;
-using BanHubData.Commands.Heartbeat;
 using BanHubData.Enums;
+using BanHubData.Mediatr.Commands.Requests.Heartbeat;
 using BanHubData.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;

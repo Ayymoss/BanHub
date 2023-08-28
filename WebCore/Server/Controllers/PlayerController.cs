@@ -1,10 +1,10 @@
 ﻿using BanHub.WebCore.Server.Services;
-using BanHub.WebCore.Shared.Mediatr.Commands.PlayerProfile;
-using BanHub.WebCore.Shared.Mediatr.Commands.Players;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.PlayerProfile;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Players;
 using BanHub.WebCore.Shared.Models.PlayersView;
-using BanHubData.Commands.Player;
 using BanHubData.Enums;
-using BanHubData.Events.Player;
+using BanHubData.Mediatr.Commands.Events.Player;
+using BanHubData.Mediatr.Commands.Requests.Player;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

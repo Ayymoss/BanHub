@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using BanHubData.Commands.Chat;
+using BanHubData.Mediatr.Commands.Requests.Chat;
 
 namespace BanHub.Models;
 

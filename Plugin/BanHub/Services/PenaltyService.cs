@@ -5,7 +5,7 @@ using BanHub.Commands;
 using BanHub.Configuration;
 using BanHub.Interfaces;
 using BanHub.Utilities;
-using BanHubData.Commands.Penalty;
+using BanHubData.Mediatr.Commands.Requests.Penalty;
 using Humanizer;
 using Microsoft.Extensions.Logging;
 using Polly;

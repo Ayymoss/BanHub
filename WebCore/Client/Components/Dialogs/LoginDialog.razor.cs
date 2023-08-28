@@ -1,5 +1,5 @@
 ﻿using BanHub.WebCore.Client.Services.RestEase;
-using BanHub.WebCore.Shared.Mediatr.Commands;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 

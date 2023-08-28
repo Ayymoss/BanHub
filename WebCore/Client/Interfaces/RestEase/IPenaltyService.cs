@@ -1,6 +1,6 @@
-﻿using BanHub.WebCore.Shared.Mediatr.Commands.Penalty;
-using BanHub.WebCore.Shared.Mediatr.Commands.PlayerProfile;
-using BanHubData.Commands.Penalty;
+﻿using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Penalty;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.PlayerProfile;
+using BanHubData.Mediatr.Commands.Requests.Penalty;
 using RestEase;
 
 namespace BanHub.WebCore.Client.Interfaces.RestEase;

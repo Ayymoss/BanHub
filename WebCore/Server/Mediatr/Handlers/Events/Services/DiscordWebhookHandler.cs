@@ -1,5 +1,5 @@
 ﻿using BanHub.WebCore.Server.Mediatr.Commands.Events.Services.Discord;
-using BanHub.WebCore.Server.Services;
+using BanHub.WebCore.Server.Utilities;
 using Discord;
 using Discord.Webhook;
 using MediatR;

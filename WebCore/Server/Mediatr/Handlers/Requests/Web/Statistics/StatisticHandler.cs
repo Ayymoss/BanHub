@@ -9,35 +9,35 @@ namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Statistics;
 public class StatisticHandler : IRequestHandler<GetStatisticsCommand, Statistic>, IRequestHandler<GetOnlinePlayersCommand, int>,
     IRequestHandler<GetRecentBansCommand, int>
 {
-    private readonly StatisticsTracking _statisticsTracking;
+    private readonly StatisticsCache _statisticsCache;
     private readonly IMediator _mediator;
 
-    public StatisticHandler(StatisticsTracking statisticsTracking, IMediator mediator)
+    public StatisticHandler(StatisticsCache statisticsCache, IMediator mediator)
     {
-        _statisticsTracking = statisticsTracking;
+        _statisticsCache = statisticsCache;
         _mediator = mediator;
     }
 
     public async Task<Statistic> Handle(GetStatisticsCommand request, CancellationToken cancellationToken)
     {
-        if (!_statisticsTracking.Loaded) await _mediator.Publish(new EnsureInitialisedNotification(), cancellationToken);
+        if (!_statisticsCache.Loaded) await _mediator.Publish(new EnsureInitialisedNotification(), cancellationToken);
 
         return new Statistic
         {
-            PenaltyCount = _statisticsTracking.Penalties,
-            ServerCount = _statisticsTracking.Servers,
-            CommunityCount = _statisticsTracking.Communities,
-            PlayerCount = _statisticsTracking.Players,
+            PenaltyCount = _statisticsCache.Penalties,
+            ServerCount = _statisticsCache.Servers,
+            CommunityCount = _statisticsCache.Communities,
+            PlayerCount = _statisticsCache.Players,
         };
     }
 
     public Task<int> Handle(GetOnlinePlayersCommand request, CancellationToken cancellationToken)
     {
-        return Task.FromResult(_statisticsTracking.OnlinePlayers.Count);
+        return Task.FromResult(_statisticsCache.OnlinePlayers.Count);
     }
 
     public Task<int> Handle(GetRecentBansCommand request, CancellationToken cancellationToken)
     {
-        return Task.FromResult(_statisticsTracking.RecentBans.Count);
+        return Task.FromResult(_statisticsCache.RecentBans.Count);
     }
 }

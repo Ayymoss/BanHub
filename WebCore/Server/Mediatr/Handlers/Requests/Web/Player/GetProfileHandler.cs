@@ -1,6 +1,6 @@
 ﻿using BanHub.WebCore.Server.Context;
-using BanHub.WebCore.Shared.Mediatr.Commands.PlayerProfile;
-using BanHub.WebCore.Shared.Mediatr.Commands.Players;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.PlayerProfile;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Players;
 using BanHubData.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

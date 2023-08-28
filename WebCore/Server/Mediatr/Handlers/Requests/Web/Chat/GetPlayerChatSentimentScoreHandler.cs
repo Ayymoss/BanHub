@@ -2,7 +2,7 @@
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Models.Domains;
 using BanHub.WebCore.Server.Services;
-using BanHub.WebCore.Shared.Mediatr.Commands.Players;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Players;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

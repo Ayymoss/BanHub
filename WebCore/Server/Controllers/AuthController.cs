@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
-using BanHub.WebCore.Shared.Mediatr.Commands;
-using BanHub.WebCore.Shared.Mediatr.Commands;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Enums;
 using MediatR;

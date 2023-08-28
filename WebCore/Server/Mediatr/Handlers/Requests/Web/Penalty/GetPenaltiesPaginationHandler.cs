@@ -1,6 +1,6 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Utilities;
-using BanHub.WebCore.Shared.Mediatr.Commands.Penalty;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Penalty;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Enums;
 using MediatR;

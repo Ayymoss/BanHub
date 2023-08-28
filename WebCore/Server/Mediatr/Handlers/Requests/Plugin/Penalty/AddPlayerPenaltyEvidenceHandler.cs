@@ -1,7 +1,7 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Mediatr.Commands.Events.Services.Discord;
-using BanHubData.Commands.Penalty;
 using BanHubData.Enums;
+using BanHubData.Mediatr.Commands.Requests.Penalty;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

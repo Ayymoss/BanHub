@@ -1,7 +1,7 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.SignalR;
-using BanHub.WebCore.Shared.Mediatr.Commands.Community;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Community;
 using BanHubData.SignalR;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;

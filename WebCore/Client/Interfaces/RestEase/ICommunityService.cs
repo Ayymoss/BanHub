@@ -1,5 +1,5 @@
-﻿using BanHub.WebCore.Shared.Mediatr.Commands.Chat;
-using BanHub.WebCore.Shared.Mediatr.Commands.Community;
+﻿using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Chat;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Community;
 using RestEase;
 
 namespace BanHub.WebCore.Client.Interfaces.RestEase;

@@ -1,6 +1,6 @@
 ﻿using BanHub.WebCore.Client.Interfaces.RestEase;
 using BanHub.WebCore.Client.Utilities;
-using BanHub.WebCore.Shared.Mediatr.Commands.Chat;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Chat;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
 using BanHub.WebCore.Shared.Models.Shared;
 using RestEase;

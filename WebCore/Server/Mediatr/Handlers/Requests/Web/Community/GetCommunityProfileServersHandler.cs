@@ -1,7 +1,7 @@
 ﻿using System.Linq.Dynamic.Core;
 using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Utilities;
-using BanHub.WebCore.Shared.Mediatr.Commands.Community;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Community;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHub.WebCore.Shared.Utilities;
 using MediatR;

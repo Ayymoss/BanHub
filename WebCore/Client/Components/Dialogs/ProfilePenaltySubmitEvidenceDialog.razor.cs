@@ -1,7 +1,7 @@
 ﻿using BanHub.WebCore.Client.Services.RestEase.Pages;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
-using BanHubData.Commands.Penalty;
 using BanHubData.Extension;
+using BanHubData.Mediatr.Commands.Requests.Penalty;
 using Microsoft.AspNetCore.Components;
 using Radzen;
 

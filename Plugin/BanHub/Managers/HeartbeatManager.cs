@@ -1,6 +1,6 @@
 ﻿using BanHub.Models;
 using BanHub.SignalR;
-using BanHubData.Commands.Heartbeat;
+using BanHubData.Mediatr.Commands.Requests.Heartbeat;
 using BanHubData.SignalR;
 using Microsoft.Extensions.Logging;
 

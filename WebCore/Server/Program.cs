@@ -41,7 +41,7 @@ builder.Services.AddSingleton(configuration);
 builder.Services.AddSingleton<IPluginAuthenticationCache, PluginAuthenticationCache>();
 builder.Services.AddSingleton<SignedInUsers>();
 builder.Services.AddSingleton<PluginAuthentication>();
-builder.Services.AddSingleton<StatisticsTracking>();
+builder.Services.AddSingleton<StatisticsCache>();
 builder.Services.AddSingleton<ISentimentService, SentimentService>();
 builder.Services.AddSingleton<ICommunityConnectionManager, CommunityConnectionManager>();
 

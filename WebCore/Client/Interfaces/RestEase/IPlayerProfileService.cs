@@ -1,4 +1,4 @@
-﻿using BanHub.WebCore.Shared.Mediatr.Commands.PlayerProfile;
+﻿using BanHub.WebCore.Shared.Mediatr.Commands.Requests.PlayerProfile;
 using RestEase;
 
 namespace BanHub.WebCore.Client.Interfaces.RestEase;

@@ -3,7 +3,7 @@ using BanHub.WebCore.Server.Mediatr.Commands.Events.Statistics;
 using BanHub.WebCore.Server.Models.Domains;
 using BanHub.WebCore.Server.Utilities;
 using BanHubData.Enums;
-using BanHubData.Events.Player;
+using BanHubData.Mediatr.Commands.Events.Player;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

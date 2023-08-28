@@ -1,6 +1,6 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Mediatr.Commands.Events.Services.Discord;
-using BanHub.WebCore.Shared.Mediatr.Commands.PlayerProfile;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.PlayerProfile;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

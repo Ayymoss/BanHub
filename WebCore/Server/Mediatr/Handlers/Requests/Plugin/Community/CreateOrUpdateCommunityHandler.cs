@@ -1,12 +1,10 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Interfaces;
-using BanHub.WebCore.Server.Mediatr.Commands.Events.Services.Discord;
 using BanHub.WebCore.Server.Mediatr.Commands.Events.Statistics;
 using BanHub.WebCore.Server.Models.Domains;
-using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Server.Utilities;
-using BanHubData.Commands.Community;
 using BanHubData.Enums;
+using BanHubData.Mediatr.Commands.Requests.Community;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
