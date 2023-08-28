@@ -4,6 +4,7 @@ using BanHub.WebCore.Shared.Commands.Players;
 using BanHub.WebCore.Shared.Models.PlayersView;
 using BanHubData.Commands.Player;
 using BanHubData.Enums;
+using BanHubData.Notifications.Player;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,11 +24,11 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost, PluginAuthentication]
-    public async Task<ActionResult<string>> CreateOrUpdatePlayerAsync([FromQuery] string authToken,
-        [FromBody] CreateOrUpdatePlayerCommand request)
+    public async Task<IActionResult> CreateOrUpdatePlayerAsync([FromQuery] string authToken,
+        [FromBody] CreateOrUpdatePlayerNotification request)
     {
-        var id = await _mediator.Send(request);
-        return Ok(id);
+        await _mediator.Publish(request);
+        return Ok();
     }
 
     [HttpPost("Pagination")]

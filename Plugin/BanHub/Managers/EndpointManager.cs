@@ -11,6 +11,7 @@ using BanHubData.Commands.Community.Server;
 using BanHubData.Commands.Penalty;
 using BanHubData.Commands.Player;
 using BanHubData.Enums;
+using BanHubData.Notifications.Player;
 using BanHubData.SignalR;
 using Microsoft.Extensions.Logging;
 using SharedLibraryCore;
@@ -88,7 +89,7 @@ public class EndpointManager
         }
 
         var result = await CreateOrUpdatePlayerAsync(player);
-        if (!result.Success) return;
+        if (!result) return;
 
         var noteCount = await _noteService.GetUserNotesCountAsync(identity);
         if (noteCount is not 0)
@@ -107,12 +108,12 @@ public class EndpointManager
         Profiles.TryAdd(player, identity);
     }
 
-    private async Task<(bool Success, string Identity)> CreateOrUpdatePlayerAsync(EFClient player)
+    private async Task<bool> CreateOrUpdatePlayerAsync(EFClient player)
     {
-        if (player.ClientId is 1) return (true, "0:UKN");
-        if (!_communitySlim.Active) return (true, EntityToPlayerIdentity(player));
+        if (player.ClientId is 1) return true;
+        if (!_communitySlim.Active) return true;
 
-        var createOrUpdate = new CreateOrUpdatePlayerCommand
+        var createOrUpdate = new CreateOrUpdatePlayerNotification
         {
             PlayerIdentity = $"{player.GuidString}:{player.GameName.ToString()}",
             PlayerAliasUserName = player.CleanedName,
@@ -130,11 +131,11 @@ public class EndpointManager
             ServerId = player.CurrentServer?.Id
         };
         
-        _logger.LogDebug("Creating or updating player {Identity}", createOrUpdate.PlayerIdentity);
-        if (await _playerService.CreateOrUpdatePlayerAsync(createOrUpdate) is { } identity) return (true, identity);
+        _logger.LogDebug("Creating or updating player {Identity}", createOrUpdate.PlayerIdentity); //what does the identity do
+        if (await _playerService.CreateOrUpdatePlayerAsync(createOrUpdate) is { } identity) return true;
 
         _logger.LogError("Failed to update entity {Identity}", createOrUpdate.PlayerIdentity);
-        return (false, string.Empty);
+        return false;
     }
 
     public void RemoveFromProfiles(EFClient client)
@@ -192,7 +193,7 @@ public class EndpointManager
     {
         var adminIdentity = await CreateOrUpdatePlayerAsync(origin);
         var targetIdentity = await CreateOrUpdatePlayerAsync(target);
-        if (!adminIdentity.Success || !targetIdentity.Success) return (false, null);
+        if (!adminIdentity || !targetIdentity) return (false, null);
 
         var parsedPenaltyType = Enum.TryParse<PenaltyType>(sourcePenaltyType, out var penaltyType);
         if (!parsedPenaltyType || !_communitySlim.Active) return (false, null);
@@ -215,8 +216,8 @@ public class EndpointManager
             Automated = isAntiCheatBan,
             Expiration = expiration,
             CommunityGuid = _communitySlim.CommunityGuid,
-            AdminIdentity = adminIdentity.Identity,
-            TargetIdentity = targetIdentity.Identity
+            AdminIdentity = EntityToPlayerIdentity(origin),
+            TargetIdentity = EntityToPlayerIdentity(target)
         };
         var result = await _penalty.AddPlayerPenaltyAsync(penaltyDto);
 

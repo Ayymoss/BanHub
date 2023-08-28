@@ -1,4 +1,5 @@
 ﻿using BanHub.WebCore.Server.Interfaces;
+using BanHub.WebCore.Server.Notifications.Statistics;
 using BanHub.WebCore.Server.Services;
 using BanHubData.Commands.Heartbeat;
 using BanHubData.Enums;
@@ -11,16 +12,14 @@ namespace BanHub.WebCore.Server.SignalR;
 public class PluginHub : Hub
 {
     private readonly IMediator _mediator;
-    private readonly IStatisticService _statisticService;
     private readonly IPluginAuthenticationCache _pluginAuthenticationCache;
     private readonly ICommunityConnectionManager _connectionManager;
     private readonly Configuration _config;
 
-    public PluginHub(IMediator mediator, IStatisticService statisticService, IPluginAuthenticationCache pluginAuthenticationCache,
+    public PluginHub(IMediator mediator, IPluginAuthenticationCache pluginAuthenticationCache,
         ICommunityConnectionManager connectionManager, Configuration config)
     {
         _mediator = mediator;
-        _statisticService = statisticService;
         _pluginAuthenticationCache = pluginAuthenticationCache;
         _connectionManager = connectionManager;
         _config = config;
@@ -45,7 +44,7 @@ public class PluginHub : Hub
     {
         if (request.PluginVersion < _config.PluginVersion) return SignalREnums.ReturnState.VersionToOld;
         if (!_pluginAuthenticationCache.ExistsApiKey(request.CommunityApiKey)) return SignalREnums.ReturnState.NotActivated;
-        await _statisticService.UpdateOnlineStatisticAsync(new[] {request.Identity});
+        await _mediator.Publish(new UpdateOnlineStatisticNotification {Identities = new[] {request.Identity}});
         return SignalREnums.ReturnState.Ok;
     }
 }

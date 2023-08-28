@@ -1,4 +1,5 @@
 ﻿using BanHubData.Commands.Player;
+using BanHubData.Notifications.Player;
 using RestEase;
 
 namespace BanHub.Interfaces;
@@ -9,7 +10,7 @@ public interface IPlayerService
     Task<HttpResponseMessage> IsPlayerBannedAsync([Query("authToken")] string authToken, [Body] IsPlayerBannedCommand identity);
 
     [Post("/Player")]
-    Task<HttpResponseMessage> CreateOrUpdatePlayerAsync([Query("authToken")] string authToken, [Body] CreateOrUpdatePlayerCommand entities);
+    Task<HttpResponseMessage> CreateOrUpdatePlayerAsync([Query("authToken")] string authToken, [Body] CreateOrUpdatePlayerNotification entities);
 
     [Get("/Player/GetToken/{identity}")]
     Task<HttpResponseMessage> GetTokenAsync([Query("authToken")] string authToken, [Path("identity")] string identity);

@@ -55,7 +55,7 @@ partial class MainLayout : IDisposable
     private void UpdatePageViewersCount(int count)
     {
         _activeUserCount = count;
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
     }
 
     private void UpdateOnlineCount(int count)
@@ -69,7 +69,7 @@ partial class MainLayout : IDisposable
     private void UpdateBansCount(int count)
     {
         _bans = count;
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
     }
 
     private async Task ToggleTheme()
@@ -85,18 +85,14 @@ partial class MainLayout : IDisposable
         if (_progress >= 1)
         {
             _online = _targetOnline;
-
             _updateTimer?.Dispose();
             _updateTimer = null;
-
             InvokeAsync(StateHasChanged);
             return;
         }
 
         var easedProgress = BezierEase(_progress);
         _online = _startOnline + (int)Math.Round((_targetOnline - _startOnline) * easedProgress);
-
-
         InvokeAsync(StateHasChanged);
     }
 
@@ -107,7 +103,7 @@ partial class MainLayout : IDisposable
         var uu = u * u;
         var uuu = uu * u;
         var ttt = tt * t;
-        
+
         var y = uuu * 0 // P0 is always (0,0) so it's omitted here
                 + 3 * uu * t * 0.1 // P1 is (0.25, 0.1) - we don't use the x value
                 + 3 * u * tt * 1 // P2 is (0.25, 1) - we don't use the x value
@@ -120,5 +116,8 @@ partial class MainLayout : IDisposable
     {
         _body.Dispose();
         _updateTimer?.Dispose();
+        ActiveUserHub.ActiveUserCountChanged -= UpdatePageViewersCount;
+        StatisticsHub.OnlineCountChanged -= UpdateOnlineCount;
+        StatisticsHub.RecentBansCountChanged -= UpdateBansCount;
     }
 }

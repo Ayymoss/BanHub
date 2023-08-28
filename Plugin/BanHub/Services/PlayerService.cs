@@ -5,6 +5,7 @@ using BanHub.Configuration;
 using BanHub.Interfaces;
 using BanHub.Utilities;
 using BanHubData.Commands.Player;
+using BanHubData.Notifications.Player;
 using Humanizer;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -101,7 +102,7 @@ public class PlayerService
         return null;
     }
 
-    public async Task<string?> CreateOrUpdatePlayerAsync(CreateOrUpdatePlayerCommand player)
+    public async Task<bool> CreateOrUpdatePlayerAsync(CreateOrUpdatePlayerNotification player)
     {
         try
         {
@@ -113,10 +114,10 @@ public class PlayerService
                     var body = await response.Content.ReadAsStringAsync();
                     _logger.LogError("Error creating or updating player {PlayerIdentity} SC: {StatusCode} RP: {ReasonPhrase} B: {Guid}",
                         player.PlayerIdentity, response.StatusCode, response.ReasonPhrase, body);
-                    return null;
+                    return false;
                 }
 
-                return await response.Content.ReadAsStringAsync();
+                return true;
             });
         }
         catch (Exception e)
@@ -125,6 +126,6 @@ public class PlayerService
             Console.WriteLine($"[{BanHubConfiguration.Name}] Error updating entity: {errorMessage}");
         }
 
-        return null;
+        return false;
     }
 }

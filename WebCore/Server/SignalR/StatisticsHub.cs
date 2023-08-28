@@ -1,18 +1,19 @@
-﻿using BanHub.WebCore.Server.Interfaces;
+﻿using BanHub.WebCore.Server.Commands.Statistics;
+using MediatR;
 using Microsoft.AspNetCore.SignalR;
 
 namespace BanHub.WebCore.Server.SignalR;
 
 public class StatisticsHub : Hub
 {
-    private readonly IStatisticService _statisticService;
+    private readonly IMediator _mediator;
 
-    public StatisticsHub(IStatisticService statisticService)
+    public StatisticsHub(IMediator mediator)
     {
-        _statisticService = statisticService;
+        _mediator = mediator;
     }
 
-    public int GetCurrentOnlinePlayers() => _statisticService.GetOnlinePlayerCount();
+    public async Task<int> GetCurrentOnlinePlayers() => await _mediator.Send(new GetOnlinePlayersCommand());
 
-    public int GetCurrentRecentBans() => _statisticService.GetRecentBansCount();
+    public async Task<int> GetCurrentRecentBans() => await _mediator.Send(new GetRecentBansCommand());
 }

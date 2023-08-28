@@ -48,7 +48,6 @@ builder.Services.AddSingleton<ICommunityConnectionManager, CommunityConnectionMa
 
 builder.Services.AddTransient<ApiKeyMiddleware>();
 
-builder.Services.AddScoped<IStatisticService, StatisticService>();
 builder.Services.AddScoped<DialogService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<TooltipService>();

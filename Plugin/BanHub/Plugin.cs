@@ -20,8 +20,6 @@ using SharedLibraryCore.Interfaces.Events;
 
 namespace BanHub;
 
-// TODO: LOGGING!!!!
-
 public class Plugin : IPluginV2
 {
     private const string LoggerName = "BanHub";
@@ -192,7 +190,7 @@ public class Plugin : IPluginV2
                 CommunityPort = port,
                 CommunityApiKey = _communitySlim.ApiKey,
                 CommunityName = _config.CommunityNameOverride ??
-                                _appConfig.WebfrontCustomBranding ?? 
+                                _appConfig.WebfrontCustomBranding ??
                                 _communitySlim.CommunityGuid.ToString(),
                 About = _appConfig.CommunityInformation.Description,
                 Socials = _appConfig.CommunityInformation.SocialAccounts.ToDictionary(social => social.Title, social => social.Url),

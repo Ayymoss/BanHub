@@ -1,4 +1,4 @@
-﻿using BanHub.WebCore.Shared.Commands;
+﻿using BanHub.WebCore.Server.Commands.Statistics;
 using BanHub.WebCore.Shared.Models.Shared;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +19,7 @@ public class StatisticController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<Statistic>> Statistics()
     {
-        var result = await _mediator.Send(new GetStatisticsQueryCommand());
+        var result = await _mediator.Send(new GetStatisticsCommand());
         return Ok(result);
     }
 }
