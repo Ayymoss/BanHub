@@ -1,4 +1,4 @@
-﻿using BanHub.WebCore.Server.Commands.Statistics;
+﻿using BanHub.WebCore.Server.Mediatr.Commands.Requests.Statistics;
 using BanHub.WebCore.Shared.Models.Shared;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

@@ -1,6 +1,6 @@
 ﻿using BanHub.WebCore.Client.Components.Dialogs;
 using BanHub.WebCore.Client.Services.RestEase.Pages;
-using BanHub.WebCore.Shared.Commands.Penalty;
+using BanHub.WebCore.Shared.Mediatr.Commands.Penalty;
 using BanHub.WebCore.Shared.Models.PenaltiesView;
 using BanHubData.Commands.Penalty;
 using Humanizer;

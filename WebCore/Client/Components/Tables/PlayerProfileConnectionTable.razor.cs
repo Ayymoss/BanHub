@@ -1,5 +1,5 @@
 ﻿using BanHub.WebCore.Client.Services.RestEase.Pages;
-using BanHub.WebCore.Shared.Commands.PlayerProfile;
+using BanHub.WebCore.Shared.Mediatr.Commands.PlayerProfile;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
 using Microsoft.AspNetCore.Components;
 using Radzen;

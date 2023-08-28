@@ -1,5 +1,5 @@
 ﻿using BanHub.WebCore.Client.Interfaces.RestEase;
-using BanHub.WebCore.Shared.Commands;
+using BanHub.WebCore.Shared.Mediatr.Commands;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHub.WebCore.Client.Utilities;
 using RestEase;

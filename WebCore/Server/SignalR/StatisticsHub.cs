@@ -1,4 +1,4 @@
-﻿using BanHub.WebCore.Server.Commands.Statistics;
+﻿using BanHub.WebCore.Server.Mediatr.Commands.Requests.Statistics;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
 

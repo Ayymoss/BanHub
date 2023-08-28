@@ -1,5 +1,5 @@
 ﻿using BanHub.WebCore.Server.Interfaces;
-using BanHub.WebCore.Server.Notifications.Statistics;
+using BanHub.WebCore.Server.Mediatr.Commands.Events.Statistics;
 using BanHub.WebCore.Server.Services;
 using BanHubData.Commands.Heartbeat;
 using BanHubData.Enums;

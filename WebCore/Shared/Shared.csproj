@@ -1,23 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>BanHub.WebCore.Shared</RootNamespace>
-    <LangVersion>11</LangVersion>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>BanHub.WebCore.Shared</RootNamespace>
+        <LangVersion>11</LangVersion>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <SupportedPlatform Include="browser" />
-  </ItemGroup>
+    <ItemGroup>
+        <SupportedPlatform Include="browser"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="MediatR.Contracts" Version="2.0.1" />
-    <PackageReference Include="Radzen.Blazor" Version="4.15.7" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="MediatR.Contracts" Version="2.0.1"/>
+        <PackageReference Include="Radzen.Blazor" Version="4.15.7"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Data\BanHubData\BanHubData.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\Data\BanHubData\BanHubData.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Mediatr\" />
+    </ItemGroup>
+
 </Project>

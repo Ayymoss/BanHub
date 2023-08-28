@@ -1,6 +1,6 @@
 ﻿using BanHub.WebCore.Server.Services;
-using BanHub.WebCore.Shared.Commands.Chat;
-using BanHub.WebCore.Shared.Commands.PlayerProfile;
+using BanHub.WebCore.Shared.Mediatr.Commands.Chat;
+using BanHub.WebCore.Shared.Mediatr.Commands.PlayerProfile;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Commands.Chat;

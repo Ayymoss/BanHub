@@ -1,5 +1,5 @@
 ﻿using BanHub.WebCore.Client.Services.RestEase.Pages;
-using BanHub.WebCore.Shared.Commands.Players;
+using BanHub.WebCore.Shared.Mediatr.Commands.Players;
 using BanHub.WebCore.Shared.Models.PlayersView;
 using Microsoft.AspNetCore.Components;
 using Radzen;

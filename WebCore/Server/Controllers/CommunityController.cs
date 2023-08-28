@@ -1,6 +1,6 @@
 ﻿using BanHub.WebCore.Server.Services;
-using BanHub.WebCore.Shared.Commands.Chat;
-using BanHub.WebCore.Shared.Commands.Community;
+using BanHub.WebCore.Shared.Mediatr.Commands.Chat;
+using BanHub.WebCore.Shared.Mediatr.Commands.Community;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Commands.Community;
 using BanHubData.Enums;

@@ -11,7 +11,7 @@ using BanHubData.Commands.Community.Server;
 using BanHubData.Commands.Penalty;
 using BanHubData.Commands.Player;
 using BanHubData.Enums;
-using BanHubData.Notifications.Player;
+using BanHubData.Events.Player;
 using BanHubData.SignalR;
 using Microsoft.Extensions.Logging;
 using SharedLibraryCore;

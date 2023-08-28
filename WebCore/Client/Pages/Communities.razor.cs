@@ -1,5 +1,5 @@
 ﻿using BanHub.WebCore.Client.Services.RestEase.Pages;
-using BanHub.WebCore.Shared.Commands.Community;
+using BanHub.WebCore.Shared.Mediatr.Commands.Community;
 using BanHub.WebCore.Shared.Models.CommunitiesView;
 using Microsoft.AspNetCore.Components;
 using Radzen;

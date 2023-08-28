@@ -1,5 +1,5 @@
 ﻿using BanHub.WebCore.Client.Interfaces.RestEase;
-using BanHub.WebCore.Shared.Commands.PlayerProfile;
+using BanHub.WebCore.Shared.Mediatr.Commands.PlayerProfile;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
 using BanHub.WebCore.Client.Utilities;
 using RestEase;

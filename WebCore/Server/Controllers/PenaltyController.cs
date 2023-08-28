@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using BanHub.WebCore.Server.Services;
-using BanHub.WebCore.Shared.Commands.Penalty;
-using BanHub.WebCore.Shared.Commands.PlayerProfile;
+using BanHub.WebCore.Shared.Mediatr.Commands.Penalty;
+using BanHub.WebCore.Shared.Mediatr.Commands.PlayerProfile;
 using BanHub.WebCore.Shared.Models.PenaltiesView;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Commands.Penalty;

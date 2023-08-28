@@ -1,5 +1,5 @@
 ﻿using BanHubData.Commands.Player;
-using BanHubData.Notifications.Player;
+using BanHubData.Events.Player;
 using RestEase;
 
 namespace BanHub.Interfaces;

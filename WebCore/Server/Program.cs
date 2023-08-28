@@ -43,7 +43,6 @@ builder.Services.AddSingleton<SignedInUsers>();
 builder.Services.AddSingleton<PluginAuthentication>();
 builder.Services.AddSingleton<StatisticsTracking>();
 builder.Services.AddSingleton<ISentimentService, SentimentService>();
-builder.Services.AddSingleton(new DiscordWebhookService(configuration));
 builder.Services.AddSingleton<ICommunityConnectionManager, CommunityConnectionManager>();
 
 builder.Services.AddTransient<ApiKeyMiddleware>();

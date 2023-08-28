@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using BanHub.WebCore.Client.Interfaces.RestEase;
-using BanHub.WebCore.Shared.Commands.Players;
+using BanHub.WebCore.Shared.Mediatr.Commands.Players;
 using BanHub.WebCore.Shared.Models.PlayersView;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHub.WebCore.Client.Utilities;
