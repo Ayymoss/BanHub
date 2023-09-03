@@ -11,4 +11,5 @@ public class StatisticsCache
     public int Players;
     public ConcurrentDictionary<Guid, DateTimeOffset> RecentBans { get; set; } = new();
     public ConcurrentDictionary<string, DateTimeOffset> OnlinePlayers { get; set; } = new();
+    public ConcurrentDictionary<string, int> ServerOnlineCount { get; set; } = new();
 }

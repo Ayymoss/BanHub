@@ -212,12 +212,9 @@ public class Plugin : IPluginV2
                     ? $"[{BanHubConfiguration.Name}] Your instance is active. Penalties and users will be reported to the API."
                     : $"[{BanHubConfiguration.Name}] Not activated. Activate here: https://discord.gg/Arruj6DWvp");
 
-            if (_config.BroadcastGlobalBans)
-            {
-                await _pluginHub.InitializeAsync(manager);
-                _pluginHub.OnGlobalBan += _endpointManager.OnGlobalBan;
-                _pluginHub.OnActivateCommunity += _endpointManager.OnActivateCommunity;
-            }
+            await _pluginHub.InitializeAsync(manager);
+            _pluginHub.OnGlobalBan += _endpointManager.OnGlobalBan;
+            _pluginHub.OnActivateCommunity += _endpointManager.OnActivateCommunity;
 
             _endpointManager.RegisterInteraction(manager);
             await HeartbeatScheduler(CancellationToken.None);

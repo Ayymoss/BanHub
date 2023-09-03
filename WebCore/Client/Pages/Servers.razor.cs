@@ -1,18 +1,18 @@
 ﻿using BanHub.WebCore.Client.Services.RestEase.Pages;
-using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Players;
-using BanHub.WebCore.Shared.Models.PlayersView;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Servers;
+using BanHub.WebCore.Shared.Models.ServersView;
 using Microsoft.AspNetCore.Components;
 using Radzen;
 using Radzen.Blazor;
 
 namespace BanHub.WebCore.Client.Pages;
 
-partial class Players
+partial class Servers
 {
-    [Inject] protected PlayersService PlayersService { get; set; }
+    [Inject] protected ServerService ServerService { get; set; }
 
-    private RadzenDataGrid<Player> _dataGrid;
-    private IEnumerable<Player> _playerTable;
+    private RadzenDataGrid<Server> _dataGrid;
+    private IEnumerable<Server> _playerTable;
     private bool _isLoading = true;
     private int _count;
     private string? _searchString;
@@ -20,7 +20,7 @@ partial class Players
     private async Task LoadData(LoadDataArgs args)
     {
         _isLoading = true;
-        var paginationQuery = new GetPlayersPaginationCommand
+        var paginationQuery = new GetServersPaginationCommand
         {
             Sorts = args.Sorts,
             SearchString = _searchString,
@@ -28,7 +28,7 @@ partial class Players
             Skip = args.Skip ?? 0
         };
 
-        var context = await PlayersService.GetPlayersPaginationAsync(paginationQuery);
+        var context = await ServerService.GetServersPaginationAsync(paginationQuery);
         _playerTable = context.Data;
         _count = context.Count;
         _isLoading = false;

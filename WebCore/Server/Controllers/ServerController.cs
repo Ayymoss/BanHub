@@ -1,4 +1,6 @@
 ﻿using BanHub.WebCore.Server.Services;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Servers;
+using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Enums;
 using BanHubData.Mediatr.Commands.Requests.Community.Server;
 using MediatR;
@@ -12,7 +14,7 @@ public class ServerController : ControllerBase
 {
     private readonly IMediator _mediator;
 
-    public ServerController( IMediator mediator)
+    public ServerController(IMediator mediator)
     {
         _mediator = mediator;
     }
@@ -28,5 +30,13 @@ public class ServerController : ControllerBase
             ControllerEnums.ReturnState.Ok => Ok(),
             _ => BadRequest()
         };
+    }
+
+    [HttpPost("Pagination")]
+    public async Task<ActionResult<PaginationContext<Shared.Models.ServersView.Server>>> GetServersPaginationAsync(
+        [FromBody] GetServersPaginationCommand playersPagination)
+    {
+        var result = await _mediator.Send(playersPagination);
+        return Ok(result);
     }
 }

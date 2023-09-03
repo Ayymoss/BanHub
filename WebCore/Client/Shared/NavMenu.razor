@@ -4,6 +4,8 @@
         <RadzenPanelMenuItem Match="NavLinkMatch.Prefix" Path="/Players" Text="Players" Icon="groups"/>
         <RadzenPanelMenuItem Match="NavLinkMatch.Prefix" Path="/Penalties" Text="Penalties" Icon="report"/>
         <RadzenPanelMenuItem Match="NavLinkMatch.Prefix" Path="/Communities" Text="Communities" Icon="dns"/>
+        <RadzenPanelMenuItem Match="NavLinkMatch.Prefix" Path="/Servers" Text="Servers" Icon="storage"/>
+        <RadzenPanelMenuItem Match="NavLinkMatch.Prefix" Path="/Statistics" Text="Statistics" Icon="query_stats"/>
         <AuthorizeView>
             <Authorized>
                 <RadzenPanelMenuItem Match="NavLinkMatch.Prefix" Path="@($"/Players/{_identity}")" Text="My Profile" Icon="person"/>

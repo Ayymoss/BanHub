@@ -17,7 +17,7 @@ public class PlayersService
 #endif
     private readonly IPlayersService _api = RestClient.For<IPlayersService>(ApiHost);
 
-    public async Task<PaginationContext<Player>> GetPlayersAsync(GetPlayersPaginationCommand playersPagination)
+    public async Task<PaginationContext<Player>> GetPlayersPaginationAsync(GetPlayersPaginationCommand playersPagination)
     {
         try
         {

@@ -42,7 +42,7 @@ builder.Services.AddSingleton<IPluginAuthenticationCache, PluginAuthenticationCa
 builder.Services.AddSingleton<SignedInUsers>();
 builder.Services.AddSingleton<PluginAuthentication>();
 builder.Services.AddSingleton<StatisticsCache>();
-builder.Services.AddSingleton<ISentimentService, SentimentService>();
+builder.Services.AddSingleton<ISentimentModelCache, SentimentModelCache>();
 builder.Services.AddSingleton<ICommunityConnectionManager, CommunityConnectionManager>();
 
 builder.Services.AddTransient<ApiKeyMiddleware>();

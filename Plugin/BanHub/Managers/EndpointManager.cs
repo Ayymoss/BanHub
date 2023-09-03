@@ -13,6 +13,7 @@ using BanHubData.Mediatr.Commands.Requests.Community.Server;
 using BanHubData.Mediatr.Commands.Requests.Penalty;
 using BanHubData.Mediatr.Commands.Requests.Player;
 using BanHubData.SignalR;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Microsoft.Extensions.Logging;
 using SharedLibraryCore;
 using SharedLibraryCore.Database.Models;
@@ -130,7 +131,7 @@ public class EndpointManager
             CommunityGuid = _communitySlim.CommunityGuid,
             ServerId = player.CurrentServer?.Id
         };
-        
+
         _logger.LogDebug("Creating or updating player {Identity}", createOrUpdate.PlayerIdentity); //what does the identity do
         if (await _playerService.CreateOrUpdatePlayerAsync(createOrUpdate) is { } identity) return true;
 
@@ -185,7 +186,6 @@ public class EndpointManager
             if (_chatLock.CurrentCount is 0) _chatLock.Release();
             _logger.LogDebug("Chat message added to queue");
         }
-
     }
 
     public async Task<(bool, Guid?)> AddPlayerPenaltyAsync(string sourcePenaltyType, EFClient origin, EFClient target,
@@ -342,11 +342,25 @@ public class EndpointManager
 
     public void OnGlobalBan(BroadcastGlobalBan ban, IManager manager)
     {
-        var servers = manager.GetServers();
+        if (_banHubConfiguration.BroadcastGlobalBans)
+        {
+            var servers = manager.GetServers();
 
-        foreach (var server in servers)
-            server.Broadcast(_banHubConfiguration.Translations.BroadcastGlobalBan
-                .FormatExt(_banHubConfiguration.Translations.BanHubName, ban.UserName, ban.Identity));
+            foreach (var server in servers)
+                server.Broadcast(_banHubConfiguration.Translations.BroadcastGlobalBan
+                    .FormatExt(_banHubConfiguration.Translations.BanHubName, ban.UserName, ban.Identity));
+        }
+
+        if (!_banHubConfiguration.NotifyOnlyMode)
+        {
+            var guid = ban.Identity.Split(":").FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(guid))
+            {
+                var clients = manager.GetActiveClients();
+                var target = clients.FirstOrDefault(x => x.GuidString == guid);
+                target?.Kick("^1Globally banned!^7\nBanHub.gg", SharedLibraryCore.Utilities.IW4MAdminClient(target.CurrentServer));
+            }
+        }
 
         _logger.LogDebug("Global ban received and broadcasted");
     }

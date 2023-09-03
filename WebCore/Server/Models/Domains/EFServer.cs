@@ -39,6 +39,11 @@ public class EFServer
     public required DateTimeOffset Updated { get; set; }
 
     /// <summary>
+    /// The maximum number of players allowed on the server.
+    /// </summary>
+    public int MaxPlayers { get; set; } = 0; // TODO: Remove this for live
+
+    /// <summary>
     /// Current server associated with instance.
     /// </summary>
     public int CommunityId { get; set; }

@@ -1,7 +1,6 @@
 ﻿using BanHub.WebCore.Server.Context;
-using BanHub.WebCore.Server.Interfaces;
+using BanHub.WebCore.Server.Mediatr.Handlers.Events.Services;
 using BanHub.WebCore.Server.Models.Domains;
-using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Players;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -11,12 +10,12 @@ namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Chat;
 public class GetPlayerChatSentimentScoreHandler : IRequestHandler<GetPlayerChatSentimentScoreCommand, float?>
 {
     private readonly DataContext _context;
-    private readonly ISentimentService _sentimentService;
+    private readonly IMediator _mediator;
 
-    public GetPlayerChatSentimentScoreHandler(DataContext context, ISentimentService sentimentService)
+    public GetPlayerChatSentimentScoreHandler(DataContext context, IMediator mediator)
     {
         _context = context;
-        _sentimentService = sentimentService;
+        _mediator = mediator;
     }
 
     public async Task<float?> Handle(GetPlayerChatSentimentScoreCommand request, CancellationToken cancellationToken)
@@ -49,7 +48,8 @@ public class GetPlayerChatSentimentScoreHandler : IRequestHandler<GetPlayerChatS
 
         if (newPlayerChats.Count < 10) return currentSentiment.Sentiment;
 
-        var newSentiment = _sentimentService.CalculateChatsSentiment(newPlayerChats.Select(x => new SentimentService.Message(x.Message)));
+        var newSentiment = await _mediator.Send(new CalculateChatSentimentCommand
+            {Messages = newPlayerChats.Select(x => new Message(x.Message))}, cancellationToken);
 
         currentSentiment.Sentiment = (currentSentiment.Sentiment * currentSentiment.ChatCount + newSentiment * newPlayerChats.Count) /
                                      (currentSentiment.ChatCount + newPlayerChats.Count);

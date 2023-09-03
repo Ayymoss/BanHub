@@ -2,6 +2,7 @@
 using BanHub.WebCore.Shared.Mediatr.Commands.Requests.PlayerProfile;
 using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Players;
 using BanHub.WebCore.Shared.Models.PlayersView;
+using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Enums;
 using BanHubData.Mediatr.Commands.Events.Player;
 using BanHubData.Mediatr.Commands.Requests.Player;
@@ -32,7 +33,7 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost("Pagination")]
-    public async Task<ActionResult<IEnumerable<Player>>> GetPlayersPaginationAsync(
+    public async Task<ActionResult<PaginationContext<Player>>> GetPlayersPaginationAsync(
         [FromBody] GetPlayersPaginationCommand playersPagination)
     {
         var result = await _mediator.Send(playersPagination);

@@ -129,7 +129,7 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
             await _hubContext.Clients.All.SendAsync(SignalRMethods.PluginMethods.OnGlobalBan, new BroadcastGlobalBan
             {
                 Identity = target.Identity,
-                UserName = target.UserName
+                UserName = target.UserName,
             }, cancellationToken: cancellationToken);
             await _mediator.Publish(new UpdateRecentBansNotification
             {

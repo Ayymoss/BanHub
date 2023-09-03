@@ -1,13 +1,14 @@
 ﻿using BanHub.WebCore.Server.Mediatr.Commands.Events.Statistics;
 using BanHub.WebCore.Server.Mediatr.Commands.Requests.Statistics;
 using BanHub.WebCore.Server.Services;
+using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Servers;
 using BanHub.WebCore.Shared.Models.Shared;
 using MediatR;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Statistics;
 
 public class StatisticHandler : IRequestHandler<GetStatisticsCommand, Statistic>, IRequestHandler<GetOnlinePlayersCommand, int>,
-    IRequestHandler<GetRecentBansCommand, int>
+    IRequestHandler<GetRecentBansCommand, int>, IRequestHandler<GetServerOnlineCountsCommand, Dictionary<string, int>>
 {
     private readonly StatisticsCache _statisticsCache;
     private readonly IMediator _mediator;
@@ -39,5 +40,11 @@ public class StatisticHandler : IRequestHandler<GetStatisticsCommand, Statistic>
     public Task<int> Handle(GetRecentBansCommand request, CancellationToken cancellationToken)
     {
         return Task.FromResult(_statisticsCache.RecentBans.Count);
+    }
+
+    public Task<Dictionary<string, int>> Handle(GetServerOnlineCountsCommand request, CancellationToken cancellationToken)
+    {
+        var serverOnlineCount = new Dictionary<string, int>(_statisticsCache.ServerOnlineCount);
+        return Task.FromResult(serverOnlineCount);
     }
 }
