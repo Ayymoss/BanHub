@@ -6,7 +6,7 @@ using BanHub.Services;
 using BanHub.SignalR;
 using BanHubData.Enums;
 using BanHubData.Mediatr.Commands.Requests.Community;
-using BanHubData.Mediatr.Commands.Requests.Community.Server;
+using BanHubData.Mediatr.Commands.Requests.Server;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog.Context;
@@ -173,6 +173,7 @@ public class Plugin : IPluginV2
             _communitySlim.CommunityGuid = Guid.Parse(_appConfig.Id);
             _communitySlim.CommunityIp = manager.ExternalIPAddress;
             _communitySlim.ApiKey = _config.ApiKey;
+            _communitySlim.PluginVersion = Version;
 
             var portRaw = _appConfig.WebfrontBindUrl
                 .Replace("/", "")
@@ -183,7 +184,6 @@ public class Plugin : IPluginV2
             // We need a copy of this since we don't really want the other values being sent with each request.
             var instanceCopy = new CreateOrUpdateCommunityCommand
             {
-                PluginVersion = new Version(Version),
                 CommunityGuid = _communitySlim.CommunityGuid,
                 CommunityIp = _communitySlim.CommunityIp,
                 CommunityWebsite = _config.CommunityWebsite,
@@ -236,8 +236,8 @@ public class Plugin : IPluginV2
 
     private async Task HeartbeatScheduler(CancellationToken token)
     {
-        await _heartbeatManager.CommunityHeartbeatAsync(Version);
-        if (_communitySlim.Active) await _heartbeatManager.ClientHeartbeatAsync(Version);
+        await _heartbeatManager.CommunityHeartbeatAsync();
+        if (_communitySlim.Active) await _heartbeatManager.ClientHeartbeatAsync();
         SharedLibraryCore.Utilities.ExecuteAfterDelay(TimeSpan.FromMinutes(4), HeartbeatScheduler, CancellationToken.None);
     }
 }

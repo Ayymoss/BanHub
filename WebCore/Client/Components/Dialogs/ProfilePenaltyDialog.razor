@@ -12,7 +12,7 @@
             <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" Gap="0">
                 <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.Subtitle2" class="rz-color-primary rz-mb-0" Text="Penalty ID"/>
                 <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.Body2" class="rz-text-tertiary-color rz-mb-0">@Penalty.PenaltyGuid</RadzenText>
-                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem">
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Wrap="FlexWrap.Wrap" Gap="1rem">
                     <EnumMudChip Penalty="@Penalty.PenaltyScope"/>
                     <EnumMudChip Penalty="@Penalty.PenaltyType"/>
                     <EnumMudChip Penalty="@Penalty.PenaltyStatus"/>
@@ -66,7 +66,9 @@
     <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Orientation="Orientation.Vertical">
         @if (Penalty.Evidence is not null)
         {
-            <iframe src="https://www.youtube.com/embed/@Penalty.Evidence" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="height:489px;width:870px"></iframe>
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/@Penalty.Evidence" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
         }
         else
         {
@@ -87,3 +89,21 @@
         </AuthorizeView>
     </RadzenStack>
 </RadzenCard>
+
+<style>
+    .video-container {
+      position: relative;
+      width: 100%; /* Optional based on your layout needs */
+      padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+      height: 0; /* If you want text above your iframe, adjust this value */
+      overflow: hidden;
+    }
+    
+    .video-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+</style>

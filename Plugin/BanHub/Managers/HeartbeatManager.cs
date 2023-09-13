@@ -22,18 +22,17 @@ public class HeartbeatManager
         _logger = logger;
     }
 
-    public async Task CommunityHeartbeatAsync(string version)
+    public async Task CommunityHeartbeatAsync()
     {
         await _pluginHub.Heartbeat(new CommunityHeartbeatCommand
         {
-            PluginVersion = new Version(version),
             ApiKey = _communitySlim.ApiKey,
             CommunityGuid = _communitySlim.CommunityGuid
         });
         _logger.LogDebug("Community heartbeat sent");
     }
 
-    public async Task ClientHeartbeatAsync(string version)
+    public async Task ClientHeartbeatAsync()
     {
         if (!_communitySlim.Active) return;
 
@@ -41,7 +40,6 @@ public class HeartbeatManager
         var players = _endpointManager.Profiles.Select(x => x.Value).ToList();
         await _pluginHub.Heartbeat(new PlayersHeartbeatCommand
         {
-            PluginVersion = new Version(version),
             CommunityGuid = _communitySlim.CommunityGuid,
             PlayerIdentities = players
         });

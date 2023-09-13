@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using BanHubData.Enums;
 
-namespace BanHub.WebCore.Server.Models.Domains;
+namespace BanHub.WebCore.Server.Domains;
 
 /// <summary>
 /// Table for all infractions 

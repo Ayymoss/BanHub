@@ -4,7 +4,7 @@
 <PageTitle>Communities | Ban Hub</PageTitle>
 
 <RadzenCard>
-    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap" class="rz-mb-4">
         <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.DisplayH4" Text="Communities" class="rz-mb-0 rz-mt-2"/>
         <RadzenFormField Text="Search" Variant="Variant.Outlined">
             <ChildContent>
@@ -27,32 +27,32 @@
                                   MouseEnter="@(args => ShowTooltip(args, new TooltipOptions {Position = TooltipPosition.Top}, context.Active ? "Instance Active" : "Instance Not Active"))"/>
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Community" Property="CommunityGuid" Title="ID">
+            <RadzenDataGridColumn TItem="Community" Property="CommunityGuid" Title="ID" MinWidth="120px">
                 <Template Context="context">
                     @context.CommunityGuid
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Community" Property="CommunityName" Title="Community">
+            <RadzenDataGridColumn TItem="Community" Property="CommunityName" Title="Community" MinWidth="120px">
                 <Template Context="context">
                     <RadzenLink Path="@($"/Communities/{context.CommunityGuid}")" Text="@context.CommunityName"/>
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Community" Property="CommunityWebsite" Title="Website">
+            <RadzenDataGridColumn TItem="Community" Property="CommunityWebsite" Title="Website" MinWidth="120px">
                 <Template Context="context">
                     <RadzenLink Path="@($"https://{context.CommunityWebsite}/")" Text="@context.CommunityWebsite"/>
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Community" Property="ServerCount" Title="Servers">
+            <RadzenDataGridColumn TItem="Community" Property="ServerCount" Title="Servers" MinWidth="120px">
                 <Template Context="context">
                     @context.ServerCount
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Community" Property="HeartBeat" Title="Response" SortOrder="SortOrder.Descending">
+            <RadzenDataGridColumn TItem="Community" Property="HeartBeat" Title="Response" SortOrder="SortOrder.Descending" MinWidth="120px">
                 <Template Context="context">
                     @context.HeartBeat.ToString("yyyy-MM-dd HH:mm:ss")
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Community" Property="Created" Title="Created">
+            <RadzenDataGridColumn TItem="Community" Property="Created" Title="Created" MinWidth="120px">
                 <Template Context="context">
                     @context.Created.ToString("yyyy-MM-dd HH:mm:ss")
                 </Template>

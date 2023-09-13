@@ -1,6 +1,7 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Mediatr.Handlers.Events.Services;
-using BanHub.WebCore.Server.Models.Domains;
+using BanHub.WebCore.Server.Domains;
+using BanHub.WebCore.Server.Mediatr.Commands.Requests;
 using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Players;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

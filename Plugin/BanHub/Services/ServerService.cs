@@ -2,8 +2,9 @@
 using System.Text.Json;
 using BanHub.Configuration;
 using BanHub.Interfaces;
+using BanHub.Models;
 using BanHub.Utilities;
-using BanHubData.Mediatr.Commands.Requests.Community.Server;
+using BanHubData.Mediatr.Commands.Requests.Server;
 using Humanizer;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -21,7 +22,6 @@ public class ServerService
 #endif
 
     private readonly IServerService _api;
-    private readonly BanHubConfiguration _banHubConfiguration;
     private readonly ILogger<ServerService> _logger;
 
     private readonly AsyncRetryPolicy _retryPolicy = Policy
@@ -33,11 +33,12 @@ public class ServerService
                                   $"Retrying in {retryDelay.Humanize()}...");
             });
 
-    public ServerService(BanHubConfiguration banHubConfiguration, ILogger<ServerService> logger)
+    public ServerService(BanHubConfiguration banHubConfiguration, ILogger<ServerService> logger, CommunitySlim communitySlim)
     {
-        _banHubConfiguration = banHubConfiguration;
         _logger = logger;
         _api = RestClient.For<IServerService>(ApiHost);
+        _api.PluginVersion = communitySlim.PluginVersion;
+        _api.ApiToken = banHubConfiguration.ApiKey.ToString();
     }
 
     public async Task<bool> PostServer(CreateOrUpdateServerCommand server)
@@ -46,7 +47,7 @@ public class ServerService
         {
             return await _retryPolicy.ExecuteAsync(async () =>
             {
-                var response = await _api.CreateOrUpdateServerAsync(_banHubConfiguration.ApiKey.ToString(), server);
+                var response = await _api.CreateOrUpdateServerAsync(server);
                 if (!response.IsSuccessStatusCode)
                 {
                     var body = await response.Content.ReadAsStringAsync();

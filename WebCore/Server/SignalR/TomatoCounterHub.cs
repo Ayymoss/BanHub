@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using BanHub.WebCore.Server.Context;
-using BanHub.WebCore.Server.Models.Domains;
+using BanHub.WebCore.Server.Domains;
 using BanHubData.SignalR;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;

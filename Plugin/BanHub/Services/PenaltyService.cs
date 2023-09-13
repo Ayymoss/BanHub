@@ -4,6 +4,7 @@ using System.Text.Json;
 using BanHub.Commands;
 using BanHub.Configuration;
 using BanHub.Interfaces;
+using BanHub.Models;
 using BanHub.Utilities;
 using BanHubData.Mediatr.Commands.Requests.Penalty;
 using Humanizer;
@@ -23,7 +24,6 @@ public class PenaltyService
 #endif
 
     private readonly IPenaltyService _api;
-    private readonly BanHubConfiguration _banHubConfiguration;
     private readonly ILogger<PenaltyService> _logger;
 
     private readonly AsyncRetryPolicy _retryPolicy = Policy
@@ -36,11 +36,12 @@ public class PenaltyService
                     $"Retrying in {retryDelay.Humanize()}...");
             });
 
-    public PenaltyService(BanHubConfiguration banHubConfiguration, ILogger<PenaltyService> logger)
+    public PenaltyService(BanHubConfiguration banHubConfiguration, ILogger<PenaltyService> logger, CommunitySlim communitySlim)
     {
-        _banHubConfiguration = banHubConfiguration;
         _logger = logger;
         _api = RestClient.For<IPenaltyService>(ApiHost);
+        _api.PluginVersion = communitySlim.PluginVersion;
+        _api.ApiToken = banHubConfiguration.ApiKey.ToString();
     }
 
     public async Task<(bool, Guid?)> AddPlayerPenaltyAsync(AddPlayerPenaltyCommand penalty)
@@ -49,7 +50,7 @@ public class PenaltyService
         {
             return await _retryPolicy.ExecuteAsync(async () =>
             {
-                var response = await _api.AddPlayerPenaltyAsync(_banHubConfiguration.ApiKey.ToString(), penalty);
+                var response = await _api.AddPlayerPenaltyAsync(penalty);
                 var preGuid = await response.Content.ReadAsStringAsync();
                 var parsedState = Guid.TryParse(preGuid.Replace("\"", ""), out var guid);
 
@@ -75,7 +76,7 @@ public class PenaltyService
     {
         try
         {
-            var response = await _api.AddPlayerPenaltyEvidenceAsync(_banHubConfiguration.ApiKey.ToString(), penalty);
+            var response = await _api.AddPlayerPenaltyEvidenceAsync(penalty);
 
             if (!response.IsSuccessStatusCode)
             {

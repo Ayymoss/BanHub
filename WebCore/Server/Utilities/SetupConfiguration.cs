@@ -10,11 +10,11 @@ public static class SetupConfiguration
     {
         var workingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-        if (File.Exists(Path.Join(workingDirectory, "GlobalConfiguration.json"))) return;
+        if (File.Exists(Path.Join(workingDirectory, "Configuration", "GlobalConfiguration.json"))) return;
 
         var configuration = new Configuration();
 
-        var fileName = Path.Join(workingDirectory, "GlobalConfiguration.json");
+        var fileName = Path.Join(workingDirectory, "Configuration", "GlobalConfiguration.json");
         await using var createStream = File.Create(fileName);
         await JsonSerializer.SerializeAsync(createStream, configuration,
             new JsonSerializerOptions {WriteIndented = true});
@@ -27,7 +27,7 @@ public static class SetupConfiguration
     public static Configuration ReadConfiguration()
     {
         var workingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        var fileName = Path.Join(workingDirectory, "GlobalConfiguration.json");
+        var fileName = Path.Join(workingDirectory, "Configuration", "GlobalConfiguration.json");
         var jsonString = File.ReadAllText(fileName);
         var configuration = JsonSerializer.Deserialize<Configuration>(jsonString);
 
@@ -50,7 +50,7 @@ public static class SetupConfiguration
     private static async void MigrateConfigurationAsync(Configuration configuration, byte newConfigVersion)
     {
         var workingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        File.Delete(Path.Join(workingDirectory, "GlobalConfiguration.json"));
+        File.Delete(Path.Join(workingDirectory, "Configuration", "GlobalConfiguration.json"));
 
         var configPostMig = new Configuration
         {
@@ -61,7 +61,7 @@ public static class SetupConfiguration
             Database = configuration.Database
         };
 
-        var fileName = Path.Join(workingDirectory, "GlobalConfiguration.json");
+        var fileName = Path.Join(workingDirectory, "Configuration", "GlobalConfiguration.json");
         await using var createStream = File.Create(fileName);
         await JsonSerializer.SerializeAsync(createStream, configPostMig,
             new JsonSerializerOptions {WriteIndented = true});

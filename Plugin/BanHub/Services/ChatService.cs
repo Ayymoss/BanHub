@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using BanHub.Configuration;
 using BanHub.Interfaces;
+using BanHub.Models;
 using BanHub.Utilities;
 using BanHubData.Mediatr.Commands.Requests.Chat;
 using Humanizer;
@@ -19,7 +20,6 @@ public class ChatService
 #endif
 
     private readonly IChatService _api;
-    private readonly BanHubConfiguration _banHubConfiguration;
 
     private readonly AsyncRetryPolicy _retryPolicy = Policy
         .Handle<HttpRequestException>(e => e.InnerException is SocketException)
@@ -30,10 +30,11 @@ public class ChatService
                                   $"Retrying in {retryDelay.Humanize()}...");
             });
 
-    public ChatService(BanHubConfiguration banHubConfiguration)
+    public ChatService(BanHubConfiguration banHubConfiguration, CommunitySlim communitySlim)
     {
-        _banHubConfiguration = banHubConfiguration;
         _api = RestClient.For<IChatService>(ApiHost);
+        _api.PluginVersion = communitySlim.PluginVersion;
+        _api.ApiToken = banHubConfiguration.ApiKey.ToString();
     }
 
     public async Task<bool> AddCommunityChatMessagesAsync(AddCommunityChatMessagesCommand identity)
@@ -42,7 +43,7 @@ public class ChatService
         {
             return await _retryPolicy.ExecuteAsync(async () =>
             {
-                var response = await _api.AddInstanceChatMessagesAsync(identity, _banHubConfiguration.ApiKey.ToString());
+                var response = await _api.AddInstanceChatMessagesAsync(identity);
                 return response.IsSuccessStatusCode;
             });
         }

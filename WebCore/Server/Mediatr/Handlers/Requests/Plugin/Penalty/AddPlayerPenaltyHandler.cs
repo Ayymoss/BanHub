@@ -1,7 +1,8 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Mediatr.Commands.Events.Services.Discord;
 using BanHub.WebCore.Server.Mediatr.Commands.Events.Statistics;
-using BanHub.WebCore.Server.Models.Domains;
+using BanHub.WebCore.Server.Domains;
+using BanHub.WebCore.Server.Mediatr.Commands.Events.Services.Statistics;
 using BanHub.WebCore.Server.SignalR;
 using BanHubData.Enums;
 using BanHubData.Mediatr.Commands.Requests.Penalty;

@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using BanHub.WebCore.Server.Domains;
 using BanHubData.Enums;
 
-namespace BanHub.WebCore.Server.Models.Domains;
+namespace BanHub.WebCore.Server.Domains;
 
 /// <summary>
 /// Table for all players

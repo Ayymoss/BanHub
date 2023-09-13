@@ -4,7 +4,7 @@
 <PageTitle>Players | Ban Hub</PageTitle>
 
 <RadzenCard>
-    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-4">
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap" class="rz-mb-4">
         <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.DisplayH4" Text="Players" class="rz-mb-0 rz-mt-2"/>
         <RadzenFormField Text="Search" Variant="Variant.Outlined">
             <ChildContent>
@@ -21,25 +21,25 @@
                     PagingSummaryFormat="Displaying page {0} of {1} <b>(total {2} records)</b>" AllowColumnResize="true"
                     Style="min-height: 200px">
         <Columns>
-            <RadzenDataGridColumn TItem="Player" Property="Identity" Title="ID"/>
-            <RadzenDataGridColumn TItem="Player" Property="UserName" Title="Name">
+            <RadzenDataGridColumn TItem="Player" Property="Identity" Title="ID" MinWidth="120px"/>
+            <RadzenDataGridColumn TItem="Player" Property="UserName" Title="Name" MinWidth="120px">
                 <Template Context="context">
                     <RadzenLink Path="@($"/Players/{context.Identity}")" Text="@context.UserName"/>
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Player" Property="Penalties" Title="Penalties">
+            <RadzenDataGridColumn TItem="Player" Property="Penalties" Title="Penalties" MinWidth="120px">
                 <Template Context="context">
                     @(context.Penalties is 0 ? "None" : context.Penalties)
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Player" Property="Heartbeat" Title="Online" SortOrder="SortOrder.Descending">
+            <RadzenDataGridColumn TItem="Player" Property="Heartbeat" Title="Online" SortOrder="SortOrder.Descending" MinWidth="85px">
                 <Template Context="context">
                     <RadzenBadge BadgeStyle="@(context.IsOnline ? BadgeStyle.Success : BadgeStyle.Danger)" Shade="Shade.Lighter"
                                  IsPill="true" Variant="Variant.Flat" Style="padding: 0.2rem 0.4rem 0.10rem 0.4rem"
                                  Text="@(context.IsOnline ? "Online" : "Offline")"/>
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Player" Property="Created" Title="Created">
+            <RadzenDataGridColumn TItem="Player" Property="Created" Title="Created" MinWidth="120px">
                 <Template Context="context">
                     @context.Created.Humanize()
                 </Template>

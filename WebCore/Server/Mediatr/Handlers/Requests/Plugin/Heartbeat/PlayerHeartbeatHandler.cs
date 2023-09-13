@@ -1,6 +1,5 @@
 ﻿using BanHub.WebCore.Server.Context;
-using BanHub.WebCore.Server.Mediatr.Commands.Events.Statistics;
-using BanHub.WebCore.Server.Services;
+using BanHub.WebCore.Server.Mediatr.Commands.Events.Services.Statistics;
 using BanHub.WebCore.Server.Utilities;
 using BanHubData.Enums;
 using BanHubData.Mediatr.Commands.Requests.Heartbeat;
@@ -24,8 +23,6 @@ public class PlayerHeartbeatHandler : IRequestHandler<PlayersHeartbeatCommand, S
 
     public async Task<SignalREnums.ReturnState> Handle(PlayersHeartbeatCommand request, CancellationToken cancellationToken)
     {
-        if (request.PluginVersion < _config.PluginVersion) return SignalREnums.ReturnState.VersionToOld;
-
         var identities = request.PlayerIdentities
             .ToArray(); // Performance optimization for PostgreSQL's "ANY" operator rather than list converting to "IN"
         var profiles = await _context.Players

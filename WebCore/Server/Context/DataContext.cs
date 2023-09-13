@@ -1,4 +1,5 @@
-﻿using BanHub.WebCore.Server.Models.Domains;
+﻿using BanHub.WebCore.Server.Domains;
+using BanHub.WebCore.Server.Domains;
 using BanHubData.Enums;
 using Microsoft.EntityFrameworkCore;
 

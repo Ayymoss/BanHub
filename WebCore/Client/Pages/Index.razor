@@ -3,7 +3,7 @@
 <PageTitle>Index | Ban Hub</PageTitle>
 
 <RadzenRow JustifyContent="JustifyContent.SpaceEvenly">
-    <RadzenColumn Size="6" SizeXX="5">
+    <RadzenColumn SizeSM="12" SizeMD="6" SizeXX="5">
         <RadzenCard>
             <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.DisplayH3" Text="Welcome to Ban Hub!"/>
             <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.DisplayH6" Text="We provide a service which aims to clean up the state of 3rd party Call of Duty clients."/>
@@ -14,12 +14,12 @@
             <IndexPenaltyPreviewTable/>
         </RadzenCard>
     </RadzenColumn>
-    <RadzenColumn Size="6" SizeXX="5">
+    <RadzenColumn SizeSM="12" SizeMD="6" SizeXX="5">
         <RadzenRow>
             <RadzenStack Orientation="Orientation.Vertical">
                 <RadzenColumn Size="6">
                     <RadzenRow JustifyContent="JustifyContent.Start">
-                        <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3">
+                        <RadzenColumn>
                             <RadzenCard>
                                 <RadzenStack Orientation="Orientation.Vertical" Gap="0">
                                     <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@_statistic.PenaltyCount.ToString("N0")"/>
@@ -27,7 +27,7 @@
                                 </RadzenStack>
                             </RadzenCard>
                         </RadzenColumn>
-                        <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3">
+                        <RadzenColumn>
                             <RadzenCard>
                                 <RadzenStack Orientation="Orientation.Vertical" Gap="0">
                                     <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@_statistic.PlayerCount.ToString("N0")"/>
@@ -35,7 +35,7 @@
                                 </RadzenStack>
                             </RadzenCard>
                         </RadzenColumn>
-                        <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3">
+                        <RadzenColumn>
                             <RadzenCard>
                                 <RadzenStack Orientation="Orientation.Vertical" Gap="0">
                                     <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@_statistic.CommunityCount.ToString("N0")"/>
@@ -43,7 +43,7 @@
                                 </RadzenStack>
                             </RadzenCard>
                         </RadzenColumn>
-                        <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3">
+                        <RadzenColumn>
                             <RadzenCard>
                                 <RadzenStack Orientation="Orientation.Vertical" Gap="0">
                                     <RadzenText TextStyle="TextStyle.DisplayH5" class="rz-color-primary" Style="margin: 0" Text="@_statistic.ServerCount.ToString("N0")"/>

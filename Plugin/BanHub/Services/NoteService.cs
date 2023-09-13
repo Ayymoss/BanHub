@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using BanHub.Configuration;
 using BanHub.Interfaces;
+using BanHub.Models;
 using Humanizer;
 using Polly;
 using Polly.Retry;
@@ -18,7 +19,6 @@ public class NoteService
 #endif
 
     private readonly INoteService _api;
-    private readonly BanHubConfiguration _banHubConfiguration;
 
     private readonly AsyncRetryPolicy _retryPolicy = Policy
         .Handle<HttpRequestException>(e => e.InnerException is SocketException)
@@ -29,10 +29,11 @@ public class NoteService
                                   $"Retrying in {retryDelay.Humanize()}...");
             });
 
-    public NoteService(BanHubConfiguration banHubConfiguration)
+    public NoteService(BanHubConfiguration banHubConfiguration, CommunitySlim communitySlim)
     {
-        _banHubConfiguration = banHubConfiguration;
         _api = RestClient.For<INoteService>(ApiHost);
+        _api.PluginVersion = communitySlim.PluginVersion;
+        _api.ApiToken = banHubConfiguration.ApiKey.ToString();
     }
 
     public async Task<int> GetUserNotesCountAsync(string identity)

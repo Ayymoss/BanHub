@@ -1,13 +1,12 @@
 ﻿using BanHub.WebCore.Server.Context;
-using BanHub.WebCore.Server.Interfaces;
-using BanHub.WebCore.Server.Mediatr.Commands.Events.Statistics;
-using BanHub.WebCore.Server.Models.Domains;
+using BanHub.WebCore.Server.Domains;
+using BanHub.WebCore.Server.Mediatr.Commands.Events.Services.Statistics;
 using BanHubData.Enums;
-using BanHubData.Mediatr.Commands.Requests.Community.Server;
+using BanHubData.Mediatr.Commands.Requests.Server;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Plugin.Community.Server;
+namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Plugin.Server;
 
 public class CreateOrUpdateServerHandler : IRequestHandler<CreateOrUpdateServerCommand, ControllerEnums.ReturnState>
 {

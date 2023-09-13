@@ -1,10 +1,11 @@
 ﻿using BanHub.WebCore.Server.Interfaces;
+using BanHub.WebCore.Server.Mediatr.Commands.Requests;
 using BanHub.WebCore.Server.Mediatr.Handlers.Events.Services;
 using MediatR;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 
-namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Statistics;
+namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Services;
 
 public class CalculateChatSentimentHandler : IRequestHandler<CalculateChatSentimentCommand, float>
 {

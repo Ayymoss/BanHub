@@ -13,23 +13,23 @@
                 PagerHorizontalAlign="HorizontalAlign.Center" PageSizeOptions="new[] {10, 20}" ShowPagingSummary="true"
                 PagingSummaryFormat="Displaying page {0} of {1} <b>(total {2} records)</b>" AllowColumnResize="true" Style="min-height: 200px">
     <Columns>
-        <RadzenDataGridColumn TItem="Connection" Property="CommunityName" Title="Community">
+        <RadzenDataGridColumn TItem="Connection" Property="CommunityName" Title="Community" MinWidth="120px">
             <Template Context="context">
                 <RadzenLink Path="@($"/Communities/{context.CommunityGuid}")" Text="@context.CommunityName"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Connection" Property="ServerName" Title="Server"/>
-        <RadzenDataGridColumn TItem="Connection" Property="ServerGame" Title="Game">
+        <RadzenDataGridColumn TItem="Connection" Property="ServerName" Title="Server" MinWidth="120px"/>
+        <RadzenDataGridColumn TItem="Connection" Property="ServerGame" Title="Game" MinWidth="120px">
             <Template Context="context">
                 @context.ServerGame.GetGameName()
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Connection" Property="ServerIp" Title="Address">
+        <RadzenDataGridColumn TItem="Connection" Property="ServerIp" Title="Address" MinWidth="120px">
             <Template Context="context">
                 @(context.ServerIp.IsInternal() ? context.CommunityIp : context.ServerIp):@context.ServerPort
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Connection" Property="Connected" Title="Connected" SortOrder="SortOrder.Descending">
+        <RadzenDataGridColumn TItem="Connection" Property="Connected" Title="Connected" SortOrder="SortOrder.Descending" MinWidth="120px">
             <Template Context="context">
                 @context.Connected.Humanize()
             </Template>

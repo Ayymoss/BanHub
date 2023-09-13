@@ -23,15 +23,15 @@ public class ChatController : ControllerBase
     }
 
     [HttpPost("AddMessages"), PluginAuthentication]
-    public async Task<IActionResult> AddCommunityChatMessagesAsync([FromQuery] string authToken,
-        [FromBody] AddCommunityChatMessagesCommand request)
+    public async Task<IActionResult> AddCommunityChatMessagesAsync([FromBody] AddCommunityChatMessagesCommand request)
     {
         await _mediator.Send(request);
         return Ok();
     }
 
     [HttpPost("Profile/Chat")]
-    public async Task<ActionResult<PaginationContext<Chat>>> GetChatPaginationAsync([FromBody] GetProfileChatPaginationCommand penaltiesPagination)
+    public async Task<ActionResult<PaginationContext<Chat>>> GetChatPaginationAsync(
+        [FromBody] GetProfileChatPaginationCommand penaltiesPagination)
     {
         var result = await _mediator.Send(penaltiesPagination);
         return Ok(result);
@@ -43,7 +43,7 @@ public class ChatController : ControllerBase
         var result = await _mediator.Send(new GetChatCountCommand {PlayerIdentity = identity});
         return Ok(result);
     }
-    
+
     [HttpPost("Context")]
     public async Task<ActionResult<ChatContextRoot>> GetChatContextAsync([FromBody] GetMessageContextCommand chatMessageContext)
     {

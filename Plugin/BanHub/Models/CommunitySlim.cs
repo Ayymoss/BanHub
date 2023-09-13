@@ -10,5 +10,6 @@ public class CommunitySlim
     public string CommunityIp { get; set; }
     public Guid ApiKey { get; set; }
     public bool Active { get; set; }
+    public string PluginVersion { get; set; }
 }
 

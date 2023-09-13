@@ -1,24 +1,22 @@
-﻿using BanHub.WebCore.Server.Context;
-using BanHub.WebCore.Server.Services;
-using BanHub.WebCore.Shared.Mediatr.Commands.Requests;
+﻿using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Shared.Mediatr.Commands.Requests;
 using BanHub.WebCore.Shared.Models.Shared;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web;
 
 public class GetUserProfileHandler : IRequestHandler<GetUserProfileCommand, WebUser?>
 {
-    private readonly DataContext _context;
-    private readonly SignedInUsers _signedInUsers;
+    private readonly ISignedInUsersManager _signedInUsersManager;
 
-    public GetUserProfileHandler(DataContext context, SignedInUsers signedInUsers)
+    public GetUserProfileHandler(ISignedInUsersManager signedInUsersManager)
     {
-        _context = context;
-        _signedInUsers = signedInUsers;
+        _signedInUsersManager = signedInUsersManager;
     }
 
-    public Task<WebUser?> Handle(GetUserProfileCommand request, CancellationToken cancellationToken) =>
-        Task.FromResult(_signedInUsers.GetSignedInUser(request.SignedInGuid));
+    public Task<WebUser?> Handle(GetUserProfileCommand request, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(_signedInUsersManager.GetSignedInUser(request.SignedInGuid));
+    }
+        
 }

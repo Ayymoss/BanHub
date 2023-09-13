@@ -9,55 +9,48 @@ namespace BanHub.WebCore.Server.Services;
 [AttributeUsage(AttributeTargets.Method)]
 public class PluginAuthentication : Attribute, IAuthorizationFilter
 {
-    /// <summary>  
-    /// Check if user can be authenticated
-    /// </summary>  
     public void OnAuthorization(AuthorizationFilterContext? filterContext)
     {
-        if (filterContext is null) return;
+        if (filterContext?.HttpContext.RequestServices.GetService(typeof(IPluginAuthenticationCache))
+            is not IPluginAuthenticationCache apiKey) return;
 
-        filterContext.HttpContext.Request.Query.TryGetValue("authToken", out var authTokens);
+        filterContext.HttpContext.Request.Headers.TryGetValue("BanHubApiToken", out var authTokens);
         var token = authTokens.FirstOrDefault();
 
-        if (filterContext.HttpContext.RequestServices.GetService(typeof(IPluginAuthenticationCache)) is not IPluginAuthenticationCache apiKey) return;
-
-        if (token is not null)
+        if (token is null)
         {
-            if (IsValidToken(token, apiKey))
+            SetUnauthorizedResponse(filterContext, HttpStatusCode.ExpectationFailed, "Authenticated endpoint. Provide token");
+            return;
+        }
+
+        if (IsValidToken(token, apiKey))
+        {
+            SetAuthorizedResponse(filterContext, token);
+            return;
+        }
+
+        SetUnauthorizedResponse(filterContext, HttpStatusCode.Forbidden, "Unauthorized");
+    }
+
+    private static void SetAuthorizedResponse(ActionContext context, string token)
+    {
+        context.HttpContext.Response.Headers.Add("BanHubApiToken", token);
+        context.HttpContext.Response.Headers.Add("AuthStatus", "Authorized");
+    }
+
+    private static void SetUnauthorizedResponse(AuthorizationFilterContext context, HttpStatusCode statusCode, string reason)
+    {
+        context.HttpContext.Response.StatusCode = (int)statusCode;
+        var responseFeature = context.HttpContext.Features.Get<IHttpResponseFeature>();
+        if (responseFeature is not null) responseFeature.ReasonPhrase = reason;
+        context.Result = new JsonResult(reason)
+        {
+            Value = new
             {
-                filterContext.HttpContext.Response.Headers.Add("authToken", token);
-                filterContext.HttpContext.Response.Headers.Add("AuthStatus", "Authorized");
-                filterContext.HttpContext.Response.Headers.Add("storeAccessiblity", "Authorized");
-                return;
+                Status = "Error",
+                Message = reason
             }
-
-            filterContext.HttpContext.Response.Headers.Add("authToken", token);
-            filterContext.HttpContext.Response.Headers.Add("AuthStatus", "NotAuthorized");
-            filterContext.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-            filterContext.HttpContext.Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = "Unauthorized";
-            filterContext.Result = new JsonResult("Unauthorized")
-            {
-                Value = new
-                {
-                    Status = "Error",
-                    Message = "Unauthorized"
-                }
-            };
-        }
-        else
-        {
-            filterContext.HttpContext.Response.StatusCode = (int)HttpStatusCode.ExpectationFailed;
-            filterContext.HttpContext.Response.HttpContext.Features
-                .Get<IHttpResponseFeature>().ReasonPhrase = "Authenticated endpoint. Provide token";
-            filterContext.Result = new JsonResult("Authenticated endpoint. Provide token")
-            {
-                Value = new
-                {
-                    Status = "Error",
-                    Message = "Authenticated endpoint. Provide token"
-                }
-            };
-        }
+        };
     }
 
     private static bool IsValidToken(string authToken, IPluginAuthenticationCache pluginAuthenticationCache) =>

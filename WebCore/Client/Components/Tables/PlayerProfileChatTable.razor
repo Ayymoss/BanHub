@@ -19,7 +19,7 @@
                               ButtonStyle="ButtonStyle.Primary" Shade="Shade.Lighter" Size="ButtonSize.ExtraSmall"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Chat" Property="Message" Title="Message">
+        <RadzenDataGridColumn TItem="Chat" Property="Message" Title="Message" MinWidth="120px">
             <Template Context="context">
                 @{
                     _chatClickStates.TryAdd(context.Submitted, false);
@@ -35,13 +35,13 @@
                 }
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Chat" Property="ServerName" Title="Server"/>
-        <RadzenDataGridColumn TItem="Chat" Property="CommunityName" Title="Community">
+        <RadzenDataGridColumn TItem="Chat" Property="ServerName" Title="Server" MinWidth="120px"/>
+        <RadzenDataGridColumn TItem="Chat" Property="CommunityName" Title="Community" MinWidth="120px">
             <Template Context="context">
                 <RadzenLink Path="@($"/Players/{context.CommunityGuid}")" Text="@context.CommunityName"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Chat" Property="Submitted" Title="Submitted" SortOrder="SortOrder.Descending">
+        <RadzenDataGridColumn TItem="Chat" Property="Submitted" Title="Submitted" SortOrder="SortOrder.Descending" MinWidth="120px">
             <Template Context="context">
                 @context.Submitted.Humanize()
             </Template>

@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using BanHub.WebCore.Server.Domains;
 
-namespace BanHub.WebCore.Server.Models.Domains;
+namespace BanHub.WebCore.Server.Domains;
 
 /// <summary>
 /// Table for all aliases 

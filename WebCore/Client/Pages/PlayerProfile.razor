@@ -17,46 +17,53 @@
         else
         {
             <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center"
-                         Gap="0.4rem" class="rz-mb-4 rz-mx-1">
-                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+                         Wrap="FlexWrap.Wrap" Gap="0.4rem" class="rz-mb-4 rz-mx-1">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
                     <RadzenText TextStyle="TextStyle.DisplayH4" Text="@_player.UserName" class="rz-base-50 rz-mb-0"/>
 
                     <RadzenBadge BadgeStyle="BadgeStyle.Warning" Shade="Shade.Lighter" IsPill="true" Variant="Variant.Flat"
                                  Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px" Text="@_gameName"/>
                     <RadzenBadge BadgeStyle="BadgeStyle.Primary" Shade="Shade.Lighter" IsPill="true" Variant="Variant.Flat"
-                                 Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px" Text="@_guid"/>
+                                 Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px" Text="@_guid"
+                                 class="rz-display-none rz-display-sm-inline-flex"/>
                     @if (_player.IpAddress is not null)
                     {
                         <RadzenBadge BadgeStyle="BadgeStyle.Light" Shade="Shade.Lighter" IsPill="true" Variant="Variant.Flat"
-                                     Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px" Text="@(_player.IpAddress ?? "Unknown")"/>
+                                     Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px" Text="@(_player.IpAddress ?? "Unknown")"
+                                     class="rz-display-none rz-display-sm-inline-flex"/>
                     }
                 </RadzenStack>
-                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
                     @if (_player.ChatCount > 10)
                     {
-                        <RadzenBadge BadgeStyle="@GetSentimentColour(_player.ChatSentimentScore)" Shade="Shade.Lighter" IsPill="true" 
-                                     Variant="Variant.Flat" Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px" Text="@GetSentimentText(_player.ChatSentimentScore)"/>
+                        <RadzenBadge BadgeStyle="@GetSentimentColour(_player.ChatSentimentScore)" Shade="Shade.Lighter" IsPill="true"
+                                     Variant="Variant.Flat" Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px"
+                                     Text="@GetSentimentText(_player.ChatSentimentScore)" class="rz-display-none rz-display-sm-inline-flex"/>
                     }
                     @if (_player.WebRole is not WebRole.User)
                     {
                         <RadzenBadge BadgeStyle="BadgeStyle.Info" Shade="Shade.Lighter" IsPill="true" Variant="Variant.Flat"
-                                     Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px" Text="@($"Web {_player.WebRole}")"/>
+                                     Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px" Text="@($"Web {_player.WebRole}")"
+                                     class="rz-display-none rz-display-sm-inline-flex"/>
                     }
                     @if (_player.CommunityRole is not CommunityRole.User)
                     {
                         <RadzenBadge BadgeStyle="BadgeStyle.Info" Shade="Shade.Lighter" IsPill="true" Variant="Variant.Flat"
-                                     Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px" Text="@($"Community {_player.CommunityRole}")"/>
+                                     Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px" Text="@($"Community {_player.CommunityRole}")"
+                                     class="rz-display-none rz-display-sm-inline-flex"/>
                     }
                     <RadzenBadge BadgeStyle="@(_player.Connected ? BadgeStyle.Success : BadgeStyle.Danger)" Shade="Shade.Lighter"
                                  IsPill="true" Variant="Variant.Flat" Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px"
-                                 Text="@(_player.Connected ? "Online" : "Offline")"/>
+                                 Text="@(_player.Connected ? "Online" : "Offline")" class="rz-display-none rz-display-sm-inline-flex"/>
                     <RadzenBadge BadgeStyle="@(_player.IsGloballyBanned ? BadgeStyle.Danger : BadgeStyle.Info)" Shade="Shade.Lighter"
                                  IsPill="true" Variant="Variant.Flat" Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px"
                                  Text="@(_player.IsGloballyBanned ? "Globally Banned" : "Compliant")"/>
                     @if (_player.IsGloballyBanned)
                     {
-                        <TomatoButton Identity="@_player.Identity"/>
-                        <a class="rz-button rz-button-md rz-variant-outlined rz-danger rz-shade-default" href="https://discord.gg/UHdqh6ZfjM" target="_blank">Appeal!</a>
+                        <div class="rz-display-none rz-display-sm-inline-flex">
+                            <TomatoButton Identity="@_player.Identity"/>
+                        </div>
+                        <a class="rz-button rz-button-md rz-variant-outlined rz-danger rz-shade-default rz-display-none rz-display-sm-inline-flex" href="https://discord.gg/UHdqh6ZfjM" target="_blank">Appeal!</a>
                     }
                 </RadzenStack>
             </RadzenStack>

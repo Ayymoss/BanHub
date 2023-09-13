@@ -19,13 +19,13 @@
                 <RadzenIcon Icon="@(context.IsPrivate ? "lock" : "public")"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Note" Property="Message" Title="Message"/>
-        <RadzenDataGridColumn TItem="Note" Property="IssuerUserName" Title="Issuer">
+        <RadzenDataGridColumn TItem="Note" Property="Message" Title="Message" MinWidth="120px"/>
+        <RadzenDataGridColumn TItem="Note" Property="IssuerUserName" Title="Issuer" MinWidth="120px">
             <Template Context="context">
                 <RadzenLink Path="@($"/Players/{context.AdminIdentity}")" Text="@context.IssuerUserName"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Note" Property="Created" Title="Created" SortOrder="SortOrder.Descending"/>
+        <RadzenDataGridColumn TItem="Note" Property="Created" Title="Created" SortOrder="SortOrder.Descending" MinWidth="120px"/>
         @if (Privileged)
         {
             <RadzenDataGridColumn TItem="Note" Width="40px" TextAlign="TextAlign.End" Sortable="false" Frozen="true">

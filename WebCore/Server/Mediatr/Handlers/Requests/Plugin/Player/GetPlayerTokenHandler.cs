@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using BanHub.WebCore.Server.Context;
-using BanHub.WebCore.Server.Models.Domains;
+using BanHub.WebCore.Server.Domains;
 using BanHubData.Mediatr.Commands.Requests.Player;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

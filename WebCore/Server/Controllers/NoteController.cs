@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Shared.Mediatr.Commands.Requests.PlayerProfile;
 using BanHub.WebCore.Shared.Models.PlayerProfileView;
@@ -15,12 +16,12 @@ namespace BanHub.WebCore.Server.Controllers;
 public class NoteController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly SignedInUsers _signedInUsers;
+    private readonly ISignedInUsersManager _signedInUsersManager;
 
-    public NoteController(IMediator mediator, SignedInUsers signedInUsers)
+    public NoteController(IMediator mediator, ISignedInUsersManager signedInUsersManager)
     {
         _mediator = mediator;
-        _signedInUsers = signedInUsers;
+        _signedInUsersManager = signedInUsersManager;
     }
 
     [HttpPost] // Authorised endpoint
@@ -30,18 +31,18 @@ public class NoteController : ControllerBase
         var adminIdentity = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         if (adminSignInGuid is null || adminIdentity is null) return Unauthorized("You are not authorised to perform this action");
 
-        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+        var authorised = _signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
                          {
                              CommunityRole.Moderator,
                              CommunityRole.Administrator,
                              CommunityRole.SeniorAdmin,
                              CommunityRole.Owner
-                         }, _signedInUsers.IsUserInCommunityRole) ||
-                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         }, _signedInUsersManager.IsUserInCommunityRole) ||
+                         _signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
                          {
                              WebRole.Admin,
                              WebRole.SuperAdmin
-                         }, _signedInUsers.IsUserInWebRole);
+                         }, _signedInUsersManager.IsUserInWebRole);
 
         if (!authorised) return Unauthorized("You are not authorised to perform this action");
         request.AdminIdentity = adminIdentity;
@@ -59,18 +60,18 @@ public class NoteController : ControllerBase
         if (adminSignInGuid is null || adminName is null || adminNameIdentity is null)
             return Unauthorized("You are not authorised to perform this action");
 
-        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+        var authorised = _signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
                          {
                              CommunityRole.Moderator,
                              CommunityRole.Administrator,
                              CommunityRole.SeniorAdmin,
                              CommunityRole.Owner
-                         }, _signedInUsers.IsUserInCommunityRole) ||
-                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         }, _signedInUsersManager.IsUserInCommunityRole) ||
+                         _signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
                          {
                              WebRole.Admin,
                              WebRole.SuperAdmin
-                         }, _signedInUsers.IsUserInWebRole);
+                         }, _signedInUsersManager.IsUserInWebRole);
 
         if (!authorised) return Unauthorized("You are not authorised to perform this action");
 
@@ -86,18 +87,18 @@ public class NoteController : ControllerBase
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
 
-        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+        var authorised = _signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
                          {
                              CommunityRole.Moderator,
                              CommunityRole.Administrator,
                              CommunityRole.SeniorAdmin,
                              CommunityRole.Owner
-                         }, _signedInUsers.IsUserInCommunityRole) ||
-                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         }, _signedInUsersManager.IsUserInCommunityRole) ||
+                         _signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
                          {
                              WebRole.Admin,
                              WebRole.SuperAdmin
-                         }, _signedInUsers.IsUserInWebRole);
+                         }, _signedInUsersManager.IsUserInWebRole);
 
         pagination.Privileged = authorised;
         var result = await _mediator.Send(pagination);

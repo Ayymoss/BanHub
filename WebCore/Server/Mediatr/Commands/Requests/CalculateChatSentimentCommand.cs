@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace BanHub.WebCore.Server.Mediatr.Handlers.Events.Services;
+namespace BanHub.WebCore.Server.Mediatr.Commands.Requests;
 
 public class CalculateChatSentimentCommand : IRequest<float>
 {

@@ -21,6 +21,10 @@ public class GetServersPaginationHandler : IRequestHandler<GetServersPaginationC
     public async Task<PaginationContext<Shared.Models.ServersView.Server>> Handle(GetServersPaginationCommand request,
         CancellationToken cancellationToken)
     {
+        // Note, we only expect a small return of servers (<2,500) so we'll prefetch. However, this approach is not scalable.
+        // I'm having to do this because we need to get the online counts for each server, and that value is not stored in the database.
+        // I don't know how to do this whilst allowing sorting/filtering whilst using IQueryable. 
+
         var query = await _context.Servers
             .Where(x => x.Updated < DateTimeOffset.UtcNow.AddHours(1))
             .Include(efServer => efServer.Community)
@@ -41,10 +45,11 @@ public class GetServersPaginationHandler : IRequestHandler<GetServersPaginationC
             MaxPlayers = x.MaxPlayers,
             OnlineCount = onlineCounts.TryGetValue(x.ServerIp, out var count) ? count : 0
         }).ToList();
+
         if (!string.IsNullOrWhiteSpace(request.SearchString))
             serverViews = serverViews
-                .Where(s => s.ServerName.Contains(request.SearchString) 
-                            || s.ServerIp.Contains(request.SearchString) 
+                .Where(s => s.ServerName.Contains(request.SearchString)
+                            || s.ServerIp.Contains(request.SearchString)
                             || s.ServerGame.ToString().Contains(request.SearchString)
                             || s.CommunityName.Contains(request.SearchString))
                 .ToList();

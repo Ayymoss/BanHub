@@ -1,6 +1,5 @@
 ﻿using BanHub.WebCore.Server.Interfaces;
-using BanHub.WebCore.Server.Mediatr.Commands.Events.Statistics;
-using BanHub.WebCore.Server.Services;
+using BanHub.WebCore.Server.Mediatr.Commands.Events.Services.Statistics;
 using BanHub.WebCore.Server.Utilities;
 using BanHubData.Enums;
 using BanHubData.Mediatr.Commands.Requests.Heartbeat;
@@ -28,7 +27,6 @@ public class PluginHub : Hub
 
     public async Task<SignalREnums.ReturnState> CommunityHeartbeat(CommunityHeartbeatCommand request)
     {
-        if (request.PluginVersion < _config.PluginVersion) return SignalREnums.ReturnState.VersionToOld;
 
         _connectionManager.AddOrUpdate(request.CommunityGuid, Context.ConnectionId);
         var result = await _mediator.Send(request);
@@ -46,6 +44,7 @@ public class PluginHub : Hub
         if (request.PluginVersion < _config.PluginVersion) return SignalREnums.ReturnState.VersionToOld;
         if (!_pluginAuthenticationCache.ExistsApiKey(request.CommunityApiKey)) return SignalREnums.ReturnState.NotActivated;
         await _mediator.Publish(new UpdateOnlineStatisticNotification {Identities = new[] {request.Identity}});
+        await _mediator.Publish(new UpdatePlayerServerStatisticNotification {Identity = request.Identity, ServerId = request.ServerId});
         return SignalREnums.ReturnState.Ok;
     }
 }

@@ -66,7 +66,7 @@ partial class Penalties
         var parameters = new Dictionary<string, object> {{"Penalty", convertedPenalty}};
         var options = new DialogOptions
         {
-            Style = "min-height:auto;min-width:970px;max-height:97%;",
+            Style = "width:100%; max-width:800px; min-height:auto; min-width:auto;",
             CloseDialogOnOverlayClick = true
         };
 

@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Text.Json;
 using BanHub.Configuration;
 using BanHub.Interfaces;
+using BanHub.Models;
 using BanHub.Utilities;
 using BanHubData.Mediatr.Commands.Events.Player;
 using BanHubData.Mediatr.Commands.Requests.Player;
@@ -24,7 +25,6 @@ public class PlayerService
 #endif
 
     private readonly IPlayerService _api;
-    private readonly BanHubConfiguration _banHubConfiguration;
     private readonly ILogger<PlayerService> _logger;
 
     private readonly AsyncRetryPolicy _retryPolicy = Policy
@@ -36,11 +36,12 @@ public class PlayerService
                                   $"Retrying in {retryDelay.Humanize()}...");
             });
 
-    public PlayerService(BanHubConfiguration banHubConfiguration, ILogger<PlayerService> logger)
+    public PlayerService(BanHubConfiguration banHubConfiguration, ILogger<PlayerService> logger, CommunitySlim communitySlim)
     {
-        _banHubConfiguration = banHubConfiguration;
         _logger = logger;
         _api = RestClient.For<IPlayerService>(ApiHost);
+        _api.PluginVersion = communitySlim.PluginVersion;
+        _api.ApiToken = banHubConfiguration.ApiKey.ToString();
     }
 
     public async Task<bool> IsPlayerBannedAsync(IsPlayerBannedCommand identity)
@@ -49,7 +50,7 @@ public class PlayerService
         {
             return await _retryPolicy.ExecuteAsync(async () =>
             {
-                var response = await _api.IsPlayerBannedAsync(_banHubConfiguration.ApiKey.ToString(), identity);
+                var response = await _api.IsPlayerBannedAsync(identity);
                 return response.StatusCode is HttpStatusCode.Unauthorized;
             });
         }
@@ -87,7 +88,7 @@ public class PlayerService
         {
             return await _retryPolicy.ExecuteAsync(async () =>
             {
-                var response = await _api.GetTokenAsync(_banHubConfiguration.ApiKey.ToString(), identity);
+                var response = await _api.GetTokenAsync(identity);
                 if (!response.IsSuccessStatusCode) return null;
                 var result = await response.Content.ReadAsStringAsync();
                 return string.IsNullOrEmpty(result) ? null : result;
@@ -108,7 +109,7 @@ public class PlayerService
         {
             return await _retryPolicy.ExecuteAsync(async () =>
             {
-                var response = await _api.CreateOrUpdatePlayerAsync(_banHubConfiguration.ApiKey.ToString(), player);
+                var response = await _api.CreateOrUpdatePlayerAsync(player);
                 if (!response.IsSuccessStatusCode)
                 {
                     var body = await response.Content.ReadAsStringAsync();

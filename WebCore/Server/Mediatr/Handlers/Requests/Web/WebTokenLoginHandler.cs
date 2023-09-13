@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using BanHub.WebCore.Server.Context;
+using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Shared.Mediatr.Commands.Requests;
 using BanHub.WebCore.Shared.Models.Shared;
@@ -13,12 +14,12 @@ namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web;
 public class WebTokenLoginHandler : IRequestHandler<WebTokenLoginCommand, WebTokenLoginCommandResponse>
 {
     private readonly DataContext _context;
-    private readonly SignedInUsers _signedInUsers;
+    private readonly ISignedInUsersManager _signedInUsersManager;
 
-    public WebTokenLoginHandler(DataContext context, SignedInUsers signedInUsers)
+    public WebTokenLoginHandler(DataContext context, ISignedInUsersManager signedInUsersManager)
     {
         _context = context;
-        _signedInUsers = signedInUsers;
+        _signedInUsersManager = signedInUsersManager;
     }
 
     // TODO: After service restart we need to rebuild their login from the database.
@@ -69,7 +70,7 @@ public class WebTokenLoginHandler : IRequestHandler<WebTokenLoginCommand, WebTok
         };
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-        _signedInUsers.AddUser(user);
+        _signedInUsersManager.AddUser(user);
         return new WebTokenLoginCommandResponse
         {
             ReturnState = ControllerEnums.ReturnState.Ok,

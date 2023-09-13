@@ -1,4 +1,6 @@
 ﻿using BanHub.WebCore.Server.Context;
+using BanHub.WebCore.Server.Interfaces;
+using BanHub.WebCore.Server.Mediatr.Commands.Events.Services.Statistics;
 using BanHub.WebCore.Server.Mediatr.Commands.Events.Statistics;
 using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Server.SignalR;
@@ -12,15 +14,15 @@ namespace BanHub.WebCore.Server.Mediatr.Handlers.Events.Services;
 
 public class StatisticsHandler : INotificationHandler<EnsureInitialisedNotification>,
     INotificationHandler<UpdateStatisticsNotification>, INotificationHandler<UpdateOnlineStatisticNotification>,
-    INotificationHandler<UpdateRecentBansNotification>
+    INotificationHandler<UpdateRecentBansNotification>, INotificationHandler<UpdatePlayerServerStatisticNotification>
 {
     private readonly DataContext _context;
-    private readonly StatisticsCache _statisticsCache;
+    private readonly IStatisticsCache _statisticsCache;
     private readonly IHubContext<StatisticsHub> _hubContext;
     private readonly IMediator _mediator;
     private readonly SemaphoreSlim _load = new(1, 1);
 
-    public StatisticsHandler(DataContext context, StatisticsCache statisticsCache, IHubContext<StatisticsHub> hubContext,
+    public StatisticsHandler(DataContext context, IStatisticsCache statisticsCache, IHubContext<StatisticsHub> hubContext,
         IMediator mediator)
     {
         _context = context;
@@ -37,10 +39,14 @@ public class StatisticsHandler : INotificationHandler<EnsureInitialisedNotificat
 
             if (!_statisticsCache.Loaded)
             {
-                _statisticsCache.Penalties = await _context.Players.CountAsync(cancellationToken: cancellationToken);
-                _statisticsCache.Servers = await _context.Communities.CountAsync(cancellationToken: cancellationToken);
-                _statisticsCache.Communities = await _context.Servers.CountAsync(cancellationToken: cancellationToken);
-                _statisticsCache.Players = await _context.Penalties.CountAsync(cancellationToken: cancellationToken);
+                _statisticsCache.SetStatisticsCount(ControllerEnums.StatisticType.PlayerCount,
+                    await _context.Players.CountAsync(cancellationToken: cancellationToken));
+                _statisticsCache.SetStatisticsCount(ControllerEnums.StatisticType.CommunityCount,
+                    await _context.Communities.CountAsync(cancellationToken: cancellationToken));
+                _statisticsCache.SetStatisticsCount(ControllerEnums.StatisticType.ServerCount,
+                    await _context.Servers.CountAsync(cancellationToken: cancellationToken));
+                _statisticsCache.SetStatisticsCount(ControllerEnums.StatisticType.PenaltyCount,
+                    await _context.Penalties.CountAsync(cancellationToken: cancellationToken));
                 _statisticsCache.Loaded = true;
             }
         }
@@ -53,44 +59,7 @@ public class StatisticsHandler : INotificationHandler<EnsureInitialisedNotificat
     public async Task Handle(UpdateStatisticsNotification notification, CancellationToken cancellationToken)
     {
         if (!_statisticsCache.Loaded) await _mediator.Publish(new EnsureInitialisedNotification(), cancellationToken);
-
-        var statisticMapping = new Dictionary<ControllerEnums.StatisticType, Action>
-        {
-            {
-                ControllerEnums.StatisticType.PenaltyCount, () =>
-                {
-                    if (notification.StatisticTypeAction is ControllerEnums.StatisticTypeAction.Add)
-                        Interlocked.Increment(ref _statisticsCache.Penalties);
-                    else Interlocked.Decrement(ref _statisticsCache.Penalties);
-                }
-            },
-            {
-                ControllerEnums.StatisticType.ServerCount, () =>
-                {
-                    if (notification.StatisticTypeAction is ControllerEnums.StatisticTypeAction.Add)
-                        Interlocked.Increment(ref _statisticsCache.Servers);
-                    else Interlocked.Decrement(ref _statisticsCache.Servers);
-                }
-            },
-            {
-                ControllerEnums.StatisticType.CommunityCount, () =>
-                {
-                    if (notification.StatisticTypeAction is ControllerEnums.StatisticTypeAction.Add)
-                        Interlocked.Increment(ref _statisticsCache.Communities);
-                    else Interlocked.Decrement(ref _statisticsCache.Communities);
-                }
-            },
-            {
-                ControllerEnums.StatisticType.PlayerCount, () =>
-                {
-                    if (notification.StatisticTypeAction is ControllerEnums.StatisticTypeAction.Add)
-                        Interlocked.Increment(ref _statisticsCache.Players);
-                    else Interlocked.Decrement(ref _statisticsCache.Players);
-                }
-            }
-        };
-
-        statisticMapping[notification.StatisticType]();
+        _statisticsCache.UpdateStatisticCount(notification.StatisticType, notification.StatisticTypeAction);
     }
 
     public async Task Handle(UpdateOnlineStatisticNotification notification, CancellationToken cancellationToken)
@@ -139,5 +108,21 @@ public class StatisticsHandler : INotificationHandler<EnsureInitialisedNotificat
 
         await _hubContext.Clients.All.SendAsync(SignalRMethods.StatisticMethods.OnRecentBansUpdate, _statisticsCache.RecentBans.Count,
             cancellationToken: cancellationToken);
+    }
+
+    public Task Handle(UpdatePlayerServerStatisticNotification notification, CancellationToken cancellationToken)
+    {
+        _statisticsCache.OnlineServers.AddOrUpdate(notification.ServerId, new ServerOnlineStatistic
+        {
+            OnlineCount = 1,
+            LastUpdated = DateTimeOffset.UtcNow
+        }, (key, oldValue) =>
+        {
+            oldValue.OnlineCount++;
+            oldValue.LastUpdated = DateTimeOffset.UtcNow;
+            return oldValue;
+        });
+
+        return Task.CompletedTask;
     }
 }

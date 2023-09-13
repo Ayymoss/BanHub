@@ -3,18 +3,18 @@
 <RadzenDataGrid @ref="_dataGrid" TItem="Penalty" IsLoading="@_isLoading" Count="@_count" Data="@_indexTable" LoadData="@LoadData"
                 Style="min-height: 175px">
     <Columns>
-        <RadzenDataGridColumn TItem="Penalty" Title="Community">
+        <RadzenDataGridColumn TItem="Penalty" Title="Community" MinWidth="120px">
             <Template Context="context">
                 <RadzenLink Path="@($"/Communities/{context.CommunityGuid}")" Text="@context.CommunityName"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Penalty" Title="Offender">
+        <RadzenDataGridColumn TItem="Penalty" Title="Offender" MinWidth="120px">
             <Template Context="context">
                 <RadzenLink Path="@($"/Players/{context.RecipientIdentity}")" Text="@context.RecipientUserName"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Penalty" Property="Reason" Title="Reason"/>
-        <RadzenDataGridColumn TItem="Penalty" Title="Submitted" SortOrder="SortOrder.Descending">
+        <RadzenDataGridColumn TItem="Penalty" Property="Reason" Title="Reason" MinWidth="120px"/>
+        <RadzenDataGridColumn TItem="Penalty" Title="Submitted" SortOrder="SortOrder.Descending" MinWidth="120px">
             <Template Context="context">
                 @context.Submitted.Humanize().Titleize()
             </Template>

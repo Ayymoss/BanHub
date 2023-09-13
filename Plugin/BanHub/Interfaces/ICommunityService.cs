@@ -5,6 +5,9 @@ namespace BanHub.Interfaces;
 
 public interface ICommunityService
 {
+    [Header("BanHubPluginVersion")] string PluginVersion { get; set; }
+    [Header("BanHubApiToken")] string ApiToken { get; set; }
+
     [Post("/Community")]
     Task<HttpResponseMessage> CreateOrUpdateCommunityAsync([Body] CreateOrUpdateCommunityCommand community);
 

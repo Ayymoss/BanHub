@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Text.Json;
 using BanHub.Configuration;
 using BanHub.Interfaces;
+using BanHub.Models;
 using BanHubData.Mediatr.Commands.Requests.Community;
 using Humanizer;
 using Microsoft.Extensions.Logging;
@@ -21,7 +22,6 @@ public class CommunityService
 #endif
 
     private readonly ICommunityService _api;
-    private readonly BanHubConfiguration _banHubConfiguration;
     private readonly ILogger<CommunityService> _logger;
 
     private readonly AsyncRetryPolicy _retryPolicy = Policy
@@ -33,11 +33,12 @@ public class CommunityService
                                   $"Retrying in {retryDelay.Humanize()}...");
             });
 
-    public CommunityService(BanHubConfiguration banHubConfiguration, ILogger<CommunityService> logger)
+    public CommunityService(BanHubConfiguration banHubConfiguration, ILogger<CommunityService> logger, CommunitySlim communitySlim)
     {
-        _banHubConfiguration = banHubConfiguration;
         _logger = logger;
         _api = RestClient.For<ICommunityService>(ApiHost);
+        _api.PluginVersion = communitySlim.PluginVersion;
+        _api.ApiToken = banHubConfiguration.ApiKey.ToString();
     }
 
     public async Task<bool> CreateOrUpdateCommunityAsync(CreateOrUpdateCommunityCommand community)

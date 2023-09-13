@@ -2,7 +2,7 @@
 using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Servers;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Enums;
-using BanHubData.Mediatr.Commands.Requests.Community.Server;
+using BanHubData.Mediatr.Commands.Requests.Server;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,7 +20,7 @@ public class ServerController : ControllerBase
     }
 
     [HttpPost, PluginAuthentication]
-    public async Task<IActionResult> CreateOrUpdateServerAsync([FromQuery] string authToken, [FromBody] CreateOrUpdateServerCommand request)
+    public async Task<IActionResult> CreateOrUpdateServerAsync([FromBody] CreateOrUpdateServerCommand request)
     {
         var result = await _mediator.Send(request);
         return result switch

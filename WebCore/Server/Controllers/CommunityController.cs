@@ -1,4 +1,5 @@
-﻿using BanHub.WebCore.Server.Services;
+﻿using BanHub.WebCore.Server.Interfaces;
+using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Community;
 using BanHub.WebCore.Shared.Models.Shared;
 using BanHubData.Enums;
@@ -14,12 +15,12 @@ namespace BanHub.WebCore.Server.Controllers;
 public class CommunityController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly SignedInUsers _signedInUsers;
+    private readonly ISignedInUsersManager _signedInUsersManager;
 
-    public CommunityController(IMediator mediator, SignedInUsers signedInUsers)
+    public CommunityController(IMediator mediator, ISignedInUsersManager signedInUsersManager)
     {
         _mediator = mediator;
-        _signedInUsers = signedInUsers;
+        _signedInUsersManager = signedInUsersManager;
     }
 
     /// <summary>
@@ -70,18 +71,18 @@ public class CommunityController : ControllerBase
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
 
-        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+        var authorised = _signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
                          {
                              CommunityRole.Moderator,
                              CommunityRole.Administrator,
                              CommunityRole.SeniorAdmin,
                              CommunityRole.Owner
-                         }, _signedInUsers.IsUserInCommunityRole) ||
-                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         }, _signedInUsersManager.IsUserInCommunityRole) ||
+                         _signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
                          {
                              WebRole.Admin,
                              WebRole.SuperAdmin
-                         }, _signedInUsers.IsUserInWebRole);
+                         }, _signedInUsersManager.IsUserInWebRole);
 
         pagination.Privileged = authorised;
         var result = await _mediator.Send(pagination);
@@ -102,7 +103,7 @@ public class CommunityController : ControllerBase
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
         if (adminSignInGuid is null) return Unauthorized("You are not authorised to perform this action");
 
-        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[] {WebRole.SuperAdmin}, _signedInUsers.IsUserInWebRole);
+        var authorised = _signedInUsersManager.IsUserInRole(adminSignInGuid, new[] {WebRole.SuperAdmin}, _signedInUsersManager.IsUserInWebRole);
         if (!authorised) return Unauthorized("You are not authorised to perform this action");
 
         if (!Guid.TryParse(identity, out var guid)) return BadRequest();
@@ -118,18 +119,18 @@ public class CommunityController : ControllerBase
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
 
-        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+        var authorised = _signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
                          {
                              CommunityRole.Moderator,
                              CommunityRole.Administrator,
                              CommunityRole.SeniorAdmin,
                              CommunityRole.Owner
-                         }, _signedInUsers.IsUserInCommunityRole) ||
-                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         }, _signedInUsersManager.IsUserInCommunityRole) ||
+                         _signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
                          {
                              WebRole.Admin,
                              WebRole.SuperAdmin
-                         }, _signedInUsers.IsUserInWebRole);
+                         }, _signedInUsersManager.IsUserInWebRole);
 
         var result = await _mediator.Send(pagination);
         return Ok(result);

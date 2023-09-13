@@ -4,6 +4,7 @@ namespace BanHub.WebCore.Shared.Utilities;
 
 public static class Utilities
 {
+    public static bool IsDebug { get; set; }
     public static bool IsInternal(this string ipAddress)
     {
         if (!IPAddress.TryParse(ipAddress, out var address)) return false;

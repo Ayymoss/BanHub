@@ -1,7 +1,7 @@
 ﻿using BanHubData.Enums;
 using MediatR;
 
-namespace BanHub.WebCore.Server.Mediatr.Commands.Events.Statistics;
+namespace BanHub.WebCore.Server.Mediatr.Commands.Events.Services.Statistics;
 
 public class UpdateStatisticsNotification : INotification
 {

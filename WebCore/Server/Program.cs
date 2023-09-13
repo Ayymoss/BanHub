@@ -39,12 +39,13 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 builder.Services.AddSingleton(configuration);
 builder.Services.AddSingleton<IPluginAuthenticationCache, PluginAuthenticationCache>();
-builder.Services.AddSingleton<SignedInUsers>();
+builder.Services.AddSingleton<ISignedInUsersManager, SignedInUsersManager>();
 builder.Services.AddSingleton<PluginAuthentication>();
-builder.Services.AddSingleton<StatisticsCache>();
+builder.Services.AddSingleton<IStatisticsCache, StatisticsCache>();
 builder.Services.AddSingleton<ISentimentModelCache, SentimentModelCache>();
 builder.Services.AddSingleton<ICommunityConnectionManager, CommunityConnectionManager>();
 
+builder.Services.AddTransient<PluginVersionCheckMiddleware>();
 builder.Services.AddTransient<ApiKeyMiddleware>();
 
 builder.Services.AddScoped<DialogService>();
@@ -72,15 +73,20 @@ if (!Directory.Exists(Path.Join(AppContext.BaseDirectory, "Log")))
     Directory.CreateDirectory(Path.Join(AppContext.BaseDirectory, "Log"));
 
 Log.Logger = new LoggerConfiguration()
+#if DEBUG
     .MinimumLevel.Information()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .MinimumLevel.Override("BanHub", LogEventLevel.Debug)
+#else
+    .MinimumLevel.Warning()
+#endif
     .Enrich.FromLogContext()
+    .Enrich.With<ShortSourceContextEnricher>()
     .WriteTo.Console()
     .WriteTo.File(
         Path.Join(AppContext.BaseDirectory, "Log", "banhub-.log"),
         rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: 10,
-        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff}] [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] [{ShortSourceContext}] {Message:lj}{NewLine}{Exception}")
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -115,12 +121,14 @@ if (app.Environment.IsDevelopment())
 {
     // TODO: Move Swagger to dev only
     app.UseWebAssemblyDebugging();
+    BanHub.WebCore.Shared.Utilities.Utilities.IsDebug = true;
 }
 else
 {
     app.UseExceptionHandler("/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+    BanHub.WebCore.Shared.Utilities.Utilities.IsDebug = false;
 }
 
 app.UseHttpsRedirection();
@@ -138,6 +146,7 @@ app.MapHub<TomatoCounterHub>("/SignalR/TomatoCounterHub");
 
 app.UseCors("CorsSpecs");
 app.UseAuthentication();
+app.UseMiddleware<PluginVersionCheckMiddleware>();
 app.UseMiddleware<ApiKeyMiddleware>();
 app.UseAuthorization();
 

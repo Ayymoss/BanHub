@@ -1,4 +1,5 @@
-﻿using BanHub.WebCore.Server.Services;
+﻿using BanHub.WebCore.Server.Interfaces;
+using BanHub.WebCore.Server.Services;
 using BanHub.WebCore.Shared.Mediatr.Commands.Requests.PlayerProfile;
 using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Players;
 using BanHub.WebCore.Shared.Models.PlayersView;
@@ -16,17 +17,16 @@ namespace BanHub.WebCore.Server.Controllers;
 public class PlayerController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly SignedInUsers _signedInUsers;
+    private readonly ISignedInUsersManager _signedInUsersManager;
 
-    public PlayerController(IMediator mediator, SignedInUsers signedInUsers)
+    public PlayerController(IMediator mediator, ISignedInUsersManager signedInUsersManager)
     {
         _mediator = mediator;
-        _signedInUsers = signedInUsers;
+        _signedInUsersManager = signedInUsersManager;
     }
 
     [HttpPost, PluginAuthentication]
-    public async Task<IActionResult> CreateOrUpdatePlayerAsync([FromQuery] string authToken,
-        [FromBody] CreateOrUpdatePlayerNotification request)
+    public async Task<IActionResult> CreateOrUpdatePlayerAsync([FromBody] CreateOrUpdatePlayerNotification request)
     {
         await _mediator.Publish(request);
         return Ok();
@@ -44,18 +44,18 @@ public class PlayerController : ControllerBase
     public async Task<ActionResult<Player>> GetProfileAsync([FromRoute] string identity)
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
-        var authorised = SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+        var authorised = _signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
                          {
                              CommunityRole.Moderator,
                              CommunityRole.Administrator,
                              CommunityRole.SeniorAdmin,
                              CommunityRole.Owner
-                         }, _signedInUsers.IsUserInCommunityRole) ||
-                         SignedInUsers.IsUserInRole(adminSignInGuid, new[]
+                         }, _signedInUsersManager.IsUserInCommunityRole) ||
+                         _signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
                          {
                              WebRole.Admin,
                              WebRole.SuperAdmin
-                         }, _signedInUsers.IsUserInWebRole);
+                         }, _signedInUsersManager.IsUserInWebRole);
 
         var result = await _mediator.Send(new GetProfileCommand {Identity = identity, Privileged = authorised});
         if (result is null) return NotFound();
@@ -77,7 +77,7 @@ public class PlayerController : ControllerBase
     }
 
     [HttpGet("GetToken/{identity}"), PluginAuthentication]
-    public async Task<ActionResult<string>> GetAuthenticationTokenAsync([FromQuery] string authToken, [FromRoute] string identity)
+    public async Task<ActionResult<string>> GetAuthenticationTokenAsync([FromRoute] string identity)
     {
         var result = await _mediator.Send(new GetPlayerTokenCommand {Identity = identity});
         if (result is null) return NotFound();

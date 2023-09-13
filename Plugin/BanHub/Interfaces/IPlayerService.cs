@@ -6,14 +6,17 @@ namespace BanHub.Interfaces;
 
 public interface IPlayerService
 {
+    [Header("BanHubPluginVersion")] string PluginVersion { get; set; }
+    [Header("BanHubApiToken")] string ApiToken { get; set; }
+
     [Post("/Player/IsBanned")]
-    Task<HttpResponseMessage> IsPlayerBannedAsync([Query("authToken")] string authToken, [Body] IsPlayerBannedCommand identity);
+    Task<HttpResponseMessage> IsPlayerBannedAsync([Body] IsPlayerBannedCommand identity);
 
     [Post("/Player")]
-    Task<HttpResponseMessage> CreateOrUpdatePlayerAsync([Query("authToken")] string authToken, [Body] CreateOrUpdatePlayerNotification entities);
+    Task<HttpResponseMessage> CreateOrUpdatePlayerAsync([Body] CreateOrUpdatePlayerNotification entities);
 
     [Get("/Player/GetToken/{identity}")]
-    Task<HttpResponseMessage> GetTokenAsync([Query("authToken")] string authToken, [Path("identity")] string identity);
+    Task<HttpResponseMessage> GetTokenAsync([Path("identity")] string identity);
 
     [Get("/Player/HasIdentityBan/{identity}")]
     Task<HttpResponseMessage> HasIdentityBanAsync([Path("identity")] string identity);

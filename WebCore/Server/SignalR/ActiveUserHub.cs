@@ -5,8 +5,14 @@ namespace BanHub.WebCore.Server.SignalR;
 
 public class ActiveUserHub : Hub
 {
+    private readonly ILogger<ActiveUserHub> _logger;
     private static int _activeUserCount;
     private readonly SemaphoreSlim _countLock = new(1, 1);
+
+    public ActiveUserHub(ILogger<ActiveUserHub> logger)
+    {
+        _logger = logger;
+    }
 
     public int GetActiveUsersCount() => _activeUserCount;
 
@@ -28,6 +34,7 @@ public class ActiveUserHub : Hub
     public override async Task OnConnectedAsync()
     {
         await UpdateAndBroadcastCount(1);
+        _logger.LogDebug("{ConnectionId} connected", Context.ConnectionId);
         await base.OnConnectedAsync();
     }
 
