@@ -7,17 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Server;
 
-public class GetServersPaginationHandler : IRequestHandler<GetServersPaginationCommand, PaginationContext<Shared.Models.ServersView.Server>>
+public class GetServersPaginationHandler(DataContext context, IMediator mediator) : IRequestHandler<GetServersPaginationCommand, PaginationContext<Shared.Models.ServersView.Server>>
 {
-    private readonly DataContext _context;
-    private readonly IMediator _mediator;
-
-    public GetServersPaginationHandler(DataContext context, IMediator mediator)
-    {
-        _context = context;
-        _mediator = mediator;
-    }
-
     public async Task<PaginationContext<Shared.Models.ServersView.Server>> Handle(GetServersPaginationCommand request,
         CancellationToken cancellationToken)
     {
@@ -25,13 +16,13 @@ public class GetServersPaginationHandler : IRequestHandler<GetServersPaginationC
         // I'm having to do this because we need to get the online counts for each server, and that value is not stored in the database.
         // I don't know how to do this whilst allowing sorting/filtering whilst using IQueryable. 
 
-        var query = await _context.Servers
+        var query = await context.Servers
             .Where(x => x.Updated < DateTimeOffset.UtcNow.AddHours(1))
             .Include(efServer => efServer.Community)
             .ToListAsync(cancellationToken: cancellationToken);
 
         var serverIds = query.Select(p => p.ServerIp).ToArray();
-        var onlineCounts = await _mediator.Send(new GetServerOnlineCountsCommand {ServerIds = serverIds}, cancellationToken);
+        var onlineCounts = await mediator.Send(new GetServerOnlineCountsCommand {ServerIds = serverIds}, cancellationToken);
 
         var serverViews = query.Select(x => new Shared.Models.ServersView.Server
         {

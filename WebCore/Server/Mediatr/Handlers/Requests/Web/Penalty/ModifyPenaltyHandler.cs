@@ -1,7 +1,6 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Mediatr.Commands.Events.Services.Discord;
 using BanHub.WebCore.Server.Mediatr.Commands.Events.Services.Statistics;
-using BanHub.WebCore.Server.Mediatr.Commands.Events.Statistics;
 using BanHub.WebCore.Shared.Mediatr.Commands.Requests.Penalty;
 using BanHubData.Enums;
 using MediatR;
@@ -9,24 +8,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Penalty;
 
-public class ModifyPenaltyHandler : IRequestHandler<RemovePenaltyCommand, bool>
+public class ModifyPenaltyHandler(DataContext context, IPublisher publisher) : IRequestHandler<RemovePenaltyCommand, bool>
 {
-    private readonly DataContext _context;
-    private readonly IMediator _mediator;
-
-    public ModifyPenaltyHandler(DataContext context, IMediator mediator)
-    {
-        _context = context;
-        _mediator = mediator;
-    }
-
     public async Task<bool> Handle(RemovePenaltyCommand request, CancellationToken cancellationToken)
     {
-        var penalty = await _context.Penalties.FirstOrDefaultAsync(x => x.PenaltyGuid == request.PenaltyGuid,
+        var penalty = await context.Penalties.FirstOrDefaultAsync(x => x.PenaltyGuid == request.PenaltyGuid,
             cancellationToken: cancellationToken);
         if (penalty is null) return false;
 
-        var penaltyInfo = await _context.Penalties
+        var penaltyInfo = await context.Penalties
             .Where(x => x.PenaltyGuid == penalty.PenaltyGuid)
             .Select(x => new
             {
@@ -61,17 +51,17 @@ public class ModifyPenaltyHandler : IRequestHandler<RemovePenaltyCommand, bool>
                 penalty.PenaltyScope = PenaltyScope.Local;
                 break;
             case ModifyPenalty.Delete:
-                _context.Penalties.Remove(penalty);
+                context.Penalties.Remove(penalty);
                 break;
         }
 
-        await _context.SaveChangesAsync(cancellationToken);
-        await _mediator.Publish(new UpdateStatisticsNotification
+        await context.SaveChangesAsync(cancellationToken);
+        await publisher.Publish(new UpdateStatisticsNotification
         {
             StatisticType = ControllerEnums.StatisticType.PenaltyCount,
             StatisticTypeAction = ControllerEnums.StatisticTypeAction.Remove
         }, cancellationToken);
-        await _mediator.Publish(new CreateAdminActionNotification
+        await publisher.Publish(new CreateAdminActionNotification
         {
             Title = "Penalty Modified!",
             Message = message

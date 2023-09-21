@@ -5,22 +5,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Community;
 
-public class GetCommunityHandler : IRequestHandler<GetCommunityCommand, Shared.Models.CommunityProfileView.Community?>
+public class GetCommunityHandler(DataContext context) 
+    : IRequestHandler<GetCommunityCommand, Shared.Models.CommunityProfileView.Community?>
 {
-    private readonly DataContext _context;
-
-    public GetCommunityHandler(DataContext context)
-    {
-        _context = context;
-    }
-
     public async Task<Shared.Models.CommunityProfileView.Community?> Handle(GetCommunityCommand request,
         CancellationToken cancellationToken)
     {
-        var serverCount = await _context.Servers
+        var serverCount = await context.Servers
             .CountAsync(x => x.Community.CommunityGuid == request.CommunityGuid, cancellationToken: cancellationToken);
 
-        var result = await _context.Communities
+        var result = await context.Communities
             .Where(x => x.CommunityGuid == request.CommunityGuid)
             .Select(x => new Shared.Models.CommunityProfileView.Community
             {
@@ -38,12 +32,12 @@ public class GetCommunityHandler : IRequestHandler<GetCommunityCommand, Shared.M
 
         if (result is null) return null;
 
-        result.AutomatedPenaltiesCount = await _context.Penalties
+        result.AutomatedPenaltiesCount = await context.Penalties
             .Where(x => x.Community.CommunityGuid == request.CommunityGuid)
             .Where(x => x.Automated)
             .CountAsync(cancellationToken: cancellationToken);
 
-        result.PenaltiesCount = await _context.Penalties
+        result.PenaltiesCount = await context.Penalties
             .Where(x => x.Community.CommunityGuid == request.CommunityGuid)
             .CountAsync(cancellationToken: cancellationToken);
 

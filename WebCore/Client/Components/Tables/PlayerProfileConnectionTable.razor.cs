@@ -7,11 +7,9 @@ using Radzen.Blazor;
 
 namespace BanHub.WebCore.Client.Components.Tables;
 
-partial class PlayerProfileConnectionTable
+partial class PlayerProfileConnectionTable(PlayerProfileService playerProfileService)
 {
     [Parameter] public required Player Player { get; set; }
-
-    [Inject] protected PlayerProfileService PlayerProfileService { get; set; }
 
     private RadzenDataGrid<Connection> _dataGrid;
     private IEnumerable<Connection> _data;
@@ -31,7 +29,7 @@ partial class PlayerProfileConnectionTable
             Identity = Player.Identity
         };
 
-        var context = await PlayerProfileService.GetProfileConnectionsPaginationAsync(paginationQuery);
+        var context = await playerProfileService.GetProfileConnectionsPaginationAsync(paginationQuery);
         _data = context.Data;
         _totalCount = context.Count;
         _loading = false;

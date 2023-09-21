@@ -8,21 +8,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Community;
 
-public class GetCommunityProfilePenaltiesPaginationHandler : IRequestHandler<GetCommunityProfilePenaltiesPaginationCommand,
-    PaginationContext<Shared.Models.CommunityProfileView.Penalty>>
+public class GetCommunityProfilePenaltiesPaginationHandler(DataContext context) 
+    : IRequestHandler<GetCommunityProfilePenaltiesPaginationCommand, PaginationContext<Shared.Models.CommunityProfileView.Penalty>>
 {
-    private readonly DataContext _context;
-
-    public GetCommunityProfilePenaltiesPaginationHandler(DataContext context)
-    {
-        _context = context;
-    }
-
     public async Task<PaginationContext<Shared.Models.CommunityProfileView.Penalty>> Handle(
         GetCommunityProfilePenaltiesPaginationCommand request,
         CancellationToken cancellationToken)
     {
-        var query = _context.Penalties
+        var query = context.Penalties
             .Where(x => x.Community.CommunityGuid == request.Identity)
             .AsQueryable();
 

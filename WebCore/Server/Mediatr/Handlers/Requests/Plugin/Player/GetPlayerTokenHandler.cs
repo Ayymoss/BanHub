@@ -7,23 +7,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Plugin.Player;
 
-public class GetPlayerTokenHandler : IRequestHandler<GetPlayerTokenCommand, string?>
+public class GetPlayerTokenHandler(DataContext context) : IRequestHandler<GetPlayerTokenCommand, string?>
 {
-    private readonly DataContext _context;
-
-    public GetPlayerTokenHandler(DataContext context)
-    {
-        _context = context;
-    }
-
     public async Task<string?> Handle(GetPlayerTokenCommand request, CancellationToken cancellationToken)
     {
-        var player = await _context.Players.FirstOrDefaultAsync(x => x.Identity == request.Identity, cancellationToken: cancellationToken);
+        var player = await context.Players.FirstOrDefaultAsync(x => x.Identity == request.Identity, cancellationToken: cancellationToken);
         if (player is null) return null;
 
         var utcTimeNow = DateTimeOffset.UtcNow;
 
-        var hasActiveToken = await _context.AuthTokens.FirstOrDefaultAsync(x =>
+        var hasActiveToken = await context.AuthTokens.FirstOrDefaultAsync(x =>
             x.PlayerId == player.Id && x.Expiration > utcTimeNow && !x.Used, cancellationToken: cancellationToken);
         if (hasActiveToken is not null) return hasActiveToken.Token;
 
@@ -39,8 +32,8 @@ public class GetPlayerTokenHandler : IRequestHandler<GetPlayerTokenCommand, stri
             Used = false
         };
 
-        _context.AuthTokens.Add(token);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.AuthTokens.Add(token);
+        await context.SaveChangesAsync(cancellationToken);
         return result.ToString();
     }
 }

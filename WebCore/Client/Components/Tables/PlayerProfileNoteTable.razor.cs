@@ -8,13 +8,10 @@ using Radzen.Blazor;
 
 namespace BanHub.WebCore.Client.Components.Tables;
 
-partial class PlayerProfileNoteTable
+partial class PlayerProfileNoteTable(PlayerProfileService playerProfileService, DialogService dialogService)
 {
     [Parameter] public required Player Player { get; set; }
     [Parameter] public required bool Privileged { get; set; }
-
-    [Inject] protected PlayerProfileService PlayerProfileService { get; set; }
-    [Inject] protected DialogService DialogService { get; set; }
 
     private RadzenDataGrid<Note> _dataGrid;
     private IEnumerable<Note> _data;
@@ -34,7 +31,7 @@ partial class PlayerProfileNoteTable
             Identity = Player.Identity
         };
 
-        var context = await PlayerProfileService.GetProfileNotesPaginationAsync(paginationQuery);
+        var context = await playerProfileService.GetProfileNotesPaginationAsync(paginationQuery);
         _data = context.Data;
         _totalCount = context.Count;
         _loading = false;
@@ -61,7 +58,7 @@ partial class PlayerProfileNoteTable
             CloseDialogOnOverlayClick = true
         };
 
-        var dialog = await DialogService.OpenAsync<ProfileDeleteNoteDialog>("Delete Note?", parameters, options);
+        var dialog = await dialogService.OpenAsync<ProfileDeleteNoteDialog>("Delete Note?", parameters, options);
 
         if (dialog is Note note) await _dataGrid.Reload();
     }

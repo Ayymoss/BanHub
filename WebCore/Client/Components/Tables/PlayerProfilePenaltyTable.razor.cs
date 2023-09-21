@@ -10,12 +10,9 @@ using Radzen.Blazor;
 
 namespace BanHub.WebCore.Client.Components.Tables;
 
-partial class PlayerProfilePenaltyTable
+partial class PlayerProfilePenaltyTable(PlayerProfileService playerProfileService, DialogService dialogService)
 {
     [Parameter] public required Player Player { get; set; }
-
-    [Inject] protected PlayerProfileService PlayerProfileService { get; set; }
-    [Inject] protected DialogService DialogService { get; set; }
 
     private RadzenDataGrid<Penalty> _dataGrid;
     private IEnumerable<Penalty> _data;
@@ -35,7 +32,7 @@ partial class PlayerProfilePenaltyTable
             Identity = Player.Identity
         };
 
-        var context = await PlayerProfileService.GetProfilePenaltiesPaginationAsync(paginationQuery);
+        var context = await playerProfileService.GetProfilePenaltiesPaginationAsync(paginationQuery);
         _data = context.Data;
         _totalCount = context.Count;
         _loading = false;
@@ -61,7 +58,7 @@ partial class PlayerProfilePenaltyTable
         };
 
         var title = $"{arg.Data.PenaltyType} - {Player.UserName} - {arg.Data.Submitted.Humanize().Titleize()}";
-        var dialog = await DialogService.OpenAsync<ProfilePenaltyDialog>(title, parameters, options);
+        var dialog = await dialogService.OpenAsync<ProfilePenaltyDialog>(title, parameters, options);
 
         switch (dialog)
         {

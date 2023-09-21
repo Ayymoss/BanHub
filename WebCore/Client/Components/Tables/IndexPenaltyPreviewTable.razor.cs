@@ -6,15 +6,13 @@ using Radzen.Blazor;
 
 namespace BanHub.WebCore.Client.Components.Tables;
 
-partial class IndexPenaltyPreviewTable
+partial class IndexPenaltyPreviewTable(PenaltyService PenaltyService)
 {
-    [Inject] protected PenaltyService PenaltyService { get; set; }
-
     private RadzenDataGrid<Penalty> _dataGrid;
     private IEnumerable<Penalty> _indexTable;
     private bool _isLoading = true;
     private int _count;
-    
+
     private async Task LoadData(LoadDataArgs args)
     {
         _indexTable = await PenaltyService.GetLatestBansAsync();

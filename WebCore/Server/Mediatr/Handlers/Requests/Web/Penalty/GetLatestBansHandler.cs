@@ -6,18 +6,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Penalty;
 
-public class GetLatestBansHandler : IRequestHandler<GetLatestBansCommand, IEnumerable<Shared.Models.IndexView.Penalty>>
+public class GetLatestBansHandler(DataContext context) 
+    : IRequestHandler<GetLatestBansCommand, IEnumerable<Shared.Models.IndexView.Penalty>>
 {
-    private readonly DataContext _context;
-
-    public GetLatestBansHandler(DataContext context)
-    {
-        _context = context;
-    }
-
     public async Task<IEnumerable<Shared.Models.IndexView.Penalty>> Handle(GetLatestBansCommand request, CancellationToken cancellationToken)
     {
-        var bans = await _context.Penalties
+        var bans = await context.Penalties
             .Where(x => x.PenaltyType == PenaltyType.Ban)
             .Where(x => x.PenaltyStatus == PenaltyStatus.Active)
             .Where(x => x.PenaltyScope == PenaltyScope.Global)

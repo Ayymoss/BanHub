@@ -7,20 +7,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Penalty;
 
-public class GetProfilePenaltiesPaginationHandler : IRequestHandler<GetProfilePenaltiesPaginationCommand,
-    PaginationContext<Shared.Models.PlayerProfileView.Penalty>>
+public class GetProfilePenaltiesPaginationHandler(DataContext context) 
+    : IRequestHandler<GetProfilePenaltiesPaginationCommand, PaginationContext<Shared.Models.PlayerProfileView.Penalty>>
 {
-    private readonly DataContext _context;
-
-    public GetProfilePenaltiesPaginationHandler(DataContext context)
-    {
-        _context = context;
-    }
-
     public async Task<PaginationContext<Shared.Models.PlayerProfileView.Penalty>> Handle(GetProfilePenaltiesPaginationCommand request,
         CancellationToken cancellationToken)
     {
-        var query = _context.Penalties
+        var query = context.Penalties
             .Where(x => x.Recipient.Identity == request.Identity)
             .AsQueryable();
 

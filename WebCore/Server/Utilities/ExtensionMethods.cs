@@ -4,13 +4,13 @@ using Radzen;
 
 namespace BanHub.WebCore.Server.Utilities;
 
-public static partial class ExtensionMethods
+public static class ExtensionMethods
 {
-    [GeneratedRegex(@"[^\p{L}\p{P}\p{N}]")] private static partial Regex NameRegex();
-
     public static string FilterUnknownCharacters(this string input)
     {
-        var cleanedName = NameRegex().Replace(input, "?");
+        // Ignoring request since it seems changed in .NET 8
+        var regex = new Regex(@"[^\p{L}\p{P}\p{N}]");
+        var cleanedName = regex.Replace(input, "?");
         return string.IsNullOrEmpty(cleanedName) ? "Unknown" : cleanedName;
     }
 

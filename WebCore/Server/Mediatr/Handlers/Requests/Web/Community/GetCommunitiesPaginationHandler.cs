@@ -7,22 +7,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Community;
 
-public class GetCommunitiesPaginationHandler : IRequestHandler<GetCommunitiesPaginationCommand,
-    PaginationContext<Shared.Models.CommunitiesView.Community>>
+public class GetCommunitiesPaginationHandler(DataContext context) 
+    : IRequestHandler<GetCommunitiesPaginationCommand, PaginationContext<Shared.Models.CommunitiesView.Community>>
 {
-    private readonly DataContext _context;
-
-    public GetCommunitiesPaginationHandler(DataContext context)
-    {
-        _context = context;
-    }
-
     public async Task<PaginationContext<Shared.Models.CommunitiesView.Community>> Handle(GetCommunitiesPaginationCommand request,
         CancellationToken cancellationToken)
     {
         var query = request.Privileged
-            ? _context.Communities.AsQueryable()
-            : _context.Communities.Where(x => x.Active).AsQueryable();
+            ? context.Communities.AsQueryable()
+            : context.Communities.Where(x => x.Active).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(request.SearchString))
             query = query.Where(search =>

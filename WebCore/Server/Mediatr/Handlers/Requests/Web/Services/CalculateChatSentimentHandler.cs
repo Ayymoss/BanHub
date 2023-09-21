@@ -1,22 +1,15 @@
 ﻿using BanHub.WebCore.Server.Interfaces;
 using BanHub.WebCore.Server.Mediatr.Commands.Requests;
-using BanHub.WebCore.Server.Mediatr.Handlers.Events.Services;
 using MediatR;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Services;
 
-public class CalculateChatSentimentHandler : IRequestHandler<CalculateChatSentimentCommand, float>
+public class CalculateChatSentimentHandler(ISentimentModelCache sentimentModelCache) : IRequestHandler<CalculateChatSentimentCommand, float>
 {
-    private readonly ITransformer _model;
-    private readonly MLContext _mlContext;
-
-    public CalculateChatSentimentHandler(ISentimentModelCache sentimentModelCache)
-    {
-        _model = sentimentModelCache.GetModel();
-        _mlContext = new MLContext(seed: 1);
-    }
+    private readonly ITransformer _model = sentimentModelCache.GetModel();
+    private readonly MLContext _mlContext = new(seed: 1);
 
     public Task<float> Handle(CalculateChatSentimentCommand request, CancellationToken cancellationToken)
     {

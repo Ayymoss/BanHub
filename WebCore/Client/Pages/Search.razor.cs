@@ -5,11 +5,8 @@ using Microsoft.AspNetCore.Components.Routing;
 
 namespace BanHub.WebCore.Client.Pages;
 
-partial class Search : IAsyncDisposable
+partial class Search(SearchService searchService, NavigationManager navManager) : IAsyncDisposable
 {
-    [Inject] protected SearchService SearchService { get; set; }
-    [Inject] protected NavigationManager NavManager { get; set; }
-
     private WebCore.Shared.Models.SearchView.Search _searchResults = new();
     private bool _chatEmpty;
     private bool _playerEmpty;
@@ -20,7 +17,7 @@ partial class Search : IAsyncDisposable
     protected override async Task OnInitializedAsync()
     {
         await HandleSearch();
-        NavManager.LocationChanged += HandleLocationChanged;
+        navManager.LocationChanged += HandleLocationChanged;
     }
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
@@ -30,7 +27,7 @@ partial class Search : IAsyncDisposable
 
     private async Task HandleSearch()
     {
-        NavManager.TryGetQueryString("query", out _query);
+        navManager.TryGetQueryString("query", out _query);
         await OnSearch();
         StateHasChanged();
     }
@@ -45,7 +42,7 @@ partial class Search : IAsyncDisposable
             return;
         }
 
-        _searchResults = await SearchService.GetSearchResultsAsync(_query);
+        _searchResults = await searchService.GetSearchResultsAsync(_query);
         _chatEmpty = !_searchResults.Messages.Any();
         _playerEmpty = !_searchResults.Players.Any();
         _loading = false;
@@ -53,7 +50,7 @@ partial class Search : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        NavManager.LocationChanged -= HandleLocationChanged;
+        navManager.LocationChanged -= HandleLocationChanged;
         await Task.CompletedTask;
     }
 }

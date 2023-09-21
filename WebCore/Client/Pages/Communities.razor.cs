@@ -7,11 +7,8 @@ using Radzen.Blazor;
 
 namespace BanHub.WebCore.Client.Pages;
 
-partial class Communities
+partial class Communities(CommunityService communityService, TooltipService tooltipService)
 {
-    [Inject] protected CommunityService CommunityService { get; set; }
-    [Inject] protected TooltipService TooltipService { get; set; }
-
     private RadzenDataGrid<Community> _dataGrid;
     private IEnumerable<Community> _playerTable;
     private bool _isLoading = true;
@@ -29,7 +26,7 @@ partial class Communities
             Skip = args.Skip ?? 0
         };
 
-        var context = await CommunityService.GetCommunitiesPaginationAsync(paginationQuery);
+        var context = await communityService.GetCommunitiesPaginationAsync(paginationQuery);
         _playerTable = context.Data;
         _count = context.Count;
         _isLoading = false;
@@ -42,5 +39,5 @@ partial class Communities
     }
 
     private void ShowTooltip(ElementReference elementReference, TooltipOptions? options, string message) =>
-        TooltipService.Open(elementReference, message, options);
+        tooltipService.Open(elementReference, message, options);
 }

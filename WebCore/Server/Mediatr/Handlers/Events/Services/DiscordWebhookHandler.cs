@@ -6,16 +6,10 @@ using MediatR;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Events.Services;
 
-public class DiscordWebhookHandler : INotificationHandler<CreateAdminActionNotification>, INotificationHandler<CreateIssueNotification>,
-    INotificationHandler<CreatePenaltyNotification>
+public class DiscordWebhookHandler(Configuration configuration)
+    : INotificationHandler<CreateAdminActionNotification>, INotificationHandler<CreateIssueNotification>,
+        INotificationHandler<CreatePenaltyNotification>
 {
-    private readonly Configuration _configuration;
-
-    public DiscordWebhookHandler(Configuration configuration)
-    {
-        _configuration = configuration;
-    }
-
     public async Task Handle(CreateAdminActionNotification notification, CancellationToken cancellationToken)
     {
         var embedBuilder = new EmbedBuilder
@@ -25,7 +19,7 @@ public class DiscordWebhookHandler : INotificationHandler<CreateAdminActionNotif
             Color = Color.DarkRed
         };
 
-        await SendWebhook(embedBuilder.Build(), _configuration.AdminActionWebHook);
+        await SendWebhook(embedBuilder.Build(), configuration.AdminActionWebHook);
     }
 
     public async Task Handle(CreateIssueNotification notification, CancellationToken cancellationToken)
@@ -39,7 +33,7 @@ public class DiscordWebhookHandler : INotificationHandler<CreateAdminActionNotif
             Color = Color.DarkRed
         };
 
-        await SendWebhook(embedBuilder.Build(), _configuration.CommunityWebHook);
+        await SendWebhook(embedBuilder.Build(), configuration.CommunityWebHook);
     }
 
     public async Task Handle(CreatePenaltyNotification notification, CancellationToken cancellationToken)
@@ -55,7 +49,7 @@ public class DiscordWebhookHandler : INotificationHandler<CreateAdminActionNotif
             Color = Color.DarkRed
         };
 
-        await SendWebhook(embedBuilder.Build(), _configuration.PenaltyWebHook);
+        await SendWebhook(embedBuilder.Build(), configuration.PenaltyWebHook);
     }
 
     private static async Task SendWebhook(Embed embed, string webhook)

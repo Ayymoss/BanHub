@@ -8,11 +8,9 @@ using Radzen.Blazor;
 
 namespace BanHub.WebCore.Client.Components.Tables;
 
-partial class CommunityProfileServerTable
+partial class CommunityProfileServerTable(CommunityService communityService)
 {
     [Parameter] public required Community Community { get; set; }
-
-    [Inject] protected CommunityService CommunityService { get; set; }
 
     private RadzenDataGrid<Server> _dataGrid;
     private IEnumerable<Server> _data;
@@ -32,7 +30,7 @@ partial class CommunityProfileServerTable
             Identity = Community.CommunityGuid
         };
 
-        var context = await CommunityService.GetCommunityProfileServersPaginationAsync(paginationQuery);
+        var context = await communityService.GetCommunityProfileServersPaginationAsync(paginationQuery);
         _data = context.Data;
         _totalCount = context.Count;
         _loading = false;

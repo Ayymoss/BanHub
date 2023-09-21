@@ -9,12 +9,9 @@ using Radzen.Blazor;
 
 namespace BanHub.WebCore.Client.Components.Tables;
 
-partial class PlayerProfileChatTable
+partial class PlayerProfileChatTable(PlayerProfileService playerProfileService, ChatService chatService)
 {
     [Parameter] public required Player Player { get; set; }
-
-    [Inject] protected PlayerProfileService PlayerProfileService { get; set; }
-    [Inject] protected ChatService ChatService { get; set; }
 
     private RadzenDataGrid<Chat> _dataGrid;
     private IEnumerable<Chat> _data;
@@ -37,7 +34,7 @@ partial class PlayerProfileChatTable
             Identity = Player.Identity
         };
 
-        var context = await PlayerProfileService.GetProfileChatPaginationAsync(paginationQuery);
+        var context = await playerProfileService.GetProfileChatPaginationAsync(paginationQuery);
         _data = context.Data;
         _totalCount = context.Count;
         _loading = false;
@@ -74,7 +71,7 @@ partial class PlayerProfileChatTable
 
         if (_chatContext.TryGetValue(message.Submitted, out var value) && value.Loaded) return;
 
-        var chatContext = await ChatService.GetChatContextAsync(new GetMessageContextCommand
+        var chatContext = await chatService.GetChatContextAsync(new GetMessageContextCommand
         {
             Submitted = message.Submitted,
             ServerId = message.ServerId

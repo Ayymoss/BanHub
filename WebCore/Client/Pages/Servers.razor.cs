@@ -7,10 +7,8 @@ using Radzen.Blazor;
 
 namespace BanHub.WebCore.Client.Pages;
 
-partial class Servers
+partial class Servers(ServerService serverService)
 {
-    [Inject] protected ServerService ServerService { get; set; }
-
     private RadzenDataGrid<Server> _dataGrid;
     private IEnumerable<Server> _playerTable;
     private bool _isLoading = true;
@@ -28,7 +26,7 @@ partial class Servers
             Skip = args.Skip ?? 0
         };
 
-        var context = await ServerService.GetServersPaginationAsync(paginationQuery);
+        var context = await serverService.GetServersPaginationAsync(paginationQuery);
         _playerTable = context.Data;
         _count = context.Count;
         _isLoading = false;

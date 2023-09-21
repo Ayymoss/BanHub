@@ -9,42 +9,29 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace BanHub.WebCore.Server.SignalR;
 
-public class PluginHub : Hub
-{
-    private readonly IMediator _mediator;
-    private readonly IPluginAuthenticationCache _pluginAuthenticationCache;
-    private readonly ICommunityConnectionManager _connectionManager;
-    private readonly Configuration _config;
-
-    public PluginHub(IMediator mediator, IPluginAuthenticationCache pluginAuthenticationCache,
+public class PluginHub(IMediator mediator, IPluginAuthenticationCache pluginAuthenticationCache,
         ICommunityConnectionManager connectionManager, Configuration config)
-    {
-        _mediator = mediator;
-        _pluginAuthenticationCache = pluginAuthenticationCache;
-        _connectionManager = connectionManager;
-        _config = config;
-    }
-
+    : Hub
+{
     public async Task<SignalREnums.ReturnState> CommunityHeartbeat(CommunityHeartbeatCommand request)
     {
-
-        _connectionManager.AddOrUpdate(request.CommunityGuid, Context.ConnectionId);
-        var result = await _mediator.Send(request);
+        connectionManager.AddOrUpdate(request.CommunityGuid, Context.ConnectionId);
+        var result = await mediator.Send(request);
         return result;
     }
 
     public async Task<SignalREnums.ReturnState> PlayersHeartbeat(PlayersHeartbeatCommand request)
     {
-        var result = await _mediator.Send(request);
+        var result = await mediator.Send(request);
         return result;
     }
 
     public async Task<SignalREnums.ReturnState> PlayerJoined(PlayerJoined request)
     {
-        if (request.PluginVersion < _config.PluginVersion) return SignalREnums.ReturnState.VersionToOld;
-        if (!_pluginAuthenticationCache.ExistsApiKey(request.CommunityApiKey)) return SignalREnums.ReturnState.NotActivated;
-        await _mediator.Publish(new UpdateOnlineStatisticNotification {Identities = new[] {request.Identity}});
-        await _mediator.Publish(new UpdatePlayerServerStatisticNotification {Identity = request.Identity, ServerId = request.ServerId});
+        if (request.PluginVersion < config.PluginVersion) return SignalREnums.ReturnState.VersionToOld;
+        if (!pluginAuthenticationCache.ExistsApiKey(request.CommunityApiKey)) return SignalREnums.ReturnState.NotActivated;
+        await mediator.Publish(new UpdateOnlineStatisticNotification {Identities = new[] {request.Identity}});
+        await mediator.Publish(new UpdatePlayerServerStatisticNotification {Identity = request.Identity, ServerId = request.ServerId});
         return SignalREnums.ReturnState.Ok;
     }
 }

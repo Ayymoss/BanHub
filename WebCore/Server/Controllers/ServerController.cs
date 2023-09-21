@@ -10,19 +10,12 @@ namespace BanHub.WebCore.Server.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ServerController : ControllerBase
+public class ServerController(ISender sender) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public ServerController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
     [HttpPost, PluginAuthentication]
     public async Task<IActionResult> CreateOrUpdateServerAsync([FromBody] CreateOrUpdateServerCommand request)
     {
-        var result = await _mediator.Send(request);
+        var result = await sender.Send(request);
         return result switch
         {
             ControllerEnums.ReturnState.NotFound => NotFound(),
@@ -36,7 +29,7 @@ public class ServerController : ControllerBase
     public async Task<ActionResult<PaginationContext<Shared.Models.ServersView.Server>>> GetServersPaginationAsync(
         [FromBody] GetServersPaginationCommand playersPagination)
     {
-        var result = await _mediator.Send(playersPagination);
+        var result = await sender.Send(playersPagination);
         return Ok(result);
     }
 }

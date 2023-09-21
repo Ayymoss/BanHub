@@ -6,23 +6,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Note;
 
-public class DeleteNoteHandler : IRequestHandler<DeleteNoteCommand, bool>
+public class DeleteNoteHandler(DataContext context, IPublisher publisher) : IRequestHandler<DeleteNoteCommand, bool>
 {
-    private readonly DataContext _context;
-    private readonly IMediator _mediator;
-
-    public DeleteNoteHandler(DataContext context, IMediator mediator)
-    {
-        _context = context;
-        _mediator = mediator;
-    }
-
     public async Task<bool> Handle(DeleteNoteCommand request, CancellationToken cancellationToken)
     {
-        var note = await _context.Notes.FirstOrDefaultAsync(x => x.NoteGuid == request.NoteGuid, cancellationToken: cancellationToken);
+        var note = await context.Notes.FirstOrDefaultAsync(x => x.NoteGuid == request.NoteGuid, cancellationToken: cancellationToken);
         if (note is null) return false;
 
-        var noteInfo = await _context.Notes
+        var noteInfo = await context.Notes
             .Where(x => x.NoteGuid == note.NoteGuid)
             .Select(x => new
             {
@@ -35,8 +26,8 @@ public class DeleteNoteHandler : IRequestHandler<DeleteNoteCommand, bool>
                 x.IsPrivate
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        _context.Notes.Remove(note);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.Notes.Remove(note);
+        await context.SaveChangesAsync(cancellationToken);
 
         var message = noteInfo is null
             ? $"Note **{note.NoteGuid}** was deleted by **{request.IssuerIdentity}** but no information could be found."
@@ -50,7 +41,7 @@ public class DeleteNoteHandler : IRequestHandler<DeleteNoteCommand, bool>
               $"**Deleted By**: [{request.IssuerUserName}](https://BanHub.gg/Players/{request.IssuerIdentity})\n" +
               $"**Deleted For**: {request.DeletionReason}";
 
-        await _mediator.Publish(new CreateAdminActionNotification
+        await publisher.Publish(new CreateAdminActionNotification
         {
             Title = "Note Deletion!",
             Message = message

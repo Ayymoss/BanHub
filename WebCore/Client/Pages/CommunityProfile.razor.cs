@@ -5,12 +5,9 @@ using Radzen;
 
 namespace BanHub.WebCore.Client.Pages;
 
-partial class CommunityProfile
+partial class CommunityProfile(CommunityService communityService, NotificationService notificationService)
 {
     [Parameter] public string? Identity { get; set; }
-
-    [Inject] protected CommunityService CommunityService { get; set; }
-    [Inject] protected NotificationService NotificationService { get; set; }
 
     private Community? _community;
     private string _title = "Not Found";
@@ -27,7 +24,7 @@ partial class CommunityProfile
     {
         if (string.IsNullOrEmpty(Identity)) return;
 
-        _community = await CommunityService.GetCommunityAsync(Identity);
+        _community = await communityService.GetCommunityAsync(Identity);
         _title = _community.CommunityName;
         _loading = false;
         StateHasChanged();
@@ -38,14 +35,14 @@ partial class CommunityProfile
         if (_community is null || string.IsNullOrEmpty(Identity)) return;
 
         var state = _community.Active ? "deactivate" : "activate";
-        var result = await CommunityService.ToggleCommunityActivationAsync(Identity);
+        var result = await communityService.ToggleCommunityActivationAsync(Identity);
         if (!result)
         {
-            NotificationService.Notify(NotificationSeverity.Error, $"Failed to {state} community!");
+            notificationService.Notify(NotificationSeverity.Error, $"Failed to {state} community!");
             return;
         }
 
         await LoadCommunityAsync();
-        NotificationService.Notify(NotificationSeverity.Success, $"Success! Community has been {state}d!");
+        notificationService.Notify(NotificationSeverity.Success, $"Success! Community has been {state}d!");
     }
 }

@@ -5,18 +5,11 @@ using MediatR;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web;
 
-public class GetUserProfileHandler : IRequestHandler<GetUserProfileCommand, WebUser?>
+public class GetUserProfileHandler(ISignedInUsersManager signedInUsersManager) : IRequestHandler<GetUserProfileCommand, WebUser?>
 {
-    private readonly ISignedInUsersManager _signedInUsersManager;
-
-    public GetUserProfileHandler(ISignedInUsersManager signedInUsersManager)
-    {
-        _signedInUsersManager = signedInUsersManager;
-    }
-
     public Task<WebUser?> Handle(GetUserProfileCommand request, CancellationToken cancellationToken)
     {
-        return Task.FromResult(_signedInUsersManager.GetSignedInUser(request.SignedInGuid));
+        return Task.FromResult(signedInUsersManager.GetSignedInUser(request.SignedInGuid));
     }
         
 }

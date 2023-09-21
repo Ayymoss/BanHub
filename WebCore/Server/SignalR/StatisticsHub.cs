@@ -4,16 +4,8 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace BanHub.WebCore.Server.SignalR;
 
-public class StatisticsHub : Hub
+public class StatisticsHub(ISender sender) : Hub
 {
-    private readonly IMediator _mediator;
-
-    public StatisticsHub(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
-    public async Task<int> GetCurrentOnlinePlayers() => await _mediator.Send(new GetOnlinePlayersCommand());
-
-    public async Task<int> GetCurrentRecentBans() => await _mediator.Send(new GetRecentBansCommand());
+    public async Task<int> GetCurrentOnlinePlayers() => await sender.Send(new GetOnlinePlayersCommand());
+    public async Task<int> GetCurrentRecentBans() => await sender.Send(new GetRecentBansCommand());
 }

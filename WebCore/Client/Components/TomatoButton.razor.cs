@@ -4,11 +4,9 @@ using Microsoft.JSInterop;
 
 namespace BanHub.WebCore.Client.Components;
 
-partial class TomatoButton : IAsyncDisposable
+partial class TomatoButton(TomatoCounterHub tomatoCounterHub) : IAsyncDisposable
 {
     [Parameter] public required string Identity { get; set; }
-
-    [Inject] protected TomatoCounterHub TomatoCounterHub { get; set; }
 
     private int _tomatoCount;
     private readonly List<Tomato> _tomatoes = new();
@@ -58,12 +56,12 @@ partial class TomatoButton : IAsyncDisposable
     private async Task InitializeSignalRHubs()
     {
         SubscribeToHubEvents();
-        await TomatoCounterHub.InitializeAsync(Identity);
+        await tomatoCounterHub.InitializeAsync(Identity);
     }
 
     private void SubscribeToHubEvents()
     {
-        TomatoCounterHub.TomatoCountChanged += TomatoCountChanged;
+        tomatoCounterHub.TomatoCountChanged += TomatoCountChanged;
     }
 
     private void TomatoCountChanged(int count)
@@ -77,7 +75,7 @@ partial class TomatoButton : IAsyncDisposable
     private async Task IncrementCount()
     {
         _tomatoCount++;
-        await TomatoCounterHub.IncrementCount(Identity);
+        await tomatoCounterHub.IncrementCount(Identity);
         StateHasChanged();
     }
 
@@ -96,6 +94,6 @@ partial class TomatoButton : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await TomatoCounterHub.DisposeAsync();
+        await tomatoCounterHub.DisposeAsync();
     }
 }

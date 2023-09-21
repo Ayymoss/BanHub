@@ -11,21 +11,13 @@ namespace BanHub.WebCore.Server.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ChatController : ControllerBase
+public class ChatController(ISender sender) : ControllerBase
 {
-    private readonly IMediator _mediator;
-    private readonly ILogger<ChatController> _logger;
-
-    public ChatController(IMediator mediator, ILogger<ChatController> logger)
-    {
-        _mediator = mediator;
-        _logger = logger;
-    }
 
     [HttpPost("AddMessages"), PluginAuthentication]
     public async Task<IActionResult> AddCommunityChatMessagesAsync([FromBody] AddCommunityChatMessagesCommand request)
     {
-        await _mediator.Send(request);
+        await sender.Send(request);
         return Ok();
     }
 
@@ -33,21 +25,21 @@ public class ChatController : ControllerBase
     public async Task<ActionResult<PaginationContext<Chat>>> GetChatPaginationAsync(
         [FromBody] GetProfileChatPaginationCommand penaltiesPagination)
     {
-        var result = await _mediator.Send(penaltiesPagination);
+        var result = await sender.Send(penaltiesPagination);
         return Ok(result);
     }
 
     [HttpGet("Count/{identity}")]
     public async Task<ActionResult<ChatCount>> GetChatCountAsync([FromRoute] string identity)
     {
-        var result = await _mediator.Send(new GetChatCountCommand {PlayerIdentity = identity});
+        var result = await sender.Send(new GetChatCountCommand {PlayerIdentity = identity});
         return Ok(result);
     }
 
     [HttpPost("Context")]
     public async Task<ActionResult<ChatContextRoot>> GetChatContextAsync([FromBody] GetMessageContextCommand chatMessageContext)
     {
-        var result = await _mediator.Send(chatMessageContext);
+        var result = await sender.Send(chatMessageContext);
         return Ok(result);
     }
 }

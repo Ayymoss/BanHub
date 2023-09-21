@@ -5,13 +5,9 @@ using Radzen;
 
 namespace BanHub.WebCore.Client.Components.Dialogs;
 
-partial class ProfileAddNoteDialog
+partial class ProfileAddNoteDialog(NoteService noteService, NotificationService notificationService, DialogService dialogService)
 {
     [Parameter] public required string Identity { get; set; }
-
-    [Inject] protected NoteService NoteService { get; set; }
-    [Inject] protected NotificationService NotificationService { get; set; }
-    [Inject] protected DialogService DialogService { get; set; }
 
     private bool _isPrivateNote = true;
     private string _noteMessage = string.Empty;
@@ -23,7 +19,7 @@ partial class ProfileAddNoteDialog
 
         if (_noteMessage.Length < 3)
         {
-            NotificationService.Notify(NotificationSeverity.Warning, "Warning", "Too short of a note!");
+            notificationService.Notify(NotificationSeverity.Warning, "Warning", "Too short of a note!");
             _processing = false;
             return;
         }
@@ -34,18 +30,18 @@ partial class ProfileAddNoteDialog
             IsPrivate = _isPrivateNote,
             TargetIdentity = Identity,
         };
-        var request = await NoteService.AddNoteAsync(newNote);
+        var request = await noteService.AddNoteAsync(newNote);
 
         if (!request)
         {
-            NotificationService.Notify(NotificationSeverity.Error, "Error", "Failed to add note!");
+            notificationService.Notify(NotificationSeverity.Error, "Error", "Failed to add note!");
             _processing = false;
-            DialogService.Close();
+            dialogService.Close();
             return;
         }
 
-        NotificationService.Notify(NotificationSeverity.Success, "Success", "Note added!");
+        notificationService.Notify(NotificationSeverity.Success, "Success", "Note added!");
         _processing = false;
-        DialogService.Close(newNote);
+        dialogService.Close(newNote);
     }
 }

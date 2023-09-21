@@ -6,13 +6,9 @@ using Radzen;
 
 namespace BanHub.WebCore.Client.Components.Dialogs;
 
-partial class ProfileDeleteNoteDialog
+partial class ProfileDeleteNoteDialog(NotificationService notificationService, DialogService dialogService, NoteService noteService)
 {
     [Parameter] public required Note Note { get; set; }
-
-    [Inject] protected NotificationService NotificationService { get; set; }
-    [Inject] protected DialogService DialogService { get; set; }
-    [Inject] protected NoteService NoteService { get; set; }
 
     private string _deletionReason = string.Empty;
     private bool _processing;
@@ -23,26 +19,26 @@ partial class ProfileDeleteNoteDialog
 
         if (_deletionReason.Length < 3)
         {
-            NotificationService.Notify(NotificationSeverity.Warning, "A reason longer than 3 chars required!");
+            notificationService.Notify(NotificationSeverity.Warning, "A reason longer than 3 chars required!");
             _processing = false;
             return;
         }
 
-        var request = await NoteService.DeleteNoteAsync(new DeleteNoteCommand
+        var request = await noteService.DeleteNoteAsync(new DeleteNoteCommand
         {
             DeletionReason = _deletionReason,
             NoteGuid = Note.NoteGuid
         });
         if (!request)
         {
-            NotificationService.Notify(NotificationSeverity.Error, "Failed to delete note!");
+            notificationService.Notify(NotificationSeverity.Error, "Failed to delete note!");
             _processing = false;
-            DialogService.Close();
+            dialogService.Close();
             return;
         }
 
-        NotificationService.Notify(NotificationSeverity.Success, "Note deleted!");
+        notificationService.Notify(NotificationSeverity.Success, "Note deleted!");
         _processing = false;
-        DialogService.Close(Note);
+        dialogService.Close(Note);
     }
 }

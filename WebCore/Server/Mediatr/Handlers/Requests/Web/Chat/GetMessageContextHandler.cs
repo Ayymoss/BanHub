@@ -6,18 +6,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Chat;
 
-public class GetMessageContextHandler : IRequestHandler<GetMessageContextCommand, ChatContextRoot>
+public class GetMessageContextHandler(DataContext context) 
+    : IRequestHandler<GetMessageContextCommand, ChatContextRoot>
 {
-    private readonly DataContext _context;
-
-    public GetMessageContextHandler(DataContext context)
-    {
-        _context = context;
-    }
-
     public async Task<ChatContextRoot> Handle(GetMessageContextCommand request, CancellationToken cancellationToken)
     {
-        var chats = await _context.Chats
+        var chats = await context.Chats
             .Where(x => x.Server.ServerId == request.ServerId)
             .Where(x => x.Submitted >= request.Submitted.AddMinutes(-5))
             .Where(x => x.Submitted < request.Submitted.AddMinutes(5))

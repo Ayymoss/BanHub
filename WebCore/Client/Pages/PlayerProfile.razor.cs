@@ -12,14 +12,10 @@ using Radzen;
 
 namespace BanHub.WebCore.Client.Pages;
 
-partial class PlayerProfile : IAsyncDisposable
+partial class PlayerProfile(DialogService dialogService, AuthenticationStateProvider authStateProvider, NavigationManager navigationManager,
+    PlayerProfileService playerProfileService) : IAsyncDisposable
 {
     [Parameter] public string? Identity { get; set; }
-
-    [Inject] protected DialogService DialogService { get; set; }
-    [Inject] protected AuthenticationStateProvider AuthStateProvider { get; set; }
-    [Inject] protected NavigationManager NavigationManager { get; set; }
-    [Inject] protected PlayerProfileService PlayerProfileService { get; set; }
 
     private Player? _player;
     private bool _privileged;
@@ -31,9 +27,9 @@ partial class PlayerProfile : IAsyncDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        NavigationManager.LocationChanged += OnLocationChanged;
+        navigationManager.LocationChanged += OnLocationChanged;
 
-        var user = (await (AuthStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
+        var user = (await (authStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
         var webPrivileged = user.IsInEqualOrHigherRole(WebRole.Admin);
         var communityPrivileged = user.IsInEqualOrHigherRole(CommunityRole.Moderator);
         _privileged = webPrivileged || communityPrivileged;
@@ -44,7 +40,7 @@ partial class PlayerProfile : IAsyncDisposable
 
     private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        var relativeUri = NavigationManager.ToBaseRelativePath(new Uri(e.Location).AbsoluteUri);
+        var relativeUri = navigationManager.ToBaseRelativePath(new Uri(e.Location).AbsoluteUri);
 
         var uriParts = relativeUri.Split('/');
         if (uriParts.Length < 2 || uriParts[0] != "Players") return;
@@ -60,7 +56,7 @@ partial class PlayerProfile : IAsyncDisposable
     private async Task LoadProfile()
     {
         if (string.IsNullOrEmpty(Identity)) return;
-        _player = await PlayerProfileService.GetProfileAsync(Identity!);
+        _player = await playerProfileService.GetProfileAsync(Identity!);
 
         var nameSplit = _player.Identity.ToUpper().Split(':');
         _guid = nameSplit[0];
@@ -83,11 +79,11 @@ partial class PlayerProfile : IAsyncDisposable
             CloseDialogOnOverlayClick = true
         };
 
-        var dialog = await DialogService.OpenAsync<ProfileAddNoteDialog>("Add Note?", parameters, options);
+        var dialog = await dialogService.OpenAsync<ProfileAddNoteDialog>("Add Note?", parameters, options);
         if (dialog is Note note)
         {
             // TODO: Handle this in a better way.
-            NavigationManager.NavigateTo(NavigationManager.Uri, true);
+            navigationManager.NavigateTo(navigationManager.Uri, true);
         }
     }
 
@@ -117,7 +113,7 @@ partial class PlayerProfile : IAsyncDisposable
 
     public ValueTask DisposeAsync()
     {
-        NavigationManager.LocationChanged -= OnLocationChanged;
+        navigationManager.LocationChanged -= OnLocationChanged;
         return ValueTask.CompletedTask;
     }
 }

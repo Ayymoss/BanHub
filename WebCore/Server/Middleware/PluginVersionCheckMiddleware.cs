@@ -2,15 +2,8 @@
 
 namespace BanHub.WebCore.Server.Middleware;
 
-public class PluginVersionCheckMiddleware : IMiddleware
+public class PluginVersionCheckMiddleware(Configuration configuration) : IMiddleware
 {
-    private readonly Configuration _configuration;
-
-    public PluginVersionCheckMiddleware(Configuration configuration)
-    {
-        _configuration = configuration;
-    }
-
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         if (context.Request.Headers.TryGetValue("BanHubPluginVersion", out var pluginVersion))
@@ -26,7 +19,7 @@ public class PluginVersionCheckMiddleware : IMiddleware
             try
             {
                 var incomingVersion = new Version(version);
-                if (incomingVersion < _configuration.PluginVersion)
+                if (incomingVersion < configuration.PluginVersion)
                 {
                     context.Response.StatusCode = 400;
                     await context.Response.WriteAsync("Plugin version is out of date");

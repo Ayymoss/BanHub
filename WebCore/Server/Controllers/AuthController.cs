@@ -13,19 +13,12 @@ namespace BanHub.WebCore.Server.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController(ISender sender) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public AuthController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
     [HttpPost("Login")]
     public async Task<IActionResult> LoginAsync([FromBody] WebTokenLoginCommand webLoginRequest)
     {
-        var result = await _mediator.Send(webLoginRequest);
+        var result = await sender.Send(webLoginRequest);
 
         if (result.ReturnState is not ControllerEnums.ReturnState.Ok) return Unauthorized("Token or User is invalid.");
 
@@ -39,7 +32,7 @@ public class AuthController : ControllerBase
     {
         var signedInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
         if (signedInGuid is null) return Unauthorized("You are not authorised to perform this action");
-        var result = await _mediator.Send(new GetUserProfileCommand {SignedInGuid = signedInGuid});
+        var result = await sender.Send(new GetUserProfileCommand {SignedInGuid = signedInGuid});
         if (result is null) return Unauthorized("You are not authorised to perform this action");
         return Ok(result);
     }

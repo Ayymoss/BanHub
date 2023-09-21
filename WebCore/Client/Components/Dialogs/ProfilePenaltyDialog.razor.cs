@@ -9,20 +9,9 @@ using Radzen;
 
 namespace BanHub.WebCore.Client.Components.Dialogs;
 
-partial class ProfilePenaltyDialog
+partial class ProfilePenaltyDialog(DialogService dialogService)
 {
     [Parameter] public required Penalty Penalty { get; set; }
-
-    [Inject] protected DialogService DialogService { get; set; }
-    [Inject] protected AuthenticationStateProvider AuthStateProvider { get; set; }
-    
-    private bool _privileged;
-
-    protected override async Task OnInitializedAsync()
-    {
-        var user = (await (AuthStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
-        _privileged = user.IsInEqualOrHigherRole(WebRole.Admin);
-    }
 
     private async Task OpenDeleteConfirmDialog()
     {
@@ -34,8 +23,8 @@ partial class ProfilePenaltyDialog
             CloseDialogOnOverlayClick = true
         };
 
-        var dialog = await DialogService.OpenAsync<ProfilePenaltyModifyDialog>("Modify Penalty?", parameters, options);
-        if (dialog is Penalty result) DialogService.Close(result);
+        var dialog = await dialogService.OpenAsync<ProfilePenaltyModifyDialog>("Modify Penalty?", parameters, options);
+        if (dialog is Penalty result) dialogService.Close(result);
     }
 
     private async Task OpenSubmitDialog()
@@ -48,7 +37,7 @@ partial class ProfilePenaltyDialog
             CloseDialogOnOverlayClick = true
         };
 
-        var dialog = await DialogService.OpenAsync<ProfilePenaltySubmitEvidenceDialog>("Submit Evidence?", parameters, options);
-        if (dialog is AddPlayerPenaltyEvidenceCommand result) DialogService.Close(result);
+        var dialog = await dialogService.OpenAsync<ProfilePenaltySubmitEvidenceDialog>("Submit Evidence?", parameters, options);
+        if (dialog is AddPlayerPenaltyEvidenceCommand result) dialogService.Close(result);
     }
 }

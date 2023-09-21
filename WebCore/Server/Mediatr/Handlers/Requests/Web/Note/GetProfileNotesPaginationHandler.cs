@@ -7,20 +7,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Note;
 
-public class GetProfileNotesPaginationHandler : IRequestHandler<GetProfileNotesPaginationCommand,
-    PaginationContext<Shared.Models.PlayerProfileView.Note>>
+public class GetProfileNotesPaginationHandler(DataContext context) 
+    : IRequestHandler<GetProfileNotesPaginationCommand, PaginationContext<Shared.Models.PlayerProfileView.Note>>
 {
-    private readonly DataContext _context;
-
-    public GetProfileNotesPaginationHandler(DataContext context)
-    {
-        _context = context;
-    }
-
     public async Task<PaginationContext<Shared.Models.PlayerProfileView.Note>> Handle(GetProfileNotesPaginationCommand request,
         CancellationToken cancellationToken)
     {
-        var query = _context.Notes
+        var query = context.Notes
             .Where(x => x.Recipient.Identity == request.Identity)
             .Where(x => request.Privileged || !x.IsPrivate)
             .AsQueryable();

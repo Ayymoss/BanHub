@@ -7,20 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Plugin.Penalty;
 
-public class AddPlayerPenaltyEvidenceHandler : IRequestHandler<AddPlayerPenaltyEvidenceCommand, ControllerEnums.ReturnState>
+public class AddPlayerPenaltyEvidenceHandler(DataContext context, IPublisher publisher) : IRequestHandler<AddPlayerPenaltyEvidenceCommand, ControllerEnums.ReturnState>
 {
-    private readonly DataContext _context;
-    private readonly IMediator _mediator;
-
-    public AddPlayerPenaltyEvidenceHandler(DataContext context, IMediator mediator)
-    {
-        _context = context;
-        _mediator = mediator;
-    }
-
     public async Task<ControllerEnums.ReturnState> Handle(AddPlayerPenaltyEvidenceCommand request, CancellationToken cancellationToken)
     {
-        var penalty = await _context.Penalties
+        var penalty = await context.Penalties
             .Where(x => x.PenaltyGuid == request.PenaltyGuid)
             .Select(x => new
             {
@@ -34,7 +25,7 @@ public class AddPlayerPenaltyEvidenceHandler : IRequestHandler<AddPlayerPenaltyE
         // Someone has already submitted evidence. Don't overwrite it.
         if (penalty.Evidence is not null) return ControllerEnums.ReturnState.Conflict;
 
-        var newPenalty = await _context.Penalties
+        var newPenalty = await context.Penalties
             .AsTracking()
             .FirstAsync(x => x.Id == penalty.Id, cancellationToken: cancellationToken);
 
@@ -45,14 +36,14 @@ public class AddPlayerPenaltyEvidenceHandler : IRequestHandler<AddPlayerPenaltyE
                       $"**Evidence**: https://youtu.be/{request.Evidence}\n\n" +
                       $"**Submitted By**: [{request.IssuerUsername}](https://BanHub.gg/Players/{request.IssuerIdentity})";
 
-        await _mediator.Publish(new CreateAdminActionNotification
+        await publisher.Publish(new CreateAdminActionNotification
         {
             Title = "Evidence Submitted!",
             Message = message
         }, cancellationToken);
 
-        _context.Penalties.Update(newPenalty);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.Penalties.Update(newPenalty);
+        await context.SaveChangesAsync(cancellationToken);
         return ControllerEnums.ReturnState.Ok;
     }
 }

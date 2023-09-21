@@ -7,20 +7,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Search;
 
-public class GetSearchHandler : IRequestHandler<GetSearchCommand, (ControllerEnums.ReturnState State, Shared.Models.SearchView.Search?
-    Search)>
+public class GetSearchHandler(DataContext context)
+    : IRequestHandler<GetSearchCommand, (ControllerEnums.ReturnState State, Shared.Models.SearchView.Search? Search)>
 {
-    private readonly DataContext _context;
-
-    public GetSearchHandler(DataContext context)
-    {
-        _context = context;
-    }
-
     public async Task<(ControllerEnums.ReturnState State, Shared.Models.SearchView.Search? Search)> Handle(GetSearchCommand request,
         CancellationToken cancellationToken)
     {
-        var players = await _context.Players
+        var players = await context.Players
             .Where(search =>
                 EF.Functions.ILike(search.CurrentAlias.Alias.UserName, $"%{request.Query}%") ||
                 EF.Functions.ILike(search.Identity, $"%{request.Query}%"))
@@ -30,7 +23,7 @@ public class GetSearchHandler : IRequestHandler<GetSearchCommand, (ControllerEnu
                 Username = x.CurrentAlias.Alias.UserName
             }).ToListAsync(cancellationToken: cancellationToken);
 
-        var chats = await _context.Chats
+        var chats = await context.Chats
             .Where(search => EF.Functions.ILike(search.Message, $"%{request.Query}%"))
             .Select(x => new SearchChat
             {

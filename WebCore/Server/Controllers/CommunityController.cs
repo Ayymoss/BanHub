@@ -12,17 +12,8 @@ namespace BanHub.WebCore.Server.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CommunityController : ControllerBase
+public class CommunityController(ISender sender, ISignedInUsersManager signedInUsersManager) : ControllerBase
 {
-    private readonly IMediator _mediator;
-    private readonly ISignedInUsersManager _signedInUsersManager;
-
-    public CommunityController(IMediator mediator, ISignedInUsersManager signedInUsersManager)
-    {
-        _mediator = mediator;
-        _signedInUsersManager = signedInUsersManager;
-    }
-
     /// <summary>
     /// Creates or Updates an instance.
     /// </summary>
@@ -36,7 +27,7 @@ public class CommunityController : ControllerBase
             : HttpContext.Connection.RemoteIpAddress?.ToString();
 
         request.HeaderIp = headerIp;
-        var result = await _mediator.Send(request);
+        var result = await sender.Send(request);
 
         return result switch
         {
@@ -51,7 +42,7 @@ public class CommunityController : ControllerBase
     public async Task<ActionResult> IsCommunityActiveAsync([FromRoute] string identity)
     {
         if (!Guid.TryParse(identity, out var guid)) return BadRequest();
-        var result = await _mediator.Send(new IsCommunityActiveCommand {CommunityGuid = guid});
+        var result = await sender.Send(new IsCommunityActiveCommand {CommunityGuid = guid});
         if (!result) return Unauthorized();
         return Accepted();
     }
@@ -60,7 +51,7 @@ public class CommunityController : ControllerBase
     public async Task<ActionResult<Community>> GetCommunity([FromRoute] string identity)
     {
         if (!Guid.TryParse(identity, out var guid)) return BadRequest();
-        var result = await _mediator.Send(new GetCommunityCommand {CommunityGuid = guid});
+        var result = await sender.Send(new GetCommunityCommand {CommunityGuid = guid});
         if (result is null) return NotFound();
         return Ok(result);
     }
@@ -71,21 +62,21 @@ public class CommunityController : ControllerBase
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
 
-        var authorised = _signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
+        var authorised = signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
                          {
                              CommunityRole.Moderator,
                              CommunityRole.Administrator,
                              CommunityRole.SeniorAdmin,
                              CommunityRole.Owner
-                         }, _signedInUsersManager.IsUserInCommunityRole) ||
-                         _signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
+                         }, signedInUsersManager.IsUserInCommunityRole) ||
+                         signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
                          {
                              WebRole.Admin,
                              WebRole.SuperAdmin
-                         }, _signedInUsersManager.IsUserInWebRole);
+                         }, signedInUsersManager.IsUserInWebRole);
 
         pagination.Privileged = authorised;
-        var result = await _mediator.Send(pagination);
+        var result = await sender.Send(pagination);
         return Ok(result);
     }
 
@@ -93,7 +84,7 @@ public class CommunityController : ControllerBase
     public async Task<ActionResult<IEnumerable<Community>>> GetCommunityProfileServersAsync(
         [FromBody] GetCommunityProfileServersPaginationCommand identity)
     {
-        var result = await _mediator.Send(identity);
+        var result = await sender.Send(identity);
         return Ok(result);
     }
 
@@ -103,11 +94,11 @@ public class CommunityController : ControllerBase
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
         if (adminSignInGuid is null) return Unauthorized("You are not authorised to perform this action");
 
-        var authorised = _signedInUsersManager.IsUserInRole(adminSignInGuid, new[] {WebRole.SuperAdmin}, _signedInUsersManager.IsUserInWebRole);
+        var authorised = signedInUsersManager.IsUserInRole(adminSignInGuid, new[] {WebRole.SuperAdmin}, signedInUsersManager.IsUserInWebRole);
         if (!authorised) return Unauthorized("You are not authorised to perform this action");
 
         if (!Guid.TryParse(identity, out var guid)) return BadRequest();
-        var result = await _mediator.Send(new ToggleCommunityActivationCommand {CommunityGuid = guid});
+        var result = await sender.Send(new ToggleCommunityActivationCommand {CommunityGuid = guid});
 
         if (!result) return NotFound();
         return Ok();
@@ -119,20 +110,20 @@ public class CommunityController : ControllerBase
     {
         var adminSignInGuid = User.Claims.FirstOrDefault(c => c.Type == "SignedInGuid")?.Value;
 
-        var authorised = _signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
+        var authorised = signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
                          {
                              CommunityRole.Moderator,
                              CommunityRole.Administrator,
                              CommunityRole.SeniorAdmin,
                              CommunityRole.Owner
-                         }, _signedInUsersManager.IsUserInCommunityRole) ||
-                         _signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
+                         }, signedInUsersManager.IsUserInCommunityRole) ||
+                         signedInUsersManager.IsUserInRole(adminSignInGuid, new[]
                          {
                              WebRole.Admin,
                              WebRole.SuperAdmin
-                         }, _signedInUsersManager.IsUserInWebRole);
+                         }, signedInUsersManager.IsUserInWebRole);
 
-        var result = await _mediator.Send(pagination);
+        var result = await sender.Send(pagination);
         return Ok(result);
     }
 }

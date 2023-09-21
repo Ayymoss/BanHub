@@ -8,18 +8,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Player;
 
-public class GetProfileConnectionsPaginationHandler : IRequestHandler<GetProfileConnectionsPaginationCommand, PaginationContext<Connection>>
+public class GetProfileConnectionsPaginationHandler(DataContext context) 
+    : IRequestHandler<GetProfileConnectionsPaginationCommand, PaginationContext<Connection>>
 {
-    private readonly DataContext _context;
-
-    public GetProfileConnectionsPaginationHandler(DataContext context)
-    {
-        _context = context;
-    }
-
     public async Task<PaginationContext<Connection>> Handle(GetProfileConnectionsPaginationCommand request, CancellationToken cancellationToken)
     {
-        var query = _context.ServerConnections
+        var query = context.ServerConnections
             .Where(x => x.Player.Identity == request.Identity)
             .AsQueryable();
 

@@ -6,26 +6,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Plugin.Chat;
 
-public class AddCommunityChatMessagesHandler : IRequestHandler<AddCommunityChatMessagesCommand>
+public class AddCommunityChatMessagesHandler(DataContext context) : IRequestHandler<AddCommunityChatMessagesCommand>
 {
-    private readonly DataContext _context;
-    private readonly ILogger<AddCommunityChatMessagesHandler> _logger;
-
-    public AddCommunityChatMessagesHandler(DataContext context, ILogger<AddCommunityChatMessagesHandler> logger)
-    {
-        _context = context;
-        _logger = logger;
-    }
-
     public async Task Handle(AddCommunityChatMessagesCommand request, CancellationToken cancellationToken)
     {
-        var community = await _context.Communities
+        var community = await context.Communities
             .Where(x => x.CommunityGuid == request.CommunityGuid)
             .Select(x => new {x.Id})
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
         if (community is null) return;
 
-        var players = await _context.Players
+        var players = await context.Players
             .Where(x => request.PlayerMessages.Keys.Contains(x.Identity))
             .Select(x => new
             {
@@ -38,7 +29,7 @@ public class AddCommunityChatMessagesHandler : IRequestHandler<AddCommunityChatM
             .Select(y => y.ServerId)
             .ToList();
 
-        var servers = await _context.Servers
+        var servers = await context.Servers
             .Where(x => serverIds.Contains(x.ServerId))
             .Select(x => new
             {
@@ -61,9 +52,9 @@ public class AddCommunityChatMessagesHandler : IRequestHandler<AddCommunityChatM
                 CommunityId = community.Id
             }).ToList();
 
-            await _context.Chats.AddRangeAsync(chatList, cancellationToken);
+            await context.Chats.AddRangeAsync(chatList, cancellationToken);
         }
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

@@ -7,20 +7,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Player;
 
-public class GetProfileHandler : IRequestHandler<GetProfileCommand, Shared.Models.PlayerProfileView.Player?>
+public class GetProfileHandler(DataContext context, ISender sender) 
+    : IRequestHandler<GetProfileCommand, Shared.Models.PlayerProfileView.Player?>
 {
-    private readonly DataContext _context;
-    private readonly IMediator _mediator;
-
-    public GetProfileHandler(DataContext context, IMediator mediator)
-    {
-        _context = context;
-        _mediator = mediator;
-    }
-
     public async Task<Shared.Models.PlayerProfileView.Player?> Handle(GetProfileCommand request, CancellationToken cancellationToken)
     {
-        var lastServer = await _context.ServerConnections
+        var lastServer = await context.ServerConnections
             .Where(x => x.Player.Identity == request.Identity)
             .OrderByDescending(x => x.Connected)
             .Select(x => new
@@ -29,7 +21,7 @@ public class GetProfileHandler : IRequestHandler<GetProfileCommand, Shared.Model
                 x.Server.Community.CommunityName
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
-        var entity = await _context.Players
+        var entity = await context.Players
             .Where(profile => profile.Identity == request.Identity)
             .Select(profile => new BanHub.WebCore.Shared.Models.PlayerProfileView.Player
             {
@@ -55,7 +47,7 @@ public class GetProfileHandler : IRequestHandler<GetProfileCommand, Shared.Model
 
         if (entity is not null)
         {
-            var sentiment = await _mediator.Send(new GetPlayerChatSentimentScoreCommand {Identity = request.Identity}, cancellationToken);
+            var sentiment = await sender.Send(new GetPlayerChatSentimentScoreCommand {Identity = request.Identity}, cancellationToken);
             entity.ChatSentimentScore = sentiment;
         }
 

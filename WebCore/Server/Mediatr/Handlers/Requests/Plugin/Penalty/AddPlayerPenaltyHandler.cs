@@ -1,6 +1,5 @@
 ﻿using BanHub.WebCore.Server.Context;
 using BanHub.WebCore.Server.Mediatr.Commands.Events.Services.Discord;
-using BanHub.WebCore.Server.Mediatr.Commands.Events.Statistics;
 using BanHub.WebCore.Server.Domains;
 using BanHub.WebCore.Server.Mediatr.Commands.Events.Services.Statistics;
 using BanHub.WebCore.Server.SignalR;
@@ -13,22 +12,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Plugin.Penalty;
 
-public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, (ControllerEnums.ReturnState, Guid?)>
+public class AddPlayerPenaltyHandler(DataContext context, IHubContext<PluginHub> hubContext, IPublisher publisher)
+    : IRequestHandler<AddPlayerPenaltyCommand, (ControllerEnums.ReturnState, Guid?)>
 {
-    private readonly DataContext _context;
-    private readonly IHubContext<PluginHub> _hubContext;
-    private readonly IMediator _mediator;
-
-    public AddPlayerPenaltyHandler(DataContext context, IHubContext<PluginHub> hubContext, IMediator mediator)
-    {
-        _context = context;
-        _hubContext = hubContext;
-        _mediator = mediator;
-    }
-
     public async Task<(ControllerEnums.ReturnState, Guid?)> Handle(AddPlayerPenaltyCommand request, CancellationToken cancellationToken)
     {
-        var target = await _context.Players.AsTracking()
+        var target = await context.Players.AsTracking()
             .Where(x => x.Identity == request.TargetIdentity)
             .Select(x => new
             {
@@ -38,14 +27,14 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
                 x.CurrentAlias.Alias.IpAddress
             }).SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
-        var admin = await _context.Players.AsTracking()
+        var admin = await context.Players.AsTracking()
             .Where(x => x.Identity == request.AdminIdentity)
             .Select(x => new
             {
                 x.Id
             }).SingleOrDefaultAsync(cancellationToken: cancellationToken);
 
-        var instance = await _context.Communities.AsTracking()
+        var instance = await context.Communities.AsTracking()
             .Where(x => x.CommunityGuid == request.CommunityGuid)
             .Select(x => new
             {
@@ -56,7 +45,7 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
 
         if (target is null || admin is null || instance is null) return (ControllerEnums.ReturnState.BadRequest, null);
 
-        var penalties = await _context.Penalties
+        var penalties = await context.Penalties
             .AsTracking()
             .Include(x => x.Identifier)
             .Where(i => i.Community.CommunityGuid == request.CommunityGuid)
@@ -65,7 +54,7 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
             .Where(p => p.PenaltyStatus == PenaltyStatus.Active)
             .ToListAsync(cancellationToken: cancellationToken);
 
-        var hasExistingGlobalBan = await _context.Penalties
+        var hasExistingGlobalBan = await context.Penalties
             .Where(x => x.RecipientId == target.Id)
             .Where(x => x.PenaltyStatus == PenaltyStatus.Active)
             .Where(x => x.PenaltyType == PenaltyType.Ban)
@@ -79,8 +68,8 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
                 foreach (var inf in penalties)
                 {
                     inf.PenaltyStatus = PenaltyStatus.Revoked;
-                    _context.Penalties.Update(inf);
-                    if (inf.Identifier is not null) _context.PenaltyIdentifiers.Remove(inf.Identifier);
+                    context.Penalties.Update(inf);
+                    if (inf.Identifier is not null) context.PenaltyIdentifiers.Remove(inf.Identifier);
                 }
 
                 break;
@@ -122,33 +111,33 @@ public class AddPlayerPenaltyHandler : IRequestHandler<AddPlayerPenaltyCommand, 
                 Expiration = DateTimeOffset.UtcNow.AddMonths(1),
                 PenaltyId = penaltyModel.Id,
             };
-            _context.PenaltyIdentifiers.Add(identifier);
+            context.PenaltyIdentifiers.Add(identifier);
         }
 
         if (request.PenaltyScope is PenaltyScope.Global)
         {
-            await _hubContext.Clients.All.SendAsync(SignalRMethods.PluginMethods.OnGlobalBan, new BroadcastGlobalBan
+            await hubContext.Clients.All.SendAsync(SignalRMethods.PluginMethods.OnGlobalBan, new BroadcastGlobalBan
             {
                 Identity = target.Identity,
                 UserName = target.UserName,
             }, cancellationToken: cancellationToken);
-            await _mediator.Publish(new UpdateRecentBansNotification
+            await publisher.Publish(new UpdateRecentBansNotification
             {
                 BanGuid = penaltyModel.PenaltyGuid,
                 Submitted = DateTimeOffset.UtcNow
             }, cancellationToken);
         }
 
-        await _mediator.Publish(new UpdateStatisticsNotification
+        await publisher.Publish(new UpdateStatisticsNotification
         {
             StatisticType = ControllerEnums.StatisticType.PenaltyCount,
             StatisticTypeAction = ControllerEnums.StatisticTypeAction.Add
         }, cancellationToken);
-        _context.Penalties.Add(penaltyModel);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.Penalties.Add(penaltyModel);
+        await context.SaveChangesAsync(cancellationToken);
 
         if (request is {PenaltyType: PenaltyType.Ban, PenaltyScope: PenaltyScope.Global})
-            await _mediator.Publish(new CreatePenaltyNotification
+            await publisher.Publish(new CreatePenaltyNotification
             {
                 Scope = penaltyModel.PenaltyScope,
                 PenaltyType = penaltyModel.PenaltyType,

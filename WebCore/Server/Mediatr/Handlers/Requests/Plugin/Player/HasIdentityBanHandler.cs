@@ -5,18 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Plugin.Player;
 
-public class HasIdentityBanHandler : IRequestHandler<HasIdentityBanCommand, bool>
+public class HasIdentityBanHandler(DataContext context) : IRequestHandler<HasIdentityBanCommand, bool>
 {
-    private readonly DataContext _context;
-
-    public HasIdentityBanHandler(DataContext context)
-    {
-        _context = context;
-    }
-
     public async Task<bool> Handle(HasIdentityBanCommand request, CancellationToken cancellationToken)
     {
-        var hasIdentityBan = await _context.PenaltyIdentifiers
+        var hasIdentityBan = await context.PenaltyIdentifiers
             .Where(x => x.Expiration > DateTimeOffset.UtcNow)
             .Where(x => x.Identity == request.Identity)
             .AnyAsync(cancellationToken: cancellationToken);

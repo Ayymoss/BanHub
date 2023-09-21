@@ -7,20 +7,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Chat;
 
-public class GetProfileChatPaginationHandler : IRequestHandler<GetProfileChatPaginationCommand,
-    PaginationContext<Shared.Models.PlayerProfileView.Chat>>
+public class GetProfileChatPaginationHandler(DataContext context) 
+    : IRequestHandler<GetProfileChatPaginationCommand, PaginationContext<Shared.Models.PlayerProfileView.Chat>>
 {
-    private readonly DataContext _context;
-
-    public GetProfileChatPaginationHandler(DataContext context)
-    {
-        _context = context;
-    }
-
     public async Task<PaginationContext<Shared.Models.PlayerProfileView.Chat>> Handle(GetProfileChatPaginationCommand request,
         CancellationToken cancellationToken)
     {
-        var query = _context.Chats
+        var query = context.Chats
             .Where(x => x.Player.Identity == request.Identity)
             .AsQueryable();
 

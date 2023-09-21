@@ -7,28 +7,24 @@ using Microsoft.AspNetCore.Components.Routing;
 
 namespace BanHub.WebCore.Client;
 
-partial class App
+partial class App(ILocalStorageService localStorageService, AuthService authService, AuthenticationStateProvider authStateProvider)
 {
-    [Inject] protected ILocalStorageService LocalStorageService { get; set; }
-    [Inject] protected AuthService AuthService { get; set; }
-    [Inject] protected AuthenticationStateProvider AuthStateProvider { get; set; }
-
     private async Task OnNavigateAsync(NavigationContext args)
     {
-        var auth = await LocalStorageService.GetItemAsync<string>("IsAuthenticated");
-        var user = (await (AuthStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
+        var auth = await localStorageService.GetItemAsync<string>("IsAuthenticated");
+        var user = (await (authStateProvider as CustomAuthStateProvider)!.GetAuthenticationStateAsync()).User;
 
         if (!string.IsNullOrEmpty(auth) && !user.Identity!.IsAuthenticated)
         {
-            var response = await AuthService.UserProfileAsync();
+            var response = await authService.UserProfileAsync();
             if (response.Item1)
             {
-                (AuthStateProvider as CustomAuthStateProvider)?.SetAuthInfo(response.Item2!);
+                (authStateProvider as CustomAuthStateProvider)?.SetAuthInfo(response.Item2!);
                 return;
             }
 
-            (AuthStateProvider as CustomAuthStateProvider)?.ClearAuthInfo();
-            await LocalStorageService.RemoveItemAsync("IsAuthenticated");
+            (authStateProvider as CustomAuthStateProvider)?.ClearAuthInfo();
+            await localStorageService.RemoveItemAsync("IsAuthenticated");
         }
     }
 }

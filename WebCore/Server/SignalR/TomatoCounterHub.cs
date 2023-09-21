@@ -7,17 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.SignalR;
 
-public class TomatoCounterHub : Hub
+public class TomatoCounterHub(DataContext context) : Hub
 {
     private static readonly ConcurrentDictionary<string, int> TomatoCounters = new();
 
-    private readonly DataContext _context;
     private readonly SemaphoreSlim _tomatoLock = new(1, 1);
-
-    public TomatoCounterHub(DataContext context)
-    {
-        _context = context;
-    }
 
     public async Task<int> GetTomatoCount(string identity)
     {
@@ -48,7 +42,7 @@ public class TomatoCounterHub : Hub
 
     private async Task LoadTomatoes(string identity)
     {
-        var tomatoCounter = await _context.TomatoCounters
+        var tomatoCounter = await context.TomatoCounters
             .AsNoTracking()
             .Where(x => x.Player.Identity == identity)
             .FirstOrDefaultAsync();
@@ -60,14 +54,14 @@ public class TomatoCounterHub : Hub
     {
         if (!TomatoCounters.TryGetValue(identity, out var count)) return;
 
-        var tomatoCounter = await _context.TomatoCounters
+        var tomatoCounter = await context.TomatoCounters
             .Where(x => x.Player.Identity == identity)
             .FirstOrDefaultAsync();
 
         // Add new
         if (tomatoCounter is null)
         {
-            var client = await _context.Players
+            var client = await context.Players
                 .Where(x => x.Identity == identity)
                 .Select(x => new {x.Id})
                 .FirstOrDefaultAsync();
@@ -79,13 +73,13 @@ public class TomatoCounterHub : Hub
                 PlayerId = client.Id,
             };
 
-            _context.TomatoCounters.Add(tomatoContext);
-            await _context.SaveChangesAsync();
+            context.TomatoCounters.Add(tomatoContext);
+            await context.SaveChangesAsync();
             return;
         }
 
         // Update existing
         tomatoCounter.Tomatoes = count;
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
     }
 }

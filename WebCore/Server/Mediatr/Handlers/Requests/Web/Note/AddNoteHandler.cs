@@ -7,20 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Note;
 
-public class AddNoteHandler : IRequestHandler<AddNoteCommand, bool>
+public class AddNoteHandler(DataContext context, IPublisher publisher) : IRequestHandler<AddNoteCommand, bool>
 {
-    private readonly DataContext _context;
-    private readonly IMediator _mediator;
-
-    public AddNoteHandler(DataContext context, IMediator mediator)
-    {
-        _context = context;
-        _mediator = mediator;
-    }
-
     public async Task<bool> Handle(AddNoteCommand request, CancellationToken cancellationToken)
     {
-        var admin = await _context.Players
+        var admin = await context.Players
             .Where(x => x.Identity == request.AdminIdentity)
             .Select(x => new
             {
@@ -28,7 +19,7 @@ public class AddNoteHandler : IRequestHandler<AddNoteCommand, bool>
                 x.Identity,
                 x.CurrentAlias.Alias.UserName
             }).FirstOrDefaultAsync(cancellationToken: cancellationToken);
-        var target = await _context.Players
+        var target = await context.Players
             .Where(x => x.Identity == request.TargetIdentity)
             .Select(x => new
             {
@@ -48,8 +39,8 @@ public class AddNoteHandler : IRequestHandler<AddNoteCommand, bool>
             Created = DateTimeOffset.UtcNow
         };
 
-        _context.Notes.Add(note);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.Notes.Add(note);
+        await context.SaveChangesAsync(cancellationToken);
 
         var message = $"**Note**: {note.NoteGuid}\n" +
                       $"**Issuer**: [{admin.UserName}](https://BanHub.gg/Players/{admin.Identity})\n" +
@@ -57,7 +48,7 @@ public class AddNoteHandler : IRequestHandler<AddNoteCommand, bool>
                       $"**Note**: {note.Message}\n" +
                       $"**Is Private?**: {(note.IsPrivate ? "Yes" : "No")}";
 
-        await _mediator.Publish(new CreateAdminActionNotification
+        await publisher.Publish(new CreateAdminActionNotification
         {
             Title = "Note Creation!",
             Message = message

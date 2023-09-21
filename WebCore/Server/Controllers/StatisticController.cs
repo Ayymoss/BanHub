@@ -7,19 +7,12 @@ namespace BanHub.WebCore.Server.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class StatisticController : ControllerBase
+public class StatisticController(ISender sender) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public StatisticController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
     [HttpGet]
     public async Task<ActionResult<Statistic>> Statistics()
     {
-        var result = await _mediator.Send(new GetStatisticsCommand());
+        var result = await sender.Send(new GetStatisticsCommand());
         return Ok(result);
     }
 }

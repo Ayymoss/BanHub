@@ -7,13 +7,10 @@ using Radzen;
 
 namespace BanHub.WebCore.Client.Components.Dialogs;
 
-partial class ProfilePenaltySubmitEvidenceDialog
+partial class ProfilePenaltySubmitEvidenceDialog(NotificationService notificationService, DialogService dialogService,
+    PenaltyService penaltyService)
 {
     [Parameter] public required Penalty Penalty { get; set; }
-
-    [Inject] protected NotificationService NotificationService { get; set; }
-    [Inject] protected DialogService DialogService { get; set; }
-    [Inject] protected PenaltyService PenaltyService { get; set; }
 
     private string _evidence = string.Empty;
     private bool _processing;
@@ -25,7 +22,7 @@ partial class ProfilePenaltySubmitEvidenceDialog
         var videoId = _evidence.GetYouTubeVideoId();
         if (string.IsNullOrEmpty(videoId))
         {
-            NotificationService.Notify(NotificationSeverity.Warning, "The URL provided doesn't match. Expecting YouTube.");
+            notificationService.Notify(NotificationSeverity.Warning, "The URL provided doesn't match. Expecting YouTube.");
             _processing = false;
             return;
         }
@@ -36,17 +33,17 @@ partial class ProfilePenaltySubmitEvidenceDialog
             Evidence = videoId
         };
 
-        var request = await PenaltyService.AddPlayerPenaltyEvidenceAsync(evidenceCommand);
+        var request = await penaltyService.AddPlayerPenaltyEvidenceAsync(evidenceCommand);
         if (!request)
         {
-            NotificationService.Notify(NotificationSeverity.Error, "Failed to add evidence!");
+            notificationService.Notify(NotificationSeverity.Error, "Failed to add evidence!");
             _processing = false;
-            DialogService.Close();
+            dialogService.Close();
             return;
         }
 
-        NotificationService.Notify(NotificationSeverity.Success, "Evidence added!");
+        notificationService.Notify(NotificationSeverity.Success, "Evidence added!");
         _processing = false;
-        DialogService.Close(evidenceCommand);
+        dialogService.Close(evidenceCommand);
     }
 }

@@ -11,21 +11,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web;
 
-public class WebTokenLoginHandler : IRequestHandler<WebTokenLoginCommand, WebTokenLoginCommandResponse>
+public class WebTokenLoginHandler(DataContext context, ISignedInUsersManager signedInUsersManager) 
+    : IRequestHandler<WebTokenLoginCommand, WebTokenLoginCommandResponse>
 {
-    private readonly DataContext _context;
-    private readonly ISignedInUsersManager _signedInUsersManager;
-
-    public WebTokenLoginHandler(DataContext context, ISignedInUsersManager signedInUsersManager)
-    {
-        _context = context;
-        _signedInUsersManager = signedInUsersManager;
-    }
-
     // TODO: After service restart we need to rebuild their login from the database.
     public async Task<WebTokenLoginCommandResponse> Handle(WebTokenLoginCommand request, CancellationToken cancellationToken)
     {
-        var token = await _context.AuthTokens
+        var token = await context.AuthTokens
             .AsTracking()
             .Where(x => x.Token == request.Token)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
@@ -37,7 +29,7 @@ public class WebTokenLoginHandler : IRequestHandler<WebTokenLoginCommand, WebTok
                 ClaimsIdentity = null
             };
 
-        var user = await _context.Players
+        var user = await context.Players
             .Where(x => x.Id == token.PlayerId)
             .Select(x => new WebUser
             {
@@ -57,8 +49,8 @@ public class WebTokenLoginHandler : IRequestHandler<WebTokenLoginCommand, WebTok
 
         user.SignedInGuid = Guid.NewGuid().ToString();
         token.Used = true;
-        _context.AuthTokens.Update(token);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.AuthTokens.Update(token);
+        await context.SaveChangesAsync(cancellationToken);
 
         var claims = new List<Claim>
         {
@@ -70,7 +62,7 @@ public class WebTokenLoginHandler : IRequestHandler<WebTokenLoginCommand, WebTok
         };
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-        _signedInUsersManager.AddUser(user);
+        signedInUsersManager.AddUser(user);
         return new WebTokenLoginCommandResponse
         {
             ReturnState = ControllerEnums.ReturnState.Ok,

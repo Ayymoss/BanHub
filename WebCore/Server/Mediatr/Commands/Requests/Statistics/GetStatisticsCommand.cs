@@ -5,5 +5,4 @@ namespace BanHub.WebCore.Server.Mediatr.Commands.Requests.Statistics;
 
 public class GetStatisticsCommand : IRequest<Statistic>
 {
-    
 }

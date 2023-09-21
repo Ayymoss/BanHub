@@ -5,12 +5,8 @@ using Microsoft.AspNetCore.Components;
 
 namespace BanHub.WebCore.Client.Components.Dialogs;
 
-public partial class LoginDialog
+public partial class LoginDialog(NavigationManager navigationManager, AuthService authService, ILocalStorageService localStorageService)
 {
-    [Inject] protected NavigationManager NavigationManager { get; set; }
-    [Inject] protected AuthService AuthService { get; set; }
-    [Inject] protected ILocalStorageService LocalStorageService { get; set; }
-
     private string? _token;
     private bool _processing;
     private string? _error;
@@ -34,11 +30,11 @@ public partial class LoginDialog
         }
 
         var tokenModel = new WebTokenLoginCommand {Token = _token};
-        var success = await AuthService.LoginAsync(tokenModel);
+        var success = await authService.LoginAsync(tokenModel);
         if (success)
         {
-            await LocalStorageService.SetItemAsStringAsync("IsAuthenticated", "true");
-            NavigationManager.NavigateTo(NavigationManager.Uri, true);
+            await localStorageService.SetItemAsStringAsync("IsAuthenticated", "true");
+            navigationManager.NavigateTo(navigationManager.Uri, true);
             return;
         }
 

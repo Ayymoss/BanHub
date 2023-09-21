@@ -6,13 +6,9 @@ using Radzen.Blazor;
 
 namespace BanHub.WebCore.Client.Shared;
 
-partial class MainLayout : IDisposable
+partial class MainLayout(ActiveUserHub activeUserHub, StatisticsHub statisticsHub, ILocalStorageService localStorage,
+    IJSRuntime jsRuntime) : IDisposable
 {
-    [Inject] protected ActiveUserHub ActiveUserHub { get; set; }
-    [Inject] protected StatisticsHub StatisticsHub { get; set; }
-    [Inject] protected ILocalStorageService LocalStorage { get; set; }
-    [Inject] protected IJSRuntime JsRuntime { get; set; }
-
     private int _online;
     private int _bans;
     private bool _drawerOpen = true;
@@ -32,7 +28,7 @@ partial class MainLayout : IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        var currentTheme = await LocalStorage.GetItemAsync<string>("theme");
+        var currentTheme = await localStorage.GetItemAsync<string>("theme");
         _isDarkTheme = currentTheme?.Contains("dark") ?? true;
         await InitializeSignalRHubs();
         await base.OnInitializedAsync();
@@ -41,15 +37,15 @@ partial class MainLayout : IDisposable
     private async Task InitializeSignalRHubs()
     {
         SubscribeToHubEvents();
-        await ActiveUserHub.InitializeAsync();
-        await StatisticsHub.InitializeAsync();
+        await activeUserHub.InitializeAsync();
+        await statisticsHub.InitializeAsync();
     }
 
     private void SubscribeToHubEvents()
     {
-        ActiveUserHub.ActiveUserCountChanged += UpdatePageViewersCount;
-        StatisticsHub.OnlineCountChanged += UpdateOnlineCount;
-        StatisticsHub.RecentBansCountChanged += UpdateBansCount;
+        activeUserHub.ActiveUserCountChanged += UpdatePageViewersCount;
+        statisticsHub.OnlineCountChanged += UpdateOnlineCount;
+        statisticsHub.RecentBansCountChanged += UpdateBansCount;
     }
 
     private void UpdatePageViewersCount(int count)
@@ -74,7 +70,7 @@ partial class MainLayout : IDisposable
 
     private async Task ToggleTheme()
     {
-        await JsRuntime.InvokeVoidAsync("toggleTheme");
+        await jsRuntime.InvokeVoidAsync("toggleTheme");
         _isDarkTheme = !_isDarkTheme;
     }
 
@@ -116,8 +112,8 @@ partial class MainLayout : IDisposable
     {
         _body.Dispose();
         _updateTimer?.Dispose();
-        ActiveUserHub.ActiveUserCountChanged -= UpdatePageViewersCount;
-        StatisticsHub.OnlineCountChanged -= UpdateOnlineCount;
-        StatisticsHub.RecentBansCountChanged -= UpdateBansCount;
+        activeUserHub.ActiveUserCountChanged -= UpdatePageViewersCount;
+        statisticsHub.OnlineCountChanged -= UpdateOnlineCount;
+        statisticsHub.RecentBansCountChanged -= UpdateBansCount;
     }
 }

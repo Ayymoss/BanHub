@@ -8,20 +8,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Web.Penalty;
 
-public class GetPenaltiesPaginationHandler : IRequestHandler<GetPenaltiesPaginationCommand,
-    PaginationContext<Shared.Models.PenaltiesView.Penalty>>
+public class GetPenaltiesPaginationHandler(DataContext context) 
+    : IRequestHandler<GetPenaltiesPaginationCommand, PaginationContext<Shared.Models.PenaltiesView.Penalty>>
 {
-    private readonly DataContext _context;
-
-    public GetPenaltiesPaginationHandler(DataContext context)
-    {
-        _context = context;
-    }
-
     public async Task<PaginationContext<Shared.Models.PenaltiesView.Penalty>> Handle(GetPenaltiesPaginationCommand request,
         CancellationToken cancellationToken)
     {
-        var query = _context.Penalties
+        var query = context.Penalties
             .Where(x => x.PenaltyType == PenaltyType.Ban
                         || x.PenaltyType == PenaltyType.TempBan
                         || x.PenaltyType == PenaltyType.Kick

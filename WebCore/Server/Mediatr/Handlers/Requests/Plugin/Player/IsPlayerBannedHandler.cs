@@ -7,18 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BanHub.WebCore.Server.Mediatr.Handlers.Requests.Plugin.Player;
 
-public class IsPlayerBannedHandler : IRequestHandler<IsPlayerBannedCommand, bool>
+public class IsPlayerBannedHandler(DataContext context) : IRequestHandler<IsPlayerBannedCommand, bool>
 {
-    private readonly DataContext _context;
-
-    public IsPlayerBannedHandler(DataContext context)
-    {
-        _context = context;
-    }
-
     public async Task<bool> Handle(IsPlayerBannedCommand request, CancellationToken cancellationToken)
     {
-        var identifiers = await _context.PenaltyIdentifiers
+        var identifiers = await context.PenaltyIdentifiers
             .Where(x => x.Expiration > DateTimeOffset.UtcNow)
             .Where(x => x.IpAddress == request.IpAddress || x.Identity == request.Identity)
             .ToListAsync(cancellationToken: cancellationToken);
@@ -34,7 +27,7 @@ public class IsPlayerBannedHandler : IRequestHandler<IsPlayerBannedCommand, bool
                 .First(x => x.IpAddress == request.IpAddress).PenaltyId, cancellationToken);
 
         // Get player context
-        var player = await _context.Players
+        var player = await context.Players
             .AsNoTracking()
             .Include(x => x.Penalties)
             .Where(x => x.Identity == request.Identity)
@@ -62,8 +55,8 @@ public class IsPlayerBannedHandler : IRequestHandler<IsPlayerBannedCommand, bool
             PenaltyId = penaltyId
         };
 
-        _context.PenaltyIdentifiers.Add(newIdentifierBan);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.PenaltyIdentifiers.Add(newIdentifierBan);
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     private async Task ExpireOldPenalties(EFPlayer player, CancellationToken cancellationToken)
@@ -76,8 +69,8 @@ public class IsPlayerBannedHandler : IRequestHandler<IsPlayerBannedCommand, bool
         if (expiredPenalties.Any())
         {
             expiredPenalties.ForEach(x => x.PenaltyStatus = PenaltyStatus.Expired);
-            _context.Penalties.UpdateRange(expiredPenalties);
-            await _context.SaveChangesAsync(cancellationToken);
+            context.Penalties.UpdateRange(expiredPenalties);
+            await context.SaveChangesAsync(cancellationToken);
         }
     }
 }

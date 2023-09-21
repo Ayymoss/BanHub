@@ -4,15 +4,13 @@ using Microsoft.AspNetCore.Components;
 
 namespace BanHub.WebCore.Client.Pages;
 
-partial class Index
+partial class Index(StatisticService statisticService)
 {
-    [Inject] protected StatisticService StatisticService { get; set; }
-
     private Statistic _statistic = new();
 
     protected override async Task OnInitializedAsync()
     {
-        _statistic = await StatisticService.GetStatisticAsync();
+        _statistic = await statisticService.GetStatisticAsync();
         await base.OnInitializedAsync();
     }
 }

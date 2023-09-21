@@ -10,14 +10,9 @@ using Radzen.Blazor.Rendering;
 
 namespace BanHub.WebCore.Client.Components;
 
-partial class LoginComponent
+partial class LoginComponent(AuthenticationStateProvider authStateProvider, NavigationManager navigationManager, AuthService authService,
+    ILocalStorageService localStorageService, DialogService dialogService)
 {
-    [Inject] protected AuthenticationStateProvider AuthStateProvider { get; set; }
-    [Inject] protected NavigationManager NavigationManager { get; set; }
-    [Inject] protected AuthService AuthService { get; set; }
-    [Inject] protected ILocalStorageService LocalStorageService { get; set; }
-    [Inject] protected DialogService DialogService { get; set; }
-
     private Popup _popup;
     private RadzenButton _popupButton;
     private bool _isOpen;
@@ -25,18 +20,18 @@ partial class LoginComponent
 
     private async Task Logout()
     {
-        var response = await AuthService.LogoutAsync();
+        var response = await authService.LogoutAsync();
         if (response)
         {
-            (AuthStateProvider as CustomAuthStateProvider)?.ClearAuthInfo();
-            await LocalStorageService.RemoveItemAsync("IsAuthenticated");
-            NavigationManager.NavigateTo(NavigationManager.Uri, true);
+            (authStateProvider as CustomAuthStateProvider)?.ClearAuthInfo();
+            await localStorageService.RemoveItemAsync("IsAuthenticated");
+            navigationManager.NavigateTo(navigationManager.Uri, true);
         }
     }
 
     private async Task OpenDialog()
     {
-        await DialogService.OpenAsync<LoginDialog>("Login", options: new DialogOptions
+        await dialogService.OpenAsync<LoginDialog>("Login", options: new DialogOptions
         {
             ShowTitle = false,
             ShowClose = false,
