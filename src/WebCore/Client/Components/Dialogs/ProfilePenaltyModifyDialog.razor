@@ -1,0 +1,27 @@
+﻿
+<RadzenStack Orientation="Orientation.Vertical" Gap="0">
+    <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+        <RadzenText Text="You're about to modify this penalty" TextStyle="TextStyle.Subtitle1" class="rz-mb-0"/>
+        <RadzenText TextStyle="TextStyle.Subtitle2" Text="@Penalty.PenaltyGuid.ToString()" class="rz-mb-0 rz-text-tertiary-color"/>
+        <RadzenFormField Text="Reason" Variant="Variant.Outlined" Style="min-width:300px;width:75%">
+            <ChildContent>
+                <RadzenTextBox @bind-Value="_deletionReason"/>
+            </ChildContent>
+            <End>
+                <RadzenIcon Icon="warning" IconStyle="IconStyle.Info"/>
+            </End>
+        </RadzenFormField>
+        <RadzenSelectBar @bind-Value="_modifyPenalty" Size="ButtonSize.ExtraSmall" TValue="ModifyPenalty" class="rz-mt-3">
+            <Items>
+                <RadzenSelectBarItem Text="Revoke" Value="Domain.Enums.ModifyPenalty.Revoke"/>
+                <RadzenSelectBarItem Text="Delete" Value="Domain.Enums.ModifyPenalty.Delete"/>
+                <RadzenSelectBarItem Text="Make Local" Value="Domain.Enums.ModifyPenalty.Local"/>
+                <RadzenSelectBarItem Text="Make Global" Value="Domain.Enums.ModifyPenalty.Global"/>
+            </Items>
+        </RadzenSelectBar>
+    </RadzenStack>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mt-4">
+        <RadzenText TextStyle="TextStyle.Caption" class="rz-mb-0 rz-color-danger" Text="This action is logged"/>
+        <RadzenButton Click="ModifyPenalty" Text="Modify" ButtonStyle="ButtonStyle.Success" IsBusy="_processing" BusyText="Modifying..."/>
+    </RadzenStack>
+</RadzenStack>

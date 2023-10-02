@@ -1,0 +1,105 @@
+﻿@page "/Communities/{Identity}"
+@using BanHub.Domain.Enums
+
+<PageTitle>@_title | Community | Ban Hub</PageTitle>
+
+<RadzenCard>
+    @if (_loading)
+    {
+        <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+    }
+    else
+    {
+        @if (_community is null)
+        {
+            <RadzenText TextStyle="TextStyle.DisplayH4" Text="Community not found!" class="rz-mb-0"/>
+            <RadzenText TextStyle="TextStyle.Body1" Text="Provided identity doesn't exist." class="rz-mb-0"/>
+        }
+        else
+        {
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center"
+                         Gap="0.4rem" class="rz-mb-4 rz-mx-1">
+                <RadzenLink class="rz-text-display-h4" Path="@($"https://{_community.CommunityWebsite}/")" Text="@_community.CommunityName"/>
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+                    <RadzenBadge BadgeStyle="@(_community.Connected ? BadgeStyle.Success : BadgeStyle.Danger)" Shade="Shade.Lighter"
+                                 IsPill="true" Variant="Variant.Flat" Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px"
+                                 Text="@(_community.Connected ? "Connected" : "Disconnected")"/>
+                    <RadzenBadge BadgeStyle="@(_community.Active ? BadgeStyle.Primary : BadgeStyle.Danger)" Shade="Shade.Lighter"
+                                 IsPill="true" Variant="Variant.Flat" Style="padding:0.4rem 0.6rem 0.4rem 0.6rem;font-size:20px"
+                                 Text="@(_community.Active ? "Activated" : "Not Activated")"/>
+                    <AuthorizeView Roles="@HelperMethods.GetRolesAsString(new[] {WebRole.SuperAdmin})">
+                        <Authorized>
+                            <RadzenButton Click="AuthoriseCommunityAsync" Size="ButtonSize.Medium" Shade="Shade.Lighter"
+                                          Icon="@(_community.Active ? "remove_moderator" : "add_moderator")"
+                                          ButtonStyle="@(_community.Active ? ButtonStyle.Warning : ButtonStyle.Primary)" class="ml-1"/>
+                        </Authorized>
+                    </AuthorizeView>
+                </RadzenStack>
+            </RadzenStack>
+            <RadzenRow JustifyContent="JustifyContent.SpaceEvenly" class="rz-mb-4">
+                <RadzenColumn Size="@(HasSocials ? 10 : 12)" class="rz-display-flex">
+                    <RadzenCard class="rz-display-flex rz-justify-content-flex-start" Style="flex:1">
+                        <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.Start" Gap="0">
+                            <RadzenText TextStyle="TextStyle.H6" Text="About" class="rz-mb-0"/>
+                            <RadzenText Text="@_community.About" class="rz-mb-0"/>
+                        </RadzenStack>
+                    </RadzenCard>
+                </RadzenColumn>
+                @if (HasSocials)
+                {
+                    <RadzenColumn Size="2">
+                        <RadzenCard>
+                            <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.Start" Gap="0">
+                                <RadzenText TextStyle="TextStyle.H6" Text="Socials" class="rz-mb-0"/>
+                                @foreach (var social in _community.Socials)
+                                {
+                                    <RadzenLink Path="@(social.Value)" Text="@social.Key"/>
+                                }
+                            </RadzenStack>
+                        </RadzenCard>
+                    </RadzenColumn>
+                }
+            </RadzenRow>
+            <RadzenStack Orientation="Orientation.Vertical">
+                <RadzenRow JustifyContent="JustifyContent.Start">
+                    <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
+                        <RadzenCard>
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0">
+                                <RadzenText TextStyle="TextStyle.H5" class="rz-color-primary" Style="margin: 0" Text="@_community.ServerCount.ToString()"/>
+                                <RadzenText class="rz-text-tertiary-color" Text="Servers"/>
+                            </RadzenStack>
+                        </RadzenCard>
+                    </RadzenColumn>
+                    <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
+                        <RadzenCard>
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0">
+                                <RadzenText TextStyle="TextStyle.H5" class="rz-color-primary" Style="margin: 0" Text="@_community.Created.Humanize()"/>
+                                <RadzenText class="rz-text-tertiary-color" Text="Created"/>
+                            </RadzenStack>
+                        </RadzenCard>
+                    </RadzenColumn>
+                    <RadzenColumn SizeXS="12" SizeSM="6" SizeMD="4" SizeXL="3" SizeXX="2">
+                        <RadzenCard>
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0">
+                                <RadzenText TextStyle="TextStyle.H5" class="rz-color-primary" Style="margin: 0">
+                                    @_community.PenaltiesCount (@_community.AutomatedPenaltiesCount)
+                                </RadzenText>
+                                <RadzenText class="rz-text-tertiary-color" Text="Penalties (Automated)"/>
+                            </RadzenStack>
+                        </RadzenCard>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenTabs RenderMode="TabRenderMode.Client">
+                    <Tabs>
+                        <RadzenTabsItem Text="Penalties">
+                            <CommunityProfilePenaltyTable Community="_community"/>
+                        </RadzenTabsItem>
+                        <RadzenTabsItem Text="Servers">
+                            <CommunityProfileServerTable Community="_community"/>
+                        </RadzenTabsItem>
+                    </Tabs>
+                </RadzenTabs>
+            </RadzenStack>
+        }
+    }
+</RadzenCard>

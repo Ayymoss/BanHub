@@ -1,0 +1,37 @@
+﻿@using Server = BanHub.Application.DTOs.WebView.CommunityProfileView.Server
+<RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" class="rz-mb-4">
+    <RadzenFormField Text="Filter" Variant="Variant.Text">
+        <ChildContent>
+            <RadzenTextBox @bind-Value="_searchString" Change="OnSearch"/>
+        </ChildContent>
+        <End>
+            <RadzenIcon Icon="search" IconStyle="IconStyle.Info"/>
+        </End>
+    </RadzenFormField>
+</RadzenStack>
+<RadzenDataGrid @ref="_dataGrid" TItem="Server" IsLoading="@_loading" Count="@_totalCount" Data="@_data" LoadData="@LoadData"
+                Density="Density.Compact" AllowPaging="true" PageSize="10" AllowSorting="true" PagerAlwaysVisible="true"
+                PagerHorizontalAlign="HorizontalAlign.Center" PageSizeOptions="new[] {10, 20}" ShowPagingSummary="true"
+                PagingSummaryFormat="Displaying page {0} of {1} <b>(total {2} records)</b>" AllowColumnResize="true" Style="min-height: 200px">
+    <Columns>
+        <RadzenDataGridColumn TItem="Server" Property="ServerName" Title="Server" MinWidth="120px"/>
+        <RadzenDataGridColumn TItem="Server" Property="ServerIp" Title="Address" MinWidth="120px">
+            <Template Context="context">
+                @context.ServerIp:@context.ServerPort
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Server" Property="ServerGame" Title="Game" MinWidth="120px">
+            <Template Context="context">
+                @context.ServerGame.GetGameName()
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Server" Property="Updated" Title="Updated" SortOrder="SortOrder.Descending" MinWidth="120px">
+            <Template Context="context">
+                @context.Updated.Humanize()
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+    <EmptyTemplate>
+        <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.H6" class="rz-my-4" Text="The community has no servers."/>
+    </EmptyTemplate>
+</RadzenDataGrid>

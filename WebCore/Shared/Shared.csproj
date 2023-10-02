@@ -17,12 +17,5 @@
         <PackageReference Include="Radzen.Blazor" Version="4.15.7"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\..\Data\BanHubData\BanHubData.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Mediatr\" />
-    </ItemGroup>
 
 </Project>

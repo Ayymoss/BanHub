@@ -1,0 +1,79 @@
+﻿@page "/Penalties"
+@using Penalty = BanHub.Application.DTOs.WebView.PenaltiesView.Penalty
+
+<PageTitle>Penalties | Ban Hub</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap" class="rz-mb-4">
+        <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.DisplayH4" Text="Penalties" class="rz-mb-0 rz-mt-2"/>
+        <RadzenFormField Text="Search" Variant="Variant.Outlined">
+            <ChildContent>
+                <RadzenTextBox @bind-Value="_searchString" Change="OnSearch"/>
+            </ChildContent>
+            <End>
+                <RadzenIcon Icon="search" IconStyle="IconStyle.Info"/>
+            </End>
+        </RadzenFormField>
+    </RadzenStack>
+    <RadzenDataGrid @ref="_dataGrid" TItem="Penalty" IsLoading="@_isLoading" Count="@_count" Data="@_playerTable" LoadData="@LoadData"
+                    Density="Density.Compact" AllowPaging="true" PageSize="20" AllowSorting="true" PagerAlwaysVisible="true"
+                    PagerHorizontalAlign="HorizontalAlign.Center" PageSizeOptions="new[] {20, 50, 100}" ShowPagingSummary="true"
+                    PagingSummaryFormat="Displaying page {0} of {1} <b>(total {2} records)</b>" AllowColumnResize="true"
+                    RowClick="RowClickEvent" Style="min-height: 200px" class="rz-selectable">
+        <Columns>
+            <RadzenDataGridColumn TItem="Penalty" Property="PenaltyGuid" Title="ID" MinWidth="120px">
+                <Template Context="context">
+                    <RadzenText TextStyle="TextStyle.Body2" Text="@context.PenaltyGuid.ToString()"  MinWidth="120px" class="@(context.EvidenceMissing ? "rz-color-series-5" : "")"/>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Property="RecipientUserName" Title="Recipient" MinWidth="120px">
+                <Template Context="context">
+                    <RadzenLink Path="@($"/Players/{context.RecipientIdentity}")" Text="@context.RecipientUserName"/>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Property="IssuerUserName" Title="Issuer" MinWidth="120px">
+                <Template Context="context">
+                    <RadzenLink Path="@($"/Players/{context.IssuerIdentity}")" Text="@context.IssuerUserName"/>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Property="Reason" Title="Reason" MinWidth="120px">
+                <Template Context="context">
+                    @context.Reason
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Property="PenaltyType" Title="Type" MinWidth="85px">
+                <Template Context="context">
+                    <EnumMudChip Penalty="@context.PenaltyType"/>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Property="PenaltyStatus" Title="Status" MinWidth="85px">
+                <Template Context="context">
+                    <EnumMudChip Penalty="@context.PenaltyStatus"/>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Property="PenaltyScope" Title="Scope" MinWidth="85px">
+                <Template Context="context">
+                    <EnumMudChip Penalty="@context.PenaltyScope"/>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Property="CommunityName" Title="Community" MinWidth="120px">
+                <Template Context="context">
+                    <RadzenLink Path="@($"/Communities/{context.CommunityGuid}")" Text="@context.CommunityName"/>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Property="Submitted" Title="Submitted" SortOrder="SortOrder.Descending" MinWidth="120px">
+                <Template Context="context">
+                    @context.Submitted.ToString("yyyy-MM-dd HH:mm:ss")
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Penalty" Width="40px" TextAlign="TextAlign.End" Sortable="false" Frozen="true">
+                <Template>
+                    <RadzenIcon Icon="touch_app" class="rzi-primary"/>
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+        <EmptyTemplate>
+            <RadzenText TextAlign="TextAlign.Center" TextStyle="TextStyle.H6" class="rz-my-4" Text="There are no penalties..."/>
+        </EmptyTemplate>
+    </RadzenDataGrid>
+</RadzenCard>
