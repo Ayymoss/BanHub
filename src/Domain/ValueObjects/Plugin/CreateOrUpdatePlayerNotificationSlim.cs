@@ -1,6 +1,6 @@
 ﻿using BanHub.Domain.Enums;
 
-namespace BanHub.Domain.ValueObjects;
+namespace BanHub.Domain.ValueObjects.Plugin;
 
 public class CreateOrUpdatePlayerNotificationSlim
 {
